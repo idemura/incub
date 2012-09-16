@@ -1,0 +1,1 @@
+  <p><i>$date$</i> by <b>$owner$</b> - $text$</p>

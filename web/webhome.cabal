@@ -1,0 +1,42 @@
+Name:         webhome
+Version:      0.1
+Author:       Igor Demura <idemura@yandex.ru>
+Copyright:    2012, Igor Demura
+License:      BSD3
+Maintainer:   idemura@yandex.ru
+Stability:    Experimental
+Category:     Web
+Synopsis:     Igor Demura Web Home
+Description:
+  Web home with services for me.
+Cabal-version: >= 1.4.0.0
+Build-type: Custom
+Data-files:
+  files/style.css
+  files/logo.png
+  templates/Index.st
+  templates/Setup.st
+
+Executable webhome
+  main-is: Main.hs
+  hs-source-dirs: src
+
+  GHC-options: -threaded -O2 -w -fwarn-tabs
+  
+  Build-Depends:
+    base == 4.*,
+    bytestring == 0.9.*,
+    filepath >= 1.2,
+    time >= 1.0,
+    directory == 1.*,
+    mtl == 2.*,
+    MonadCatchIO-transformers >= 0.2,
+    old-locale == 1.0.*,
+    snap == 0.8.*,
+    snap-core == 0.8.*,
+    snap-server == 0.8.*,
+    HStringTemplate == 0.6.*,
+    HDBC == 2.3.*,
+    HDBC-sqlite3 == 2.3.*,
+    cryptohash == 0.7.*,
+    network == 2.3.*

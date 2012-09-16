@@ -1,0 +1,6 @@
+Show wallet transactions
+Wallet number in get params: wallet?id=12
+Command line
+Commnad add - add transaction, - or +, update wallet's balance
+Add command with date
+Command grep

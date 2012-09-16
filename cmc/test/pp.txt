@@ -1,0 +1,10 @@
+fn main()
+{
+    const char* s = "%cwd%";
+    /* he/*llo*/ */
+    int a = 0;
+    // /*ads*/
+    int y = 0;
+    /* 123
+    // */
+}

@@ -1,0 +1,15 @@
+#!/bin/sh
+
+build_tool()
+{
+    local name=$1
+    ghc --make $name.hs -O2
+    strip -s $name
+    sudo mv $name /usr/local/bin
+    rm $name.hi $name.o
+}
+
+build_tool hsb
+build_tool hsr
+echo "SUCCESS"
+

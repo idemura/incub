@@ -1,4 +1,4 @@
 dist/
 log/*
 env/*.sqlite3
-env/session/*
+env/sessions/*

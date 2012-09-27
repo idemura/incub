@@ -20,7 +20,7 @@ data ParserS =
        psFile :: String,
        psPos :: CodePos,
        psErrors :: [TranslateError]
-       psTokes :: [Token]
+       psTokens :: [Token]
      } 
 
 type ParserM = State ParserS

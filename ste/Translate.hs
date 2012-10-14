@@ -12,20 +12,17 @@ import Control.Applicative
 import Debug.Trace
 
 type CodePos = (Int, Int)
-type TranslateError = (CodePos, String)
 
 data ParserS =
      ParserS {
        psCode :: String,
        psFile :: String,
        psPos :: CodePos,
-       psErrors :: [TranslateError]
+       psErrors :: [(CodePos, String)]
        psTokens :: [Token]
      } 
 
-type ParserM = State ParserS
-
-type ParserF a = ParserS -> (ParserS, a)
+type ParserF = ParserS -> ParserS
 
 data Token = 
      TokenText String
@@ -48,21 +45,15 @@ instance Show Token where
              TokenText text -> "Text " ++ strShow text
              TokenTag tag -> "<" ++ strShow tag ++ ">"
 
-mapFst :: (a -> c) -> (a, b) -> (c, b)
-mapFst f (x, y) = (f x, y)
-
-mapSnd :: (b -> c) -> (a, b) -> (a, c)
-mapSnd f (x, y) = (x, f y)
-
 move :: Int -> ParserS -> ParserS
 move 0 s = s
-move n s@ParserS{psCode = c : cs, psPos = (line, col)}
+move n s@ParserS{psCode = c : cs, psPos = (line, column)}
   | c == '\n' = move (n - 1) s{psCode = cs, psPos = (line + 1, 1)}
-  | otherwise = move (n - 1) s{psCode = cs, psPos = (line, col + 1)}
+  | otherwise = move (n - 1) s{psCode = cs, psPos = (line, column + 1)}
 move _ s@ParserS{psCode = []} = s
 
 addError :: String -> ParserS -> ParserS
-addError msg s@ParserS{..} = s{psErrors = (psLine, msg) : psErrors}
+addError msg s@ParserS{..} = s{psErrors = (psPos, msg) : psErrors}
 
 comment :: ParserS -> ParserS
 comment s@ParserS{psCode = '{' : '-' : _} = comment $ go $ move 2 s
@@ -73,20 +64,20 @@ comment s@ParserS{psCode = '{' : '-' : _} = comment $ go $ move 2 s
     go s = go $ move 1 s
 comment s = s
 
---<?> :: ParserF -> ParserF 
-
-tokens :: ParserS -> (ParserS, [Token])
+tokens :: ParserS -> ParserS
 tokens s = readTag readChar $ comment s
   where
-    addChar :: Char -> [Token] -> [Token]
-    addChar c (TokenText cs : ts) = TokenText (c : cs) : ts
-    addChar c ts = TokenText [c] : ts
+    addChar :: Char -> ParserS -> ParserS
+    addChar c s@ParserS{psTokens} =
+        case psTokens of
+          TokenText str : ts -> s{psTokens = (TokenText (c : str)) : ts}
+          ts -> s{psTokens = TokenText [c] : ts}
 
-    readChar :: ParserF [Token]
-    readChar s@ParserS{psCode = c : _} = mapSnd (addChar c) (tokens $ move 1 s)
-    readChar s = (s, [])
+    readChar :: ParserS -> ParserS
+    readChar s@ParserS{psCode = c : _} = addChar c $ tokens $ move 1 s
+    readChar s = s{psTokens = []}
 
-    readTag :: ParserF [Token] -> ParserF [Token]
+    readTag :: ParserS -> ParserS
     readTag f s'@ParserS{psCode = '{' : _} = cons $ go $ move 1 s
       where
         go s@ParserS{psCode = c : _}
@@ -104,12 +95,15 @@ push t s = mapSnd (t :) (tokens s)
 parseTag :: String -> Token
 parseTag s = TokenTag s
 
+newParser :: String -> String -> ParserS
+newParser text file = ParserS text file (1, 1) []
+
 testParse :: String -> IO ()
 testParse file = do
     text <- readFile file
-    let s = ParserS text file 1 []
+    let s = newParser text file
     let (s', ts) = tokens s
     case s' of
       ParserS{psErrors = [], psCode = []} -> mapM_ (putStrLn . show) ts
       s -> print s
-    
+

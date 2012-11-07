@@ -43,10 +43,10 @@ instance Show Token where
     TokenTag tag    -> "<" ++ strShow tag ++ ">"
 
 move :: ParserS -> ParserS
-move s@ParserS{psCode = c : cs, psPos = (l, i)}
-  | c == '\n' = s{psCode = cs, psPos = (l + 1, 1)}
-  | otherwise = s{psCode = cs, psPos = (l, i + 1)}
-move s@ParserS{psCode = []} = s
+move s@ParserS{psCode, psPos = (l, i)} = case psCode of
+  c : cs | c == '\n' -> s{psCode = cs, psPos = (l + 1, 1)}
+         | otherwise -> s{psCode = cs, psPos = (l, i + 1)}
+  [] -> s
 
 newParser :: String -> String -> ParserS
 newParser text file = ParserS text file (1, 1)

@@ -214,8 +214,8 @@
   { "keys": ["ctrl+h"], "command": "slurp_find_string" },
   { "keys": ["ctrl+shift+h"], "command": "slurp_replace_string" },
   { "keys": ["f3"], "command": "find_all_under" },
-  { "keys": ["f4"], "command": "next_result" },
-  { "keys": ["shift+f4"], "command": "prev_result" },
+  { "keys": ["ctrl+,"], "command": "next_result" },
+  { "keys": ["ctrl+shift+,"], "command": "prev_result" },
 
   { "keys": ["f6"], "command": "toggle_setting", "args": {"setting": "spell_check"} },
   { "keys": ["ctrl+f6"], "command": "next_misspelling" },
@@ -524,8 +524,8 @@
   { "keys": ["alt+9"], "command": "select_by_index", "args": { "index": 8 } },
   { "keys": ["alt+0"], "command": "select_by_index", "args": { "index": 9 } },
 
-  { "keys": ["f2"], "command": "next_bookmark" },
-  { "keys": ["shift+f2"], "command": "prev_bookmark" },
+  { "keys": ["ctrl+."], "command": "next_bookmark" },
+  { "keys": ["ctrl+shift+."], "command": "prev_bookmark" },
   { "keys": ["ctrl+b"], "command": "toggle_bookmark" },
   { "keys": ["ctrl+shift+b"], "command": "clear_bookmarks" },
   { "keys": ["ctrl+;"], "command": "select_all_bookmarks" },

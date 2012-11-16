@@ -1,50 +1,64 @@
 package main
 
 import (
-  "io"
+  // "io"
+  // "os"
   "fmt"
   "net/http"
   "log"
-  re "regexp"
+  path "path/filepath"
+  exec "os/exec"
 )
 
 type Server struct {
-  writer http.ResponseWriter
+  BasePath string
 }
 
-func TrimTrailingSplases(s string) string {
-  l := len(s)
-  if l == 0 {
-    return s
+func (self *Server) Init() {
+  self.BasePath, _ = path.Abs(".")
+}
+
+func (self *Server) Root(
+    writer http.ResponseWriter,
+    r *http.Request) {
+  fmt.Fprintf(writer, "Hi there, I love Go!")
+}
+
+func (self *Server) Diff(
+    writer http.ResponseWriter,
+    r *http.Request) {
+  cmd := exec.Command("diff", "1.txt", "2.txt")
+  out, err := cmd.Output()
+  if err != nil {
+    // Unfortunately, there is no platform independent way to get the exit code
+    // in the error case: http://stackoverflow.com/questions/10385551/get-exit-code-go
+    fmt.Fprintf(writer, "<body><p>%s</p></body>\n", out);
+  } else {
+    fmt.Fprintf(writer, "<body><h>No differences</h></body>\n");
   }
-
-  for i := l - 1; i > 0; i-- {
-    if s[i] != '/' {
-      return s[: i + 1]
-    }
-  }
-  return ""
 }
 
-func (self *Server) Root() {
-  fmt.Fprintf(self.writer, "Hi there, I love Go!")
-}
-
-func (self *Server) Page404() {
-  fmt.Fprintf(self.writer, "<h1>404 - Not found</h1><p>%s</p>\n" 
+func (self *Server) Http404(
+    writer http.ResponseWriter,
+    r *http.Request) {
+  // TODO:
+  fmt.Fprintf(writer,
+      "<body><h1>404 - Not found</h1><p>%s</p></body>\n",
+      r.URL.Path);
 }
 
 func (self *Server) ServeHTTP(
-    w http.ResponseWriter,
+    writer http.ResponseWriter,
     r *http.Request) {
-  self.writer = w
-
   log.Printf("Request path: %s", r.URL.Path);
-  var path = r.URL.path
+  
+  var path = r.URL.Path
   if path == "/" {
-    self.Root()
+    self.Root(writer, r)
+  } else if path == "/diff" {
+    self.Diff(writer, r)
   } else {
-    fmt.Fprintf(self.wr
+    self.Http404(writer, r)
   }
 }
 
@@ -52,6 +66,6 @@ func main() {
   const address = "localhost:4000"
   fmt.Printf("Server started at %s\n", address)
   var srv = new(Server)
-  srv.InitRoutes()
+  srv.Init()
   http.ListenAndServe(address, srv)
 }

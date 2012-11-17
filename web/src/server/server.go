@@ -8,6 +8,7 @@ import (
   "log"
   path "path/filepath"
   exec "os/exec"
+  // bs "bytes"
 )
 
 type Server struct {
@@ -24,9 +25,25 @@ func (self *Server) Root(
   fmt.Fprintf(writer, "Hi there, I love Go!")
 }
 
-func ProcessDiffOutput(out []byte) {
-  line, _ := GetLine(out)
-  log.Printf("%s", line)
+func ProcessDiffOutput(text []byte) {
+  //var prefix = []byte("> ")
+  var isQuote = func(s []byte) bool {
+    l := len(s)
+    switch {
+      case l == 0:
+        return false
+      case s[0] == '>' || s[0] == '<':
+        return true
+      case s[0] == '-' && l >= 3 && s[1] == '-' && s[2] == '-':
+        return true
+    }
+    return false;
+  }
+  for ln, text := GetLine(text); ln != nil; ln, text = GetLine(text) {
+    if !isQuote(ln) {
+      log.Printf("%s", ln)
+    }
+  }
 }
 
 func (self *Server) Diff(
@@ -47,9 +64,9 @@ func (self *Server) Diff(
 func (self *Server) Http404(
     writer http.ResponseWriter,
     r *http.Request) {
-  // TODO:
+  writer.WriteHeader(http.StatusNotFound)
   fmt.Fprintf(writer,
-      "<body><h1>404 - Not found</h1><p>%s</p></body>\n",
+      "<html><head></head><body><h1>404 - Not found</h1><p>%s</p></body></html>\n",
       r.URL.Path);
 }
 

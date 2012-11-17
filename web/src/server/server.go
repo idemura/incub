@@ -24,6 +24,11 @@ func (self *Server) Root(
   fmt.Fprintf(writer, "Hi there, I love Go!")
 }
 
+func ProcessDiffOutput(out []byte) {
+  line, _ := GetLine(out)
+  log.Printf("%s", line)
+}
+
 func (self *Server) Diff(
     writer http.ResponseWriter,
     r *http.Request) {
@@ -32,7 +37,8 @@ func (self *Server) Diff(
   if err != nil {
     // Unfortunately, there is no platform independent way to get the exit code
     // in the error case: http://stackoverflow.com/questions/10385551/get-exit-code-go
-    fmt.Fprintf(writer, "<body><p>%s</p></body>\n", out);
+    ProcessDiffOutput(out)
+    fmt.Fprintf(writer, "<body><pre>%s</pre></body>\n", out);
   } else {
     fmt.Fprintf(writer, "<body><h>No differences</h></body>\n");
   }
@@ -51,7 +57,7 @@ func (self *Server) ServeHTTP(
     writer http.ResponseWriter,
     r *http.Request) {
   log.Printf("Request path: %s", r.URL.Path);
-  
+
   var path = r.URL.Path
   if path == "/" {
     self.Root(writer, r)

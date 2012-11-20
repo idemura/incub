@@ -4,7 +4,7 @@ import (
   bs "bytes"
 )
 
-func GetLine(text []byte) (line []byte, rest []byte) {
+func GetByteLine(text []byte) (line []byte, rest []byte) {
   if text == nil {
     line = nil
     rest = nil

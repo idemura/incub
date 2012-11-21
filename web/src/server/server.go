@@ -47,6 +47,26 @@ func (s *Stream) Eof() bool {
   return len(s.p) == 0
 }
 
+func (s *Stream) Empty() bool {
+  if len(s.p) == 0 {
+    return true
+  }
+  for _, b := range s.p {
+    if b != '\n' {
+      return false
+    }
+  }
+  return true
+}
+
+func (s *Stream) Length() int {
+  return len(s.p)
+}
+
+func (s *Stream) PeekByte(j int) byte {
+  return s.p[j]
+}
+
 func (s *Stream) NextLine() {
   for i := 0; i < len(s.p); i++ {
     if s.p[i] == '\n' {
@@ -57,8 +77,8 @@ func (s *Stream) NextLine() {
 }
 
 func (s *Stream) IsByte(b byte) bool {
-  if s.p[0] == b {
-    s.p = s.p[1: ]
+  if len(s.p) > 0 && s.p[0] == b {
+    s.p = s.p[1:]
     return true;
   }
   return false;
@@ -66,7 +86,7 @@ func (s *Stream) IsByte(b byte) bool {
 
 func (s *Stream) NextByte() byte {
   b := s.p[0]
-  s.p = s.p[1: ]
+  s.p = s.p[1:]
   return b
 }
 
@@ -118,51 +138,39 @@ func TakeChange(s *Stream) *Change {
   c.rem = make([][]byte, c.srcLast - c.srcFirst + 1);
   c.ins = make([][]byte, c.dstLast - c.dstFirst + 1);
 
-  for i := 0; i <= len(c.rem); i++ {
+  for i := 0; i < len(c.rem); i++ {
     if s.IsByte('<') && s.IsByte(' ') {
       c.rem[i] = s.TakeLine()
     }
-  } 
+  }
+
+  if s.Length() >= 3 &&
+      s.PeekByte(0) == '-' &&
+      s.PeekByte(1) == '-' &&
+      s.PeekByte(2) == '-' {
+    s.NextLine()
+  }
+
+  for i := 0; i < len(c.ins); i++ {
+    if s.IsByte('>') && s.IsByte(' ') {
+      c.ins[i] = s.TakeLine()
+    }
+  }
 
   return c
 }
 
 func ProcessDiffOutput(text []byte) {
-  // //var prefix = []byte("> ")
-  // var isQuote = func(s []byte) bool {
-  //   l := len(s)
-  //   switch {
-  //     case l == 0:
-  //       return false
-  //     case s[0] == '>' || s[0] == '<':
-  //       return true
-  //     case s[0] == '-' && l >= 3 && s[1] == '-' && s[2] == '-':
-  //       return true
-  //   }
-  //   return false;
-  // }
-  // for ln, text := GetLine(text); ln != nil; ln, text = GetLine(text) {
-  //   if !isQuote(ln) {
-  //     log.Printf("%v -- %s", len(ln), ln)
-  //   }
-  // }
-
-  log.Printf("%s", text[:10])
-  s := CreateByteStream(text)
-  c := TakeChange(s)
-  log.Printf("%v %v - %v %v", c.srcFirst, c.srcLast, c.dstFirst, c.dstLast)
-
-  // f, e := os.Open("1.txt")
-  // if e != nil {
-  //   log.Printf("IO error")
-  //   return
-  // }
-
-  // br := bufio.NewReader(f)
-  // for buf, e := br.ReadBytes('\n');
-  //     e == nil; buf, e = br.ReadBytes('\n') {
-  //   log.Printf("%s", buf)
-  // }
+  for s := CreateByteStream(text); !s.Empty(); {
+    c := TakeChange(s)
+    log.Printf("Lines: %v %v => %v %v", c.srcFirst, c.srcLast, c.dstFirst, c.dstLast)
+    for _, v := range c.rem {
+      log.Printf("<< %s", v)
+    }
+    for _, v := range c.rem {
+      log.Printf(">> %s", v)
+    }
+  }
 }
 
 func (self *Server) Diff(

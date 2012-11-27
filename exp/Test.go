@@ -11,5 +11,5 @@ func main() {
     return nil
   }
 
-  filepath.Walk(".", visit);
+  filepath.Walk(".", visit)
 }

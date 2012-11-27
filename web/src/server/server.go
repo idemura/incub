@@ -2,7 +2,7 @@ package main
 
 import (
   "bufio"
-  "io"
+  // "io"
   "os"
   "os/exec"
   "fmt"
@@ -150,10 +150,12 @@ func TakeChange(s *Stream) *Change {
   s.NextLine()
 
   if c.Op != OpInsert {
-    c.rem = make([][]byte, c.srcLast - c.srcFirst + 1)
+    c.srcLast += 1
+    c.rem = make([][]byte, c.srcLast - c.srcFirst)
   }
   if c.Op != OpDelete {
-    c.ins = make([][]byte, c.dstLast - c.dstFirst + 1)
+    c.dstLast += 1
+    c.ins = make([][]byte, c.dstLast - c.dstFirst)
   }
 
   for i := 0; i < len(c.rem); i++ {
@@ -213,38 +215,65 @@ func ParseDiffOutput(text []byte) ChangeVec {
   return changes
 }
 
+func WriteBufferToFile(file string, buf *bs.Buffer) error {
+  f, e := os.Create(file)
+  if e == nil {
+    f.Write(buf.Bytes())
+    f.Close()
+  }
+  return e
+}
+
 func OutputModifications(srcFileName string, changes ChangeVec) {
   bs_src := bs.NewBuffer(nil)
   bs_mod := bs.NewBuffer(nil)
 
   f, e := os.Open(srcFileName)
   if e != nil {
-    reader := bufio.NewReader(f)
-    ln_num := 0
-    for _, c := range changes {
-      ln, e := reader.ReadBytes('\n')
-      for ; e != io.EOF && ln_num < c.srcFirst; {
-        ln, e = reader.ReadBytes('\n')
-        ln_num += 1
-        bs_src.Write(ln)
-        bs_mod.Write(ln)
-      }
-      if e == io.EOF {
-        log.Printf("Wow EOF at line %v", ln_num)
-      }
-
-      if 
-    }
-    
-    if e == io.EOF {
-      log.Printf("111")
-    } else {
-      //log.Printf("%v", b)
-    }
-    f.Close()
-  } else {
     log.Printf("Can't open file: %v", srcFileName)
+    return
   }
+
+  reader := bufio.NewReader(f)
+  ln_num := 0
+  for _, c := range changes {
+    for ; ln_num < c.srcFirst; {
+      ln, _ := reader.ReadBytes('\n')
+      ln_num += 1
+      bs_src.Write(ln)
+      bs_mod.Write(ln)
+    }
+    switch c.Op {
+    case OpInsert:
+      for _, s := range c.ins {
+        bs_mod.Write([]byte("i>> "))
+        bs_mod.Write(s)
+      }
+    case OpChange:
+      for _, s := range c.rem {
+        bs_src.Write([]byte("c<< "))
+        bs_src.Write(s)
+      }
+      for _, s := range c.ins {
+        bs_mod.Write([]byte("c>> "))
+        bs_mod.Write(s)
+      }
+    case OpDelete:
+      for _, s := range c.rem {
+        bs_src.Write([]byte("d<< "))
+        bs_src.Write(s)
+      }
+    }
+    for ; ln_num < c.srcLast; {
+      reader.ReadBytes('\n')
+      ln_num += 1
+    }
+  }
+
+  f.Close()
+
+  WriteBufferToFile("x1.txt", bs_src)
+  WriteBufferToFile("x2.txt", bs_mod)
 }
 
 func (self *Server) Diff(
@@ -255,7 +284,8 @@ func (self *Server) Diff(
   if err != nil {
     // Unfortunately, there is no platform independent way to get the exit code
     // in the error case: http://stackoverflow.com/questions/10385551/get-exit-code-go
-    ParseDiffOutput(out)
+    changes := ParseDiffOutput(out)
+    OutputModifications("1.txt", changes)
     // fmt.Fprintf(writer, "<body><pre>%s</pre></body>\n", out)
   } else {
     // fmt.Fprintf(writer, "<body><h>No differences</h></body>\n")

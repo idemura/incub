@@ -2,7 +2,7 @@ package main
 
 import (
   "bufio"
-  // "io"
+//  "io"
   "os"
   "os/exec"
   "fmt"
@@ -11,6 +11,7 @@ import (
   path "path/filepath"
   bs "bytes"
   uc "unicode"
+//  tpl "http/template"
 )
 
 type Server struct {
@@ -190,7 +191,7 @@ func AddChange(c *Change, slice ChangeVec) ChangeVec {
   len_ := len(slice)
   cap_ := cap(slice)
   if (len_ == cap_) {
-    new_slice := make(ChangeVec, len_, cap_ * 2)
+    new_slice := make(ChangeVec, len_, cap_ * 3 / 2)
     copy(new_slice, slice)
     slice = new_slice
   }
@@ -204,13 +205,6 @@ func ParseDiffOutput(text []byte) ChangeVec {
   for s := CreateByteStream(text); !s.Empty(); {
     c := TakeChange(s)
     changes = AddChange(c, changes)
-    log.Printf("Lines: %v %v => %v %v", c.srcFirst, c.srcLast, c.dstFirst, c.dstLast)
-    for _, v := range c.rem {
-      log.Printf("<< %s", v)
-    }
-    for _, v := range c.ins {
-      log.Printf(">> %s", v)
-    }
   }
   return changes
 }
@@ -243,25 +237,41 @@ func OutputModifications(srcFileName string, changes ChangeVec) {
       bs_src.Write(ln)
       bs_mod.Write(ln)
     }
+    
+    len_ins := len(c.ins)
+    len_rem := len(c.rem)
+
     switch c.Op {
     case OpInsert:
       for _, s := range c.ins {
         bs_mod.Write([]byte("i>> "))
         bs_mod.Write(s)
       }
+      for i := 0; i < len_ins; i++ {
+        bs_src.Write([]byte("___\n"))
+      }
     case OpChange:
       for _, s := range c.rem {
         bs_src.Write([]byte("c<< "))
         bs_src.Write(s)
       }
+      for i := len_rem; i < len_ins; i++ {
+        bs_src.Write([]byte("___\n"))
+      }
       for _, s := range c.ins {
         bs_mod.Write([]byte("c>> "))
         bs_mod.Write(s)
+      }
+      for i := len_ins; i < len_rem; i++ {
+        bs_mod.Write([]byte("___\n"))
       }
     case OpDelete:
       for _, s := range c.rem {
         bs_src.Write([]byte("d<< "))
         bs_src.Write(s)
+      }
+      for i := 0; i < len_rem; i++ {
+        bs_mod.Write([]byte("___\n"))
       }
     }
     for ; ln_num < c.srcLast; {

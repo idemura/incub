@@ -1,15 +1,40 @@
 package main
 
-import ("fmt"; "os"; "path/filepath")
+import (
+  "fmt"
+  "os"
+  fp "path/filepath"
+  "net/http"
+  "io/ioutil"
+)
 
-func main() {
+func TestPath() {
   const pat = "?ur*.hs"
   visit := func (path string, fi os.FileInfo, err error) error {
-    if m, _ := filepath.Match(pat, path); m {
+    if m, _ := fp.Match(pat, path); m {
       fmt.Printf("%s\n", path)
     }
     return nil
   }
 
-  filepath.Walk(".", visit)
+  fp.Walk(".", visit)
+}
+
+func TestUrlGet() {
+  r, e := http.Get("http://google.com")
+  if e != nil {
+    fmt.Printf("%v\n", e)
+    return
+  }
+  c, e := ioutil.ReadAll(r.Body)
+  r.Body.Close()
+  if e != nil {
+    fmt.Printf("%v\n", e)
+    return
+  }
+  fmt.Printf("%v\n", string(c))
+}
+
+func main() {
+  TestUrlGet()
 }

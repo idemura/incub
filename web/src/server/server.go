@@ -209,13 +209,28 @@ func ParseDiffOutput(text []byte) ChangeVec {
   return changes
 }
 
-func WriteBufferToFile(file string, buf *bs.Buffer) error {
+func WriteBufferToFile(file string, buf []bytes) error {
   f, e := os.Create(file)
   if e == nil {
     f.Write(buf.Bytes())
     f.Close()
   }
   return e
+}
+
+type CodeFormat struct {
+  tabSize int
+}
+
+func (fmt *CodeFormat) FormatLine(s []byte) []byte {
+  var buf = new(bs.Buffer)
+  i := 0
+  for k, b := range s {
+    if uc.IsSpace(b) {
+
+    } else {
+    }
+  }
 }
 
 func OutputModifications(srcFileName string, changes ChangeVec) {

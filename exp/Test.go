@@ -23,13 +23,13 @@ func TestPath() {
 func TestUrlGet() {
   r, e := http.Get("http://google.com")
   if e != nil {
-    fmt.Printf("%v\n", e)
+    fmt.Printf("ERROR: %v\n", e)
     return
   }
   c, e := ioutil.ReadAll(r.Body)
   r.Body.Close()
   if e != nil {
-    fmt.Printf("%v\n", e)
+    fmt.Printf("ERROR: %v\n", e)
     return
   }
   fmt.Printf("%v\n", string(c))

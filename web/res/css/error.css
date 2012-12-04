@@ -1,0 +1,13 @@
+#errid {
+  font-family: "Arial", sans;
+  font-size: 32pt;
+  font-weight: bold;
+}
+#errstring {
+  font-family: "Arial", sans;
+  font-size: 16pt;
+}
+.desc {
+  font-family: "Droid Serif", "DejaVu Serif", sans-serif;
+  font-size: 12pt;
+}

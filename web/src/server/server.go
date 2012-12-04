@@ -12,6 +12,7 @@ import (
   // bs "bytes"
   // uc "unicode"
   tt "html/template"
+  "sort"
 )
 
 type server struct {
@@ -29,13 +30,14 @@ func (srv *server) init() {
   srv.tplRoot = loadTpl("root.html")
   srv.tplHttpError = loadTpl("httperror.html")
 
-  fp.Walk("res/",
+  fp.Walk("res",
     func (path string, fi os.FileInfo, e error) error {
       if !fi.IsDir() {
-        srv.res = append(srv.res, "/" + fp.Base(path))
+        srv.res = append(srv.res, path)
       }
       return nil
     })
+  sort.Strings(srv.res)
   //log.Printf("%v", srv.res)
 }
 
@@ -54,30 +56,30 @@ func (srv *server) http404(
     writer http.ResponseWriter,
     r *http.Request) {
   writer.WriteHeader(http.StatusNotFound)
-  c := HttpErrorTplCtx{404, "Not Found", fmt.Sprintf("Path %v", r.URL.Path)}
+  c := HttpErrorTplCtx{404, "Not Found",
+      fmt.Sprintf("Requested %v", r.URL.Path)}
   srv.tplHttpError.Execute(writer, &c)
 }
 
 func (srv *server) getStatic(path string) string {
-  for _, f := range srv.res {
-    if f == path {
-      return f
-    }
+  path = fp.Join("res", path)
+  i := sort.SearchStrings(srv.res, path)
+  if i < len(srv.res) && srv.res[i] == path {
+    return path
+  } else {
+    return ""
   }
-  return ""
+  return "" // Workaround Go compiler error
 }
 
 func (srv *server) ServeHTTP(
     writer http.ResponseWriter,
     r *http.Request) {
-  log.Printf("Request path: %s", r.URL.Path)
-
   var path = r.URL.Path
   if path == "/" {
     srv.root(writer, r)
   // } else if path == "/diff" {
   } else if f := srv.getStatic(path); len(f) != 0 {
-    log.Printf("%v", f)
     http.ServeFile(writer, r, f)
   } else {
     log.Printf("404: %v", path)
@@ -90,9 +92,9 @@ func main() {
 
   var srv = new(server)
   srv.init()
-  log.Printf("Running in: %s", srv.baseDir)
+  log.Printf("Base path: %s\n", srv.baseDir)
 
   const address = "localhost:8080"
-  fmt.Printf("Server started at %s\n", address)
+  log.Printf("Server address: %s\n", address)
   http.ListenAndServe(address, srv)
 }

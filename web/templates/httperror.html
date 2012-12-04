@@ -1,17 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset='utf-8'> 
-<title>HTTP Error</title>
-<style type="text/css">
-#errid {font-family: "Arial", sans; font-weight: bold; font-size: 32pt;}
-#errstring {font-family: "Arial", sans; font-size: 16pt;}
-.desc {font-family: "Droid Serif", "DejaVu Serif", sans-serif; font-size: 12pt;}
-</style>
+<meta charset='utf-8'>
+<link rel="shortcut icon" href="/img/fav.png"/>
+<link rel="stylesheet" href="/css/error.css" type="text/css"/>
+<title>HTTP {{.ErrId}}</title>
 </head>
 <body>
 <div id="err_block">
 <div id="errid">{{.ErrId}}</div><p id="errstring">{{.ErrString}}</p>
+<p class="desc">Go to <a href="/">root page</a></p>
 <p class="desc">{{.Description}}</p>
 </div>
 </body>

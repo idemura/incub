@@ -1,4 +1,9 @@
 - Config file JSON
+
 - Sessions
+    Gorilla library: https://github.com/gorilla/sessions
+
 - Use data base and initalization scripts
+    Postgres driver library: https://github.com/bmizerany/pq
+
 - Auth user

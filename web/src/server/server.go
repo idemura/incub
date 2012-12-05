@@ -33,7 +33,7 @@ func template(name string) *tt.Template {
 
 func newConfig() *Config {
   return &Config{
-      Address: "localhost:8080",      
+      Address: "localhost:8080",
     }
 }
 
@@ -44,9 +44,13 @@ func newServer(cfgPath string) *server {
   log.Printf("Base path: %s\n", srv.baseDir)
 
   srv.cfg = newConfig()
-  if f, e := os.Open(cfgPath); e == nil {
-    if e := json.NewDecoder(f).Decode(srv.cfg); e != nil {
-      log.Printf("JSON parse: %v", e)
+  if len(cfgPath) > 0 {
+    if f, e := os.Open(cfgPath); e == nil {
+      if e := json.NewDecoder(f).Decode(srv.cfg); e != nil {
+        log.Printf("ERROR JSON parse: %v", e)
+      }
+    } else {
+      log.Printf("ERROR open config: %v", e)
     }
   }
 

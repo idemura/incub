@@ -13,20 +13,41 @@ import (
   // uc "unicode"
   tt "html/template"
   "sort"
+  "encoding/json"
 )
+
+type Config struct {
+  Address string "address"
+}
 
 type server struct {
   baseDir string
   tplRoot, tplHttpError *tt.Template
   res []string
+  cfg *Config
 }
 
 func loadTpl(name string) *tt.Template {
   return tt.Must(tt.ParseFiles(fp.Join("templates", name)))
 }
 
-func (srv *server) init() {
+func newConfig() *Config {
+  c := new(Config)
+  c.Address = "localhost:8080"
+  return c
+}
+
+func (srv *server) init(cfg_name string) {
   srv.baseDir, _ = os.Getwd()
+  log.Printf("Base path: %s\n", srv.baseDir)
+
+  srv.cfg = newConfig()
+  if f, e := os.Open(cfg_name); e == nil {
+    if e := json.NewDecoder(f).Decode(srv.cfg); e != nil {
+      log.Printf("JSON parse: %v", e)
+    }
+  }
+
   srv.tplRoot = loadTpl("root.html")
   srv.tplHttpError = loadTpl("httperror.html")
 
@@ -87,14 +108,16 @@ func (srv *server) ServeHTTP(
   }
 }
 
+func (srv *server) run() {
+  log.Printf("Server address: %s\n", srv.cfg.Address)
+  http.ListenAndServe(srv.cfg.Address, srv)
+}
+
 func main() {
   log.SetFlags(log.Ltime)
 
   var srv = new(server)
-  srv.init()
-  log.Printf("Base path: %s\n", srv.baseDir)
+  srv.init("config.json")
 
-  const address = "localhost:8080"
-  log.Printf("Server address: %s\n", address)
-  http.ListenAndServe(address, srv)
+  srv.run()
 }

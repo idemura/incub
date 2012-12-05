@@ -31,17 +31,13 @@ func loadTpl(name string) *tt.Template {
   return tt.Must(tt.ParseFiles(fp.Join("templates", name)))
 }
 
-func newConfig() *Config {
-  c := new(Config)
-  c.Address = "localhost:8080"
-  return c
-}
+func newServer(cfg_name string) *server {
+  srv := new(server)
 
-func (srv *server) init(cfg_name string) {
   srv.baseDir, _ = os.Getwd()
   log.Printf("Base path: %s\n", srv.baseDir)
 
-  srv.cfg = newConfig()
+  srv.cfg = new(Config)
   if f, e := os.Open(cfg_name); e == nil {
     if e := json.NewDecoder(f).Decode(srv.cfg); e != nil {
       log.Printf("JSON parse: %v", e)
@@ -60,6 +56,8 @@ func (srv *server) init(cfg_name string) {
     })
   sort.Strings(srv.res)
   //log.Printf("%v", srv.res)
+
+  return srv
 }
 
 func (srv *server) root(
@@ -116,8 +114,6 @@ func (srv *server) run() {
 func main() {
   log.SetFlags(log.Ltime)
 
-  var srv = new(server)
-  srv.init("config.json")
-
+  srv := newServer("config.json")
   srv.run()
 }

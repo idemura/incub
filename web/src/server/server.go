@@ -27,25 +27,31 @@ type server struct {
   cfg *Config
 }
 
-func loadTpl(name string) *tt.Template {
+func template(name string) *tt.Template {
   return tt.Must(tt.ParseFiles(fp.Join("templates", name)))
 }
 
-func newServer(cfg_name string) *server {
+func newConfig() *Config {
+  return &Config{
+      Address: "localhost:8080",      
+    }
+}
+
+func newServer(cfgPath string) *server {
   srv := new(server)
 
   srv.baseDir, _ = os.Getwd()
   log.Printf("Base path: %s\n", srv.baseDir)
 
-  srv.cfg = new(Config)
-  if f, e := os.Open(cfg_name); e == nil {
+  srv.cfg = newConfig()
+  if f, e := os.Open(cfgPath); e == nil {
     if e := json.NewDecoder(f).Decode(srv.cfg); e != nil {
       log.Printf("JSON parse: %v", e)
     }
   }
 
-  srv.tplRoot = loadTpl("root.html")
-  srv.tplHttpError = loadTpl("httperror.html")
+  srv.tplRoot = template("root.html")
+  srv.tplHttpError = template("httperror.html")
 
   fp.Walk("res",
     func (path string, fi os.FileInfo, e error) error {
@@ -94,7 +100,7 @@ func (srv *server) getStatic(path string) string {
 func (srv *server) ServeHTTP(
     writer http.ResponseWriter,
     r *http.Request) {
-  var path = r.URL.Path
+  path := r.URL.Path
   if path == "/" {
     srv.root(writer, r)
   // } else if path == "/diff" {

@@ -14,6 +14,8 @@ import (
   tt "html/template"
   "sort"
   "encoding/json"
+  _ "github.com/bmizerany/pq"
+  "database/sql"
 )
 
 type Config struct {
@@ -121,8 +123,18 @@ func (srv *server) run() {
   http.ListenAndServe(srv.cfg.Address, srv)
 }
 
+func test() {
+  _, err := sql.Open("postgres", "user=demi dbname=demidb password=sv32x sslmode=verify-full")
+  if err != nil {
+    log.Printf("%v", err)
+  } else {
+    log.Printf("Wow!!!")
+  }
+}
+
 func main() {
   log.SetFlags(log.Ltime)
+  test()
 
   srv := newServer("config.json")
   srv.run()

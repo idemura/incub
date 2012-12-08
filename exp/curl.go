@@ -8,7 +8,7 @@ import (
 )
 
 const usage_str = 
-`Usage: Curl <url>
+`Usage: curl <url>
 Downloads file from <url> and outputs to stdout
 `
 

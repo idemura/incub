@@ -51,6 +51,7 @@ func newServer(cfgPath string) *server {
       if e := json.NewDecoder(f).Decode(srv.cfg); e != nil {
         log.Printf("ERROR JSON parse: %v", e)
       }
+      f.Close()
     } else {
       log.Printf("ERROR open config: %v", e)
     }

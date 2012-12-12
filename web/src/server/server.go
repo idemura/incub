@@ -14,8 +14,7 @@ import (
   tt "html/template"
   "sort"
   "encoding/json"
-  _ "github.com/bmizerany/pq"
-  "database/sql"
+  lv "github.com/jmhodges/levigo"
 )
 
 type Config struct {
@@ -125,17 +124,23 @@ func (srv *server) run() {
 }
 
 func test() {
-  _, err := sql.Open("postgres", "user=demi dbname=demidb password=sv32x sslmode=verify-full")
-  if err != nil {
-    log.Printf("%v", err)
-  } else {
-    log.Printf("Wow!!!")
+  opts := lv.NewOptions()
+  opts.SetCache(lv.NewLRUCache(1<<20))
+  opts.SetCreateIfMissing(true)
+  db, e := lv.Open("ldb", opts)
+  if e != nil {
+    log.Printf("%v", e)
+    return
   }
+
+  defer db.Close()
+  log.Printf("Ura!")
 }
 
 func main() {
   log.SetFlags(log.Ltime)
   test()
+  return
 
   srv := newServer("config.json")
   srv.run()

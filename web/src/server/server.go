@@ -4,7 +4,6 @@ import (
   // "bufio"
   // "io"
   "os"
-  // "os/exec"
   "fmt"
   "net/http"
   "log"
@@ -14,7 +13,6 @@ import (
   tt "html/template"
   "sort"
   "encoding/json"
-  lv "github.com/jmhodges/levigo"
 )
 
 type Config struct {
@@ -23,9 +21,10 @@ type Config struct {
 
 type server struct {
   baseDir string
-  tplRoot, tplHttpError *tt.Template
+  tplRoot, tplHttpError, tplQuit *tt.Template
   res []string
   cfg *Config
+  dbc *dbConn
 }
 
 func template(name string) *tt.Template {
@@ -58,6 +57,7 @@ func newServer(cfgPath string) *server {
 
   srv.tplRoot = template("root.html")
   srv.tplHttpError = template("httperror.html")
+  srv.tplQuit = template("quit.html")
 
   fp.Walk("res",
     func (path string, fi os.FileInfo, e error) error {
@@ -76,6 +76,17 @@ func (srv *server) root(
     writer http.ResponseWriter,
     r *http.Request) {
   srv.tplRoot.Execute(writer, nil)
+}
+
+func (srv *server) quit(
+    writer http.ResponseWriter,
+    r *http.Request) {
+  if srv.dbc != nil {
+    srv.dbc.closeDB()
+    srv.dbc = nil
+  }
+  log.Printf("Quit server")
+  os.Exit(0)
 }
 
 type HttpErrorTplCtx struct {
@@ -109,7 +120,8 @@ func (srv *server) ServeHTTP(
   path := r.URL.Path
   if path == "/" {
     srv.root(writer, r)
-  // } else if path == "/diff" {
+  } else if path == "/quit" {
+    srv.quit(writer, r)
   } else if f := srv.getStatic(path); len(f) != 0 {
     http.ServeFile(writer, r, f)
   } else {
@@ -123,25 +135,11 @@ func (srv *server) run() {
   http.ListenAndServe(srv.cfg.Address, srv)
 }
 
-func test() {
-  opts := lv.NewOptions()
-  opts.SetCache(lv.NewLRUCache(1<<20))
-  opts.SetCreateIfMissing(true)
-  db, e := lv.Open("ldb", opts)
-  if e != nil {
-    log.Printf("%v", e)
-    return
-  }
-
-  defer db.Close()
-  log.Printf("Ura!")
-}
-
 func main() {
   log.SetFlags(log.Ltime)
-  test()
-  return
 
   srv := newServer("config.json")
+  srv.dbc = newDB()
+
   srv.run()
 }

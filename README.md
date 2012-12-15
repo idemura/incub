@@ -6,14 +6,20 @@ Twitter-like post collector
 
 - Go1.0+
 - github.com/gorilla/sessions
--
 
 ##Install
 
-    go get -u github.com/gorilla/mux
-    go get -u github.com/gorilla/sessions
-    go get -u labix.org/v2/mgo
-    git clone git://github.com/jimmykuu/gopher.git
+Third party packages:
+  go get -u github.com/gorilla/sessions
+
+Build leveldb and get levigo:
+  From web/leveldb-1.7.0/ and run:
+    make
+  From web/ run:
+    ./get-levigo
+
+Now you are ready to build:
+  ./build
 
 ##Contributors
 

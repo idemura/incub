@@ -1,6 +1,6 @@
 #Overview
 
-Twitter-like post collector
+TapeColl open-source project.
 
 ##Requirements
 

@@ -3,8 +3,6 @@
 - Sessions
     Gorilla library: https://github.com/gorilla/sessions
 
-- Use data base and initalization scripts
-    Postgres driver library: https://github.com/bmizerany/pq
-    MySQL https://github.com/ziutek/mymysql
-    
+- Make user database
+
 - Auth user

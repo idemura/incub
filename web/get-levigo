@@ -1,5 +1,5 @@
 #!/bin/sh
 LEVELDB_DIR=$PWD/leveldb-1.7.0
-CGO_CFLAGS=-I$LEVELDB_DIR/include
-CGO_LDFLAGS=-L$LEVELDB_DIR
+export CGO_CFLAGS=-I$LEVELDB_DIR/include
+export CGO_LDFLAGS=-L$LEVELDB_DIR
 go get github.com/jmhodges/levigo

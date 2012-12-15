@@ -11,7 +11,7 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+// along with TapeColl. If not, see <http://www.gnu.org/licenses/>.
 package main
 
 import (
@@ -38,7 +38,6 @@ type server struct {
   tplRoot, tplHttpError, tplQuit *tt.Template
   res []string
   cfg *Config
-  dbc *dbConn
 }
 
 func template(name string) *tt.Template {
@@ -95,10 +94,7 @@ func (srv *server) root(
 func (srv *server) quit(
     writer http.ResponseWriter,
     r *http.Request) {
-  if srv.dbc != nil {
-    srv.dbc.closeDB()
-    srv.dbc = nil
-  }
+  finalizeDB()
   log.Printf("Quit server")
   os.Exit(0)
 }
@@ -152,8 +148,8 @@ func (srv *server) run() {
 func main() {
   log.SetFlags(log.Ltime)
 
-  srv := newServer("config.json")
-  srv.dbc = newDB()
+  initDB()
 
+  srv := newServer("config.json")
   srv.run()
 }

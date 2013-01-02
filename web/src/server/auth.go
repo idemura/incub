@@ -1,4 +1,6 @@
-// This file is part of TapeColl.
+// Copyright 2012 Igor Demura
+//
+// This file is part of Incub.
 //
 // TapeColl is free software: you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by

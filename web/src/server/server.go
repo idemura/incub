@@ -1,4 +1,6 @@
-// This file is part of TapeColl.
+// Copyright 2012 Igor Demura
+//
+// This file is part of Incub.
 //
 // TapeColl is free software: you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by
@@ -16,28 +18,41 @@ package main
 
 import (
   // "bufio"
+  "bytes"
   // "io"
+  "io/ioutil"
   "os"
-  "fmt"
+  // "fmt"
   "net/http"
+  "net/url"
   "log"
   fp "path/filepath"
-  // bs "bytes"
-  // uc "unicode"
   tt "html/template"
   "sort"
   "encoding/json"
+  // cs "strings"
+  "github.com/gorilla/sessions"
 )
 
 type Config struct {
   Address string "address"
+  Debug bool "debug"
+}
+
+type PersonaAuthReply struct{
+  Status string "status"
+  Email string "email"
+  Audience string "audience"
+  Expires int64 "expires"
+  Issuer string "issuer"
 }
 
 type server struct {
   baseDir string
-  tplRoot, tplHttpError, tplQuit *tt.Template
+  tplRoot, tplHttpError, tplQuit, tplNewUser *tt.Template
   res []string
   cfg *Config
+  session_store *sessions.CookieStore
 }
 
 func template(name string) *tt.Template {
@@ -47,6 +62,7 @@ func template(name string) *tt.Template {
 func newConfig() *Config {
   return &Config{
       Address: "localhost:8080",
+      Debug: false,
     }
 }
 
@@ -67,10 +83,16 @@ func newServer(cfgPath string) *server {
       log.Printf("ERROR open config: %v", e)
     }
   }
+  if srv.cfg.Debug {
+    log.Printf("Running in debug mode");
+  }
 
   srv.tplRoot = template("root.html")
   srv.tplHttpError = template("httperror.html")
   srv.tplQuit = template("quit.html")
+  srv.tplNewUser = template("newuser.html")
+
+  srv.session_store = sessions.NewCookieStore([]byte("tapecoll by Igor Demura"))
 
   fp.Walk("res",
     func (path string, fi os.FileInfo, e error) error {
@@ -80,37 +102,104 @@ func newServer(cfgPath string) *server {
       return nil
     })
   sort.Strings(srv.res)
-  //log.Printf("%v", srv.res)
+  // log.Printf("%v", srv.res)
 
   return srv
 }
 
+type RootCtx struct {
+  UserEmail string
+}
+
 func (srv *server) root(
-    writer http.ResponseWriter,
-    r *http.Request) {
-  srv.tplRoot.Execute(writer, nil)
+    writer http.ResponseWriter, r *http.Request) {
+  c := RootCtx{"null"}
+  srv.tplRoot.Execute(writer, &c)
 }
 
 func (srv *server) quit(
-    writer http.ResponseWriter,
-    r *http.Request) {
-  finalizeDB()
+    writer http.ResponseWriter, r *http.Request) {
+  deinitDB()
   log.Printf("Quit server")
   os.Exit(0)
 }
 
-type HttpErrorTplCtx struct {
+func (srv *server) newuser(
+    writer http.ResponseWriter, r *http.Request) {
+  srv.tplNewUser.Execute(writer, nil)
+}
+
+func (srv *server) login(
+    writer http.ResponseWriter, r *http.Request) {
+  type AuthStatus struct {
+    Status int
+    UserId string
+  }
+
+  var auth_status AuthStatus
+
+  resp, e := http.PostForm("https://verifier.login.persona.org/verify",
+    url.Values{
+      "assertion": {r.FormValue("assertion")},
+      "audience": {srv.cfg.Address},
+    })
+  if e != nil {
+    auth_status.Status = 3
+    buf, _ := json.Marshal(&auth_status)
+    writer.Write(buf)
+    return
+  }
+  body, _ := ioutil.ReadAll(resp.Body)
+  resp.Body.Close()
+
+  var persona PersonaAuthReply
+  json.NewDecoder(bytes.NewBuffer(body)).Decode(&persona)
+  if persona.Status != "okay" {
+    auth_status.Status = 2
+    buf, _ := json.Marshal(&auth_status)
+    writer.Write(buf)
+    return
+  }
+
+  session, _ := srv.session_store.Get(r, "tapecoll")
+  session.Values["email"] = persona.Email
+  session.Save(r, writer)
+
+  user := dbUserByEmail([]byte(persona.Email))
+  if user == nil {
+    auth_status.Status = 1
+    buf, _ := json.Marshal(&auth_status)
+    writer.Write(buf)
+  } else {
+    auth_status.Status = 0
+    auth_status.UserId = "demi"
+    buf, _ := json.Marshal(&auth_status)
+    writer.Write(buf)
+  }
+}
+
+type HttpErrorCtx struct {
   ErrId int
   ErrString, Description string
 }
 
-func (srv *server) http404(
-    writer http.ResponseWriter,
-    r *http.Request) {
-  writer.WriteHeader(http.StatusNotFound)
-  c := HttpErrorTplCtx{404, "Not Found",
-      fmt.Sprintf("Requested %v", r.URL.Path)}
-  srv.tplHttpError.Execute(writer, &c)
+var error_codes = map[int]string {
+    404: "Page Not Found",
+    500: "Internal Server Error",
+  }
+
+func (srv *server) error(
+    writer http.ResponseWriter, err_code int, description string) {
+  if err_code >= 500 {
+    log.Printf("%v: %v", err_code, description)
+  }
+  writer.WriteHeader(err_code)
+  err_string, found := error_codes[err_code]
+  if !found {
+    err_string = "Unknown"
+  }
+  srv.tplHttpError.Execute(writer, &HttpErrorCtx{err_code, err_string,
+      description})
 }
 
 func (srv *server) getStatic(path string) string {
@@ -125,18 +214,23 @@ func (srv *server) getStatic(path string) string {
 }
 
 func (srv *server) ServeHTTP(
-    writer http.ResponseWriter,
-    r *http.Request) {
+    writer http.ResponseWriter, r *http.Request) {
   path := r.URL.Path
   if path == "/" {
     srv.root(writer, r)
   } else if path == "/quit" {
-    srv.quit(writer, r)
+    if srv.cfg.Debug {
+      srv.quit(writer, r)
+    }
+  } else if path == "/login" {
+    srv.login(writer, r)
+  } else if path == "/newuser" {
+    srv.newuser(writer, r)
   } else if f := srv.getStatic(path); len(f) != 0 {
     http.ServeFile(writer, r, f)
   } else {
     log.Printf("404: %v", path)
-    srv.http404(writer, r)
+    srv.error(writer, 404, path)
   }
 }
 
@@ -146,7 +240,7 @@ func (srv *server) run() {
 }
 
 func main() {
-  log.SetFlags(log.Ltime)
+  log.SetFlags(log.Ltime | log.Lmicroseconds | log.Lshortfile)
 
   initDB()
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset='utf-8'>
+<meta charset="utf-8">
 <link rel="shortcut icon" href="/img/fav.png"/>
 <link rel="stylesheet" href="/css/basic.css" type="text/css"/>
 <title>Main</title>
@@ -13,12 +13,66 @@
   Sign in <a href="#" id="login">Persona</a>
 </p>
 </div>
+<div id="AuthError" style="visibility: hidden;">
+</div>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 <script src="//login.persona.org/include.js"></script>
 <script>
   $('#login').click(function() {
     navigator.id.request();
   })
+
+  var currentUser = {{.UserEmail}}; // 'idemura@yandex.ru';
+
+  navigator.id.watch({
+    loggedInUser: currentUser,
+    onlogin: function(assertion) {
+      // A user has logged in! Here you need to:
+      // 1. Send the assertion to your backend for verification and to create a session.
+      // 2. Update your UI.
+      $.ajax({
+        type: 'POST',
+        url: '/login', // This is a URL on your website.
+        data: {assertion: assertion},
+        success: function(res, status, xhr) {
+          var obj = JSON && JSON.parse(res) || $.parseJSON(res);
+          switch (obj.Status) {
+          case 0:
+            // Logged in
+            break;
+          case 1:
+            window.location = "/newuser"
+            break;
+          default:
+            $("#AuthError").html("Error signing in");
+            $("#AuthError").show();
+            break;
+          }
+        },
+        error: function(xhr, status, err) {
+          $("#AuthError").html("Error signing in");
+          $("#AuthError").show();
+        }
+      });
+    },
+    onlogout: function() {
+      // A user has logged out! Here you need to:
+      // Tear down the user's session by redirecting the user or making a call to your backend.
+      // Also, make sure loggedInUser will get set to null on the next page load.
+      // (That's a literal JavaScript null. Not false, 0, or undefined. null.)
+      $.ajax({
+        type: 'POST',
+        url: '/logout', // This is a URL on your website.
+        success: function(res, status, xhr) {
+          window.location.reload();
+        },
+        error: function(xhr, status, err) {
+          $("#AuthError").html("Error signing out");
+          $("#AuthError").show();
+        }
+      });
+    }
+  });
 </script>
 </body>
 </html>

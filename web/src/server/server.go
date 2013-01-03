@@ -18,7 +18,7 @@ package main
 
 import (
   // "bufio"
-  "bytes"
+  // "bytes"
   // "io"
   "io/ioutil"
   "os"
@@ -126,7 +126,11 @@ func (srv *server) quit(
 
 func (srv *server) newuser(
     writer http.ResponseWriter, r *http.Request) {
-  srv.tplNewUser.Execute(writer, nil)
+  if r.FormValue("Action") == "register" {
+    log.Printf("registering... %v", r.FormValue("FirstName"))
+  } else {
+    srv.tplNewUser.Execute(writer, nil)
+  }
 }
 
 func (srv *server) login(
@@ -153,13 +157,15 @@ func (srv *server) login(
   resp.Body.Close()
 
   var persona PersonaAuthReply
-  json.NewDecoder(bytes.NewBuffer(body)).Decode(&persona)
+  json.Unmarshal(body, &persona)
   if persona.Status != "okay" {
     auth_status.Status = 2
     buf, _ := json.Marshal(&auth_status)
     writer.Write(buf)
     return
   }
+
+  log.Printf("%v", persona.Email)
 
   session, _ := srv.session_store.Get(r, "tapecoll")
   session.Values["email"] = persona.Email

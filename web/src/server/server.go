@@ -113,6 +113,7 @@ type RootCtx struct {
 
 func (srv *server) root(
     writer http.ResponseWriter, r *http.Request) {
+
   c := RootCtx{"null"}
   srv.tplRoot.Execute(writer, &c)
 }
@@ -167,7 +168,7 @@ func (srv *server) login(
 
   log.Printf("%v", persona.Email)
 
-  session, _ := srv.session_store.Get(r, "tapecoll")
+  session, _ := srv.getSession(r)
   session.Values["email"] = persona.Email
   session.Save(r, writer)
 
@@ -243,6 +244,10 @@ func (srv *server) ServeHTTP(
 func (srv *server) run() {
   log.Printf("Server address: %s\n", srv.cfg.Address)
   http.ListenAndServe(srv.cfg.Address, srv)
+}
+
+func (srv *server) getSession(r *http.Request) {
+  return srv.session_store.Get(r, "tapecoll")
 }
 
 func main() {

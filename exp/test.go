@@ -6,6 +6,7 @@ import (
   fp "path/filepath"
   "net/http"
   "io/ioutil"
+  tt "html/template"
 )
 
 func TestPath() {
@@ -35,6 +36,36 @@ func TestUrlGet() {
   fmt.Printf("%v\n", string(c))
 }
 
+type TplCtx struct {
+  UserEmail tt.JS
+}
+
+const tpl = `<!DOCTYPE html>
+<html>
+<head>
+<title>Test</title>
+</head>
+<body>
+<script>
+  // Here email goes
+  var currentUser = {{.UserEmail}};
+</script>
+</body>
+</html>
+`
+
+func testTemplate() {
+  // const tpl_file = "../web/templates/test.html"
+  // t, e := tt.ParseFiles(tpl_file)
+  t, e := tt.New("").Parse(tpl)
+  if e != nil {
+    fmt.Printf("ERROR!\n")
+    return
+  }
+  t.Execute(os.Stdout, &TplCtx{"null"})
+}
+
 func main() {
-  TestUrlGet()
+  // TestUrlGet()
+  testTemplate()
 }

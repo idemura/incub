@@ -31,7 +31,7 @@ import (
   "sort"
   "encoding/json"
   // cs "strings"
-  "github.com/gorilla/sessions"
+  gss "github.com/gorilla/sessions"
 )
 
 type Config struct {
@@ -52,7 +52,7 @@ type server struct {
   tplRoot, tplHttpError, tplQuit, tplNewUser *tt.Template
   res []string
   cfg *Config
-  session_store *sessions.CookieStore
+  sessionStore *gss.CookieStore
 }
 
 func template(name string) *tt.Template {
@@ -92,7 +92,7 @@ func newServer(cfgPath string) *server {
   srv.tplQuit = template("quit.html")
   srv.tplNewUser = template("newuser.html")
 
-  srv.session_store = sessions.NewCookieStore([]byte("tapecoll by Igor Demura"))
+  srv.sessionStore = gss.NewCookieStore([]byte("tapecoll by Igor Demura"))
 
   fp.Walk("res",
     func (path string, fi os.FileInfo, e error) error {
@@ -113,8 +113,8 @@ type RootCtx struct {
 
 func (srv *server) root(
     writer http.ResponseWriter, r *http.Request) {
-
   c := RootCtx{"null"}
+  srv.tplRoot.Execute(os.Stdout, &c)
   srv.tplRoot.Execute(writer, &c)
 }
 
@@ -168,7 +168,7 @@ func (srv *server) login(
 
   log.Printf("%v", persona.Email)
 
-  session, _ := srv.getSession(r)
+  session := srv.getSession(r)
   session.Values["email"] = persona.Email
   session.Save(r, writer)
 
@@ -246,8 +246,9 @@ func (srv *server) run() {
   http.ListenAndServe(srv.cfg.Address, srv)
 }
 
-func (srv *server) getSession(r *http.Request) {
-  return srv.session_store.Get(r, "tapecoll")
+func (srv *server) getSession(r *http.Request) *gss.Session {
+  s, _ := srv.sessionStore.Get(r, "tapecoll")
+  return s
 }
 
 func main() {

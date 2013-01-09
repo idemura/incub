@@ -28,7 +28,6 @@ import (
   "log"
   fp "path/filepath"
   tt "text/template"
-  ht "html/template"
   "sort"
   "encoding/json"
   // cs "strings"
@@ -188,15 +187,6 @@ func (srv *server) login(
 type HttpErrorCtx struct {
   Code int
   Message, Description string
-}
-
-func newHttpErrorCtx(
-    Code int,
-    Message, Description string) *HttpErrorCtx {
-  return &HttpErrorCtx{Code,
-      ht.HTMLEscapeString(Message),
-      ht.HTMLEscapeString(Description),
-    }
 }
 
 var errorMsgMap = map[int]string {

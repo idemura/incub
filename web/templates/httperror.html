@@ -8,9 +8,9 @@
 </head>
 <body>
 <div id="err_block">
-<div id="errid">{{.Code}}</div><p id="errstring">{{.Message}}</p>
+<div id="errid">{{.Code}}</div><p id="errstring">{{html .Message}}</p>
 <p class="desc">Go to <a href="/">root page</a></p>
-<p class="desc">{{.Description}}</p>
+<p class="desc">{{html .Description}}</p>
 </div>
 </body>
 </html>

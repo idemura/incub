@@ -27,11 +27,12 @@ import (
   "net/url"
   "log"
   fp "path/filepath"
-  tt "html/template"
+  tt "text/template"
+  ht "html/template"
   "sort"
   "encoding/json"
   // cs "strings"
-  gss "github.com/gorilla/sessions"
+  "github.com/gorilla/sessions"
 )
 
 type Config struct {
@@ -52,7 +53,7 @@ type server struct {
   tplRoot, tplHttpError, tplQuit, tplNewUser *tt.Template
   res []string
   cfg *Config
-  sessionStore *gss.CookieStore
+  sessionStore *sessions.CookieStore
 }
 
 func template(name string) *tt.Template {
@@ -92,7 +93,7 @@ func newServer(cfgPath string) *server {
   srv.tplQuit = template("quit.html")
   srv.tplNewUser = template("newuser.html")
 
-  srv.sessionStore = gss.NewCookieStore([]byte("tapecoll by Igor Demura"))
+  srv.sessionStore = sessions.NewCookieStore([]byte("tapecoll by Igor Demura"))
 
   fp.Walk("res",
     func (path string, fi os.FileInfo, e error) error {
@@ -114,7 +115,6 @@ type RootCtx struct {
 func (srv *server) root(
     writer http.ResponseWriter, r *http.Request) {
   c := RootCtx{"null"}
-  srv.tplRoot.Execute(os.Stdout, &c)
   srv.tplRoot.Execute(writer, &c)
 }
 
@@ -186,26 +186,35 @@ func (srv *server) login(
 }
 
 type HttpErrorCtx struct {
-  ErrId int
-  ErrString, Description string
+  Code int
+  Message, Description string
 }
 
-var error_codes = map[int]string {
+func newHttpErrorCtx(
+    Code int,
+    Message, Description string) *HttpErrorCtx {
+  return &HttpErrorCtx{Code,
+      ht.HTMLEscapeString(Message),
+      ht.HTMLEscapeString(Description),
+    }
+}
+
+var errorMsgMap = map[int]string {
     404: "Page Not Found",
     500: "Internal Server Error",
   }
 
 func (srv *server) error(
-    writer http.ResponseWriter, err_code int, description string) {
-  if err_code >= 500 {
-    log.Printf("%v: %v", err_code, description)
+    writer http.ResponseWriter, code int, description string) {
+  if code >= 500 {
+    log.Printf("%v: %v", code, description)
   }
-  writer.WriteHeader(err_code)
-  err_string, found := error_codes[err_code]
+  writer.WriteHeader(code)
+  message, found := errorMsgMap[code]
   if !found {
-    err_string = "Unknown"
+    message = "Unknown"
   }
-  srv.tplHttpError.Execute(writer, &HttpErrorCtx{err_code, err_string,
+  srv.tplHttpError.Execute(writer, &HttpErrorCtx{code, message,
       description})
 }
 
@@ -246,7 +255,7 @@ func (srv *server) run() {
   http.ListenAndServe(srv.cfg.Address, srv)
 }
 
-func (srv *server) getSession(r *http.Request) *gss.Session {
+func (srv *server) getSession(r *http.Request) *sessions.Session {
   s, _ := srv.sessionStore.Get(r, "tapecoll")
   return s
 }

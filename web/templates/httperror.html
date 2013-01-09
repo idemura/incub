@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <link rel="shortcut icon" href="/img/fav.png"/>
 <link rel="stylesheet" href="/css/error.css" type="text/css"/>
-<title>HTTP {{.ErrId}}</title>
+<title>HTTP {{.Code}}</title>
 </head>
 <body>
 <div id="err_block">
-<div id="errid">{{.ErrId}}</div><p id="errstring">{{.ErrString}}</p>
+<div id="errid">{{.Code}}</div><p id="errstring">{{.Message}}</p>
 <p class="desc">Go to <a href="/">root page</a></p>
 <p class="desc">{{.Description}}</p>
 </div>

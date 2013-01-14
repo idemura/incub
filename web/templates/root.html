@@ -9,39 +9,69 @@
 <body>
 <img src="/img/google.png" alt="Google Logo"/>
 <div class="basefont">
+{{if .User}}
+<p class="auth">
+  Hi, you are logged in! Your email is {{.User.Email}}.
+  <a href="#" id="logout">Logout</a>
+</p>
+{{else}}
 <p class="auth">
   Sign in <a href="#" id="login">Persona</a>
 </p>
+{{end}}
 </div>
 <div id="AuthError" style="visibility: hidden;">
 </div>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 <script src="//login.persona.org/include.js"></script>
 <script>
-  $('#login').click(function() {
-    navigator.id.request();
-  })
-
-  var currentUser = {{.UserEmail}}; // 'idemura@yandex.ru';
+  function parse(res) {
+    return JSON && JSON.parse(res) || $.parseJSON(res)
+  }
+{{if .User}}
+  $('#logout').click(function() {
+    navigator.id.logout();
+  });
 
   navigator.id.watch({
-    loggedInUser: currentUser,
+    loggedInUser: "{{js .User.Email}}",
     onlogin: function(assertion) {
-      // A user has logged in! Here you need to:
-      // 1. Send the assertion to your backend for verification and to create a session.
-      // 2. Update your UI.
+    },
+    onlogout: function() {
+      $.ajax({
+        type: 'POST',
+        url: '/logout', // This is a URL on your website.
+        success: function(res, status, xhr) {
+          window.location.reload();
+        },
+        error: function(xhr, status, err) {
+          $("#AuthError").html("Connection problem");
+          $("#AuthError").show();
+        }
+      });
+    }
+  });
+{{else}}
+  $('#login').click(function() {
+    console.log('in login handler');
+    navigator.id.request();
+  });
+
+  navigator.id.watch({
+    loggedInUser: null,
+    onlogin: function(assertion) {
       $.ajax({
         type: 'POST',
         url: '/login', // This is a URL on your website.
         data: {assertion: assertion},
         success: function(res, status, xhr) {
-          var obj = JSON && JSON.parse(res) || $.parseJSON(res);
+          var obj = parse(res);
           switch (obj.Status) {
           case 0:
             // Logged in
             break;
           case 1:
-            // window.location = "/newuser"
+            window.location = "/newuser"
             break;
           default:
             $("#AuthError").html("Error signing in");
@@ -50,28 +80,15 @@
           }
         },
         error: function(xhr, status, err) {
-          $("#AuthError").html("Error signing in");
+          $("#AuthError").html("Connection problem");
           $("#AuthError").show();
         }
       });
     },
     onlogout: function() {
-      // A user has logged out! Here you need to:
-      // Tear down the user's session by redirecting the user or making a call to your backend.
-      // Also, make sure loggedInUser will get set to null on the next page load.
-      $.ajax({
-        type: 'POST',
-        url: '/logout', // This is a URL on your website.
-        success: function(res, status, xhr) {
-          window.location.reload();
-        },
-        error: function(xhr, status, err) {
-          $("#AuthError").html("Error signing out");
-          $("#AuthError").show();
-        }
-      });
     }
   });
+{{end}}
 </script>
 </body>
 </html>

@@ -39,7 +39,7 @@ type Config struct {
   Debug bool "debug"
 }
 
-type PersonaAuthReply struct{
+type PersonaResponse struct{
   Status string "status"
   Email string "email"
   Audience string "audience"
@@ -61,9 +61,9 @@ func template(name string) *tt.Template {
 
 func newConfig() *Config {
   return &Config{
-      Address: "localhost:8080",
-      Debug: false,
-    }
+    Address: "localhost:8080",
+    Debug: false,
+  }
 }
 
 func newServer(cfgPath string) *server {
@@ -92,7 +92,7 @@ func newServer(cfgPath string) *server {
   srv.tplQuit = template("quit.html")
   srv.tplNewUser = template("newuser.html")
 
-  srv.sessionStore = sessions.NewCookieStore([]byte("tapecoll by Igor Demura"))
+  srv.sessionStore = sessions.NewCookieStore([]byte("tapecoll-xMjgtU1v67c0"))
 
   fp.Walk("res",
     func (path string, fi os.FileInfo, e error) error {
@@ -102,18 +102,39 @@ func newServer(cfgPath string) *server {
       return nil
     })
   sort.Strings(srv.res)
-  // log.Printf("%v", srv.res)
+  // log.Printf("DBG %v", srv.res)
 
   return srv
 }
 
+func getSessionStr(s *sessions.Session, name string) (string, bool) {
+  val, found := s.Values[name]
+  if str, ok := val.(string); found && ok {
+    return str, true
+  }
+  return "", false
+}
+
+type UserCtx struct {
+  Email string
+}
+
 type RootCtx struct {
-  UserEmail string
+  User *UserCtx
 }
 
 func (srv *server) root(
     writer http.ResponseWriter, r *http.Request) {
-  c := RootCtx{"null"}
+  var c RootCtx
+  session := srv.getSession(r)
+  if session != nil {
+    email, found := getSessionStr(session, "email")
+    if (found) {
+      // Check user email in my base
+      log.Printf("DBG I have user")
+      c.User = &UserCtx{email}
+    }
+  }
   srv.tplRoot.Execute(writer, &c)
 }
 
@@ -126,21 +147,25 @@ func (srv *server) quit(
 
 func (srv *server) newuser(
     writer http.ResponseWriter, r *http.Request) {
+  type NewUserCtx struct {
+    Email string
+  }
+
   if r.FormValue("Action") == "register" {
-    log.Printf("registering... %v", r.FormValue("FirstName"))
+    log.Printf("DBG registering... %v", r.FormValue("FirstName"))
   } else {
-    srv.tplNewUser.Execute(writer, nil)
+    srv.tplNewUser.Execute(writer, &NewUserCtx{})
   }
 }
 
 func (srv *server) login(
     writer http.ResponseWriter, r *http.Request) {
-  type AuthStatus struct {
+  type Response struct {
     Status int
     UserId string
   }
 
-  var auth_status AuthStatus
+  var status Response
 
   resp, e := http.PostForm("https://verifier.login.persona.org/verify",
     url.Values{
@@ -148,40 +173,56 @@ func (srv *server) login(
       "audience": {srv.cfg.Address},
     })
   if e != nil {
-    auth_status.Status = 3
-    buf, _ := json.Marshal(&auth_status)
+    status.Status = 3
+    buf, _ := json.Marshal(&status)
     writer.Write(buf)
     return
   }
   body, _ := ioutil.ReadAll(resp.Body)
   resp.Body.Close()
 
-  var persona PersonaAuthReply
+  var persona PersonaResponse
   json.Unmarshal(body, &persona)
   if persona.Status != "okay" {
-    auth_status.Status = 2
-    buf, _ := json.Marshal(&auth_status)
+    status.Status = 2
+    buf, _ := json.Marshal(&status)
     writer.Write(buf)
     return
   }
 
-  log.Printf("%v", persona.Email)
+  log.Printf("DBG %v", persona.Email)
+
+  user := dbUserByEmail([]byte(persona.Email))
+  if user == nil {
+    status.Status = 1
+    buf, _ := json.Marshal(&status)
+    writer.Write(buf)
+    return
+  }
 
   session := srv.getSession(r)
   session.Values["email"] = persona.Email
   session.Save(r, writer)
 
-  user := dbUserByEmail([]byte(persona.Email))
-  if user == nil {
-    auth_status.Status = 1
-    buf, _ := json.Marshal(&auth_status)
-    writer.Write(buf)
-  } else {
-    auth_status.Status = 0
-    auth_status.UserId = "demi"
-    buf, _ := json.Marshal(&auth_status)
-    writer.Write(buf)
+  status.Status = 0
+  status.UserId = "demi"
+  buf, _ := json.Marshal(&status)
+  writer.Write(buf)
+}
+
+func (srv *server) logout(
+    writer http.ResponseWriter, r *http.Request) {
+  session := srv.getSession(r)
+  delete(session.Values, "email")
+  session.Save(r, writer)
+  
+  type Response struct {
+    Status int
   }
+
+  var status Response
+  buf, _ := json.Marshal(&status)
+  writer.Write(buf)
 }
 
 type HttpErrorCtx struct {
@@ -230,6 +271,8 @@ func (srv *server) ServeHTTP(
     }
   } else if path == "/login" {
     srv.login(writer, r)
+  } else if path == "/logout" {
+    srv.logout(writer, r)
   } else if path == "/newuser" {
     srv.newuser(writer, r)
   } else if f := srv.getStatic(path); len(f) != 0 {
@@ -251,7 +294,7 @@ func (srv *server) getSession(r *http.Request) *sessions.Session {
 }
 
 func main() {
-  log.SetFlags(log.Ltime | log.Lmicroseconds | log.Lshortfile)
+  log.SetFlags(log.Ltime | log.Lmicroseconds)
 
   initDB()
 

@@ -49,7 +49,7 @@ type PersonaResponse struct{
 
 type server struct {
   baseDir string
-  tplRoot, tplHttpError, tplQuit, tplNewUser *tt.Template
+  tplHome, tplHttpError, tplQuit, tplNewUser *tt.Template
   res []string
   cfg *Config
   sessionStore *sessions.CookieStore
@@ -87,7 +87,7 @@ func newServer(cfgPath string) *server {
     log.Printf("Running in debug mode");
   }
 
-  srv.tplRoot = template("root.html")
+  srv.tplHome = template("home.html")
   srv.tplHttpError = template("httperror.html")
   srv.tplQuit = template("quit.html")
   srv.tplNewUser = template("newuser.html")
@@ -115,17 +115,16 @@ func getSessionStr(s *sessions.Session, name string) (string, bool) {
   return "", false
 }
 
-type UserCtx struct {
-  Email string
-}
-
-type RootCtx struct {
-  User *UserCtx
-}
-
-func (srv *server) root(
+func (srv *server) home(
     writer http.ResponseWriter, r *http.Request) {
-  var c RootCtx
+  type UserCtx struct {
+    Email string
+  }
+  type HomeCtx struct {
+    User *UserCtx
+  }
+
+  var c HomeCtx
   session := srv.getSession(r)
   if session != nil {
     email, found := getSessionStr(session, "email")
@@ -135,7 +134,7 @@ func (srv *server) root(
       c.User = &UserCtx{email}
     }
   }
-  srv.tplRoot.Execute(writer, &c)
+  srv.tplHome.Execute(writer, &c)
 }
 
 func (srv *server) quit(
@@ -151,10 +150,20 @@ func (srv *server) newuser(
     Email string
   }
 
-  if r.FormValue("Action") == "register" {
+  session := srv.getSession(r)
+  email, found := getSessionStr(session, "email")
+  if !found {
+    srv.error(writer, 500, "Missing email in /newuser")
+    return
+  }
+
+  if r.FormValue("email") == email {
     log.Printf("DBG registering... %v", r.FormValue("FirstName"))
+    dbNewUser(email,
+        r.FormValue("first_name"),
+        r.FormValue("last_name"))
   } else {
-    srv.tplNewUser.Execute(writer, &NewUserCtx{})
+    srv.tplNewUser.Execute(writer, &NewUserCtx{email})
   }
 }
 
@@ -192,22 +201,22 @@ func (srv *server) login(
 
   log.Printf("DBG %v", persona.Email)
 
+  // Put email in session in any case
+  session := srv.getSession(r)
+  session.Values["email"] = persona.Email
+  session.Save(r, writer)
+
   user := dbUserByEmail([]byte(persona.Email))
   if user == nil {
     status.Status = 1
     buf, _ := json.Marshal(&status)
     writer.Write(buf)
-    return
+  } else {
+    status.Status = 0
+    status.UserId = "demi"
+    buf, _ := json.Marshal(&status)
+    writer.Write(buf)
   }
-
-  session := srv.getSession(r)
-  session.Values["email"] = persona.Email
-  session.Save(r, writer)
-
-  status.Status = 0
-  status.UserId = "demi"
-  buf, _ := json.Marshal(&status)
-  writer.Write(buf)
 }
 
 func (srv *server) logout(
@@ -225,11 +234,6 @@ func (srv *server) logout(
   writer.Write(buf)
 }
 
-type HttpErrorCtx struct {
-  Code int
-  Message, Description string
-}
-
 var errorMsgMap = map[int]string {
     404: "Page Not Found",
     500: "Internal Server Error",
@@ -237,6 +241,11 @@ var errorMsgMap = map[int]string {
 
 func (srv *server) error(
     writer http.ResponseWriter, code int, description string) {
+  type HttpErrorCtx struct {
+    Code int
+    Message, Description string
+  }
+
   if code >= 500 {
     log.Printf("%v: %v", code, description)
   }
@@ -264,7 +273,7 @@ func (srv *server) ServeHTTP(
     writer http.ResponseWriter, r *http.Request) {
   path := r.URL.Path
   if path == "/" {
-    srv.root(writer, r)
+    srv.home(writer, r)
   } else if path == "/quit" {
     if srv.cfg.Debug {
       srv.quit(writer, r)

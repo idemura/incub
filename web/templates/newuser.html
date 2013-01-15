@@ -10,11 +10,11 @@
 <div class="basefont">
 Introduce to us
 <form action="/newuser" method=post>
-  <input type=hidden name="Action" value="register">
+  <input type=hidden name="email" value="{{.Email}}">
   <label for="FirstName">First Name</label>
-  <input type=text name="FirstName" id="FirstName"><br>
+  <input type=text name="first_name" id="first_name"><br>
   <label for="LastName">Last Name</label>
-  <input type=text name="LastName" id="LastName"><br>
+  <input type=text name="last_name" id="last_name"><br>
   <input type=submit value="Submit">
 </form>
 </div>

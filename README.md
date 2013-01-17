@@ -12,22 +12,21 @@ TapeColl open-source project.
 
 First, build LevelDB:
 
-  cd leveldb-1.7.0
-  make
+    cd leveldb-1.7.0
+    make
 
 Install levigo and compile with LevelDB:
 
-  ./get-levigo
+    ./get-levigo
 
 Other third party packages:
 
-  go get -u github.com/gorilla/sessions
+    go get -u github.com/gorilla/sessions
 
 ## Build
 
 Build project with script:
-  
-  ./build
+    ./build
 
 ## Contributors
 

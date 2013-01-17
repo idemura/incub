@@ -1,31 +1,40 @@
-#Overview
+# Overview
 
 TapeColl open-source project.
 
-##Requirements
+## Requirements
 
-- Go1.0+
-- github.com/gorilla/sessions
+- Go 1.0+
+- [Gorilla sessions](https://github.com/gorilla/sessions)
+- [Levigo](https://github.com/jmhodges/levigo)
 
-##Install
+## Init
 
-Third party packages:
+First, build LevelDB:
+
+  cd leveldb-1.7.0
+  make
+
+Install levigo and compile with LevelDB:
+
+  ./get-levigo
+
+Other third party packages:
+
   go get -u github.com/gorilla/sessions
 
-Build leveldb and get levigo:
-  From web/leveldb-1.7.0/ and run:
-    make
-  From web/ run:
-    ./get-levigo
+## Build
 
-Now you are ready to build:
+Build project with script:
+  
   ./build
 
-##Contributors
+## Contributors
 
 - Igor Demura
 
-##License
+## License
 
 Copyright (c) Igor Demura 2012
-Released under the GPL v3 license.
+
+GPL v3 license.

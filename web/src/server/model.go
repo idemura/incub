@@ -146,4 +146,5 @@ func dbUserByEmail(email []byte) *dbUser {
 
 func dbNewUser(email, firstName, lastName string) bool {
   // TODO
+  return false
 }

@@ -1,0 +1,2 @@
+#!/bin/sh
+mongod --dbpath=$HOME/mongo --logpath=$HOME/mongo/mongo.log --logappend

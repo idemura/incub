@@ -32,63 +32,46 @@
   $('#logout').click(function() {
     navigator.id.logout();
   });
-
-  navigator.id.watch({
-    loggedInUser: "{{js .User.Email}}",
-    onlogin: function(assertion) {
-    },
-    onlogout: function() {
-      $.ajax({
-        type: 'POST',
-        url: '/logout', // This is a URL on your website.
-        success: function(res, status, xhr) {
-          window.location.reload();
-        },
-        error: function(xhr, status, err) {
-          $("#AuthError").html("Connection problem");
-          $("#AuthError").show();
-        }
-      });
-    }
-  });
 {{else}}
   $('#login').click(function() {
-    console.log('in login handler');
     navigator.id.request();
   });
-
-  navigator.id.watch({
-    loggedInUser: null,
-    onlogin: function(assertion) {
-      $.ajax({
-        type: 'POST',
-        url: '/login', // This is a URL on your website.
-        data: {assertion: assertion},
-        success: function(res, status, xhr) {
-          var obj = parse(res);
-          switch (obj.Status) {
-          case 0:
-            // Logged in
-            break;
-          case 1:
-            window.location = "/newuser"
-            break;
-          default:
-            $("#AuthError").html("Error signing in");
-            $("#AuthError").show();
-            break;
-          }
-        },
-        error: function(xhr, status, err) {
-          $("#AuthError").html("Connection problem");
-          $("#AuthError").show();
-        }
-      });
-    },
-    onlogout: function() {
-    }
-  });
 {{end}}
+  navigator.id.watch({
+   loggedInUser: {{if .User}}"{{js .User.Email}}"{{else}}null{{end}},
+    onlogin: login,
+    onlogout: logout,
+  });
+
+  function login(assertion) {
+    $.ajax({
+      type: 'POST',
+      url: '/login',
+      data: {assertion: assertion},
+      success: function(res, status, xhr) {
+        var obj = parse(res);
+        switch (obj.Status) {
+        default:
+        case 0:
+          window.location.reload();
+          break;
+        case 1:
+          window.location = "/newuser";
+          break;
+        }
+      },
+    });
+  }
+
+  function logout() {
+    $.ajax({
+      type: 'POST',
+      url: '/logout', // This is a URL on your website.
+      success: function(res, status, xhr) {
+        window.location.reload();
+      }
+    });
+  }
 </script>
 </body>
 </html>

@@ -11,11 +11,15 @@
 Introduce to us
 <form action="/newuser" method=post>
   <input type=hidden name="email" value="{{.Email}}">
-  <label for="FirstName">First Name</label>
-  <input type=text name="first_name" id="first_name"><br>
-  <label for="LastName">Last Name</label>
-  <input type=text name="last_name" id="last_name"><br>
-  <input type=submit value="Submit">
+  <label for="firstName">First Name</label>
+  <input type=text name="firstName" id="firstName" tabindex=1><br>
+  <label for="lastName">Last Name</label>
+  <input type=text name="lastName" id="lastName" tabindex=2><br>
+  <label for="userName">User Name</label>
+  <input type=text name="userName" id="userName" tabindex=3><br>
+  <label for="password">Password</label>
+  <input type=password name="password" id="password" tabindex=4><br>
+  <input type=submit value="Submit" tabindex=5>
 </form>
 </div>
 </body>

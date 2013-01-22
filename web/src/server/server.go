@@ -17,12 +17,9 @@
 package main
 
 import (
-  // "bufio"
-  // "bytes"
-  // "io"
   "io/ioutil"
   "os"
-  // "fmt"
+  "io"
   "net/http"
   "net/url"
   "log"
@@ -32,6 +29,7 @@ import (
   "encoding/json"
   // cs "strings"
   "github.com/gorilla/sessions"
+  "data"
 )
 
 type Config struct {
@@ -49,14 +47,10 @@ type PersonaResponse struct{
 
 type server struct {
   baseDir string
-  tplHome, tplHttpError, tplQuit, tplNewUser *tt.Template
+  templates map[string]*tt.Template
   res []string
   cfg *Config
   sessionStore *sessions.CookieStore
-}
-
-func template(name string) *tt.Template {
-  return tt.Must(tt.ParseFiles(fp.Join("templates", name)))
 }
 
 func newConfig() *Config {
@@ -87,12 +81,13 @@ func newServer(cfgPath string) *server {
     log.Printf("Running in debug mode");
   }
 
-  srv.tplHome = template("home.html")
-  srv.tplHttpError = template("httperror.html")
-  srv.tplQuit = template("quit.html")
-  srv.tplNewUser = template("newuser.html")
+  fs, _ := fp.Glob("templates/*.html")
+  srv.templates = make(map[string]*tt.Template)
+  for _, f := range fs {
+    srv.templates[fp.Base(f)] = tt.Must(tt.ParseFiles(f))
+  }
 
-  srv.sessionStore = sessions.NewCookieStore([]byte("tapecoll-xMjgtU1v67c0"))
+  srv.sessionStore = sessions.NewCookieStore([]byte("xMjgtU1v67c0"))
 
   fp.Walk("res",
     func (path string, fi os.FileInfo, e error) error {
@@ -102,7 +97,6 @@ func newServer(cfgPath string) *server {
       return nil
     })
   sort.Strings(srv.res)
-  // log.Printf("DBG %v", srv.res)
 
   return srv
 }
@@ -115,6 +109,13 @@ func getSessionStr(s *sessions.Session, name string) (string, bool) {
   return "", false
 }
 
+func (srv *server) html(wr io.Writer,
+    file string, ctx interface{}) {
+  if t, e := srv.templates[file]; e {
+    t.Execute(wr, ctx)
+  }
+}
+
 func (srv *server) home(
     writer http.ResponseWriter, r *http.Request) {
   type UserCtx struct {
@@ -124,23 +125,26 @@ func (srv *server) home(
     User *UserCtx
   }
 
-  var c HomeCtx
+  var ctx HomeCtx
   session := srv.getSession(r)
   if session != nil {
     email, found := getSessionStr(session, "email")
     if (found) {
       // Check user email in my base
-      log.Printf("DBG I have user")
-      c.User = &UserCtx{email}
+      datactx := data.NewDataCtx()
+      user := datactx.UserByEmail(email)
+      if user != nil {
+        ctx.User = &UserCtx{user.Email}        
+      }
     }
   }
-  srv.tplHome.Execute(writer, &c)
+  srv.html(writer, "home.html", &ctx)
 }
 
 func (srv *server) quit(
     writer http.ResponseWriter, r *http.Request) {
-  deinitDB()
-  log.Printf("Quit server")
+  log.Printf("Exiting server")
+  data.Uninit()
   os.Exit(0)
 }
 
@@ -157,13 +161,27 @@ func (srv *server) newuser(
     return
   }
 
+  datactx := data.NewDataCtx()
   if r.FormValue("email") == email {
-    log.Printf("DBG registering... %v", r.FormValue("FirstName"))
-    dbNewUser(email,
-        r.FormValue("first_name"),
-        r.FormValue("last_name"))
+    user := data.User{
+        FirstName: r.FormValue("firstName"),
+        LastName: r.FormValue("lastName"),
+        UserName: r.FormValue("userName"),
+        Email: r.FormValue("email"),
+        Password: r.FormValue("password"),
+      }
+
+    type HtmlCtx struct {
+      User *data.User
+    }
+
+    var ctx HtmlCtx
+    if datactx.NewUser(&user) {
+      ctx.User = &user
+    }
+    srv.html(writer, "user-registered.html", &ctx)
   } else {
-    srv.tplNewUser.Execute(writer, &NewUserCtx{email})
+    srv.html(writer, "newuser.html", &NewUserCtx{email})
   }
 }
 
@@ -199,14 +217,13 @@ func (srv *server) login(
     return
   }
 
-  log.Printf("DBG %v", persona.Email)
-
   // Put email in session in any case
   session := srv.getSession(r)
   session.Values["email"] = persona.Email
   session.Save(r, writer)
 
-  user := dbUserByEmail([]byte(persona.Email))
+  datactx := data.NewDataCtx()
+  user := datactx.UserByEmail(persona.Email)
   if user == nil {
     status.Status = 1
     buf, _ := json.Marshal(&status)
@@ -254,8 +271,9 @@ func (srv *server) error(
   if !found {
     message = "Unknown"
   }
-  srv.tplHttpError.Execute(writer, &HttpErrorCtx{code, message,
-      description})
+
+  srv.html(writer, "httperror.html",
+      &HttpErrorCtx{code, message, description})
 }
 
 func (srv *server) getStatic(path string) string {
@@ -305,7 +323,10 @@ func (srv *server) getSession(r *http.Request) *sessions.Session {
 func main() {
   log.SetFlags(log.Ltime | log.Lmicroseconds)
 
-  initDB()
+  if !data.Init("localhost") {
+    data.Uninit()
+    return
+  }
 
   srv := newServer("config.json")
   srv.run()

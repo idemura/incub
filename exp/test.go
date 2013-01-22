@@ -7,6 +7,8 @@ import (
   "net/http"
   "io/ioutil"
   tt "html/template"
+  "labix.org/v2/mgo"
+  "labix.org/v2/mgo/bson"
 )
 
 func TestPath() {
@@ -65,7 +67,53 @@ func testTemplate() {
   t.Execute(os.Stdout, &TplCtx{"null"})
 }
 
+type User struct {
+  Name string
+  EmailAddr string "Email"
+}
+
+func testMarshal() {
+  email := "idemura@mail.ru"
+  user := User{"Igor", email}
+  bs, e := bson.Marshal(&user)
+  if e != nil {
+    fmt.Printf("ERROR: %v\n", e.Error())
+    return
+  }
+  fmt.Printf("SUCCESS:\n")
+  fmt.Printf("  %v\n", len(bs))
+  fmt.Printf("  %v\n", string(bs))
+}
+
+func testMongoDB() {
+  email := "idemura@mail.ru"
+  user := User{"Igor", email}
+
+  session, e := mgo.Dial("localhost")
+  if e != nil {
+    fmt.Printf("ERROR: Dial %v\n", e.Error())
+    return
+  }
+  defer session.Close()
+  db := session.DB("mytest")
+  coll := db.C("User")
+  e = coll.Insert(&user)
+  if e != nil {
+    fmt.Printf("ERROR: Insert %v\n")
+    return
+  }
+  var userOut User
+  e = coll.Find(bson.M{"Email": email}).One(&userOut)
+  if e != nil {
+    fmt.Printf("ERROR: Find %v\n", e.Error())
+    return
+  }
+  fmt.Printf("SUCCESS: %v\n", userOut)
+}
+
 func main() {
+  // testMarshal()
+  testMongoDB()
   // TestUrlGet()
-  testTemplate()
+  // testTemplate()
 }

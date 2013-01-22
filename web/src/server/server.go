@@ -148,41 +148,50 @@ func (srv *server) quit(
   os.Exit(0)
 }
 
-func (srv *server) newuser(
+func (srv *server) newUserForm(
     writer http.ResponseWriter, r *http.Request) {
-  type NewUserCtx struct {
+  type Context struct {
     Email string
   }
 
   session := srv.getSession(r)
   email, found := getSessionStr(session, "email")
   if !found {
-    srv.error(writer, 500, "Missing email in /newuser")
+    srv.error(writer, 500, "Missing email session var in /newuserform")
     return
   }
 
-  datactx := data.NewDataCtx()
-  if r.FormValue("email") == email {
-    user := data.User{
-        FirstName: r.FormValue("firstName"),
-        LastName: r.FormValue("lastName"),
-        UserName: r.FormValue("userName"),
-        Email: r.FormValue("email"),
-        Password: r.FormValue("password"),
-      }
+  var ctx = Context{email}
+  srv.html(writer, "newuserform.html", &ctx)
+}
 
-    type HtmlCtx struct {
-      User *data.User
-    }
-
-    var ctx HtmlCtx
-    if datactx.NewUser(&user) {
-      ctx.User = &user
-    }
-    srv.html(writer, "user-registered.html", &ctx)
-  } else {
-    srv.html(writer, "newuser.html", &NewUserCtx{email})
+func (srv *server) newUser(
+    writer http.ResponseWriter, r *http.Request) {
+  session := srv.getSession(r)
+  email, found := getSessionStr(session, "email")
+  if !found {
+    srv.error(writer, 500, "Missing email session var in /newuser")
+    return
   }
+
+  user := data.User{
+    FirstName: r.FormValue("firstName"),
+    LastName: r.FormValue("lastName"),
+    UserName: r.FormValue("userName"),
+    Email: email,
+    Password: r.FormValue("password"),
+  }
+
+  type Context struct {
+    User *data.User
+  }
+
+  var ctx Context
+  datactx := data.NewDataCtx()
+  if datactx.NewUser(&user) {
+    ctx.User = &user
+  }
+  srv.html(writer, "newuser.html", &ctx)
 }
 
 func (srv *server) login(
@@ -258,7 +267,7 @@ var errorMsgMap = map[int]string {
 
 func (srv *server) error(
     writer http.ResponseWriter, code int, description string) {
-  type HttpErrorCtx struct {
+  type Context struct {
     Code int
     Message, Description string
   }
@@ -273,7 +282,7 @@ func (srv *server) error(
   }
 
   srv.html(writer, "httperror.html",
-      &HttpErrorCtx{code, message, description})
+      &Context{code, message, description})
 }
 
 func (srv *server) getStatic(path string) string {
@@ -300,8 +309,10 @@ func (srv *server) ServeHTTP(
     srv.login(writer, r)
   } else if path == "/logout" {
     srv.logout(writer, r)
+  } else if path == "/newuserform" {
+    srv.newUserForm(writer, r)
   } else if path == "/newuser" {
-    srv.newuser(writer, r)
+    srv.newUser(writer, r)
   } else if f := srv.getStatic(path); len(f) != 0 {
     http.ServeFile(writer, r, f)
   } else {
@@ -325,6 +336,12 @@ func main() {
 
   if !data.Init("localhost") {
     data.Uninit()
+    return
+  }
+
+  if len(os.Args) > 1 && os.Args[1] == "--dbinit" {
+    log.Printf("DB init")
+    log.Printf("DB init DONE")
     return
   }
 

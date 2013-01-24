@@ -37,21 +37,64 @@ type DataCtx struct {
 
 var dbs *mgo.Session
 
-func Init(url string) bool {
+func Open(url string) bool {
   s, e := mgo.Dial(url)
   if e != nil {
-    log.Printf("DB ERROR: %v", e.Error())
+    log.Printf("DB ERROR: %v", e)
     return false
   }
   dbs = s
   return true
 }
 
-func Uninit() {
+func Close() {
   if dbs != nil {
     dbs.Close()
     dbs = nil
   }
+}
+
+func Init(url string) {
+  if !Open(url) {
+    return
+  }
+
+  defer Close()
+
+  ctx := NewDataCtx()
+  ctx.user.DropCollection()
+  ctx.user.EnsureIndex(mgo.Index{
+    Key: []string{"FirstName"},
+    Background: false,
+    Sparse: true,
+  })
+  ctx.user.EnsureIndex(mgo.Index{
+    Key: []string{"LastName"},
+    Background: false,
+    Sparse: true,
+  })
+  ctx.user.EnsureIndex(mgo.Index{
+    Key: []string{"UserName"},
+    Background: false,
+    Unique: true,
+    DropDups: true,
+    Sparse: true,
+  })
+  ctx.user.EnsureIndex(mgo.Index{
+    Key: []string{"Email"},
+    Background: false,
+    Unique: true,
+    DropDups: true,
+    Sparse: true,
+  })
+  ctx.NewUser(&User{
+    "Igor", "Demura",
+    "demi",
+    "idemura@yandex.ru",
+    "sv32x",
+  })
+
+  log.Printf("DB init done")
 }
 
 func NewDataCtx() *DataCtx {

@@ -11,7 +11,7 @@
 <div class="basefont">
 {{if .User}}
 <p class="auth">
-  Hi, you are logged in! Your email is {{.User.Email}}.
+  Hi {{.User.UserName}}, you are logged in! Your email is {{.User.Email}}.
   <a href="#" id="logout">Logout</a>
 </p>
 {{else}}

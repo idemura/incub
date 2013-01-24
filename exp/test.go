@@ -77,7 +77,7 @@ func testMarshal() {
   user := User{"Igor", email}
   bs, e := bson.Marshal(&user)
   if e != nil {
-    fmt.Printf("ERROR: %v\n", e.Error())
+    fmt.Printf("ERROR: %v\n", e)
     return
   }
   fmt.Printf("SUCCESS:\n")
@@ -91,7 +91,7 @@ func testMongoDB() {
 
   session, e := mgo.Dial("localhost")
   if e != nil {
-    fmt.Printf("ERROR: Dial %v\n", e.Error())
+    fmt.Printf("ERROR: Dial %v\n", e)
     return
   }
   defer session.Close()
@@ -105,7 +105,7 @@ func testMongoDB() {
   var userOut User
   e = coll.Find(bson.M{"Email": email}).One(&userOut)
   if e != nil {
-    fmt.Printf("ERROR: Find %v\n", e.Error())
+    fmt.Printf("ERROR: Find %v\n", e)
     return
   }
   fmt.Printf("SUCCESS: %v\n", userOut)

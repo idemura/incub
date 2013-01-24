@@ -35,6 +35,7 @@ import (
 type Config struct {
   Address string "address"
   Debug bool "debug"
+  DbUrl string "dburl"
 }
 
 type PersonaResponse struct{
@@ -47,44 +48,48 @@ type PersonaResponse struct{
 
 type server struct {
   baseDir string
+  address string
   templates map[string]*tt.Template
   res []string
-  cfg *Config
   sessionStore *sessions.CookieStore
 }
 
-func newConfig() *Config {
-  return &Config{
+var config = Config{
     Address: "localhost:8080",
     Debug: false,
+    DbUrl: "localhost",
+  }
+
+func (cfg *Config) read(fileName string) {
+  f, e := os.Open(fileName)
+  if e != nil {
+    log.Printf("ERROR open config: %v", e)
+    return
+  }
+
+  defer f.Close()
+  
+  if e := json.NewDecoder(f).Decode(cfg); e != nil {
+    log.Printf("ERROR JSON decode: %v", e)
   }
 }
 
-func newServer(cfgPath string) *server {
+func newServer(address string) *server {
   srv := new(server)
+  srv.address = address
 
   srv.baseDir, _ = os.Getwd()
   log.Printf("Base path: %s\n", srv.baseDir)
 
-  srv.cfg = newConfig()
-  if len(cfgPath) > 0 {
-    if f, e := os.Open(cfgPath); e == nil {
-      if e := json.NewDecoder(f).Decode(srv.cfg); e != nil {
-        log.Printf("ERROR JSON parse: %v", e)
-      }
-      f.Close()
-    } else {
-      log.Printf("ERROR open config: %v", e)
-    }
-  }
-  if srv.cfg.Debug {
-    log.Printf("Running in debug mode");
-  }
-
   fs, _ := fp.Glob("templates/*.html")
   srv.templates = make(map[string]*tt.Template)
   for _, f := range fs {
-    srv.templates[fp.Base(f)] = tt.Must(tt.ParseFiles(f))
+    t, e := tt.ParseFiles(f)
+    if e != nil {
+      log.Printf("ERROR in template %v: %v", f, e)
+    } else {
+      srv.templates[fp.Base(f)] = t
+    }
   }
 
   srv.sessionStore = sessions.NewCookieStore([]byte("xMjgtU1v67c0"))
@@ -118,14 +123,11 @@ func (srv *server) html(wr io.Writer,
 
 func (srv *server) home(
     writer http.ResponseWriter, r *http.Request) {
-  type UserCtx struct {
-    Email string
-  }
-  type HomeCtx struct {
-    User *UserCtx
+  type Context struct {
+    User *data.User
   }
 
-  var ctx HomeCtx
+  var ctx Context
   session := srv.getSession(r)
   if session != nil {
     email, found := getSessionStr(session, "email")
@@ -134,7 +136,7 @@ func (srv *server) home(
       datactx := data.NewDataCtx()
       user := datactx.UserByEmail(email)
       if user != nil {
-        ctx.User = &UserCtx{user.Email}        
+        ctx.User = user        
       }
     }
   }
@@ -144,7 +146,7 @@ func (srv *server) home(
 func (srv *server) quit(
     writer http.ResponseWriter, r *http.Request) {
   log.Printf("Exiting server")
-  data.Uninit()
+  data.Close()
   os.Exit(0)
 }
 
@@ -206,7 +208,7 @@ func (srv *server) login(
   resp, e := http.PostForm("https://verifier.login.persona.org/verify",
     url.Values{
       "assertion": {r.FormValue("assertion")},
-      "audience": {srv.cfg.Address},
+      "audience": {srv.address},
     })
   if e != nil {
     status.Status = 3
@@ -281,8 +283,8 @@ func (srv *server) error(
     message = "Unknown"
   }
 
-  srv.html(writer, "httperror.html",
-      &Context{code, message, description})
+  ctx := Context{code, message, description}
+  srv.html(writer, "httperror.html", &ctx)
 }
 
 func (srv *server) getStatic(path string) string {
@@ -302,7 +304,7 @@ func (srv *server) ServeHTTP(
   if path == "/" {
     srv.home(writer, r)
   } else if path == "/quit" {
-    if srv.cfg.Debug {
+    if config.Debug {
       srv.quit(writer, r)
     }
   } else if path == "/login" {
@@ -322,8 +324,8 @@ func (srv *server) ServeHTTP(
 }
 
 func (srv *server) run() {
-  log.Printf("Server address: %s\n", srv.cfg.Address)
-  http.ListenAndServe(srv.cfg.Address, srv)
+  log.Printf("Server address: %s\n", srv.address)
+  http.ListenAndServe(srv.address, srv)
 }
 
 func (srv *server) getSession(r *http.Request) *sessions.Session {
@@ -333,18 +335,22 @@ func (srv *server) getSession(r *http.Request) *sessions.Session {
 
 func main() {
   log.SetFlags(log.Ltime | log.Lmicroseconds)
-
-  if !data.Init("localhost") {
-    data.Uninit()
-    return
+  
+  config.read("config.json")
+  if config.Debug {
+    log.Printf("DEBUG mode")
   }
 
   if len(os.Args) > 1 && os.Args[1] == "--dbinit" {
-    log.Printf("DB init")
-    log.Printf("DB init DONE")
+    data.Init(config.DbUrl)
     return
   }
 
-  srv := newServer("config.json")
+  if !data.Open(config.DbUrl) {
+    data.Close()
+    return
+  }
+
+  srv := newServer(config.Address)
   srv.run()
 }

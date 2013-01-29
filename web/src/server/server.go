@@ -134,7 +134,7 @@ func (srv *server) home(
     if (found) {
       // Check user email in my base
       datactx := data.NewDataCtx()
-      user := datactx.UserByEmail(email)
+      user := datactx.UserFromEmail(email)
       if user != nil {
         ctx.User = user        
       }
@@ -200,7 +200,6 @@ func (srv *server) login(
     writer http.ResponseWriter, r *http.Request) {
   type Response struct {
     Status int
-    UserId string
   }
 
   var status Response
@@ -234,14 +233,16 @@ func (srv *server) login(
   session.Save(r, writer)
 
   datactx := data.NewDataCtx()
-  user := datactx.UserByEmail(persona.Email)
+  user := datactx.UserFromEmail(persona.Email)
   if user == nil {
+    // Register email, until UserName set this record invalid.
+    user := data.User{Email: persona.Email}
+    datactx.NewUser(&user)
     status.Status = 1
     buf, _ := json.Marshal(&status)
     writer.Write(buf)
   } else {
     status.Status = 0
-    status.UserId = "demi"
     buf, _ := json.Marshal(&status)
     writer.Write(buf)
   }

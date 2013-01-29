@@ -23,6 +23,7 @@ import (
 )
 
 type User struct {
+  Id []byte "_id"
   FirstName string "FirstName"
   LastName string "LastName"
   UserName string "UserName"
@@ -88,6 +89,7 @@ func Init(url string) {
     Sparse: true,
   })
   ctx.NewUser(&User{
+    nil,
     "Igor", "Demura",
     "demi",
     "idemura@yandex.ru",
@@ -108,7 +110,7 @@ func NewDataCtx() *DataCtx {
     }
 }
 
-func (ctx *DataCtx) UserByEmail(email string) *User {
+func (ctx *DataCtx) UserFromEmail(email string) *User {
   var user User
   e := ctx.user.Find(bson.M{"Email": email}).One(&user)
   if e != nil {
@@ -119,8 +121,5 @@ func (ctx *DataCtx) UserByEmail(email string) *User {
 
 func (ctx *DataCtx) NewUser(user *User) bool {
   e := ctx.user.Insert(user)
-  if e != nil {
-    return false
-  }
-  return true
+  return e != nil
 }

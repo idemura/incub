@@ -23,6 +23,7 @@ import (
   "net/http"
   "net/url"
   "log"
+  "errors"
   fp "path/filepath"
   tt "text/template"
   "sort"
@@ -167,6 +168,29 @@ func (srv *server) newUserForm(
   srv.html(writer, "newuserform.html", &ctx)
 }
 
+func checkUserForm(email string, r *http.Request) (*data.User, error) {
+  user := data.User{
+    FirstName: r.FormValue("firstName"),
+    LastName: r.FormValue("lastName"),
+    UserName: r.FormValue("userName"),
+    Email: email,
+    Password: r.FormValue("password"),
+  }
+  if len(user.FirstName) > 24 {
+    return nil, errors.New("First name too long")
+  }
+  if len(user.LastName) > 24 {
+    return nil, errors.New("Last name too long")
+  }
+  if len(user.UserName) > 24 {
+    return nil, errors.New("User name too long")
+  }
+  if len(user.Password) > 24 {
+    return nil, errors.New("Password too long")
+  }
+  return &user, nil
+}
+
 func (srv *server) newUser(
     writer http.ResponseWriter, r *http.Request) {
   session := srv.getSession(r)
@@ -176,13 +200,7 @@ func (srv *server) newUser(
     return
   }
 
-  user := data.User{
-    FirstName: r.FormValue("firstName"),
-    LastName: r.FormValue("lastName"),
-    UserName: r.FormValue("userName"),
-    Email: email,
-    Password: r.FormValue("password"),
-  }
+  user, _ := checkUserForm(email, r)
 
   type Context struct {
     User *data.User
@@ -190,8 +208,8 @@ func (srv *server) newUser(
 
   var ctx Context
   datactx := data.NewDataCtx()
-  if datactx.NewUser(&user) {
-    ctx.User = &user
+  if datactx.NewUser(user) {
+    ctx.User = user
   }
   srv.html(writer, "newuser.html", &ctx)
 }

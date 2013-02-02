@@ -23,7 +23,7 @@ import (
 )
 
 type User struct {
-  Id []byte "_id"
+  Id bson.ObjectId "_id"
   FirstName string "FirstName"
   LastName string "LastName"
   UserName string "UserName"
@@ -31,9 +31,17 @@ type User struct {
   Password string "Password"
 }
 
+type Post struct {
+  Id bson.ObjectId "_id"
+  OwnerId bson.ObjectId "OwnerId"
+  Text string "Text"
+  Date string "Date"
+}
+
 type DataCtx struct {
   db *mgo.Database
-  user *mgo.Collection
+  users *mgo.Collection
+  posts *mgo.Collection
 }
 
 var dbs *mgo.Session
@@ -55,50 +63,6 @@ func Close() {
   }
 }
 
-func Init(url string) {
-  if !Open(url) {
-    return
-  }
-
-  defer Close()
-
-  ctx := NewDataCtx()
-  ctx.user.DropCollection()
-  ctx.user.EnsureIndex(mgo.Index{
-    Key: []string{"FirstName"},
-    Background: false,
-    Sparse: true,
-  })
-  ctx.user.EnsureIndex(mgo.Index{
-    Key: []string{"LastName"},
-    Background: false,
-    Sparse: true,
-  })
-  ctx.user.EnsureIndex(mgo.Index{
-    Key: []string{"UserName"},
-    Background: false,
-    Unique: true,
-    DropDups: true,
-    Sparse: true,
-  })
-  ctx.user.EnsureIndex(mgo.Index{
-    Key: []string{"Email"},
-    Background: false,
-    Unique: true,
-    DropDups: true,
-    Sparse: true,
-  })
-  ctx.NewUser(&User{
-    nil,
-    "Igor", "Demura",
-    "demi",
-    "idemura@yandex.ru",
-    "sv32x",
-  })
-
-  log.Printf("DB init done")
-}
-
 func NewDataCtx() *DataCtx {
   if dbs == nil {
     return nil
@@ -106,20 +70,29 @@ func NewDataCtx() *DataCtx {
   db := dbs.DB("tapecoll")
   return &DataCtx{
       db,
-      db.C("User"),
+      db.C("Users"),
+      db.C("Posts"),
     }
 }
 
 func (ctx *DataCtx) UserFromEmail(email string) *User {
   var user User
-  e := ctx.user.Find(bson.M{"Email": email}).One(&user)
+  e := ctx.users.Find(bson.M{"Email": email}).One(&user)
   if e != nil {
+    log.Printf("DB ERROR find: %v", e)
     return nil
   }
   return &user
 }
 
 func (ctx *DataCtx) NewUser(user *User) bool {
-  e := ctx.user.Insert(user)
+  e := ctx.users.Insert(user)
+  if e != nil {
+    log.Printf("DB ERROR insert: %v", e)
+  }
   return e != nil
+}
+
+func (ctx *DataCtx) NewPost(user *User) bool {
+  return false
 }

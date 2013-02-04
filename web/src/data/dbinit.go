@@ -55,18 +55,39 @@ func Init(url string) {
     DropDups: true,
     Sparse: true,
   })
-  ctx.NewUser(&User{
+
+  demi := &User{
     bson.NewObjectId(),
     "Igor", "Demura",
     "demi",
     "idemura@yandex.ru",
     "sv32x",
+  }
+  ctx.NewUser(demi)
+
+  if ctx.UserFromEmail("idemura@yandex.ru") == nil {
+    log.Printf("DB ERROR: Can't find user demi")
+    return
+  }
+
+  ctx.posts.EnsureIndex(mgo.Index{
+    Key: []string{"OwnerId"},
+    Background: false,
+    Sparse: true,
+  })
+  ctx.posts.EnsureIndex(mgo.Index{
+    Key: []string{"Time"},
+    Background: false,
+    Sparse: true,
   })
 
-  demi := ctx.UserFromEmail("idemura@yandex.ru")
-  if demi == nil {
-    log.Printf("DB ERROR: Can't find user demi")
+  post := &Post{
+    bson.NewObjectId(),
+    demi.Id,
+    bson.Now(),
+    "Hello world",
   }
+  ctx.NewPost(post)
   
   log.Printf("DB init done")
 }

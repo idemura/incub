@@ -123,12 +123,20 @@ func (srv *server) html(wr io.Writer,
 }
 
 func (srv *server) home(
-    writer http.ResponseWriter, r *http.Request) {
+    writer http.ResponseWriter, r *http.Request,
+    user *data.User) {
   type Context struct {
     User *data.User
   }
+  
+  var ctx = Context{
+    User: user,
+  }
+  srv.html(writer, "home.html", &ctx)
+}
 
-  var ctx Context
+func (srv *server) root(
+    writer http.ResponseWriter, r *http.Request) {
   session := srv.getSession(r)
   if session != nil {
     email, found := getSessionStr(session, "email")
@@ -137,11 +145,12 @@ func (srv *server) home(
       datactx := data.NewDataCtx()
       user := datactx.UserFromEmail(email)
       if user != nil {
-        ctx.User = user        
+        srv.home(writer, r, user)
+        return
       }
     }
   }
-  srv.html(writer, "home.html", &ctx)
+  srv.html(writer, "unathorized.html", nil)
 }
 
 func (srv *server) quit(
@@ -185,7 +194,7 @@ func checkUserForm(email string, r *http.Request) (*data.User, error) {
   if len(user.UserName) > 24 {
     return nil, errors.New("User name too long")
   }
-  if len(user.Password) > 24 {
+  if len(user.Password) > 12 {
     return nil, errors.New("Password too long")
   }
   return &user, nil
@@ -208,7 +217,7 @@ func (srv *server) newUser(
 
   var ctx Context
   datactx := data.NewDataCtx()
-  if datactx.NewUser(user) {
+  if datactx.NewUser(user) == nil {
     ctx.User = user
   }
   srv.html(writer, "newuser.html", &ctx)
@@ -321,7 +330,7 @@ func (srv *server) ServeHTTP(
     writer http.ResponseWriter, r *http.Request) {
   path := r.URL.Path
   if path == "/" {
-    srv.home(writer, r)
+    srv.root(writer, r)
   } else if path == "/quit" {
     if config.Debug {
       srv.quit(writer, r)

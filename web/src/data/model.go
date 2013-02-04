@@ -18,6 +18,7 @@ package data
 
 import (
   "log"
+  "time"
   "labix.org/v2/mgo"
   "labix.org/v2/mgo/bson"
 )
@@ -34,8 +35,8 @@ type User struct {
 type Post struct {
   Id bson.ObjectId "_id"
   OwnerId bson.ObjectId "OwnerId"
+  Time time.Time "Time"
   Text string "Text"
-  Date string "Date"
 }
 
 type DataCtx struct {
@@ -85,14 +86,18 @@ func (ctx *DataCtx) UserFromEmail(email string) *User {
   return &user
 }
 
-func (ctx *DataCtx) NewUser(user *User) bool {
+func (ctx *DataCtx) NewUser(user *User) error {
   e := ctx.users.Insert(user)
   if e != nil {
-    log.Printf("DB ERROR insert: %v", e)
+    log.Printf("DB ERROR NewUser: %v", e)
   }
-  return e != nil
+  return e
 }
 
-func (ctx *DataCtx) NewPost(user *User) bool {
-  return false
+func (ctx *DataCtx) NewPost(post *Post) error {
+  e := ctx.posts.Insert(post)
+  if e != nil {
+    log.Printf("DB ERROR NewPost: %v", e)
+  }
+  return e
 }

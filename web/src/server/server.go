@@ -115,10 +115,12 @@ func getSessionStr(s *sessions.Session, name string) (string, bool) {
   return "", false
 }
 
-func (srv *server) html(wr io.Writer,
+func (srv *server) html(writer io.Writer,
     file string, ctx interface{}) {
-  if t, e := srv.templates[file]; e {
-    t.Execute(wr, ctx)
+  if t, found := srv.templates[file]; found {
+    t.Execute(writer, ctx)
+  } else {
+    log.Printf("ERROR: Template %v not found", file)
   }
 }
 
@@ -150,7 +152,7 @@ func (srv *server) root(
       }
     }
   }
-  srv.html(writer, "unathorized.html", nil)
+  srv.html(writer, "unauthorized.html", nil)
 }
 
 func (srv *server) quit(

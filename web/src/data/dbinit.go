@@ -81,13 +81,13 @@ func Init(url string) {
     Sparse: true,
   })
 
-  post := &Post{
-    bson.NewObjectId(),
-    demi.Id,
-    bson.Now(),
-    "Hello world",
-  }
-  ctx.NewPost(post)
+  // post := &Post{
+  //   bson.NewObjectId(),
+  //   demi.id,
+  //   bson.Now(),
+  //   "Hello world",
+  // }
+  // ctx.NewPost(post)
   
   log.Printf("DB init done")
 }

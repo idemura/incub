@@ -1,2 +1,2 @@
 #!/bin/sh
-mongod --dbpath=$HOME/mongo --logpath=$HOME/mongo/mongo.log --logappend
+mongod --fork --dbpath=$HOME/mongo --logpath=$HOME/mongo/mongo.log --logappend

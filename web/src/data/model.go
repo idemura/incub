@@ -24,7 +24,7 @@ import (
 )
 
 type User struct {
-  Id bson.ObjectId "_id"
+  id bson.ObjectId "_id"
   FirstName string "FirstName"
   LastName string "LastName"
   UserName string "UserName"
@@ -32,9 +32,31 @@ type User struct {
   Password string "Password"
 }
 
+func (obj *User) marshal() bson.M {
+  return bson.M{
+    "_id": obj.id,
+    "FirstName": obj.FirstName,
+    "LastName": obj.LastName,
+    "UserName": obj.UserName,
+    "Email": obj.Email,
+    "Password": obj.Password,
+  }
+}
+
+func unmarshalUser(kval bson.M) *User {
+  return &User{
+    id: kval["_id"].(bson.ObjectId),
+    FirstName: kval["FirstName"].(string),
+    LastName: kval["LastName"].(string),
+    UserName: kval["UserName"].(string),
+    Email: kval["Email"].(string),
+    Password: kval["Password"].(string),
+  }
+}
+
 type Post struct {
-  Id bson.ObjectId "_id"
-  OwnerId bson.ObjectId "OwnerId"
+  id bson.ObjectId "_id"
+  ownerId bson.ObjectId "OwnerId"
   Time time.Time "Time"
   Text string "Text"
 }
@@ -70,31 +92,32 @@ func NewDataCtx() *DataCtx {
   }
   db := dbs.DB("tapecoll")
   return &DataCtx{
-      db,
-      db.C("Users"),
-      db.C("Posts"),
-    }
+    db,
+    db.C("Users"),
+    db.C("Posts"),
+  }
 }
 
 func (ctx *DataCtx) UserFromEmail(email string) *User {
-  var user User
-  e := ctx.users.Find(bson.M{"Email": email}).One(&user)
+  var proto bson.M
+  e := ctx.users.Find(bson.M{"Email": email}).One(&proto)
   if e != nil {
     log.Printf("DB ERROR find: %v", e)
     return nil
   }
-  return &user
+  return unmarshalUser(proto)
 }
 
 func (ctx *DataCtx) NewUser(user *User) error {
-  e := ctx.users.Insert(user)
+  e := ctx.users.Insert(user.marshal())
   if e != nil {
     log.Printf("DB ERROR NewUser: %v", e)
   }
   return e
 }
 
-func (ctx *DataCtx) NewPost(post *Post) error {
+func (ctx *DataCtx) NewPost(user *User, post *Post) error {
+  return nil
   e := ctx.posts.Insert(post)
   if e != nil {
     log.Printf("DB ERROR NewPost: %v", e)

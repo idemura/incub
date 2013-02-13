@@ -1,4 +1,4 @@
-function parse(res) {
+function parseJSON(res) {
   return JSON && JSON.parse(res) || $.parseJSON(res)
 }
 
@@ -9,7 +9,7 @@ function watchAuth(email) {
       url: '/login',
       data: {assertion: assertion},
       success: function(res, status, xhr) {
-        var obj = parse(res);
+        var obj = parseJSON(res);
         switch (obj.Status) {
         default:
         case 0:

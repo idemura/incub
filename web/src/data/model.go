@@ -24,12 +24,12 @@ import (
 )
 
 type User struct {
-  id bson.ObjectId "_id"
-  FirstName string "FirstName"
-  LastName string "LastName"
-  UserName string "UserName"
-  Email string "Email"
-  Password string "Password"
+  id bson.ObjectId
+  FirstName string
+  LastName string
+  UserName string
+  Email string
+  Password string
 }
 
 func (obj *User) marshal() bson.M {
@@ -43,22 +43,20 @@ func (obj *User) marshal() bson.M {
   }
 }
 
-func unmarshalUser(kval bson.M) *User {
-  return &User{
-    id: kval["_id"].(bson.ObjectId),
-    FirstName: kval["FirstName"].(string),
-    LastName: kval["LastName"].(string),
-    UserName: kval["UserName"].(string),
-    Email: kval["Email"].(string),
-    Password: kval["Password"].(string),
-  }
+type Post struct {
+  id bson.ObjectId
+  owner *User
+  Time time.Time
+  Text string
 }
 
-type Post struct {
-  id bson.ObjectId "_id"
-  ownerId bson.ObjectId "OwnerId"
-  Time time.Time "Time"
-  Text string "Text"
+func (obj *Post) marshal() bson.M {
+  return bson.M{
+    "_id": obj.id,
+    "OwnerId": obj.id,
+    "Time": obj.Time,
+    "Text": obj.Text,
+  }
 }
 
 type DataCtx struct {
@@ -105,7 +103,14 @@ func (ctx *DataCtx) UserFromEmail(email string) *User {
     log.Printf("DB ERROR find: %v", e)
     return nil
   }
-  return unmarshalUser(proto)
+  return &User{
+    id: proto["_id"].(bson.ObjectId),
+    FirstName: proto["FirstName"].(string),
+    LastName: proto["LastName"].(string),
+    UserName: proto["UserName"].(string),
+    Email: proto["Email"].(string),
+    Password: proto["Password"].(string),
+  }
 }
 
 func (ctx *DataCtx) NewUser(user *User) error {
@@ -116,11 +121,14 @@ func (ctx *DataCtx) NewUser(user *User) error {
   return e
 }
 
-func (ctx *DataCtx) NewPost(user *User, post *Post) error {
-  return nil
-  e := ctx.posts.Insert(post)
+func (ctx *DataCtx) NewPost(post *Post) error {
+  e := ctx.posts.Insert(post.marshal())
   if e != nil {
     log.Printf("DB ERROR NewPost: %v", e)
   }
   return e
+}
+
+func (ctx *DataCtx) GetUserPosts(user *User) ([]*Post, error) {
+  return make([]*Post, 0), nil
 }

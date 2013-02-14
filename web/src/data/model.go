@@ -53,13 +53,13 @@ type Post struct {
 func (obj *Post) marshal() bson.M {
   return bson.M{
     "_id": obj.id,
-    "OwnerId": obj.id,
+    "OwnerId": obj.owner.id,
     "Time": obj.Time,
     "Text": obj.Text,
   }
 }
 
-type DataCtx struct {
+type Context struct {
   db *mgo.Database
   users *mgo.Collection
   posts *mgo.Collection
@@ -84,19 +84,19 @@ func Close() {
   }
 }
 
-func NewDataCtx() *DataCtx {
+func NewContext() *Context {
   if dbs == nil {
     return nil
   }
   db := dbs.DB("tapecoll")
-  return &DataCtx{
+  return &Context{
     db,
     db.C("Users"),
     db.C("Posts"),
   }
 }
 
-func (ctx *DataCtx) UserFromEmail(email string) *User {
+func (ctx *Context) UserFromEmail(email string) *User {
   var proto bson.M
   e := ctx.users.Find(bson.M{"Email": email}).One(&proto)
   if e != nil {
@@ -113,7 +113,7 @@ func (ctx *DataCtx) UserFromEmail(email string) *User {
   }
 }
 
-func (ctx *DataCtx) NewUser(user *User) error {
+func (ctx *Context) NewUser(user *User) error {
   e := ctx.users.Insert(user.marshal())
   if e != nil {
     log.Printf("DB ERROR NewUser: %v", e)
@@ -121,7 +121,7 @@ func (ctx *DataCtx) NewUser(user *User) error {
   return e
 }
 
-func (ctx *DataCtx) NewPost(post *Post) error {
+func (ctx *Context) NewPost(post *Post) error {
   e := ctx.posts.Insert(post.marshal())
   if e != nil {
     log.Printf("DB ERROR NewPost: %v", e)
@@ -129,6 +129,15 @@ func (ctx *DataCtx) NewPost(post *Post) error {
   return e
 }
 
-func (ctx *DataCtx) GetUserPosts(user *User) ([]*Post, error) {
+func (ctx *Context) GetUserPosts(user *User) ([]*Post, error) {
+  var res []bson.M
+  e := ctx.posts.Find(bson.M{"OwnerId": user.id}).All(&res)
+  if e != nil {
+    log.Printf("DB ERROR: %v", e)
+  }
+  log.Printf("dbg: %v:", res)
+  for _, p := range res {
+    log.Printf("dbg: text: %v", p["Text"])
+  }
   return make([]*Post, 0), nil
 }

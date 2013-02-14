@@ -6,16 +6,12 @@ TapeColl open-source project.
 
 - Go 1.0+
 - [Gorilla sessions](https://github.com/gorilla/sessions)
-- [Levigo](https://github.com/jmhodges/levigo)
+- [mgo](http://labix.org/mgo)
 
 ## Init
 
-First, build LevelDB and then install levigo with script:
-
-    cd leveldb-1.7.0
-    make
-    cd ..
-    ./get-levigo
+Install MongoDB first, and than install mgo library. Project contains
+mgo's zip archive: web/labix.org.zip.
 
 Install other packages:
 

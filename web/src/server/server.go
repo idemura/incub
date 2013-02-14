@@ -126,10 +126,12 @@ func (srv *server) html(writer io.Writer,
 
 func (srv *server) home(
     writer http.ResponseWriter, r *http.Request,
-    user *data.User) {
+    datactx *data.Context, user *data.User) {
   type Context struct {
     User *data.User
   }
+
+  datactx.GetUserPosts(user)
   
   var ctx = Context{
     User: user,
@@ -144,10 +146,10 @@ func (srv *server) root(
     email, found := getSessionStr(session, "email")
     if (found) {
       // Check user email in my base
-      datactx := data.NewDataCtx()
+      datactx := data.NewContext()
       user := datactx.UserFromEmail(email)
       if user != nil {
-        srv.home(writer, r, user)
+        srv.home(writer, r, datactx, user)
         return
       }
     }
@@ -218,7 +220,7 @@ func (srv *server) newUser(
   }
 
   var ctx Context
-  datactx := data.NewDataCtx()
+  datactx := data.NewContext()
   if datactx.NewUser(user) == nil {
     ctx.User = user
   }
@@ -261,7 +263,7 @@ func (srv *server) login(
   session.Values["email"] = persona.Email
   session.Save(r, writer)
 
-  datactx := data.NewDataCtx()
+  datactx := data.NewContext()
   user := datactx.UserFromEmail(persona.Email)
   if user == nil {
     // Register email, until UserName set this record invalid.

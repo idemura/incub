@@ -29,26 +29,26 @@ func Init(url string) {
 
   defer Close()
 
-  ctx := NewDataCtx()
-  ctx.users.DropCollection()
-  ctx.users.EnsureIndex(mgo.Index{
+  datactx := NewContext()
+  datactx.users.DropCollection()
+  datactx.users.EnsureIndex(mgo.Index{
     Key: []string{"FirstName"},
     Background: false,
     Sparse: true,
   })
-  ctx.users.EnsureIndex(mgo.Index{
+  datactx.users.EnsureIndex(mgo.Index{
     Key: []string{"LastName"},
     Background: false,
     Sparse: true,
   })
-  ctx.users.EnsureIndex(mgo.Index{
+  datactx.users.EnsureIndex(mgo.Index{
     Key: []string{"UserName"},
     Background: false,
     Unique: true,
     DropDups: true,
     Sparse: true,
   })
-  ctx.users.EnsureIndex(mgo.Index{
+  datactx.users.EnsureIndex(mgo.Index{
     Key: []string{"Email"},
     Background: false,
     Unique: true,
@@ -63,31 +63,30 @@ func Init(url string) {
     "idemura@yandex.ru",
     "sv32x",
   }
-  ctx.NewUser(demi)
+  datactx.NewUser(demi)
 
-  if ctx.UserFromEmail("idemura@yandex.ru") == nil {
+  if datactx.UserFromEmail("idemura@yandex.ru") == nil {
     log.Printf("DB ERROR: Can't find user demi")
     return
   }
 
-  ctx.posts.EnsureIndex(mgo.Index{
+  datactx.posts.EnsureIndex(mgo.Index{
     Key: []string{"OwnerId"},
     Background: false,
     Sparse: true,
   })
-  ctx.posts.EnsureIndex(mgo.Index{
+  datactx.posts.EnsureIndex(mgo.Index{
     Key: []string{"Time"},
     Background: false,
     Sparse: true,
   })
 
-  post := &Post{
+  datactx.NewPost(&Post{
     bson.NewObjectId(),
     demi,
     bson.Now(),
     "Hello world",
-  }
-  ctx.NewPost(post)
+  })
   
   log.Printf("DB init done")
 }

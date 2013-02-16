@@ -18,7 +18,10 @@ package main
 
 import (
   bs "bytes"
+  "time"
 )
+
+type timeFormatter func (time.Time) string
 
 func getByteLine(text []byte) (line []byte, rest []byte) {
   if text == nil {

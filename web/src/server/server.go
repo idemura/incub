@@ -24,6 +24,7 @@ import (
   "net/url"
   "log"
   "errors"
+  "time"
   fp "path/filepath"
   tt "text/template"
   "sort"
@@ -87,7 +88,7 @@ func newServer(address string) *server {
   for _, f := range fs {
     t, e := tt.ParseFiles(f)
     if e != nil {
-      log.Printf("ERROR in template %v: %v", f, e)
+      log.Printf("ERROR: %v", e)
     } else {
       srv.templates[fp.Base(f)] = t
     }
@@ -118,23 +119,34 @@ func getSessionStr(s *sessions.Session, name string) (string, bool) {
 func (srv *server) html(writer io.Writer,
     file string, ctx interface{}) {
   if t, found := srv.templates[file]; found {
-    t.Execute(writer, ctx)
+    e := t.Execute(writer, ctx)
+    if e != nil {
+      log.Printf("ERROR: %v", e)
+    }
   } else {
     log.Printf("ERROR: Template %v not found", file)
   }
+}
+
+func formatPostTime(t time.Time) string {
+  return t.Format("2006 Jan 02, 15:04")
 }
 
 func (srv *server) home(
     writer http.ResponseWriter, r *http.Request,
     datactx *data.Context, user *data.User) {
   type Context struct {
+    FormatTime func (time.Time) string
     User *data.User
+    Posts []*data.Post
   }
 
-  datactx.GetUserPosts(user)
+  posts, _ := datactx.GetUserPosts(user)
   
   var ctx = Context{
+    FormatTime: formatPostTime,
     User: user,
+    Posts: posts,
   }
   srv.html(writer, "home.html", &ctx)
 }

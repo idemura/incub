@@ -112,7 +112,7 @@ type User struct {
 // }
 
 func testMath() {
-  const K = 4
+  const K = 2
 
   pow10 := func (n int) int {
     p := 1
@@ -124,13 +124,7 @@ func testMath() {
 
   check := func (n int) bool {
     n = n * n;
-    d1 := n % 10;
-    n /= 10;
-    d2 := n % 10;
-    if d1 != 5 && d2 != 5 {
-      return false
-    }
-    for i := 2; i < K; i++ {
+    for i := 1; i < K; i++ {
       n /= 10
       if n % 10 != 5 {
         return false

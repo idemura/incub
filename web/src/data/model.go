@@ -134,10 +134,17 @@ func (ctx *Context) GetUserPosts(user *User) ([]*Post, error) {
   e := ctx.posts.Find(bson.M{"OwnerId": user.id}).All(&res)
   if e != nil {
     log.Printf("DB ERROR: %v", e)
+    return nil, e
   }
-  log.Printf("dbg: %v:", res)
-  for _, p := range res {
-    log.Printf("dbg: text: %v", p["Text"])
+  posts := make([]*Post, len(res))
+  for i, proto := range res {
+    p := &Post{
+      id: proto["_id"].(bson.ObjectId),
+      owner: user,
+      Time: proto["Time"].(time.Time),
+      Text: proto["Text"].(string),
+    }
+    posts[i] = p
   }
-  return make([]*Post, 0), nil
+  return posts, nil
 }

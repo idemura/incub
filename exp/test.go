@@ -7,11 +7,11 @@ import (
   "net/http"
   "io/ioutil"
   tt "html/template"
-  "labix.org/v2/mgo"
-  "labix.org/v2/mgo/bson"
+  // "labix.org/v2/mgo"
+  // "labix.org/v2/mgo/bson"
 )
 
-func TestPath() {
+func testPath() {
   const pat = "?ur*.hs"
   visit := func (path string, fi os.FileInfo, err error) error {
     if m, _ := fp.Match(pat, path); m {
@@ -23,7 +23,7 @@ func TestPath() {
   fp.Walk(".", visit)
 }
 
-func TestUrlGet() {
+func testUrlGet() {
   r, e := http.Get("http://google.com")
   if e != nil {
     fmt.Printf("ERROR: %v\n", e)
@@ -72,48 +72,85 @@ type User struct {
   EmailAddr string "Email"
 }
 
-func testMarshal() {
-  email := "idemura@mail.ru"
-  user := User{"Igor", email}
-  bs, e := bson.Marshal(&user)
-  if e != nil {
-    fmt.Printf("ERROR: %v\n", e)
-    return
-  }
-  fmt.Printf("SUCCESS:\n")
-  fmt.Printf("  %v\n", len(bs))
-  fmt.Printf("  %v\n", string(bs))
-}
+// func testMarshal() {
+//   email := "idemura@mail.ru"
+//   user := User{"Igor", email}
+//   bs, e := bson.Marshal(&user)
+//   if e != nil {
+//     fmt.Printf("ERROR: %v\n", e)
+//     return
+//   }
+//   fmt.Printf("SUCCESS:\n")
+//   fmt.Printf("  %v\n", len(bs))
+//   fmt.Printf("  %v\n", string(bs))
+// }
 
-func testMongoDB() {
-  email := "idemura@mail.ru"
-  user := User{"Igor", email}
+// func testMongoDB() {
+//   email := "idemura@mail.ru"
+//   user := User{"Igor", email}
+//
+//   session, e := mgo.Dial("localhost")
+//   if e != nil {
+//     fmt.Printf("ERROR: Dial %v\n", e)
+//     return
+//   }
+//   defer session.Close()
+//   db := session.DB("mytest")
+//   coll := db.C("User")
+//   e = coll.Insert(&user)
+//   if e != nil {
+//     fmt.Printf("ERROR: Insert %v\n")
+//     return
+//   }
+//   var userOut User
+//   e = coll.Find(bson.M{"Email": email}).One(&userOut)
+//   if e != nil {
+//     fmt.Printf("ERROR: Find %v\n", e)
+//     return
+//   }
+//   fmt.Printf("SUCCESS: %v\n", userOut)
+// }
 
-  session, e := mgo.Dial("localhost")
-  if e != nil {
-    fmt.Printf("ERROR: Dial %v\n", e)
-    return
+func testMath() {
+  const K = 4
+
+  pow10 := func (n int) int {
+    p := 1
+    for i := 0; i < n; i++ {
+      p *= 10
+    }
+    return p
   }
-  defer session.Close()
-  db := session.DB("mytest")
-  coll := db.C("User")
-  e = coll.Insert(&user)
-  if e != nil {
-    fmt.Printf("ERROR: Insert %v\n")
-    return
+
+  check := func (n int) bool {
+    n = n * n;
+    d1 := n % 10;
+    n /= 10;
+    d2 := n % 10;
+    if d1 != 5 && d2 != 5 {
+      return false
+    }
+    for i := 2; i < K; i++ {
+      n /= 10
+      if n % 10 != 5 {
+        return false
+      }
+    }
+    return true
   }
-  var userOut User
-  e = coll.Find(bson.M{"Email": email}).One(&userOut)
-  if e != nil {
-    fmt.Printf("ERROR: Find %v\n", e)
-    return
+
+  ub := pow10(K)
+  for i := 0; i < ub; i++ {
+    if check(i) {
+      fmt.Printf("%v -> %v\n", i, i * i);
+    }
   }
-  fmt.Printf("SUCCESS: %v\n", userOut)
 }
 
 func main() {
   // testMarshal()
-  testMongoDB()
-  // TestUrlGet()
+  // testMongoDB()
+  // testUrlGet()
   // testTemplate()
+  testMath()
 }

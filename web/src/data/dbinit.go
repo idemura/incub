@@ -56,14 +56,12 @@ func Init(url string) {
     Sparse: true,
   })
 
-  demi := &User{
-    bson.NewObjectId(),
-    "Igor", "Demura",
-    "demi",
-    "idemura@yandex.ru",
-    "sv32x",
-  }
-  datactx.NewUser(demi)
+  demi := NewUser("Igor", "Demura",
+      "demi",
+      "idemura@yandex.ru",
+      "sv32x",
+    )
+  datactx.SaveUser(demi)
 
   if datactx.UserFromEmail("idemura@yandex.ru") == nil {
     log.Printf("DB ERROR: Can't find user demi")
@@ -81,12 +79,11 @@ func Init(url string) {
     Sparse: true,
   })
 
-  datactx.NewPost(&Post{
-    bson.NewObjectId(),
-    demi,
-    bson.Now(),
-    "Hello world",
-  })
-  
+  datactx.SavePost(NewPost(
+      demi,
+      bson.Now(),
+      "Hello world",
+    ))
+
   log.Printf("DB init done")
 }

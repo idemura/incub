@@ -111,34 +111,41 @@ type User struct {
 //   fmt.Printf("SUCCESS: %v\n", userOut)
 // }
 
+func gcd(a, b int64) int64 {
+  if (a < b) {
+    a, b = b, a
+  }
+  for r := a % b; r != 0; r = a % b {
+    a, b = b, r
+  }
+  return b
+}
+
 func testMath() {
-  const K = 2
-
-  pow10 := func (n int) int {
-    p := 1
-    for i := 0; i < n; i++ {
-      p *= 10
-    }
-    return p
-  }
-
-  check := func (n int) bool {
-    n = n * n;
-    for i := 1; i < K; i++ {
-      n /= 10
-      if n % 10 != 5 {
-        return false
-      }
-    }
-    return true
-  }
-
-  ub := pow10(K)
-  for i := 0; i < ub; i++ {
-    if check(i) {
-      fmt.Printf("%v -> %v\n", i, i * i);
+  var P int64 = 12
+  var Q int64 = 5
+  for i := int64(1); i < 2000; i++ {
+    s := i * (i + 1) + P
+    t := i + Q
+    d1 := gcd(s, t)
+    d2 := gcd(i + Q, P + Q * (Q - 1))
+    if d1 != d2 {
+      fmt.Printf("%d - (%d, %d) = %d != %d\n", i, s, t, d1, d2)
+    } else {
+      // fmt.Printf("%d - OK\n", i)
     }
   }
+  // for i := int64(1); i < 2000; i += 2 {
+  //   i_2 := i * i;
+  //   i_4 := i_2 * i_2;
+  //   s := i_4 + 4 * i_2 + 12
+  //   t := i * (i_4 + 5 * i_2 + 5)
+  //   d1 := gcd(s, t)
+  //   d2 := gcd()
+  //   if d != 1 {
+  //     fmt.Printf("%d - (%d, %d) = %d\n", i, s, t, d)
+  //   }
+  // }
 }
 
 func main() {
@@ -146,5 +153,5 @@ func main() {
   // testMongoDB()
   // testUrlGet()
   // testTemplate()
-  testMath()
+  // testMath()
 }

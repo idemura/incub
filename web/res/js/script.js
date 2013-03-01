@@ -5,8 +5,8 @@ function parseJSON(res) {
 function watchAuth(email) {
   function login(assertion) {
     $.ajax({
-      type: 'POST',
       url: '/login',
+      type: 'POST',
       data: {assertion: assertion},
       success: function(res, status, xhr) {
         var obj = parseJSON(res);
@@ -16,7 +16,7 @@ function watchAuth(email) {
           window.location.reload();
           break;
         case 1:
-          window.location = "/newuserform";
+          window.location = '/newuserform';
           break;
         }
       },
@@ -24,8 +24,8 @@ function watchAuth(email) {
   }
   function logout() {
     $.ajax({
-      type: 'POST',
       url: '/logout', // This is a URL on your website.
+      type: 'POST',
       success: function(res, status, xhr) {
         window.location.reload();
       }

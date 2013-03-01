@@ -25,38 +25,98 @@ import (
 
 type User struct {
   id bson.ObjectId
-  FirstName string
-  LastName string
-  UserName string
-  Email string
-  Password string
+  firstName string
+  lastName string
+  userName string
+  email string
+  password string
 }
 
 func (obj *User) marshal() bson.M {
   return bson.M{
     "_id": obj.id,
-    "FirstName": obj.FirstName,
-    "LastName": obj.LastName,
-    "UserName": obj.UserName,
-    "Email": obj.Email,
-    "Password": obj.Password,
+    "FirstName": obj.firstName,
+    "LastName": obj.lastName,
+    "UserName": obj.userName,
+    "Email": obj.email,
+    "Password": obj.password,
   }
+}
+
+func NewUser(firstName, lastName, userName, email, password string) *User {
+  return &User{
+    id: bson.NewObjectId(),
+    firstName: firstName,
+    lastName: lastName,
+    userName: userName,
+    email: email,
+    password: password,
+  }
+}
+
+func NewBareUser(email string) *User {
+  return &User{
+    email: email,
+  }
+}
+
+func (obj *User) FirstName() string {
+  return obj.firstName
+}
+
+func (obj *User) LastName() string {
+  return obj.lastName
+}
+
+func (obj *User) UserName() string {
+  return obj.userName
+}
+
+func (obj *User) Email() string {
+  return obj.email
+}
+
+func (obj *User) Password() string {
+  return obj.password
 }
 
 type Post struct {
   id bson.ObjectId
   owner *User
-  Time time.Time
-  Text string
+  time time.Time
+  text string
 }
+
+type PostList []*Post
 
 func (obj *Post) marshal() bson.M {
   return bson.M{
     "_id": obj.id,
     "OwnerId": obj.owner.id,
-    "Time": obj.Time,
-    "Text": obj.Text,
+    "Time": obj.time,
+    "Text": obj.text,
   }
+}
+
+func NewPost(owner *User, time time.Time, text string) *Post {
+  return &Post{
+    id: bson.NewObjectId(),
+    owner: owner,
+    time: time,
+    text: text,
+  }
+}
+
+func (obj *Post) Owner() *User {
+  return obj.owner
+}
+
+func (obj *Post) Time() time.Time {
+  return obj.time
+}
+
+func (obj *Post) Text() string {
+  return obj.text
 }
 
 type Context struct {
@@ -105,46 +165,52 @@ func (ctx *Context) UserFromEmail(email string) *User {
   }
   return &User{
     id: proto["_id"].(bson.ObjectId),
-    FirstName: proto["FirstName"].(string),
-    LastName: proto["LastName"].(string),
-    UserName: proto["UserName"].(string),
-    Email: proto["Email"].(string),
-    Password: proto["Password"].(string),
+    firstName: proto["FirstName"].(string),
+    lastName: proto["LastName"].(string),
+    userName: proto["UserName"].(string),
+    email: proto["Email"].(string),
+    password: proto["Password"].(string),
   }
 }
 
-func (ctx *Context) NewUser(user *User) error {
+func (ctx *Context) SaveUser(user *User) error {
   e := ctx.users.Insert(user.marshal())
   if e != nil {
-    log.Printf("DB ERROR NewUser: %v", e)
+    log.Printf("DB ERROR SaveUser: %v", e)
   }
   return e
 }
 
-func (ctx *Context) NewPost(post *Post) error {
+func (ctx *Context) SavePost(post *Post) error {
   e := ctx.posts.Insert(post.marshal())
   if e != nil {
-    log.Printf("DB ERROR NewPost: %v", e)
+    log.Printf("DB ERROR SavePost: %v", e)
   }
   return e
 }
 
-func (ctx *Context) GetUserPosts(user *User) ([]*Post, error) {
-  var res []bson.M
-  e := ctx.posts.Find(bson.M{"OwnerId": user.id}).All(&res)
-  if e != nil {
-    log.Printf("DB ERROR: %v", e)
-    return nil, e
+func (ctx *Context) GetUserPosts(user *User) PostList {
+  it := ctx.posts.Find(bson.M{"OwnerId": user.id}).Iter()
+  if it == nil {
+    return nil
   }
-  posts := make([]*Post, len(res))
-  for i, proto := range res {
-    p := &Post{
-      id: proto["_id"].(bson.ObjectId),
-      owner: user,
-      Time: proto["Time"].(time.Time),
-      Text: proto["Text"].(string),
+  ps := make(PostList, 0)
+  for i := 0; i < 30; i++ {
+    var proto bson.M
+    if it.Next(&proto) {
+      p := &Post{
+        id: proto["_id"].(bson.ObjectId),
+        owner: user,
+        time: proto["Time"].(time.Time),
+        text: proto["Text"].(string),
+      }
+      ps = append(ps, p)
+    } else {
+      if e := it.Err(); e != nil {
+        log.Printf("DB ERRROR: %v", e)
+        return nil
+      }
     }
-    posts[i] = p
   }
-  return posts, nil
+  return ps
 }

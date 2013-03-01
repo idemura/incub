@@ -1,12 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8">
 <title>Test</title>
 </head>
 <body>
+<div id="text">
+  Hello I'm here!
+</div>
+<div id="action">Click</div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 <script>
-  // Here email goes
-  var currentUser = {{.UserEmail}};
+$(document).ready(function() {
+  $('#text').hide();
+  $('#action').click(function() {
+    $('#text').hide().fadeIn(400, function(){});
+  });
+});
 </script>
 </body>
 </html>

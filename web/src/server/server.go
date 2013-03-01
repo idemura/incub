@@ -24,6 +24,7 @@ import (
   "net/url"
   "log"
   "errors"
+  "flag"
   "time"
   fp "path/filepath"
   tt "text/template"
@@ -35,17 +36,18 @@ import (
 )
 
 type Config struct {
-  Address string "address"
-  Debug bool "debug"
-  DbUrl string "dburl"
+  Address string
+  Debug bool
+  DbUrl string
+  GoogleApiKey string `json:"google_api_key"`
 }
 
 type PersonaResponse struct{
-  Status string "status"
-  Email string "email"
-  Audience string "audience"
-  Expires int64 "expires"
-  Issuer string "issuer"
+  Status string
+  Email string
+  Audience string
+  Expires int64
+  Issuer string
 }
 
 type server struct {
@@ -56,13 +58,19 @@ type server struct {
   sessionStore *sessions.CookieStore
 }
 
-var config = Config{
+var config = defaultCfg()
+
+func defaultCfg() Config {
+  return Config{
     Address: "localhost:8080",
     Debug: false,
     DbUrl: "localhost",
+    GoogleApiKey: "",
   }
+}
 
 func (cfg *Config) read(fileName string) {
+  log.Printf("Server config: %v", fileName)
   f, e := os.Open(fileName)
   if e != nil {
     log.Printf("ERROR open config: %v", e)
@@ -70,7 +78,7 @@ func (cfg *Config) read(fileName string) {
   }
 
   defer f.Close()
-  
+
   if e := json.NewDecoder(f).Decode(cfg); e != nil {
     log.Printf("ERROR JSON decode: %v", e)
   }
@@ -83,8 +91,8 @@ func newServer(address string) *server {
   srv.baseDir, _ = os.Getwd()
   log.Printf("Base path: %s\n", srv.baseDir)
 
-  fs, _ := fp.Glob("templates/*.html")
   srv.templates = make(map[string]*tt.Template)
+  fs, _ := fp.Glob("templates/*.html")
   for _, f := range fs {
     t, e := tt.ParseFiles(f)
     if e != nil {
@@ -116,10 +124,10 @@ func getSessionStr(s *sessions.Session, name string) (string, bool) {
   return "", false
 }
 
-func (srv *server) html(writer io.Writer,
-    file string, ctx interface{}) {
+func html(srv *server,
+    rw io.Writer, file string, ctx interface{}) {
   if t, found := srv.templates[file]; found {
-    e := t.Execute(writer, ctx)
+    e := t.Execute(rw, ctx)
     if e != nil {
       log.Printf("ERROR: %v", e)
     }
@@ -132,96 +140,94 @@ func formatPostTime(t time.Time) string {
   return t.Format("2006 Jan 02, 15:04")
 }
 
-func (srv *server) home(
-    writer http.ResponseWriter, r *http.Request,
+func home(
+    srv *server, rw http.ResponseWriter, r *http.Request,
     datactx *data.Context, user *data.User) {
   type Context struct {
     FormatTime func (time.Time) string
     User *data.User
-    Posts []*data.Post
+    PostList data.PostList
   }
 
-  posts, _ := datactx.GetUserPosts(user)
-  
+  ps := datactx.GetUserPosts(user)
+
   var ctx = Context{
     FormatTime: formatPostTime,
     User: user,
-    Posts: posts,
+    PostList: ps,
   }
-  srv.html(writer, "home.html", &ctx)
+  html(srv, rw, "home.html", &ctx)
 }
 
-func (srv *server) root(
-    writer http.ResponseWriter, r *http.Request) {
-  session := srv.getSession(r)
-  if session != nil {
-    email, found := getSessionStr(session, "email")
-    if (found) {
-      // Check user email in my base
-      datactx := data.NewContext()
-      user := datactx.UserFromEmail(email)
-      if user != nil {
-        srv.home(writer, r, datactx, user)
-        return
-      }
-    }
-  }
-  srv.html(writer, "unauthorized.html", nil)
+func auth(
+    srv *server, rw http.ResponseWriter, r *http.Request) {
+  html(srv, rw, "auth.html", nil)
 }
 
-func (srv *server) quit(
-    writer http.ResponseWriter, r *http.Request) {
-  log.Printf("Exiting server")
+func newPost(
+    srv *server, rw http.ResponseWriter, r *http.Request,
+    datactx *data.Context, user *data.User) {
+  text := r.FormValue("text")
+  if len(text) == 0 || len(text) > 180 {
+    writeStatus(rw, 1)
+    return
+  }
+  post := data.NewPost(user, time.Now(), text)
+  datactx.SavePost(post)
+  writeStatus(rw, 0)
+}
+
+func quit(srv *server) {
+  log.Printf("Quit server")
   data.Close()
+
   os.Exit(0)
 }
 
-func (srv *server) newUserForm(
-    writer http.ResponseWriter, r *http.Request) {
+func newUserForm(
+    srv *server, rw http.ResponseWriter, r *http.Request) {
   type Context struct {
     Email string
   }
 
-  session := srv.getSession(r)
+  session := getSession(srv, r)
   email, found := getSessionStr(session, "email")
   if !found {
-    srv.error(writer, 500, "Missing email session var in /newuserform")
+    httpError(srv, rw, 500, "Missing email session var in /newuserform")
     return
   }
 
   var ctx = Context{email}
-  srv.html(writer, "newuserform.html", &ctx)
+  html(srv, rw, "newuserform.html", &ctx)
 }
 
 func checkUserForm(email string, r *http.Request) (*data.User, error) {
-  user := data.User{
-    FirstName: r.FormValue("firstName"),
-    LastName: r.FormValue("lastName"),
-    UserName: r.FormValue("userName"),
-    Email: email,
-    Password: r.FormValue("password"),
-  }
-  if len(user.FirstName) > 24 {
+  firstName := r.FormValue("firstName")
+  lastName := r.FormValue("lastName")
+  userName := r.FormValue("userName")
+  password := r.FormValue("password")
+  if len(firstName) > 24 {
     return nil, errors.New("First name too long")
   }
-  if len(user.LastName) > 24 {
+  if len(lastName) > 24 {
     return nil, errors.New("Last name too long")
   }
-  if len(user.UserName) > 24 {
+  if len(userName) > 24 {
     return nil, errors.New("User name too long")
   }
-  if len(user.Password) > 12 {
+  if len(password) > 16 {
     return nil, errors.New("Password too long")
   }
-  return &user, nil
+  user := data.NewUser(firstName, lastName, userName, email, password)
+  return user, nil
 }
 
-func (srv *server) newUser(
-    writer http.ResponseWriter, r *http.Request) {
-  session := srv.getSession(r)
+func newUser(
+    srv *server, rw http.ResponseWriter, r *http.Request) {
+  session := getSession(srv, r)
   email, found := getSessionStr(session, "email")
   if !found {
-    srv.error(writer, 500, "Missing email session var in /newuser")
+    httpError(srv, rw, 500, "Missing email session var in /newuser")
     return
   }
 
@@ -233,29 +239,31 @@ func (srv *server) newUser(
 
   var ctx Context
   datactx := data.NewContext()
-  if datactx.NewUser(user) == nil {
+  if datactx.SaveUser(user) == nil {
     ctx.User = user
   }
-  srv.html(writer, "newuser.html", &ctx)
+  html(srv, rw, "newuser.html", &ctx)
 }
 
-func (srv *server) login(
-    writer http.ResponseWriter, r *http.Request) {
+func writeStatus(rw http.ResponseWriter, st int) {
   type Response struct {
     Status int
   }
 
-  var status Response
+  status := Response{st}
+  buf, _ := json.Marshal(&status)
+  rw.Write(buf)
+}
 
+func login(
+    srv *server, rw http.ResponseWriter, r *http.Request) {
   resp, e := http.PostForm("https://verifier.login.persona.org/verify",
     url.Values{
       "assertion": {r.FormValue("assertion")},
       "audience": {srv.address},
     })
   if e != nil {
-    status.Status = 3
-    buf, _ := json.Marshal(&status)
-    writer.Write(buf)
+    writeStatus(rw, 3)
     return
   }
   body, _ := ioutil.ReadAll(resp.Body)
@@ -264,128 +272,159 @@ func (srv *server) login(
   var persona PersonaResponse
   json.Unmarshal(body, &persona)
   if persona.Status != "okay" {
-    status.Status = 2
-    buf, _ := json.Marshal(&status)
-    writer.Write(buf)
+    writeStatus(rw, 2)
     return
   }
 
   // Put email in session in any case
-  session := srv.getSession(r)
+  session := getSession(srv, r)
   session.Values["email"] = persona.Email
-  session.Save(r, writer)
+  session.Save(r, rw)
 
   datactx := data.NewContext()
   user := datactx.UserFromEmail(persona.Email)
   if user == nil {
-    // Register email, until UserName set this record invalid.
-    user := data.User{Email: persona.Email}
-    datactx.NewUser(&user)
-    status.Status = 1
-    buf, _ := json.Marshal(&status)
-    writer.Write(buf)
+    // Register email, until UserName set this record is invalid.
+    datactx.SaveUser(data.NewBareUser(persona.Email))
+    writeStatus(rw, 1)
   } else {
-    status.Status = 0
-    buf, _ := json.Marshal(&status)
-    writer.Write(buf)
+    writeStatus(rw, 0)
   }
 }
 
-func (srv *server) logout(
-    writer http.ResponseWriter, r *http.Request) {
-  session := srv.getSession(r)
+func logout(
+    srv *server, rw http.ResponseWriter, r *http.Request,
+    datactx *data.Context, user *data.User) {
+  session := getSession(srv, r)
   delete(session.Values, "email")
-  session.Save(r, writer)
-  
+  session.Save(r, rw)
+
   type Response struct {
     Status int
   }
 
   var status Response
   buf, _ := json.Marshal(&status)
-  writer.Write(buf)
+  rw.Write(buf)
 }
 
 var errorMsgMap = map[int]string {
-    404: "Page Not Found",
+    401: "Unauthorized",
+    403: "Forbidden",
+    404: "Not Found",
     500: "Internal Server Error",
   }
 
-func (srv *server) error(
-    writer http.ResponseWriter, code int, description string) {
+func httpError(
+    srv *server, rw http.ResponseWriter,
+    code int, description string) {
   type Context struct {
     Code int
     Message, Description string
   }
 
-  if code >= 500 {
-    log.Printf("%v: %v", code, description)
+  log.Printf("%v: %v", code, description)
+  rw.WriteHeader(code)
+
+  if code == 401 {
+    html(srv, rw, "unauthorized.html", nil)
+    return
   }
-  writer.WriteHeader(code)
+
   message, found := errorMsgMap[code]
   if !found {
     message = "Unknown"
   }
 
   ctx := Context{code, message, description}
-  srv.html(writer, "httperror.html", &ctx)
+  html(srv, rw, "httperror.html", &ctx)
 }
 
-func (srv *server) getStatic(path string) string {
-  path = fp.Join("res", path)
-  i := sort.SearchStrings(srv.res, path)
-  if i < len(srv.res) && srv.res[i] == path {
-    return path
-  } else {
-    return ""
+func serveFile(
+    srv *server, rw http.ResponseWriter, r *http.Request,
+    path string) bool {
+  fullPath := fp.Join("res", path)
+  i := sort.SearchStrings(srv.res, fullPath)
+  if i < len(srv.res) && srv.res[i] == fullPath {
+    http.ServeFile(rw, r, fullPath)
+    return true
   }
-  return "" // Workaround Go compiler error
+  return false
 }
 
 func (srv *server) ServeHTTP(
-    writer http.ResponseWriter, r *http.Request) {
+    rw http.ResponseWriter, r *http.Request) {
   path := r.URL.Path
-  if path == "/" {
-    srv.root(writer, r)
-  } else if path == "/quit" {
-    if config.Debug {
-      srv.quit(writer, r)
+
+  datactx := data.NewContext()
+  var user *data.User = nil
+  session := getSession(srv, r)
+  if session != nil {
+    email, found := getSessionStr(session, "email")
+    if (found) {
+      // Check user email in my base
+      user = datactx.UserFromEmail(email)
+      if user.UserName() == "" {
+        user = nil
+      }
     }
-  } else if path == "/login" {
-    srv.login(writer, r)
-  } else if path == "/logout" {
-    srv.logout(writer, r)
-  } else if path == "/newuserform" {
-    srv.newUserForm(writer, r)
-  } else if path == "/newuser" {
-    srv.newUser(writer, r)
-  } else if f := srv.getStatic(path); len(f) != 0 {
-    http.ServeFile(writer, r, f)
+  }
+
+  if path == "/quit" && config.Debug {
+    quit(srv)
+    return
+  // } else if path == "/js/script.js" {
+  //   //http.ServeFile(http, r, path)
+  //   return
+  }
+
+  if user == nil {
+    if path == "/" {
+      auth(srv, rw, r)
+    } else if path == "/login" {
+      login(srv, rw, r)
+    } else if path == "/newuserform" {
+      newUserForm(srv, rw, r)
+    } else if path == "/newuser" {
+      newUser(srv, rw, r)
+    } else if !serveFile(srv, rw, r, path) {
+      auth(srv, rw, r)
+    }
   } else {
-    log.Printf("404: %v", path)
-    srv.error(writer, 404, path)
+    if path == "/" {
+      home(srv, rw, r, datactx, user)
+    } else if path == "/logout" {
+      logout(srv, rw, r, datactx, user)
+    } else if path == "/newpost" {
+      newPost(srv, rw, r, datactx, user)
+    } else if !serveFile(srv, rw, r, path) {
+      httpError(srv, rw, 404, path)
+    }
   }
 }
 
-func (srv *server) run() {
+func run(srv *server) {
   log.Printf("Server address: %s\n", srv.address)
   http.ListenAndServe(srv.address, srv)
 }
 
-func (srv *server) getSession(r *http.Request) *sessions.Session {
+func getSession(srv *server, r *http.Request) *sessions.Session {
   s, _ := srv.sessionStore.Get(r, "tapecoll")
   return s
 }
 
 func main() {
   log.SetFlags(log.Ltime | log.Lmicroseconds)
-  
-  config.read("config.json")
+
+  configFile := flag.String("config", "config.json", "server config file")
+  flag.Parse()
+
+  config.read(*configFile)
   if config.Debug {
     log.Printf("DEBUG mode")
   }
 
-  if len(os.Args) > 1 && os.Args[1] == "--dbinit" {
+  if len(os.Args) > 1 && os.Args[1] == "-dbinit" {
     data.Init(config.DbUrl)
     return
   }
@@ -396,5 +435,5 @@ func main() {
   }
 
   srv := newServer(config.Address)
-  srv.run()
+  run(srv)
 }

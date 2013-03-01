@@ -12,12 +12,22 @@
 <div class="basefont">
 <p class="auth">
   Hi {{.User.UserName}}, you are logged in! Your email is {{.User.Email}}.
-  <a href="#" id="logout">Logout</a>
+  <a href="#" id="logout">logout</a>
 </p>
 </div>
+<div id="newPostForm">
+  <form action="/newpost" method=post id="post" onsubmit="return false;">
+    <label for="text">Text:</label>
+    <div>
+      <textarea rows=2 maxlength=160 cols=40 name="text" id="text" tabindex=1></textarea>
+    </div>
+    <input type=submit value="Submit" id="submit" tabindex=2>
+  </form>
+  <p id="postSent">Post sent.</p>
 </div>
+<div>
 {{$ctx := .}}
-{{range .Posts}}
+{{range .PostList}}
 <p class="post">
   <b>{{call $ctx.FormatTime .Time}}</b> {{.Text}}
 </p>
@@ -31,9 +41,29 @@
 <script src="//login.persona.org/include.js"></script>
 <script src="/js/script.js"></script>
 <script>
+$(document).ready(function() {
   $('#logout').click(function() {
     navigator.id.logout();
   });
+  $('#submit').click(function() {
+    var text = $("#text").val();
+    if (text == "" || text.length > 180) {
+      return false;
+    }
+    console.log("send data");
+    $.ajax({
+      type: "POST",
+      url: "/newpost",
+      data: 'text='+ text,
+      success: function() {
+        console.log("success callback");
+        $('#postSent').show().fadeIn(800, function(){});
+      }
+    });
+    return false;
+  });
+  $('#postSent').hide();
+});
 
   watchAuth("{{js .User.Email}}");
 </script>

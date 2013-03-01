@@ -1,4 +1,6 @@
 {
   "address": "localhost:8080",
-  "debug": true
+  "debug": true,
+  "dburl": "localhost",
+  "google_api_key": ""
 }

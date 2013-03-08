@@ -1,6 +1,20 @@
+default: all
+
+.DEFAULT:
+	cd src && $(MAKE) $@
+
+install:
+	cd src && $(MAKE) $@
+
 CC=gcc
 
-all: baza
+STD= -std=c99 -pedantic
+WARN= -Wall
+CFLAGS= $(STD) $(WARN) -g -ggdb
 
-baza:
+all: noopt
 
+noopt:
+
+baza: types.o main.o
+	$(CC) $(CFLAGS)

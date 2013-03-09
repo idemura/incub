@@ -14,15 +14,18 @@ ifeq ($(cfg), debug)
 else
 	CFLAGS += -O2
 endif
-sources=$(wildcard *.c)
-outfile=bin/$(cfg)/baza
+common=defs.c sds.c btree.c
+test_src=test.c main_test.c
+out_file=bin/$(cfg)/baza
+out_test=bin/$(cfg)/baza_test
 
 debug:
 	@$(MAKE) server cfg="debug"
 
 server: $(objects)
 	@mkdir -p bin/$(cfg)
-	$(CC) $(CFLAGS) $(sources) -o $(outfile)
+	$(CC) $(CFLAGS) $(common) main.c -o $(out_file)
+	$(CC) $(CFLAGS) $(common) $(test_src) -o $(out_test)
 
 .PHONY: clean
 clean:

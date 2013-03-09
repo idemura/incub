@@ -1,5 +1,5 @@
 #include "main.h"
-#include "types.h"
+#include "defs.h"
 
 #include <stdio.h>
 

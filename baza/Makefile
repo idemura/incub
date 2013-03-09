@@ -1,14 +1,30 @@
-default: all
+default: server
 
 CC=gcc
+OPT?=-O2
+DBG?=
+CFLAGS=-Wall -std=c99 -pedantic
+LFLAGS=-Wall
+INCLUDES=
+LIBS=
+SRCS=$(wildcard *.c)
+OBJS=$(SRCS:.c=.o)
+NAME=baza
 
-STD= -std=c99 -pedantic
-WARN= -Wall
-CFLAGS= $(STD) $(WARN) -g -ggdb
+#opt:
+#	$(MAKE) OPT="-O2" DBG=""
 
-all: debug
+#debug:
+#	$(MAKE) OPT="-O0" DBG="-g -ggdb"
 
-debug: baza
+%.o: %.c
+	$(CC) $(CFLAGS) $(OPT) $(DBG) $(INCLUDES) -c $< -o $@
 
-baza: types.o main.o
-	$(CC) $(CFLAGS) types.c main.c
+server: $(OBJS)
+	$(CC) $(LFLAGS) $(LIBS) $(OBJS) -o $(NAME)
+
+.PHONY: clean
+
+clean:
+	rm $(NAME)
+	rm *.o

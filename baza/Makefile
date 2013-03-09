@@ -1,30 +1,29 @@
 default: server
 
-CC=gcc
-OPT?=-O2
-DBG?=
-CFLAGS=-Wall -std=c99 -pedantic
-LFLAGS=-Wall
-INCLUDES=
-LIBS=
-SRCS=$(wildcard *.c)
-OBJS=$(SRCS:.c=.o)
-NAME=baza
+RM = rm -f
+ifeq ($(shell uname), Darwin)
+	CC = clang
+else
+	CC = gcc
+endif
+CFLAGS = -Wall -std=c99 -pedantic
+LFLAGS = -Wall
+cfg ?= opt
+ifeq ($(cfg), debug)
+	CFLAGS += -O0 -g -ggdb
+else
+	CFLAGS += -O2
+endif
+sources=$(wildcard *.c)
+outfile=bin/$(cfg)/baza
 
-#opt:
-#	$(MAKE) OPT="-O2" DBG=""
+debug:
+	@$(MAKE) server cfg="debug"
 
-#debug:
-#	$(MAKE) OPT="-O0" DBG="-g -ggdb"
-
-%.o: %.c
-	$(CC) $(CFLAGS) $(OPT) $(DBG) $(INCLUDES) -c $< -o $@
-
-server: $(OBJS)
-	$(CC) $(LFLAGS) $(LIBS) $(OBJS) -o $(NAME)
+server: $(objects)
+	@mkdir -p bin/$(cfg)
+	$(CC) $(CFLAGS) $(sources) -o $(outfile)
 
 .PHONY: clean
-
 clean:
-	rm $(NAME)
-	rm *.o
+	$(RM) -r bin/*

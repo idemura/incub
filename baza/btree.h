@@ -3,15 +3,16 @@
 
 #include "defs.h"
 
-struct btree_node {
-    struct btree_node* parent;
-};
+typedef int int_key;
 
-struct btree {
-    size_t len;
-    struct btree_node *root;
-};
+struct btree;
 
-struct btree *create_btree();
+struct btree *btree_create();
+void btree_destroy(struct btree *bt);
+size_t btree_size(struct btree *bt);
+void btree_insert(struct btree *bt, int_key key, void *value);
+void *btree_find(struct btree *bt, int_key key);
+size_t btree_memory();
+bool btree_check(struct btree *bt);
 
 #endif

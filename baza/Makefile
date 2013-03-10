@@ -6,8 +6,8 @@ ifeq ($(shell uname), Darwin)
 else
 	CC = gcc
 endif
-CFLAGS = -Wall -std=c99 -pedantic
-LFLAGS = -Wall
+CFLAGS = -Wall -Werror -std=c99 -pedantic
+LFLAGS = -Wall -Werror
 cfg ?= opt
 ifeq ($(cfg), debug)
 	CFLAGS += -O0 -g -ggdb
@@ -25,8 +25,8 @@ debug:
 server: $(objects)
 	@mkdir -p bin/$(cfg)
 	$(CC) $(CFLAGS) $(common) main.c -o $(out_file)
-	$(CC) $(CFLAGS) $(common) $(test_src) -o $(out_test)
+	$(CC) $(CFLAGS) $(common) $(test_src) -o $(out_test) -DTEST
 
 .PHONY: clean
 clean:
-	$(RM) -r bin/*
+	@$(RM) -r bin/*

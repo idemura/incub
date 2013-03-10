@@ -3,8 +3,9 @@
 
 #include <stdlib.h>
 
-char *sdsdup(const char *strz);
+char *sdsdupz(const char *strz);
 char *sdsempty(size_t capacity);
 size_t sdslen(const char *s);
+void sdsfree(const char *s);
 
 #endif

@@ -1,10 +1,11 @@
 #include "sds.h"
 
 #include <string.h>
+#include <stdio.h>
 
 #define MIN_CAPACITY 23
 #define SDS(s) (struct string*)((char*)s - sizeof(struct string))
-#define SDSSTRZ(s) ((char*)sds + sizeof(struct string))
+#define SDSSTRZ(s) ((s)->str)
 
 struct string {
     int len;
@@ -12,7 +13,7 @@ struct string {
     char str[];
 };
 
-char *sdsdup(const char *strz)
+char *sdsdupz(const char *strz)
 {
     struct string *sds;
     size_t len = strlen(strz);
@@ -42,4 +43,11 @@ size_t sdslen(const char *s)
 {
     struct string *sds = SDS(s);
     return sds->len;
+}
+
+void sdsfree(const char *s)
+{
+    if (s) {
+        free(SDS(s));
+    }
 }

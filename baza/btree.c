@@ -235,10 +235,8 @@ bool btree_check_keys(struct btree_node *node, int depth)
             }
         }
     }
-    return true;
-#else
-    return true;
 #endif
+    return true;
 }
 
 bool btree_check(struct btree *bt)
@@ -259,10 +257,8 @@ bool btree_check(struct btree *bt)
     if (!btree_check_keys(bt->root, bt->depth)) {
         return false;
     }
-    return true;
-#else
-    return true;
 #endif
+    return true;
 }
 
 void *btree_find(struct btree *bt, int_key key)

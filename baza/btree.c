@@ -107,8 +107,8 @@ size_t btree_size(struct btree *bt)
     return bt->size;
 }
 
-static void btree_insert_leaf(struct btree_node *node,
-        int_key key, void *value)
+static struct btree_node_key *btree_insert_leaf(struct btree_node *node,
+        int_key key)
 {
     int i;
 
@@ -119,28 +119,28 @@ static void btree_insert_leaf(struct btree_node *node,
     }
 
     if (i != node->num && node->subnode[i].key == key) {
-        node->subnode[i].ptr = value;
-        return;
+        return &node->subnode[i];
     }
 
     if (i != node->num) {
-        for (int j = node->num; j > i; ++i) {
+        for (int j = node->num + 1; j > i; --j) {
             node->subnode[j] = node->subnode[j - 1];
         }
     } else {
         node->subnode[i + 1].ptr = NULL;
     }
     node->subnode[i].key = key;
-    node->subnode[i].ptr = value;
+    node->subnode[i].ptr = NULL;
     node->num += 1;
+    return &node->subnode[i];
 }
 
-static struct btree_node *btree_find_at_node(struct btree_node *node,
-        int_key key)
+static struct btree_node_key *btree_find_at_node(
+        struct btree_node *node, int_key key)
 {
     for (int i = 0; i < node->num; ++i) {
         if (key <= node->subnode[i].key) {
-            return node->subnode[i].ptr;
+            return &node->subnode[i];
         }
     }
     return NULL;
@@ -155,7 +155,7 @@ void btree_insert(struct btree *bt, int_key key, void *value)
     }
     if (bt->root == NULL) {
         struct btree_node *node = new_node();
-        btree_insert_leaf(node, key, value);
+        btree_insert_leaf(node, key)->ptr = value;
         bt->root = node;
         bt->size = 1;
         bt->depth = 0;
@@ -165,17 +165,24 @@ void btree_insert(struct btree *bt, int_key key, void *value)
     struct btree_node *node = bt->root;
     int depth = bt->depth;
     while (depth != 0) {
-        struct btree_node *next = btree_find_at_node(node, key);
-        node = next;
+        struct btree_node_key *pkey = btree_find_at_node(node, key);
+        node = pkey->ptr;
         assert(node);
         depth -= 1;
+    }
+
+    struct btree_node_key *pkey = btree_find_at_node(node, key);
+    if (pkey) {
+        assert(pkey->key == key);
+        pkey->ptr = value;
+        return;
     }
 
     while (node->num == MAX_KEYS) {
         assert(0);
     }
 
-    btree_insert_leaf(node, key, value);
+    btree_insert_leaf(node, key)->ptr = value;
     bt->size += 1;
 }
 
@@ -261,13 +268,13 @@ void *btree_find(struct btree *bt, int_key key)
     struct btree_node *node = bt->root;
     int depth = bt->depth;
     while (depth != 0) {
-        struct btree_node *next = btree_find_at_node(node, key);
-        node = next;
+        node = btree_find_at_node(node, key)->ptr;
     }
 
-    struct btree_node *pkey = btree_find_at_node(node, key);
+    struct btree_node_key *pkey = btree_find_at_node(node, key);
     if (!pkey) {
         return NULL;
+    } else {
+        return pkey->ptr;
     }
-    return pkey;
 }

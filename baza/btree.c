@@ -75,8 +75,7 @@ struct btree *btree_create()
 {
     struct btree *bt = btree_alloc(sizeof(*bt));
     if (bt) {
-        bt->size = 0;
-        bt->root = NULL;
+        memset(bt, 0, sizeof(*bt));
     }
     return bt;
 }

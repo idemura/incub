@@ -1,6 +1,7 @@
 #include "btree.h"
 #include "defs.h"
 #include <stdio.h>
+#include <memory.h>
 
 #define BTREE_ORD 2
 
@@ -135,7 +136,7 @@ static struct btree_node_key *btree_insert_leaf(struct btree_node *node,
     return &node->subnode[i];
 }
 
-static inline bool btree_last_subnode(struct btree_node *node)
+static inline struct btree_node_key *btree_last_subnode(struct btree_node *node)
 {
     return &node->subnode[node->num];
 }

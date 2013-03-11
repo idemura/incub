@@ -1,4 +1,4 @@
-default: server
+default: build_and_test
 
 RM = rm -f
 ifeq ($(shell uname), Darwin)
@@ -6,7 +6,8 @@ ifeq ($(shell uname), Darwin)
 else
 	CC = gcc
 endif
-CFLAGS = -Wall -std=c99 -pedantic
+DISABLE_WARNINGS = -Wno-unused-function
+CFLAGS = -Wall -std=c99 -pedantic $(DISABLE_WARNINGS)
 LFLAGS = -Wall
 cfg ?= opt
 ifeq ($(cfg), debug)
@@ -19,13 +20,14 @@ test_src=test.c main_test.c
 out_file=bin/$(cfg)/baza
 out_test=bin/$(cfg)/baza_test
 
-debug:
-	@$(MAKE) server cfg="debug"
-
-server: $(objects)
+build_and_test:
 	@mkdir -p bin/$(cfg)
 	$(CC) $(CFLAGS) $(common) main.c -o $(out_file)
 	$(CC) $(CFLAGS) $(common) $(test_src) -o $(out_test) -DTEST
+	@$(out_test)
+
+debug:
+	@$(MAKE) build_and_test cfg="debug"
 
 .PHONY: clean
 clean:

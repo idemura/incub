@@ -28,9 +28,8 @@ bool color_text(char *out, size_t out_len, const char *in)
                 in += 1;
             } else {
                 int fg = in[1] - '0';
-                int bg = in[2] - '0';
-                snprintf(buf, sizeof(buf), "%c[0;%d;%dm", 27, fg + 30, bg + 40);
-                in += 3;
+                snprintf(buf, sizeof(buf), "%c[0;%dm", 27, fg + 30);
+                in += 2;
             }
             coloring = !coloring;
             size_t buf_len = strlen(buf);
@@ -64,12 +63,12 @@ void test_end()
     char fmt[80];
     if (s_failed_asserts == 0) {
         s_passed++;
-        if (color_text(fmt, sizeof(fmt), "#20Passed# %s\n")) {
+        if (color_text(fmt, sizeof(fmt), "#2Passed# %s\n")) {
             fprintf(stderr, fmt, s_name);
         }
     } else {
         s_failed++;
-        if (color_text(fmt, sizeof(fmt), "#10FAILED# %s\n")) {
+        if (color_text(fmt, sizeof(fmt), "#1FAILED# %s\n")) {
             fprintf(stderr, fmt, s_name);
         }
     }
@@ -79,7 +78,7 @@ void test_check(int ok, const char *expr, const char *file, int line)
 {
     char fmt[80];
     if (!ok) {
-        if (color_text(fmt, sizeof(fmt), "#10FAILED# check %s:%d: %s\n")) {
+        if (color_text(fmt, sizeof(fmt), "#1FAILED# check %s:%d: %s\n")) {
             fprintf(stderr, fmt, file, line, expr);
         }
         s_failed_asserts++;
@@ -90,11 +89,11 @@ int test_report()
 {
     char fmt[80];
     if (s_failed == 0) {
-        if (color_text(fmt, sizeof(fmt), "Tests: %d #20passed#\n")) {
+        if (color_text(fmt, sizeof(fmt), "Tests: %d #2passed#\n")) {
             fprintf(stderr, fmt, s_passed);
         }
     } else {
-        if (color_text(fmt, sizeof(fmt), "Tests: %d #20passed#, %d #10FAILED#!\n")) {
+        if (color_text(fmt, sizeof(fmt), "Tests: %d #2passed#, %d #1FAILED#!\n")) {
             fprintf(stderr, fmt, s_passed, s_failed);
         }
     }

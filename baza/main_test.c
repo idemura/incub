@@ -44,7 +44,7 @@ void btree_test()
     for (int i = 0; i < ARRAY_SIZE(key); ++i) {
         char str[80];
         sprintf(str, "updated %d", 10+i);
-        update_val[i] = strdup(str);
+        update_val[i] = sdsdupz(str);
         btree_insert(bt, key[i], update_val[i]);
         TEST_CHECK(btree_find(bt, key[i]) == update_val[i]);
         TEST_CHECK(btree_size(bt) == ARRAY_SIZE(key));

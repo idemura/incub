@@ -2,6 +2,8 @@
 #include "defs.h"
 #include <stdio.h>
 
+#define BTREE_ORD 2
+
 struct mem_block {
     size_t size;
     char p[];
@@ -29,8 +31,8 @@ struct btree {
 };
 
 static size_t total_memory;
-static const size_t ORD = 2;
-static const size_t MAX_KEYS = 2*ORD-1;
+static const size_t ORD = BTREE_ORD;
+static const size_t MAX_KEYS = 2 * BTREE_ORD - 1;
 
 static void *btree_alloc(size_t size)
 {

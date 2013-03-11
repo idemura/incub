@@ -12,8 +12,7 @@ struct mem_block {
 struct btree_node;
 struct btree_node_key;
 
-struct btree_node_key
-{
+struct btree_node_key {
     struct btree_node* ptr;
     int_key key;
 };

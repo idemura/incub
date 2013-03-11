@@ -28,7 +28,7 @@ bool color_text(char *out, size_t out_len, const char *in)
                 in += 1;
             } else {
                 int fg = in[1] - '0';
-                snprintf(buf, sizeof(buf), "%c[0;%dm", 27, fg + 30);
+                snprintf(buf, sizeof(buf), "%c[1;%dm", 27, fg + 30);
                 in += 2;
             }
             coloring = !coloring;

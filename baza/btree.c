@@ -137,15 +137,21 @@ static struct btree_node_key *btree_insert_leaf(struct btree_node *node,
     return &node->subnode[i];
 }
 
+static inline bool btree_last_subnode(struct btree_node *node)
+{
+    return &node->subnode[node->num];
+}
+
 static struct btree_node_key *btree_find_at_node(
         struct btree_node *node, int_key key)
 {
-    for (int i = 0; i < node->num; ++i) {
+    int i;
+    for (i = 0; i < node->num; ++i) {
         if (key <= node->subnode[i].key) {
-            return &node->subnode[i];
+            break;
         }
     }
-    return NULL;
+    return &node->subnode[i];
 }
 
 void btree_insert(struct btree *bt, int_key key, void *value)
@@ -174,8 +180,7 @@ void btree_insert(struct btree *bt, int_key key, void *value)
     }
 
     struct btree_node_key *pkey = btree_find_at_node(node, key);
-    if (pkey) {
-        assert(pkey->key == key);
+    if (pkey != btree_last_subnode(node) && pkey->key == key) {
         pkey->ptr = value;
         return;
     }

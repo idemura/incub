@@ -19,12 +19,10 @@ void btree_test()
     int_key key[] = {
         10, 20, 15
     };
-    char *val[] = {
-        sdsdupz("value-10"),
-        sdsdupz("value-20"),
-        sdsdupz("value-15"),
+    int val[] = {
+        50, 51, 52
     };
-    char *update_val[ARRAY_SIZE(key)];
+    int update_val[ARRAY_SIZE(key)];
     memset(update_val, 0, sizeof(update_val));
 
     bt = btree_create();
@@ -32,9 +30,9 @@ void btree_test()
     TEST_CHECK(btree_check(bt));
 
     for (int i = 0; i < ARRAY_SIZE(key); ++i) {
-        btree_insert(bt, key[i], val[i]);
+        btree_insert(bt, key[i], &val[i]);
         TEST_CHECK(btree_size(bt) == i + 1);
-        TEST_CHECK(btree_find(bt, key[i]) == val[i]);
+        TEST_CHECK(btree_find(bt, key[i]) == &val[i]);
         TEST_CHECK(btree_check(bt));
         if (i == 0) {
             TEST_CHECK(btree_find(bt, key[1]) == NULL);
@@ -42,21 +40,14 @@ void btree_test()
     }
 
     for (int i = 0; i < ARRAY_SIZE(key); ++i) {
-        char str[80];
-        sprintf(str, "updated %d", 10+i);
-        update_val[i] = sdsdupz(str);
-        btree_insert(bt, key[i], update_val[i]);
-        TEST_CHECK(btree_find(bt, key[i]) == update_val[i]);
+        btree_insert(bt, key[i], &update_val[i]);
+        TEST_CHECK(btree_find(bt, key[i]) == &update_val[i]);
         TEST_CHECK(btree_size(bt) == ARRAY_SIZE(key));
     }
 
     btree_destroy(bt);
     TEST_CHECK(btree_memory() == 0);
 
-    for (int i = 0; i < ARRAY_SIZE(val); ++i) {
-        sdsfree(val[i]);
-        sdsfree(update_val[i]);
-    }
     test_end();
 }
 

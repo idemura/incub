@@ -80,13 +80,15 @@ struct btree *btree_create()
     return bt;
 }
 
-static void btree_free_node(struct btree_node *node)
+static void btree_free_node(struct btree_node *node, int depth)
 {
     if (!node) {
         return;
     }
-    for (int i = 0; i < node->num; ++i) {
-        btree_free_node(node->subnode[i].ptr);
+    if (depth > 0) {
+        for (int i = 0; i <= node->num; ++i) {
+            btree_free_node(node->subnode[i].ptr, depth - 1);
+        }
     }
     btree_free(node);
 }
@@ -96,7 +98,7 @@ void btree_destroy(struct btree *bt)
     if (!bt) {
         return;
     }
-    btree_free_node(bt->root);
+    btree_free_node(bt->root, bt->depth);
     btree_free(bt);
 }
 
@@ -105,9 +107,22 @@ size_t btree_size(struct btree *bt)
     return bt->size;
 }
 
-static void btree_insert_at(struct btree_node *node, int i,
+static void btree_insert_leaf(struct btree_node *node,
         int_key key, void *value)
 {
+    int i;
+
+    for (i = 0; i < node->num; ++i) {
+        if (key <= node->subnode[i].key) {
+            break;
+        }
+    }
+
+    if (i != node->num && node->subnode[i].key == key) {
+        node->subnode[i].ptr = value;
+        return;
+    }
+
     if (i != node->num) {
         for (int j = node->num; j > i; ++i) {
             node->subnode[j] = node->subnode[j - 1];
@@ -116,18 +131,31 @@ static void btree_insert_at(struct btree_node *node, int i,
         node->subnode[i + 1].ptr = NULL;
     }
     node->subnode[i].key = key;
-    node->subnode[i].ptr = NULL;
+    node->subnode[i].ptr = value;
     node->num += 1;
+}
+
+static struct btree_node *btree_find_at_node(struct btree_node *node,
+        int_key key)
+{
+    for (int i = 0; i < node->num; ++i) {
+        if (key <= node->subnode[i].key) {
+            return node->subnode[i].ptr;
+        }
+    }
+    return NULL;
 }
 
 void btree_insert(struct btree *bt, int_key key, void *value)
 {
-    if (!bt) {
+    assert(value);
+    assert(bt);
+    if (!bt || !value) {
         return;
     }
     if (bt->root == NULL) {
         struct btree_node *node = new_node();
-        btree_insert_at(node, 0, key, value);
+        btree_insert_leaf(node, key, value);
         bt->root = node;
         bt->size = 1;
         bt->depth = 0;
@@ -136,15 +164,10 @@ void btree_insert(struct btree *bt, int_key key, void *value)
 
     struct btree_node *node = bt->root;
     int depth = bt->depth;
-    int i;
     while (depth != 0) {
-        for (i = 0; i < node->num; ++i) {
-            if (key <= node->subnode[i].key) {
-                break;
-            }
-        }
-        node = node->subnode[i].ptr;
-        assert(node != NULL);
+        struct btree_node *next = btree_find_at_node(node, key);
+        node = next;
+        assert(node);
         depth -= 1;
     }
 
@@ -152,22 +175,58 @@ void btree_insert(struct btree *bt, int_key key, void *value)
         assert(0);
     }
 
-    btree_insert_at(node, i, key, value);
+    btree_insert_leaf(node, key, value);
+    bt->size += 1;
 }
 
-size_t btree_check_size(struct btree_node *node, int depth)
+static size_t btree_count(struct btree_node *node, int depth)
 {
+#ifdef TEST
     assert(node);
     if (depth == 0) {
-        printf("fast %d\n", node->num);
         return node->num;
     }
     size_t n = 0;
     for (int i = 0; i <= node->num; ++i) {
-        n += btree_check_size(node->subnode[i].ptr, depth - 1);
+        n += btree_count(node->subnode[i].ptr, depth - 1);
     }
-    printf("add %zu %d\n", n, node->num);
     return n + node->num;
+#else
+    return 0;
+#endif
+}
+
+bool btree_check_keys(struct btree_node *node, int depth)
+{
+#ifdef TEST
+    bool ok = true;
+    for (int i = 1; i < node->num; ++i) {
+        if (!(node->subnode[i - 1].key < node->subnode[i].key)) {
+            ok = false;
+            break;
+        }
+    }
+
+    if (!ok) {
+        fprintf(stderr, "Btree node keys:\n  ");
+        for (int i = 0; i < node->num; ++i) {
+            fprintf(stderr, "%i ", node->subnode[i].key);
+        }
+        fprintf(stderr, "\n");
+        return false;
+    }
+
+    if (depth > 1) {
+        for (int i = 0; i <= node->num; ++i) {
+            if (!btree_check_keys(node->subnode[i].ptr, depth - 1)) {
+                return false;
+            }
+        }
+    }
+    return true;
+#else
+    return true;
+#endif
 }
 
 bool btree_check(struct btree *bt)
@@ -179,13 +238,36 @@ bool btree_check(struct btree *bt)
     if (!bt->root) {
         return bt->size == 0 && bt->depth == 0;
     }
-    size_t real_size = btree_check_size(bt->root, bt->depth);
-    if (real_size != bt->size) {
-        fprintf(stderr, "Btree check: size %zu, real %zu\n", bt->size, real_size);
+
+    size_t size = btree_count(bt->root, bt->depth);
+    if (size != bt->size) {
+        fprintf(stderr, "Btree size: %zu != %zu\n", bt->size, size);
+        return false;
+    }
+    if (!btree_check_keys(bt->root, bt->depth)) {
         return false;
     }
     return true;
 #else
     return true;
 #endif
+}
+
+void *btree_find(struct btree *bt, int_key key)
+{
+    if (!bt || !bt->root) {
+        return NULL;
+    }
+    struct btree_node *node = bt->root;
+    int depth = bt->depth;
+    while (depth != 0) {
+        struct btree_node *next = btree_find_at_node(node, key);
+        node = next;
+    }
+
+    struct btree_node *pkey = btree_find_at_node(node, key);
+    if (!pkey) {
+        return NULL;
+    }
+    return pkey;
 }

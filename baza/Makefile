@@ -6,8 +6,8 @@ ifeq ($(shell uname), Darwin)
 else
 	CC = gcc
 endif
-CFLAGS = -Wall -Werror -std=c99 -pedantic
-LFLAGS = -Wall -Werror
+CFLAGS = -Wall -std=c99 -pedantic
+LFLAGS = -Wall
 cfg ?= opt
 ifeq ($(cfg), debug)
 	CFLAGS += -O0 -g -ggdb

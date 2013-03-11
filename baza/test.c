@@ -79,7 +79,7 @@ void test_check(int ok, const char *expr, const char *file, int line)
 {
     char fmt[80];
     if (!ok) {
-        if (color_text(fmt, sizeof(fmt), "#10FAILED# check %s@%d: %s\n")) {
+        if (color_text(fmt, sizeof(fmt), "#10FAILED# check %s:%d: %s\n")) {
             fprintf(stderr, fmt, file, line, expr);
         }
         s_failed_asserts++;

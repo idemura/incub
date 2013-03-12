@@ -17,13 +17,14 @@ void btree_test()
     TEST_CHECK(btree_memory() == 0);
 
     int_key key[] = {
-        10, 20, 15
+        10, 20, 15, 5, 17
     };
-    int val[] = {
-        50, 51, 52
-    };
+    int val[ARRAY_SIZE(key)];
     int update_val[ARRAY_SIZE(key)];
-    memset(update_val, 0, sizeof(update_val));
+    for (int i = 0; i < ARRAY_SIZE(key); ++i) {
+        val[i] = i;
+        update_val[i] = 100 + i;
+    }
 
     bt = btree_create();
     TEST_CHECK(btree_size(bt) == 0);

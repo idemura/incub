@@ -22,6 +22,14 @@ bool color_text(char *out, size_t out_len, const char *in)
                 in += 2;
                 continue;
             }
+#ifdef _WIN32
+            if (coloring) {
+                in += 1;
+            } else {
+                in += 2;
+            }
+            coloring = !coloring;                   
+#else
             char buf[16];
             if (coloring) {
                 snprintf(buf, sizeof(buf), "%c[0m", 27);
@@ -31,7 +39,6 @@ bool color_text(char *out, size_t out_len, const char *in)
                 snprintf(buf, sizeof(buf), "%c[1;%dm", 27, fg + 30);
                 in += 2;
             }
-            coloring = !coloring;
             size_t buf_len = strlen(buf);
             if (out_len <= buf_len) {
                 *out = 0;
@@ -40,6 +47,8 @@ bool color_text(char *out, size_t out_len, const char *in)
             memcpy(out, buf, buf_len);
             out_len -= buf_len;
             out += buf_len;
+            coloring = !coloring;
+#endif
         } else {
             *out++ = *in++;
         }

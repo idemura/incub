@@ -1,4 +1,4 @@
-default: build_and_test
+default: main
 
 RM = rm -f
 ifeq ($(shell uname), Darwin)
@@ -20,12 +20,15 @@ test_src=test.c main_test.c
 out_file=bin/$(cfg)/baza
 out_test=bin/$(cfg)/baza_test
 
-build:
+main:
 	@mkdir -p bin/$(cfg)
 	$(CC) $(CFLAGS) $(common) main.c -o $(out_file)
+
+test:
+	@mkdir -p bin/$(cfg)
 	$(CC) $(CFLAGS) $(common) $(test_src) -o $(out_test) -DTEST
 
-run_test: build
+run_test: test
 	@$(out_test)
 
 .PHONY: clean

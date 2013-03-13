@@ -15,18 +15,18 @@ ifeq ($(cfg), debug)
 else
 	CFLAGS += -O2
 endif
-common=defs.c sds.c btree.c
-test_src=test.c main_test.c
-out_file=bin/$(cfg)/baza
+main_src=defs.c sds.c btree.c main.c
+test_src=test.c sds_test.c btree_test.c main_test.c
+out_main=bin/$(cfg)/baza
 out_test=bin/$(cfg)/baza_test
 
 main:
 	@mkdir -p bin/$(cfg)
-	$(CC) $(CFLAGS) $(common) main.c -o $(out_file)
+	$(CC) $(CFLAGS) $(main_src) -o $(out_main)
 
 test:
 	@mkdir -p bin/$(cfg)
-	$(CC) $(CFLAGS) $(common) $(test_src) -o $(out_test) -DTEST
+	$(CC) $(CFLAGS) $(test_src) -o $(out_test) -DTEST
 
 run_test: test
 	@$(out_test)

@@ -32,7 +32,7 @@ struct btree {
 
 static size_t total_memory;
 static const size_t ORD = BTREE_ORD;
-static const size_t MAX_KEYS = 2 * BTREE_ORD;
+static const size_t MAX_KEYS = 2 * BTREE_ORD - 1;
 
 static void *btree_alloc(size_t size)
 {

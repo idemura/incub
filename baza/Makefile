@@ -20,14 +20,13 @@ test_src=test.c main_test.c
 out_file=bin/$(cfg)/baza
 out_test=bin/$(cfg)/baza_test
 
-build_and_test:
+build:
 	@mkdir -p bin/$(cfg)
 	$(CC) $(CFLAGS) $(common) main.c -o $(out_file)
 	$(CC) $(CFLAGS) $(common) $(test_src) -o $(out_test) -DTEST
-	@$(out_test)
 
-debug:
-	@$(MAKE) build_and_test cfg="debug"
+run_test: build
+	@$(out_test)
 
 .PHONY: clean
 clean:

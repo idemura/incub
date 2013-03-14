@@ -31,8 +31,8 @@ struct btree {
 };
 
 static size_t total_memory;
-static const size_t ORD = BTREE_ORD;
-static const size_t MAX_KEYS = 2 * BTREE_ORD - 1;
+static const int ORD = BTREE_ORD;
+static const int MAX_KEYS = 2 * BTREE_ORD - 1;
 
 static void *btree_alloc(size_t size)
 {
@@ -187,32 +187,40 @@ void btree_insert(struct btree *bt, int_key key, void *value)
         return;
     }
 
-    while (node->num == MAX_KEYS) {
+    btree_insert_key(node, key)->ptr = value;
+    bt->size += 1;
+
+    while (node->num == MAX_KEYS + 1) {
         struct btree_node *parent = node->parent;
-        btree_insert_key(node, key)->ptr = value;
         assert(node->num % 2 == 0);
+
         struct btree_node *right = new_node();
         right->parent = parent;
-        right->num = node->num >> 1;
+        right->num = node->num / 2;
         memcpy(right->subnode, node->subnode, subnode_size(right->num));
-        node->num = subnode_size(right->num - 1);
-        btree_last_subnode(node)->ptr = NULL;
+
+        node->num = subnode_size(node->num / 2 - 1);
+        btree_last_subnode(node)->ptr = NULL; // ???
         int_key key = btree_last_subnode(node)->key;
 
-        if (parent) {
-            // bt->root =
-        } else {
-
+        if (!parent) {
+            bt->root = new_node();
+            bt->root->subnode[0].key = key;
+            bt->root->subnode[0].ptr = node;
+            bt->root->subnode[1].ptr = right;
+            bt->root->parent = NULL;
+            node->parent = bt->root;
+            right->parent = bt->root;
+            bt->depth += 1;
+            break;
         }
 
+        // btree
         // Split by key
         // get another key/(value?) to insert up
         // if got root replace root in bt
-        assert(0);
+        // assert(0);
     }
-
-    btree_insert_key(node, key)->ptr = value;
-    bt->size += 1;
 }
 
 void *btree_find(struct btree *bt, int_key key)

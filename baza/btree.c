@@ -36,12 +36,15 @@ static const int MAX_KEYS = 2 * BTREE_ORD - 1;
 
 static void *btree_alloc(size_t size)
 {
+    printf("allocating %ld\n", size);
+    printf("sizeof mem_block %zd\n", sizeof(struct mem_block));
     struct mem_block *mb = malloc(sizeof(struct mem_block) + size);
     if (!mb) {
         return NULL;
     }
-    mb->size = size;
+    mb->size = 100;
     total_memory += size;
+    printf("block %p, ret %p, diff %zd\n", mb, mb->p, mb->p - (char*)mb);
     return mb->p;
 }
 
@@ -64,7 +67,9 @@ static size_t subnode_size(int num_keys)
 
 static struct btree_node *new_node()
 {
+    printf("sizeof node %ld\n", sizeof(struct btree_node));
     size_t bytes = sizeof(struct btree_node) + subnode_size(MAX_KEYS);
+    printf("subnode mem %ld\n", subnode_size(MAX_KEYS));
     struct btree_node* node = btree_alloc(bytes);
     node->parent = NULL;
     node->num = 0;
@@ -158,6 +163,22 @@ btree_find_subnode(struct btree_node *node, int_key key)
     return &node->subnode[i];
 }
 
+static void btree_print_node(struct btree_node *node)
+{
+    if (!node) {
+        printf("btree_node NULL\n");
+        return;
+    }
+    printf("btree_node %p: num=%i parent=%p\n", node, node->num, node->parent);
+    if (node->num == 0) {
+        return;
+    }
+    for (int i = 0; i < node->num; ++i) {
+        printf("%p %d ", node->subnode[i].ptr, node->subnode[i].key);
+    }
+    printf("%p\n", node->subnode[node->num].ptr);
+}
+
 void btree_insert(struct btree *bt, int_key key, void *value)
 {
     assert(value);
@@ -176,11 +197,13 @@ void btree_insert(struct btree *bt, int_key key, void *value)
     struct btree_node *node = bt->root;
     int depth = bt->depth;
     while (depth != 0) {
+        printf("depth!\n");
         node = btree_find_subnode(node, key)->ptr;
         assert(node);
         depth -= 1;
     }
 
+    btree_print_node(node);
     struct btree_subnode *pkey = btree_find_subnode(node, key);
     if (pkey != btree_last_subnode(node) && pkey->key == key) {
         pkey->ptr = value;
@@ -189,19 +212,37 @@ void btree_insert(struct btree *bt, int_key key, void *value)
 
     btree_insert_key(node, key)->ptr = value;
     bt->size += 1;
+    printf("%ld\n", sizeof(struct btree_subnode));
 
     while (node->num == MAX_KEYS + 1) {
+        printf("node to split:\n");
+        btree_print_node(node);
+
         struct btree_node *parent = node->parent;
         assert(node->num % 2 == 0);
+        int h = node->num / 2;
+        printf("node to split 2:\n");
+        btree_print_node(node);
 
         struct btree_node *right = new_node();
+        printf("node to split 3:\n");
+        btree_print_node(node);
         right->parent = parent;
-        right->num = node->num / 2;
-        memcpy(right->subnode, node->subnode, subnode_size(right->num));
+        right->num = h;
+        printf("%d\n", node->subnode[h].key);
+        printf("%d\n", node->subnode[h + 1].key);
+        printf("bytes to copy %zd\n", subnode_size(right->num));
+        printf("node to split 4:\n");
+        btree_print_node(node);
+        memcpy(right->subnode, node->subnode + h, subnode_size(right->num));
+        printf("right:\n");
+        btree_print_node(right);
 
-        node->num = subnode_size(node->num / 2 - 1);
+        node->num = h - 1;
         btree_last_subnode(node)->ptr = NULL; // ???
         int_key key = btree_last_subnode(node)->key;
+        printf("left:\n");
+        btree_print_node(node);
 
         if (!parent) {
             bt->root = new_node();
@@ -209,12 +250,14 @@ void btree_insert(struct btree *bt, int_key key, void *value)
             bt->root->subnode[0].ptr = node;
             bt->root->subnode[1].ptr = right;
             bt->root->parent = NULL;
+            printf("new root:\n");
+            btree_print_node(bt->root);
             node->parent = bt->root;
             right->parent = bt->root;
             bt->depth += 1;
             break;
         }
-
+        printf("kokoko\n");
         // btree
         // Split by key
         // get another key/(value?) to insert up
@@ -237,12 +280,13 @@ void *btree_find(struct btree *bt, int_key key)
             found = true;
         }
         node = pkey->ptr;
+        depth -= 1;
     }
 
     struct btree_subnode *pkey = btree_find_subnode(node, key);
-    if (!pkey) {
-        return NULL;
-    } else {
+    if (pkey != btree_last_subnode(node) && pkey->key == key) {
         return pkey->ptr;
+    } else {
+        return NULL;
     }
 }

@@ -16,6 +16,11 @@ static size_t btree_count(struct btree_node *node, int depth)
 
 static bool btree_check_keys(struct btree_node *node, int depth)
 {
+    if (node->num > MAX_KEYS) {
+        printf("Btree node has %d keys, limit %d\n", node->num, MAX_KEYS);
+        return false;
+    }
+
     bool ok = true;
     for (int i = 1; i < node->num; ++i) {
         if (!(node->subnode[i - 1].key < node->subnode[i].key)) {
@@ -75,12 +80,12 @@ void btree_test()
     btree_destroy(bt);
     TEST_CHECK(btree_memory() == 0);
 
-    int_key key[] = {
-        10, 20, 15, 5, 17
+    int_key keys[] = {
+        10, 20, 15, 5
     };
-    int val[ARRAY_SIZE(key)];
-    int update_val[ARRAY_SIZE(key)];
-    for (int i = 0; i < ARRAY_SIZE(key); ++i) {
+    int val[ARRAY_SIZE(keys)];
+    int update_val[ARRAY_SIZE(keys)];
+    for (int i = 0; i < ARRAY_SIZE(keys); ++i) {
         val[i] = i;
         update_val[i] = 100 + i;
     }
@@ -89,20 +94,21 @@ void btree_test()
     TEST_CHECK(btree_size(bt) == 0);
     TEST_CHECK(btree_check(bt));
 
-    for (int i = 0; i < ARRAY_SIZE(key); ++i) {
-        btree_insert(bt, key[i], &val[i]);
+    for (int i = 0; i < ARRAY_SIZE(keys); ++i) {
+        printf("---> insert %d key %d...\n", i + 1, keys[i]);
+        btree_insert(bt, keys[i], &val[i]);
         TEST_CHECK(btree_size(bt) == i + 1);
-        TEST_CHECK(btree_find(bt, key[i]) == &val[i]);
+        TEST_CHECK(btree_find(bt, keys[i]) == &val[i]);
         TEST_CHECK(btree_check(bt));
         if (i == 0) {
-            TEST_CHECK(btree_find(bt, key[1]) == NULL);
+            TEST_CHECK(btree_find(bt, keys[1]) == NULL);
         }
     }
 
-    for (int i = 0; i < ARRAY_SIZE(key); ++i) {
-        btree_insert(bt, key[i], &update_val[i]);
-        TEST_CHECK(btree_find(bt, key[i]) == &update_val[i]);
-        TEST_CHECK(btree_size(bt) == ARRAY_SIZE(key));
+    for (int i = 0; i < ARRAY_SIZE(keys); ++i) {
+        btree_insert(bt, keys[i], &update_val[i]);
+        TEST_CHECK(btree_find(bt, keys[i]) == &update_val[i]);
+        TEST_CHECK(btree_size(bt) == ARRAY_SIZE(keys));
     }
 
     btree_destroy(bt);

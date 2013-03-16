@@ -7,7 +7,7 @@ typedef int int_key;
 
 struct btree;
 
-struct btree *btree_create();
+struct btree *btree_create(int min_keys);
 void btree_destroy(struct btree *bt);
 size_t btree_size(struct btree *bt);
 void btree_insert(struct btree *bt, int_key key, void *value);

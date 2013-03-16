@@ -26,13 +26,12 @@ struct btree_node {
 
 struct btree {
     size_t size;
-    size_t depth;
+    int depth;
+    int max_keys;
     struct btree_node *root;
 };
 
 static size_t total_memory;
-static const int ORD = BTREE_ORD;
-static const int MAX_KEYS = 2 * BTREE_ORD - 1;
 
 static void *btree_alloc(size_t size)
 {
@@ -42,7 +41,6 @@ static void *btree_alloc(size_t size)
     if (!mb) {
         return NULL;
     }
-    mb->size = 100;
     total_memory += size;
     printf("block %p, ret %p, diff %zd\n", mb, mb->p, mb->p - (char*)mb);
     return mb->p;
@@ -65,11 +63,11 @@ static size_t subnode_size(int num_keys)
            offsetof(struct btree_subnode, key);
 }
 
-static struct btree_node *new_node()
+static struct btree_node *new_node(int max_keys)
 {
     printf("sizeof node %ld\n", sizeof(struct btree_node));
-    size_t bytes = sizeof(struct btree_node) + subnode_size(MAX_KEYS);
-    printf("subnode mem %ld\n", subnode_size(MAX_KEYS));
+    size_t bytes = sizeof(struct btree_node) + subnode_size(max_keys);
+    printf("subnode mem %ld\n", subnode_size(max_keys));
     struct btree_node* node = btree_alloc(bytes);
     node->parent = NULL;
     node->num = 0;
@@ -81,11 +79,12 @@ size_t btree_memory()
     return total_memory;
 }
 
-struct btree *btree_create()
+struct btree *btree_create(int min_keys)
 {
     struct btree *bt = btree_alloc(sizeof(*bt));
     if (bt) {
         memset(bt, 0, sizeof(*bt));
+        bt->max_keys = 2 * min_keys - 1;
     }
     return bt;
 }
@@ -187,7 +186,7 @@ void btree_insert(struct btree *bt, int_key key, void *value)
         return;
     }
     if (bt->root == NULL) {
-        struct btree_node *node = new_node();
+        struct btree_node *node = new_node(bt->max_keys);
         btree_insert_key(node, key)->ptr = value;
         bt->root = node;
         bt->size = 1;
@@ -214,7 +213,7 @@ void btree_insert(struct btree *bt, int_key key, void *value)
     bt->size += 1;
     printf("%ld\n", sizeof(struct btree_subnode));
 
-    while (node->num == MAX_KEYS + 1) {
+    while (node->num == bt->max_keys + 1) {
         printf("node to split:\n");
         btree_print_node(node);
 
@@ -224,7 +223,7 @@ void btree_insert(struct btree *bt, int_key key, void *value)
         printf("node to split 2:\n");
         btree_print_node(node);
 
-        struct btree_node *right = new_node();
+        struct btree_node *right = new_node(bt->max_keys);
         printf("node to split 3:\n");
         btree_print_node(node);
         right->parent = parent;
@@ -245,7 +244,7 @@ void btree_insert(struct btree *bt, int_key key, void *value)
         btree_print_node(node);
 
         if (!parent) {
-            bt->root = new_node();
+            bt->root = new_node(bt->max_keys);
             bt->root->subnode[0].key = key;
             bt->root->subnode[0].ptr = node;
             bt->root->subnode[1].ptr = right;

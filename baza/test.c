@@ -28,7 +28,7 @@ bool color_text(char *out, size_t out_len, const char *in)
             } else {
                 in += 2;
             }
-            coloring = !coloring;                   
+            coloring = !coloring;
 #else
             char buf[16];
             if (coloring) {
@@ -87,8 +87,8 @@ void test_check(int ok, const char *expr, const char *file, int line)
 {
     char fmt[80];
     if (!ok) {
-        if (color_text(fmt, sizeof(fmt), "#1FAILED# check %s:%d: %s\n")) {
-            fprintf(stderr, fmt, file, line, expr);
+        if (color_text(fmt, sizeof(fmt), "#1FAILED# in %s %s:%d: %s\n")) {
+            fprintf(stderr, fmt, s_name, file, line, expr);
         }
         s_failed_asserts++;
     }
@@ -106,5 +106,5 @@ int test_report()
             fprintf(stderr, fmt, s_passed, s_failed);
         }
     }
-    return s_failed == 0? 0: -1;
+    return s_failed == 0? 0: 1;
 }

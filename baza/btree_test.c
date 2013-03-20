@@ -14,10 +14,15 @@ static size_t btree_count(struct btree_node *node, int depth)
     return n + node->num;
 }
 
-static bool btree_check_keys(struct btree_node *node, int max_keys, int depth)
+static bool btree_check_keys(struct btree_node *node, int depth,
+        int min_keys, int max_keys)
 {
-    if (node->num > max_keys) {
-        printf("Btree node has %d keys, limit %d\n", node->num, max_keys);
+    if (!node) {
+        return true;
+    }
+    if (!(min_keys <= node->num && node->num <= max_keys)) {
+        fprintf(stderr, "Btree %i keys, must be %d-%d\n", node->num,
+                min_keys, max_keys);
         return false;
     }
 
@@ -40,7 +45,8 @@ static bool btree_check_keys(struct btree_node *node, int max_keys, int depth)
 
     if (depth > 1) {
         for (int i = 0; i <= node->num; ++i) {
-            if (!btree_check_keys(node->subnode[i].ptr, max_keys, depth - 1)) {
+            if (!btree_check_keys(node->subnode[i].ptr, depth - 1,
+                    min_keys, max_keys)) {
                 return false;
             }
         }
@@ -62,7 +68,7 @@ static bool btree_check(struct btree *bt)
         fprintf(stderr, "Btree size: %zu != %zu\n", bt->size, size);
         return false;
     }
-    if (!btree_check_keys(bt->root, bt->max_keys, bt->depth)) {
+    if (!btree_check_keys(bt->root, bt->depth, bt->min_keys, bt->max_keys)) {
         return false;
     }
     return true;
@@ -74,11 +80,11 @@ void btree_test()
 
     test_begin("Btree");
 
-    TEST_CHECK(btree_memory() == 0);
+    TEST_CHECK(btree_memory == 0);
     bt = btree_create(2);
-    TEST_CHECK(btree_memory() != 0);
+    TEST_CHECK(btree_memory != 0);
     btree_destroy(bt);
-    TEST_CHECK(btree_memory() == 0);
+    TEST_CHECK(btree_memory == 0);
 
     int_key keys[] = {
         10, 20, 15, 5
@@ -112,7 +118,7 @@ void btree_test()
     }
 
     btree_destroy(bt);
-    TEST_CHECK(btree_memory() == 0);
+    TEST_CHECK(btree_memory == 0);
 
     test_end();
 }

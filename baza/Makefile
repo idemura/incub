@@ -11,7 +11,7 @@ CFLAGS = -Wall -std=c99 -pedantic $(DISABLE_WARNINGS)
 LFLAGS = -Wall
 cfg ?= opt
 ifeq ($(cfg), debug)
-	CFLAGS += -O0 -g -ggdb
+	CFLAGS += -O0 -g -ggdb -DDEBUG
 else
 	CFLAGS += -O2
 endif

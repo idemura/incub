@@ -3,6 +3,15 @@
 #include <stdio.h>
 #include <memory.h>
 
+// TODO:
+
+// Ord in variable.
+
+// insert_key: check max key num (memory overflow)
+
+// btree: add allocator, because it allocs same block size always,
+// possible optimizations.
+
 #define BTREE_ORD 2
 
 struct mem_block {
@@ -14,7 +23,7 @@ struct btree_node;
 
 struct btree_branch {
     struct btree_node* ptr;
-    int_key key;
+    key_t key;
 };
 
 struct btree_node {
@@ -35,26 +44,30 @@ static size_t btree_memory;
 
 static void *btree_alloc(size_t size)
 {
-    size = (size + 3) & ~3; // Align on 4 bytes.
-    struct mem_block *mb = malloc(sizeof(struct mem_block) + size + sizeof(int));
+#ifdef DEBUG
+    const size_t padding = sizeof(int);
+#else
+    const size_t padding = 0;
+#endif
+    size = (size + 3) & ~3; // Align on 4 byte boundary
+    struct mem_block *mb = malloc(sizeof(struct mem_block) + size + padding);
     if (!mb) {
         return NULL;
     }
     mb->size = size;
     btree_memory += mb->size;
 #ifdef DEBUG
-    memset(mb->p, 0xcc, mb->size);
+    memset(mb->p, 0xcc, size + padding);
 #endif
     return mb->p;
 }
 
 static void btree_free(void *p)
 {
-    struct mem_block *mb;
     if (!p) {
         return;
     }
-    mb = (void*)((char*)p - sizeof(struct mem_block));
+    struct mem_block *mb = (void*)((char*)p - sizeof(struct mem_block));
     btree_memory -= mb->size;
 #ifdef DEBUG
     assert(*(int*)(mb->p + mb->size) == 0xcccccccc);
@@ -117,7 +130,7 @@ size_t btree_size(struct btree *bt)
 }
 
 static void btree_insert_in(struct btree_node *node, int i,
-        int_key key, void *value)
+        key_t key, void *value)
 {
     if (i != node->num && node->branch[i].key == key) {
         node->branch[i].ptr = value;
@@ -134,7 +147,7 @@ static void btree_insert_in(struct btree_node *node, int i,
     node->num += 1;
 }
 
-static int btree_find_branch(struct btree_node *node, int_key key)
+static int btree_find_branch(struct btree_node *node, key_t key)
 {
     for (int i = 0; i < node->num; ++i) {
         if (key <= node->branch[i].key) {
@@ -155,12 +168,12 @@ static void btree_print_node(struct btree_node *node)
         return;
     }
     for (int i = 0; i < node->num; ++i) {
-        printf("%p %d ", node->branch[i].ptr, node->branch[i].key);
+        printf("%p %ld ", node->branch[i].ptr, node->branch[i].key);
     }
     printf("%p\n", node->branch[node->num].ptr);
 }
 
-void btree_insert(struct btree *bt, int_key key, void *value)
+void btree_insert(struct btree *bt, key_t key, void *value)
 {
     int jkey;
 
@@ -171,7 +184,7 @@ void btree_insert(struct btree *bt, int_key key, void *value)
     }
 
     if (bt->root == NULL) {
-        struct btree_node *node = new_node(bt->max_keys);
+        struct btree_node *node = btree_new_node(bt->max_keys);
         btree_insert_in(node, 0, key, value);
         bt->root = node;
         bt->size = 1;
@@ -204,49 +217,47 @@ void btree_insert(struct btree *bt, int_key key, void *value)
 
         if (key < node->branch[h].key) {
             memcpy(new->branch, node->branch, sizeof(struct btree_branch) * h);
-            new.branch[new->num].ptr = NULL;
+            new->branch[new->num].ptr = NULL;
             memcpy(node->branch, node->branch + h, sizeof(struct btree_branch) * h);
-            node.branch[node->num].ptr = node.branch[2 * node->num].ptr;
+            node->branch[node->num].ptr = node->branch[2 * node->num].ptr;
             new->num = h;
             new->branch[new->num].ptr = NULL;
-            int where = btree_find_branch(node, key);
-            btree_insert_in(node, where, key, value);
+            jkey = btree_find_branch(node, key);
+            btree_insert_in(node, jkey, key, value);
             key = node->branch[h].key;
             new->num = h;
             value = new;
         } else {
-
         }
     }
 
-    if (!node) {
-    }
-
-    btree_insert_key(node, key)->ptr = value;
+    btree_insert_in(node, key, jkey, value);
     bt->size += 1;
     printf("%ld\n", sizeof(struct btree_branch));
 }
 
-void *btree_find(struct btree *bt, int_key key)
+void *btree_find(struct btree *bt, key_t key)
 {
+    int jkey;
+
     if (!bt || !bt->root) {
         return NULL;
     }
+
     struct btree_node *node = bt->root;
-    int depth = bt->depth;
     bool found = false;
-    while (depth != 0) {
-        struct btree_branch *pkey = btree_find_branch(node, key);
-        if (pkey != btree_last_branch(node) && pkey->key == key) {
+    for (int d = bt->depth; d != 0; --d) {
+        jkey = btree_find_branch(node, key);
+        if (jkey != node->num && node->branch[jkey].key == key) {
+            // Find rightmost value?
             found = true;
         }
-        node = pkey->ptr;
-        depth -= 1;
+        node = node->branch[jkey].ptr;
     }
 
-    struct btree_branch *pkey = btree_find_branch(node, key);
-    if (pkey != btree_last_branch(node) && pkey->key == key) {
-        return pkey->ptr;
+    jkey = btree_find_branch(node, key);
+    if (found || (jkey != node->num && node->branch[jkey].key == key)) {
+        return node->branch[jkey].ptr;
     } else {
         return NULL;
     }

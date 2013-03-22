@@ -14,14 +14,20 @@ static size_t btree_count(struct btree_node *node, int depth)
     return n + node->num;
 }
 
+static bool btree_check_keys_num(struct btree_node *node,
+        int min_keys, int max_keys)
+{
+    return !node->parent || (min_keys <= node->num && node->num <= max_keys);
+}
+
 static bool btree_check_keys(struct btree_node *node, int depth,
         int min_keys, int max_keys)
 {
     if (!node) {
         return true;
     }
-    if (!(min_keys <= node->num && node->num <= max_keys)) {
-        fprintf(stderr, "Btree %i keys, must be %d-%d\n", node->num,
+    if (!btree_check_keys_num(node, min_keys, max_keys)) {
+        fprintf(stderr, "Btree node: %i keys, must be %d-%d\n", node->num,
                 min_keys, max_keys);
         return false;
     }
@@ -37,7 +43,7 @@ static bool btree_check_keys(struct btree_node *node, int depth,
     if (!ok) {
         fprintf(stderr, "Btree node keys:\n  ");
         for (int i = 0; i < node->num; ++i) {
-            fprintf(stderr, "%i ", node->branch[i].key);
+            fprintf(stderr, "%li ", node->branch[i].key);
         }
         fprintf(stderr, "\n");
         return false;
@@ -87,7 +93,7 @@ void btree_test()
     TEST_CHECK(btree_memory == 0);
 
     const key_t keys[] = {
-        10, 20, 15, 5
+        10, 20 //, 15
     };
     int val[ARRAY_SIZE(keys)];
     int update_val[ARRAY_SIZE(keys)];
@@ -101,13 +107,13 @@ void btree_test()
     TEST_CHECK(btree_check(bt));
 
     for (int i = 0; i < ARRAY_SIZE(keys); ++i) {
-        printf("---> insert %d key %d...\n", i + 1, keys[i]);
+        printf("---> insert %d key %ld...\n", i + 1, keys[i]);
         btree_insert(bt, keys[i], &val[i]);
         TEST_CHECK(btree_size(bt) == i + 1);
         TEST_CHECK(btree_find(bt, keys[i]) == &val[i]);
         TEST_CHECK(btree_check(bt));
         if (i == 0) {
-            TEST_CHECK(btree_find(bt, keys[1]) == NULL);
+            TEST_CHECK(btree_find(bt, 20) == NULL);
         }
     }
 

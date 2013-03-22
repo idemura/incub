@@ -137,8 +137,8 @@ static void btree_insert_in(struct btree_node *node, int i,
         return;
     }
 
-    int j = node->num + 1;
-    node->branch[j].ptr = node->branch[j - 1].ptr;
+    int j = node->num;
+    node->branch[j + 1].ptr = node->branch[j].ptr;
     for (; j > i; --j) {
         node->branch[j] = node->branch[j - 1];
     }
@@ -231,9 +231,8 @@ void btree_insert(struct btree *bt, key_t key, void *value)
         }
     }
 
-    btree_insert_in(node, key, jkey, value);
+    btree_insert_in(node, jkey, key, value);
     bt->size += 1;
-    printf("%ld\n", sizeof(struct btree_branch));
 }
 
 void *btree_find(struct btree *bt, key_t key)

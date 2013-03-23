@@ -12,8 +12,6 @@
 // btree: add allocator, because it allocs same block size always,
 // possible optimizations.
 
-#define BTREE_ORD 2
-
 struct mem_block {
     size_t size;
     char p[];
@@ -157,25 +155,17 @@ static int btree_find_branch(struct btree_node *node, key_t key)
     return node->num;
 }
 
-static void btree_print_node(struct btree_node *node)
+static void btree_copy_branch(struct btree_node *dst, struct btree_node *src,
+        int start, int end)
 {
-    if (!node) {
-        printf("btree_node NULL\n");
-        return;
-    }
-    printf("btree_node %p: num=%i parent=%p\n", node, node->num, node->parent);
-    if (node->num == 0) {
-        return;
-    }
-    for (int i = 0; i < node->num; ++i) {
-        printf("%p %ld ", node->branch[i].ptr, node->branch[i].key);
-    }
-    printf("%p\n", node->branch[node->num].ptr);
+    memcpy(dst->branch, src->branch + start,
+            sizeof(struct btree_branch) * (end - start));
 }
 
 void btree_insert(struct btree *bt, key_t key, void *value)
 {
     int jkey;
+    struct btree_node *node;
 
     assert(value);
     assert(bt);
@@ -184,54 +174,81 @@ void btree_insert(struct btree *bt, key_t key, void *value)
     }
 
     if (bt->root == NULL) {
-        struct btree_node *node = btree_new_node(bt->max_keys);
+        node = btree_new_node(bt->max_keys);
         btree_insert_in(node, 0, key, value);
         bt->root = node;
         bt->size = 1;
         return;
     }
 
-    struct btree_node *node = bt->root;
+    node = bt->root;
     int depth = bt->depth;
     while (depth != 0) {
-        printf("depth!\n");
         jkey = btree_find_branch(node, key);
         node = node->branch[jkey].ptr;
         assert(node);
         depth -= 1;
     }
 
-    btree_print_node(node);
     jkey = btree_find_branch(node, key);
     if (jkey != node->num && node->branch[jkey].key == key) {
         node->branch[jkey].ptr = value;
         return;
     }
 
-    while (node && node->num == bt->max_keys + 1) {
+    while (node && node->num == bt->max_keys) {
+        assert(node->num % 2 == 0);
         int h = node->num / 2;
-        struct btree_node* new = btree_new_node(bt->max_keys);
-        new->parent = node->parent;
-        new->num = h;
-        node->num = h;
+        struct btree_node *left = btree_new_node(bt->max_keys);
+        left->parent = node->parent;
 
-        if (key < node->branch[h].key) {
-            memcpy(new->branch, node->branch, sizeof(struct btree_branch) * h);
-            new->branch[new->num].ptr = NULL;
-            memcpy(node->branch, node->branch + h, sizeof(struct btree_branch) * h);
-            node->branch[node->num].ptr = node->branch[2 * node->num].ptr;
-            new->num = h;
-            new->branch[new->num].ptr = NULL;
-            jkey = btree_find_branch(node, key);
-            btree_insert_in(node, jkey, key, value);
-            key = node->branch[h].key;
-            new->num = h;
-            value = new;
+        // Virtually insert key in node `node` and find what key will be in
+        // at index `h`. This follows to 3 cases:
+        if (jkey < h) {
+            btree_copy_branch(left, node, 0, h - 1);
+            left->branch[h - 1].ptr = NULL;
+            left->num = h - 1;
+            btree_insert_in(left, jkey, key, value);
+
+            key = node->branch[h - 1].key;
+
+            btree_copy_branch(node, node, h, node->num);
+            node->branch[h].ptr = node->branch[node->num].ptr;
+            node->num = h;
+        } else if (jkey == h) {
+            btree_copy_branch(left, node, 0, h);
+            left->branch[h].ptr = NULL;
+
+            btree_copy_branch(node, node, h, node->num);
+            node->branch[h].ptr = node->branch[node->num].ptr;
+            node->num = h;
         } else {
+            btree_copy_branch(left, node, 0, h);
+            left->branch[h].ptr = NULL;
+            left->num = h;
+
+            key = node->branch[h + 1].key;
+
+            btree_copy_branch(node, node, h + 1, node->num);
+            node->branch[h - 1].ptr = node->branch[node->num].ptr;
+            node->num = h - 1;
+            btree_insert_in(node, jkey - h - 1, key, value);
         }
+        assert(left->num == h);
+        assert(node->num == h);
+        value = left;
+        node = node->parent;
     }
 
-    btree_insert_in(node, jkey, key, value);
+    if (!node) {
+        node = btree_new_node(bt->max_keys);
+        btree_insert_in(node, 0, key, value);
+        node->branch[node->num].ptr = bt->root;
+        bt->root = node;
+        bt->depth += 1;
+    } else {
+        btree_insert_in(node, jkey, key, value);
+    }
     bt->size += 1;
 }
 

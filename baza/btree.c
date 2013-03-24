@@ -261,20 +261,25 @@ void *btree_find(struct btree *bt, key_t key)
     }
 
     struct btree_node *node = bt->root;
-    bool found = false;
-    for (int d = bt->depth; d != 0; --d) {
+    int depth = bt->depth;
+    for (; ; --depth) {
         jkey = btree_find_branch(node, key);
         if (jkey != node->num && node->branch[jkey].key == key) {
-            // Find rightmost value?
-            found = true;
+            break;
         }
+        node = node->branch[jkey].ptr;
+        if (depth == 0) {
+            return NULL;
+        }
+    }
+
+    for(; depth != 0; --depth) {
+        assert(node);
+        jkey = node->num;
         node = node->branch[jkey].ptr;
     }
 
-    jkey = btree_find_branch(node, key);
-    if (found || (jkey != node->num && node->branch[jkey].key == key)) {
-        return node->branch[jkey].ptr;
-    } else {
-        return NULL;
-    }
+    assert(node);
+    assert(depth == 0);
+    return node->branch[jkey].ptr;
 }

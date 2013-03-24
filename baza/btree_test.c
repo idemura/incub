@@ -157,23 +157,30 @@ void btree_test_insert(key_t *keys, int keys_num)
 {
     struct btree *bt = btree_create(2);
     for (int i = 0; i < keys_num; ++i) {
-        fprintf(btree_out, "Insert key %li\n", keys[i]);
+            fprintf(btree_out, "Insert %li\n", keys[i]);
+        if (keys[i] == 13) {
+            printf("!!!\n");
+        }
         btree_insert(bt, keys[i], &keys[i]);
-        TEST_CHECK(btree_size(bt) == i + 1);
-        TEST_CHECK(btree_find(bt, keys[i]) == &keys[i]);
         TEST_CHECK(btree_check_print(bt));
+        TEST_CHECK(btree_size(bt) == i + 1);
+        for (int j = 0; j < i; ++j) {
+            void *val = btree_find(bt, keys[j]);
+            if (val != &keys[j]) {
+                fprintf(btree_out, "Key %li not found\n", keys[j]);
+            }
+            TEST_CHECK(val == &keys[j]);
+        }
     }
 
     key_t *new_val = malloc(keys_num * sizeof(key_t));
     memset(new_val, 0, keys_num * sizeof(key_t));
-
     for (int i = 0; i < keys_num; ++i) {
-        fprintf(btree_out, "Update key %li\n", keys[i]);
+        // fprintf(btree_out, "Update %li\n", keys[i]);
         btree_insert(bt, keys[i], &new_val[i]);
         TEST_CHECK(btree_find(bt, keys[i]) == &new_val[i]);
         TEST_CHECK(btree_size(bt) == keys_num);
     }
-
     free(new_val);
 
     btree_destroy(bt);
@@ -193,15 +200,30 @@ void btree_test()
     btree_destroy(bt);
     TEST_CHECK(btree_memory == 0);
 
-    // key_t keys1[] = {
-    //     10, 20, 15, 5
-    // };
-    // btree_test_insert(keys1, ARRAY_SIZE(keys1));
-
+    key_t keys1[] = {
+        10, 20, 15, 5
+    };
+    btree_test_insert(keys1, ARRAY_SIZE(keys1));
     key_t keys2[] = {
-        10, 20, 15, 5, 7
+        10, 20, 15, 5, 3
     };
     btree_test_insert(keys2, ARRAY_SIZE(keys2));
+    key_t keys3[] = {
+        10, 20, 15, 5, 7
+    };
+    btree_test_insert(keys3, ARRAY_SIZE(keys3));
+    key_t keys4[] = {
+        10, 20, 15, 5, 13
+    };
+    btree_test_insert(keys4, ARRAY_SIZE(keys4));
+    key_t keys5[] = {
+        10, 20, 15, 5, 17
+    };
+    btree_test_insert(keys5, ARRAY_SIZE(keys5));
+    key_t keys6[] = {
+        10, 20, 15, 5, 23
+    };
+    btree_test_insert(keys6, ARRAY_SIZE(keys6));
 
     test_end();
 }

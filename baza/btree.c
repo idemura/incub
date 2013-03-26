@@ -221,10 +221,6 @@ void btree_insert(struct btree *bt, key_t key, void *value)
         return;
     }
 
-    if (key == 3) {
-        printf("wohaha\n");
-    }
-
     if (btree_locate(bt, key, &node, &jkey)) {
         node->branch[jkey].ptr = value;
         return;
@@ -247,12 +243,10 @@ void btree_insert(struct btree *bt, key_t key, void *value)
             btree_insert_in(left, jkey, key, value);
             btree_copy_branch(node, node, h, node->num);
         } else if (jkey == h) {
-            printf("222\n");
             btree_copy_branch(left, node, 0, h);
             left->branch[left->num].ptr = value;
             btree_copy_branch(node, node, h, node->num);
         } else {
-            printf("333\n");
             new_key = node->branch[h].key;
             btree_copy_branch(left, node, 0, h);
             btree_copy_branch(node, node, h + 1, node->num);
@@ -274,7 +268,6 @@ void btree_insert(struct btree *bt, key_t key, void *value)
         left->parent = new_node;
         bt->root = new_node;
         bt->depth += 1;
-        printf("grow depth\n");
     } else {
         btree_insert_in(node, jkey, key, value);
     }
@@ -288,10 +281,6 @@ void *btree_find(struct btree *bt, key_t key)
 
     if (!bt) {
         return NULL;
-    }
-
-    if (key == 10) {
-        printf("searching...\n");
     }
 
     if (btree_locate(bt, key, &node, &jkey)) {

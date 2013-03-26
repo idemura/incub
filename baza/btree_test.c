@@ -157,10 +157,7 @@ void btree_test_insert(key_t *keys, int keys_num)
 {
     struct btree *bt = btree_create(2);
     for (int i = 0; i < keys_num; ++i) {
-            fprintf(btree_out, "Insert %li\n", keys[i]);
-        if (keys[i] == 13) {
-            printf("!!!\n");
-        }
+        // fprintf(btree_out, "Insert %li\n", keys[i]);
         btree_insert(bt, keys[i], &keys[i]);
         TEST_CHECK(btree_check_print(bt));
         TEST_CHECK(btree_size(bt) == i + 1);

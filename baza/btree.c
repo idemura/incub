@@ -235,8 +235,8 @@ void btree_insert(struct btree *bt, key_t key, void *value)
         left->parent = node->parent;
 
         key_t new_key = key;
-        // Virtually insert key in node `node` and find what key will be in
-        // at index `h`. This follows to 3 cases:
+        // Virtually insert key in node `node` and find what key will be at
+        // index `h`. This follows to 3 cases:
         if (jkey < h) {
             new_key = node->branch[h - 1].key;
             btree_copy_branch(left, node, 0, h - 1);

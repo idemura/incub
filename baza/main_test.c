@@ -1,11 +1,13 @@
 #include "test.h"
 
-void sds_test();
+void dstr_test();
 void btree_test();
+void pque_test();
 
 int main()
 {
-    sds_test();
+    dstr_test();
     btree_test();
+    pque_test();
     return test_report();
 }

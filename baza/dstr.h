@@ -6,7 +6,7 @@
 
 char *dstr_dup(const char *strz);
 char *dstr_new(size_t capacity);
-size_t dstr_len(const char *s);
-void dstr_free(const char *s);
+size_t dstr_len(const char *ds);
+void dstr_free(const char *ds);
 
 #endif

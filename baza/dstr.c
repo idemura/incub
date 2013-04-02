@@ -33,14 +33,14 @@ char *dstr_new(size_t capacity)
     return DSTR_CSTR(ds);
 }
 
-size_t dstr_len(const char *s)
+size_t dstr_len(const char *ds)
 {
-    return DSTR(s)->len;
+    return DSTR(ds)->len;
 }
 
-void dstr_free(const char *s)
+void dstr_free(const char *ds)
 {
-    if (s) {
-        free(DSTR(s));
+    if (ds) {
+        free(DSTR(ds));
     }
 }

@@ -188,7 +188,7 @@ void btree_test()
 {
     struct btree *bt;
 
-    test_begin("Btree");
+    test_begin("BTree");
     btree_out = stderr;
 
     TEST_CHECK(btree_memory == 0);

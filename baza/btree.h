@@ -3,7 +3,7 @@
 
 #include "defs.h"
 
-typedef long int key_t;
+typedef uintptr_t key_t;
 
 struct btree;
 

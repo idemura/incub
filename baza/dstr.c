@@ -5,8 +5,8 @@
 #define DSTR_CSTR(s) ((s)->str)
 
 struct dstr {
-    int len;
-    int capacity;
+    size_t len;
+    size_t capacity;
     char str[];
 };
 

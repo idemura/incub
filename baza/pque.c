@@ -1,24 +1,26 @@
 #include "pque.h"
 
 struct pque {
-    void **heap;
+    pque_key *heap;
     pque_compare cmpf;
     iref size;
     iref capacity;
 };
 
-struct pque *pque_create(pque_compare cmpf)
+struct pque *pque_create(pque_compare cmpf, iref capacity)
 {
     assert(cmpf);
     if (!cmpf) {
         return NULL;
     }
-    const iref capacity = 24;
     struct pque *pq = malloc(sizeof(struct pque));
     if (!pq) {
         return NULL;
     }
-    pq->heap = malloc(capacity * sizeof(void*));
+    if (capacity < 1) {
+        capacity = 1;
+    }
+    pq->heap = malloc(capacity * sizeof(pque_key));
     if (!pq->heap) {
         free(pq);
         return NULL;
@@ -58,14 +60,30 @@ static void pque_heapify(struct pque *pq, iref i)
 void pque_insert(struct pque *pq, pque_key key)
 {
     if (pq->size == pq->capacity) {
-        // TODO: Reallocate, and copy
-        assert(false);
-        return;
+        iref capacity = pq->capacity + pq->capacity / 2;
+        if (capacity <= pq->capacity) {
+            capacity += pq->capacity + 1;
+        }
+        void *new = malloc(capacity * sizeof(pque_key));
+        if (!new) {
+            return;
+        }
+        memcpy(new, pq->heap, pq->size * sizeof(pque_key));
+        pq->capacity = capacity;
+        pq->heap = new;
     }
 
     pq->heap[pq->size] = key;
     pque_heapify(pq, pq->size);
     pq->size += 1;
+}
+
+pque_key pque_top(struct pque *pq)
+{
+    if (!pq || pq->size == 0) {
+        return NULL;
+    }
+    return pq->heap[0];
 }
 
 pque_key pque_pop(struct pque *pq)

@@ -11,6 +11,6 @@
 typedef size_t iref;
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-#define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
+#define FIELD_SIZEOF(s, f) (sizeof(((s*)0)->f))
 
 #endif

@@ -146,15 +146,15 @@ static bool btree_check_print(struct btree *bt)
     return ret;
 }
 
-void btree_test_insert(key_t *keys, int keys_num)
+void btree_test_insert(key_t *keys, iref keys_num)
 {
     struct btree *bt = btree_create(2);
-    for (int i = 0; i < keys_num; ++i) {
+    for (iref i = 0; i < keys_num; ++i) {
         // fprintf(test_out(), "Insert %li\n", keys[i]);
         btree_insert(bt, keys[i], &keys[i]);
         TEST_CHECK(btree_check_print(bt));
         TEST_CHECK(btree_size(bt) == i + 1);
-        for (int j = 0; j < i; ++j) {
+        for (iref j = 0; j < i; ++j) {
             void *val = btree_find(bt, keys[j]);
             if (val != &keys[j]) {
                 fprintf(test_out(), "Key %li not found\n", keys[j]);
@@ -165,7 +165,7 @@ void btree_test_insert(key_t *keys, int keys_num)
 
     key_t *new_val = malloc(keys_num * sizeof(key_t));
     memset(new_val, 0, keys_num * sizeof(key_t));
-    for (int i = 0; i < keys_num; ++i) {
+    for (iref i = 0; i < keys_num; ++i) {
         // fprintf(test_out(), "Update %li\n", keys[i]);
         btree_insert(bt, keys[i], &new_val[i]);
         TEST_CHECK(btree_find(bt, keys[i]) == &new_val[i]);

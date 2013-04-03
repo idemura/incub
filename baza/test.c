@@ -6,6 +6,7 @@ static const char *s_name;
 static int s_failed_asserts;
 static int s_failed;
 static int s_passed;
+static FILE *s_out;
 
 bool color_text(char *out, size_t out_len, const char *in)
 {
@@ -110,5 +111,13 @@ int test_report()
 
 FILE *test_out()
 {
-    return stderr;
+    if (!s_out) {
+        s_out = stderr;
+    }
+    return s_out;
+}
+
+void set_test_out(FILE *f)
+{
+    s_out = f;
 }

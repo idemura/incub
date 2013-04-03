@@ -15,5 +15,12 @@ void dstr_test()
     TEST_CHECK(dstr_len(s2) == 0);
     dstr_free(s2);
 
+    char* s3 = dstr_dup("1234");
+    TEST_CHECK(strcmp(s3, "1234") == 0);
+    dstr_clear(s3);
+    TEST_CHECK(strcmp(s3, "") == 0);
+    TEST_CHECK(dstr_len(s3) == 0);
+    dstr_free(s3);
+
     test_end();
 }

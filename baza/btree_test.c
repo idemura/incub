@@ -1,20 +1,18 @@
 #include "btree.c"
 #include "test.h"
 
-static FILE* btree_out;
-
 static void *voidp(void *p)
 {
     return p;
 }
 
-static size_t btree_count(struct btree_node *node, int depth)
+static idx btree_count(struct btree_node *node, int depth)
 {
     assert(node);
     if (depth == 0) {
         return node->num;
     }
-    size_t n = 0;
+    idx n = 0;
     for (int i = 0; i <= node->num; ++i) {
         n += btree_count(node->branch[i].ptr, depth - 1);
     }
@@ -36,7 +34,7 @@ static bool btree_check_keys(struct btree_node *node,
         return true;
     }
     if (!btree_check_keys_num(node, min_keys, max_keys)) {
-        fprintf(btree_out, "Node %p num %i, must be %d-%d\n",
+        fprintf(test_out(), "Node %p num %i, must be %d-%d\n",
                 voidp(node), node->num, min_keys, max_keys);
         return false;
     }
@@ -44,7 +42,7 @@ static bool btree_check_keys(struct btree_node *node,
     int i;
     for (i = 1; i < node->num; ++i) {
         if (!(node->branch[i - 1].key < node->branch[i].key)) {
-            fprintf(btree_out, "Node %p key order: %li >= %li @%i,%i\n",
+            fprintf(test_out(), "Node %p key order: %li >= %li @%i,%i\n",
                     voidp(node), node->branch[i - 1].key, node->branch[i].key,
                     i - 1, i);
             break;
@@ -53,7 +51,7 @@ static bool btree_check_keys(struct btree_node *node,
 
     for (i = 0; i < node->num; ++i) {
         if (!(node->branch[i].key < max_key_value)) {
-            fprintf(btree_out, "Node %p key bound: %li >= %li @%i\n",
+            fprintf(test_out(), "Node %p key bound: %li >= %li @%i\n",
                     voidp(node), node->branch[i].key, max_key_value, i);
             break;
         }
@@ -81,7 +79,7 @@ static bool btree_check_parent(struct btree_node *node, int depth,
         return true;
     }
     if (node->parent != parent) {
-        fprintf(btree_out, "Node %p parent %p != %p\n",
+        fprintf(test_out(), "Node %p parent %p != %p\n",
                 voidp(node), voidp(node->parent), voidp(parent));
         return false;
     }
@@ -105,9 +103,9 @@ static bool btree_check(struct btree *bt)
         return bt->size == 0 && bt->depth == 0;
     }
 
-    size_t size = btree_count(bt->root, bt->depth);
+    idx size = btree_count(bt->root, bt->depth);
     if (size != bt->size) {
-        fprintf(btree_out, "Btree size %zu != %zu\n", bt->size, size);
+        fprintf(test_out(), "Btree size %zu != %zu\n", bt->size, size);
         return false;
     }
     if (!btree_check_parent(bt->root, bt->depth, NULL)) {
@@ -126,17 +124,17 @@ static void btree_print_nodes(struct btree_node *node, int depth)
         return;
     }
 
-    fprintf(btree_out, "%p parent=%p num=%i depth=%i\n",
+    fprintf(test_out(), "%p parent=%p num=%i depth=%i\n",
             voidp(node->parent), voidp(node), node->num, depth);
     if (node->num == 0) {
         return;
     }
-    fprintf(btree_out, "   ");
+    fprintf(test_out(), "   ");
     for (int i = 0; i < node->num; ++i) {
-        fprintf(btree_out, "%p %li ", voidp(node->branch[i].ptr),
+        fprintf(test_out(), "%p %li ", voidp(node->branch[i].ptr),
                 node->branch[i].key);
     }
-    fprintf(btree_out, "%p\n", voidp(node->branch[node->num].ptr));
+    fprintf(test_out(), "%p\n", voidp(node->branch[node->num].ptr));
     if (depth > 0) {
         for (int i = 0; i <= node->num; ++i) {
             btree_print_nodes(node->branch[node->num].ptr, depth - 1);
@@ -157,14 +155,14 @@ void btree_test_insert(key_t *keys, int keys_num)
 {
     struct btree *bt = btree_create(2);
     for (int i = 0; i < keys_num; ++i) {
-        // fprintf(btree_out, "Insert %li\n", keys[i]);
+        // fprintf(test_out(), "Insert %li\n", keys[i]);
         btree_insert(bt, keys[i], &keys[i]);
         TEST_CHECK(btree_check_print(bt));
         TEST_CHECK(btree_size(bt) == i + 1);
         for (int j = 0; j < i; ++j) {
             void *val = btree_find(bt, keys[j]);
             if (val != &keys[j]) {
-                fprintf(btree_out, "Key %li not found\n", keys[j]);
+                fprintf(test_out(), "Key %li not found\n", keys[j]);
             }
             TEST_CHECK(val == &keys[j]);
         }
@@ -173,7 +171,7 @@ void btree_test_insert(key_t *keys, int keys_num)
     key_t *new_val = malloc(keys_num * sizeof(key_t));
     memset(new_val, 0, keys_num * sizeof(key_t));
     for (int i = 0; i < keys_num; ++i) {
-        // fprintf(btree_out, "Update %li\n", keys[i]);
+        // fprintf(test_out(), "Update %li\n", keys[i]);
         btree_insert(bt, keys[i], &new_val[i]);
         TEST_CHECK(btree_find(bt, keys[i]) == &new_val[i]);
         TEST_CHECK(btree_size(bt) == keys_num);
@@ -189,7 +187,6 @@ void btree_test()
     struct btree *bt;
 
     test_begin("BTree");
-    btree_out = stderr;
 
     TEST_CHECK(btree_memory == 0);
     bt = btree_create(2);

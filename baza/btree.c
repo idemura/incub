@@ -1,6 +1,5 @@
 #include "btree.h"
 #include "defs.h"
-#include <stdio.h>
 #include <memory.h>
 
 // TODO:
@@ -8,7 +7,7 @@
 // optimizations.
 
 struct mem_block {
-    size_t size;
+    idx size;
     char p[];
 };
 
@@ -28,19 +27,19 @@ struct btree_node {
 struct btree {
     struct btree_node *root;
     int depth;
-    size_t size;
+    idx size;
     int min_keys;
     int max_keys;
 };
 
-static size_t btree_memory;
+static idx btree_memory;
 
-static void *btree_alloc(size_t size)
+static void *btree_alloc(idx size)
 {
 #ifdef DEBUG
-    const size_t padding = sizeof(int);
+    const idx padding = sizeof(int);
 #else
-    const size_t padding = 0;
+    const idx padding = 0;
 #endif
     size = (size + 3) & ~3; // Align on 4 byte boundary
     struct mem_block *mb = malloc(sizeof(struct mem_block) + size + padding);
@@ -68,7 +67,7 @@ static void btree_free(void *p)
     free(mb);
 }
 
-static size_t btree_node_size(int num_keys)
+static idx btree_node_size(int num_keys)
 {
     return sizeof(struct btree_node) +
            sizeof(struct btree_branch) * num_keys +
@@ -119,7 +118,7 @@ void btree_destroy(struct btree *bt)
     btree_free(bt);
 }
 
-size_t btree_size(struct btree *bt)
+idx btree_size(struct btree *bt)
 {
     return bt->size;
 }

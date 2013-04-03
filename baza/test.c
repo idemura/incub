@@ -1,6 +1,5 @@
 #include "test.h"
 #include "defs.h"
-#include <stdio.h>
 #include <string.h>
 
 static const char *s_name;
@@ -107,4 +106,9 @@ int test_report()
         }
     }
     return s_failed == 0? 0: 1;
+}
+
+FILE *test_out()
+{
+    return stderr;
 }

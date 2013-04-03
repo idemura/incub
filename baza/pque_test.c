@@ -11,8 +11,8 @@ static bool pque_check(struct pque *pq)
     if (!pq) {
         return true;
     }
-    for (idx i = 1; i < pq->size; ++i) {
-        idx p = (i - 1) / 2;
+    for (iref i = 1; i < pq->size; ++i) {
+        iref p = (i - 1) / 2;
         if (!pq->cmpf(pq->heap[p], pq->heap[i])) {
             fprintf(test_out(), "Heap violation at %zi (parent %zi)\n", i, p);
             return false;
@@ -23,7 +23,7 @@ static bool pque_check(struct pque *pq)
 
 static void pque_print_test(struct pque *pq)
 {
-    for (idx i = 0; i < pq->size; ++i) {
+    for (iref i = 0; i < pq->size; ++i) {
         fprintf(test_out(), "%lu ", (uintptr_t)pq->heap[i]);
     }
     fprintf(test_out(), "\n");
@@ -43,12 +43,12 @@ void pque_test()
     // Destroy NULL is OK
     pque_destroy(NULL);
 
-    pq = pque_create(uint_less, 0);
+    pq = pque_create(uint_less);
     TEST_CHECK(pq != NULL);
     TEST_CHECK(pque_size(pq) == 0);
     pque_destroy(pq);
 
-    pq = pque_create(uint_less, 0);
+    pq = pque_create(uint_less);
     TEST_CHECK(pq != NULL);
     uintptr_t keys[] = {
         10, 20, 30, 5, 15

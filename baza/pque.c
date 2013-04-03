@@ -1,23 +1,19 @@
 #include "pque.h"
 
-#define DEF_CAPACITY 24
-
 struct pque {
     void **heap;
     pque_compare cmpf;
-    idx size;
-    idx capacity;
+    iref size;
+    iref capacity;
 };
 
-struct pque *pque_create(pque_compare cmpf, idx capacity)
+struct pque *pque_create(pque_compare cmpf)
 {
     assert(cmpf);
     if (!cmpf) {
         return NULL;
     }
-    if (capacity == 0) {
-        capacity = DEF_CAPACITY;
-    }
+    const iref capacity = 24;
     struct pque *pq = malloc(sizeof(struct pque));
     if (!pq) {
         return NULL;
@@ -41,15 +37,15 @@ void pque_destroy(struct pque *pq)
     }
 }
 
-idx pque_size(struct pque *pq)
+iref pque_size(struct pque *pq)
 {
     return pq? pq->size: 0;
 }
 
-static void pque_heapify(struct pque *pq, idx i)
+static void pque_heapify(struct pque *pq, iref i)
 {
     while (i != 0) {
-        idx p = (i - 1) / 2;
+        iref p = (i - 1) / 2;
         if (!pq->cmpf(pq->heap[p], pq->heap[i])) {
             pque_key temp = pq->heap[p];
             pq->heap[p] = pq->heap[i];
@@ -82,10 +78,10 @@ pque_key pque_pop(struct pque *pq)
     pq->heap[0] = pq->heap[pq->size - 1];
     pq->size -= 1;
 
-    for (idx i = 0; ; ) {
-        idx imin = i;
-        idx j1 = 2 * i + 1;
-        idx j2 = j1 + 1;
+    for (iref i = 0; ; ) {
+        iref imin = i;
+        iref j1 = 2 * i + 1;
+        iref j2 = j1 + 1;
         if (j1 < pq->size && !pq->cmpf(pq->heap[i], pq->heap[j1])) {
             imin = j1;
         }

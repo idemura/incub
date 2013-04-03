@@ -55,6 +55,7 @@ void pque_test()
     pq = pque_create(uint_less, 1);
     TEST_CHECK(pq != NULL);
     TEST_CHECK(pque_size(pq) == 0);
+    TEST_CHECK(pque_top(pq) == NULL);
     pque_destroy(pq);
 
     pq = pque_create(uint_less, 8);

@@ -1,7 +1,7 @@
 #include "pque.h"
 
 struct pque {
-    pque_key *heap;
+    vptr *heap;
     pque_compare cmpf;
     iref size;
     iref capacity;
@@ -20,7 +20,7 @@ struct pque *pque_create(pque_compare cmpf, iref capacity)
     if (capacity < 1) {
         capacity = 1;
     }
-    pq->heap = malloc(capacity * sizeof(pque_key));
+    pq->heap = malloc(capacity * sizeof(vptr));
     if (!pq->heap) {
         free(pq);
         return NULL;
@@ -49,7 +49,7 @@ static void pque_heapify(struct pque *pq, iref i)
     while (i != 0) {
         iref p = (i - 1) / 2;
         if (!pq->cmpf(pq->heap[p], pq->heap[i])) {
-            pque_key temp = pq->heap[p];
+            vptr temp = pq->heap[p];
             pq->heap[p] = pq->heap[i];
             pq->heap[i] = temp;
         }
@@ -57,18 +57,18 @@ static void pque_heapify(struct pque *pq, iref i)
     }
 }
 
-void pque_insert(struct pque *pq, pque_key key)
+void pque_insert(struct pque *pq, vptr key)
 {
     if (pq->size == pq->capacity) {
         iref capacity = pq->capacity + pq->capacity / 2;
         if (capacity <= pq->capacity) {
             capacity += pq->capacity + 1;
         }
-        void *new = malloc(capacity * sizeof(pque_key));
+        void *new = malloc(capacity * sizeof(vptr));
         if (!new) {
             return;
         }
-        memcpy(new, pq->heap, pq->size * sizeof(pque_key));
+        memcpy(new, pq->heap, pq->size * sizeof(vptr));
         pq->capacity = capacity;
         pq->heap = new;
     }
@@ -78,7 +78,7 @@ void pque_insert(struct pque *pq, pque_key key)
     pq->size += 1;
 }
 
-pque_key pque_top(struct pque *pq)
+vptr pque_top(struct pque *pq)
 {
     if (!pq || pq->size == 0) {
         return NULL;
@@ -86,13 +86,13 @@ pque_key pque_top(struct pque *pq)
     return pq->heap[0];
 }
 
-pque_key pque_pop(struct pque *pq)
+vptr pque_pop(struct pque *pq)
 {
     if (!pq || pq->size == 0) {
         return NULL;
     }
 
-    pque_key min_key = pq->heap[0];
+    vptr min_key = pq->heap[0];
     pq->heap[0] = pq->heap[pq->size - 1];
     pq->size -= 1;
 
@@ -109,7 +109,7 @@ pque_key pque_pop(struct pque *pq)
         if (imin == i) {
             break;
         }
-        pque_key temp = pq->heap[i];
+        vptr temp = pq->heap[i];
         pq->heap[i] = pq->heap[imin];
         pq->heap[imin] = temp;
         i = imin;
@@ -118,6 +118,6 @@ pque_key pque_pop(struct pque *pq)
     return min_key;
 }
 
-void pque_update(struct pque *pq, pque_key key)
+void pque_update(struct pque *pq, vptr key)
 {
 }

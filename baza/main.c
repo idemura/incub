@@ -4,6 +4,7 @@
 /*
 TODO:
 -----
+Use stack and refactor splitting.
 Make compare function in BTree.
 Binary search in BTree node.
 

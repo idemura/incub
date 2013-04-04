@@ -5,15 +5,15 @@
 #define DSTR_CSTR(s) ((s)->buf)
 
 struct dstr {
-    iref len;
-    iref capacity;
+    uofs len;
+    uofs capacity;
     char buf[];
 };
 
 char *dstr_dup(const char *strz)
 {
-    iref len = strlen(strz);
-    iref capacity = len < MIN_CAPACITY? MIN_CAPACITY: len;
+    uofs len = strlen(strz);
+    uofs capacity = len < MIN_CAPACITY? MIN_CAPACITY: len;
     struct dstr *ds = malloc(sizeof(struct dstr) + capacity + 1);
     ds->len = len;
     ds->capacity = capacity;
@@ -21,7 +21,7 @@ char *dstr_dup(const char *strz)
     return DSTR_CSTR(ds);
 }
 
-char *dstr_new(iref capacity)
+char *dstr_new(uofs capacity)
 {
     if (capacity < MIN_CAPACITY) {
         capacity = MIN_CAPACITY;
@@ -33,7 +33,7 @@ char *dstr_new(iref capacity)
     return DSTR_CSTR(ds);
 }
 
-iref dstr_len(const char *s)
+uofs dstr_len(const char *s)
 {
     return DSTR(s)->len;
 }

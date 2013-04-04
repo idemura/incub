@@ -7,6 +7,7 @@ TODO:
 Use stack and refactor splitting.
 Make compare function in BTree.
 Binary search in BTree node.
+Mem counter: atomic add/sub
 
 Add allocator for btree nodes, because it allocs same block size always,
 possible optimizations.

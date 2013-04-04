@@ -8,10 +8,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef size_t iref;
-typedef void * vptr;
+typedef size_t uofs;
+typedef void *vptr;
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 #define FIELD_SIZEOF(s, f) (sizeof(((s*)0)->f))
+
+vptr mem_alloc(uofs size);
+void mem_free(vptr p);
+uofs mem_total();
 
 #endif

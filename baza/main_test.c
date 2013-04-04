@@ -9,7 +9,7 @@ void btree_test();
 void base_test()
 {
     test_begin("Base");
-    TEST_CHECK(sizeof(iref) == sizeof(vptr));
+    TEST_CHECK(sizeof(uofs) == sizeof(vptr));
     test_end();
 }
 

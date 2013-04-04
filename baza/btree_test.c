@@ -1,13 +1,13 @@
 #include "btree.c"
 #include "test.h"
 
-static iref btree_count(struct btree_node *node, int depth)
+static uofs btree_count(struct btree_node *node, int depth)
 {
     assert(node);
     if (depth == 0) {
         return node->num;
     }
-    iref edge_sum = 0;
+    uofs edge_sum = 0;
     for (int i = 0; i <= node->num; ++i) {
         edge_sum += btree_count(node->edge[i].ptr, depth - 1);
     }
@@ -98,7 +98,7 @@ static bool btree_check(struct btree *bt)
         return bt->size == 0 && bt->depth == 0;
     }
 
-    iref size = btree_count(bt->root, bt->depth);
+    uofs size = btree_count(bt->root, bt->depth);
     if (size != bt->size) {
         fprintf(test_out(), "Btree size %zu != %zu\n", bt->size, size);
         return false;
@@ -146,15 +146,17 @@ static bool btree_check_print(struct btree *bt)
     return ret;
 }
 
-void btree_test_insert(key_t *keys, iref keys_num)
+void btree_test_insert(key_t *keys, uofs keys_num)
 {
+    uofs mem = mem_total();
+
     struct btree *bt = btree_create(2);
-    for (iref i = 0; i < keys_num; ++i) {
+    for (uofs i = 0; i < keys_num; ++i) {
         // fprintf(test_out(), "Insert %li\n", keys[i]);
         btree_insert(bt, keys[i], &keys[i]);
         TEST_CHECK(btree_check_print(bt));
         TEST_CHECK(btree_size(bt) == i + 1);
-        for (iref j = 0; j < i; ++j) {
+        for (uofs j = 0; j < i; ++j) {
             vptr val = btree_find(bt, keys[j]);
             if (val != &keys[j]) {
                 fprintf(test_out(), "Key %li not found\n", keys[j]);
@@ -165,7 +167,7 @@ void btree_test_insert(key_t *keys, iref keys_num)
 
     key_t *new_val = malloc(keys_num * sizeof(key_t));
     memset(new_val, 0, keys_num * sizeof(key_t));
-    for (iref i = 0; i < keys_num; ++i) {
+    for (uofs i = 0; i < keys_num; ++i) {
         // fprintf(test_out(), "Update %li\n", keys[i]);
         btree_insert(bt, keys[i], &new_val[i]);
         TEST_CHECK(btree_find(bt, keys[i]) == &new_val[i]);
@@ -174,20 +176,17 @@ void btree_test_insert(key_t *keys, iref keys_num)
     free(new_val);
 
     btree_destroy(bt);
-    TEST_CHECK(btree_memory == 0);
+    TEST_CHECK(mem_total() == mem);
 }
 
 void btree_test()
 {
-    struct btree *bt;
+    struct btree *bt = NULL;
 
     test_begin("BTree");
 
-    TEST_CHECK(btree_memory == 0);
     bt = btree_create(2);
-    TEST_CHECK(btree_memory != 0);
     btree_destroy(bt);
-    TEST_CHECK(btree_memory == 0);
 
     key_t keys1[] = {
         10, 20, 15, 5

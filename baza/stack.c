@@ -1,9 +1,9 @@
 #include "stack.h"
 
-void stack_alloc(struct stack *st, iref capacity)
+void stack_alloc(struct stack *st, uofs capacity)
 {
     if (capacity > FIELD_SIZEOF(struct stack, buf_auto)) {
-        st->buf_heap = malloc(capacity * sizeof(iref));
+        st->buf_heap = mem_alloc(capacity * sizeof(uofs));
         st->top = st->buf_heap;
     } else {
         st->buf_heap = NULL;
@@ -14,17 +14,17 @@ void stack_alloc(struct stack *st, iref capacity)
 void stack_free(struct stack *st)
 {
     if (st->buf_heap) {
-        free(st->buf_heap);
+        mem_free(st->buf_heap);
     }
 }
 
-void stack_pushi(struct stack *st, iref x)
+void stack_pushi(struct stack *st, uofs x)
 {
     *st->top = x;
     st->top++;
 }
 
-iref stack_popi(struct stack *st)
+uofs stack_popi(struct stack *st)
 {
     st->top--;
     return *st->top;
@@ -32,7 +32,7 @@ iref stack_popi(struct stack *st)
 
 void stack_pushv(struct stack *st, vptr x)
 {
-    stack_pushi(st, (iref)x);
+    stack_pushi(st, (uofs)x);
 }
 
 vptr stack_popv(struct stack *st)

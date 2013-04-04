@@ -17,13 +17,13 @@ void stack_test()
     TEST_CHECK(stack_empty(&st));
     stack_free(&st);
 
-    const iref n = 1000;
+    const uofs n = 1000;
     stack_alloc(&st, n);
     TEST_CHECK(stack_empty(&st));
-    for (iref i = 0; i < n; ++i) {
+    for (uofs i = 0; i < n; ++i) {
       stack_pushi(&st, i);
     }
-    for (iref i = 0; i < n; ++i) {
+    for (uofs i = 0; i < n; ++i) {
       TEST_CHECK(stack_popi(&st) == (n - 1 - i));
     }
     TEST_CHECK(stack_empty(&st));

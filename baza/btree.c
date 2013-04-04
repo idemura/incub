@@ -2,11 +2,6 @@
 #include "stack.h"
 #include <memory.h>
 
-struct mem_block {
-    iref size;
-    unsigned char p[];
-};
-
 struct btree_node;
 
 struct btree_edge {
@@ -23,59 +18,21 @@ struct btree_node {
 struct btree {
     struct btree_node *root;
     int depth;
-    iref size;
+    uofs size;
     int min_keys;
     int max_keys;
 };
 
-static iref btree_memory;
-#define BTREE_ALIGN sizeof(iref)
-#ifdef DEBUG
-#define BTREE_PAD sizeof(iref)
-#else
-#define BTREE_PAD 0
-#endif
-
-static void *btree_alloc(iref size)
-{
-    size = (size + (BTREE_ALIGN - 1)) & ~(BTREE_ALIGN - 1);
-    struct mem_block *mb = malloc(sizeof(struct mem_block) + size + BTREE_PAD);
-    if (!mb) {
-        return NULL;
-    }
-    mb->size = size;
-    btree_memory += mb->size;
-#ifdef DEBUG
-    memset(mb->p, 0xcc, size + BTREE_PAD);
-#endif
-    return mb->p;
-}
-
-static void btree_free(void *p)
-{
-    if (!p) {
-        return;
-    }
-    struct mem_block *mb = (void*)((char*)p - sizeof(struct mem_block));
-    btree_memory -= mb->size;
-#ifdef DEBUG
-    for (iref i = 0; i < BTREE_PAD; ++i) {
-        assert(mb->p[mb->size + i] == 0xcc);
-    }
-#endif
-    free(mb);
-}
-
-static iref btree_node_size(int num_keys)
+static uofs btree_node_size(int num_keys)
 {
     return sizeof(struct btree_node) +
-           sizeof(struct btree_edge) * (iref)num_keys +
+           sizeof(struct btree_edge) * (uofs)num_keys +
            offsetof(struct btree_edge, key);
 }
 
 static struct btree_node *btree_new_node(int max_keys)
 {
-    struct btree_node* node = btree_alloc(btree_node_size(max_keys));
+    struct btree_node* node = mem_alloc(btree_node_size(max_keys));
     node->parent = NULL;
     node->num = 0;
     node->edge[0].ptr = NULL;
@@ -84,7 +41,7 @@ static struct btree_node *btree_new_node(int max_keys)
 
 struct btree *btree_create(int min_keys)
 {
-    struct btree *bt = btree_alloc(sizeof(*bt));
+    struct btree *bt = mem_alloc(sizeof(*bt));
     if (bt) {
         bt->min_keys = min_keys;
         bt->max_keys = 2 * min_keys;
@@ -105,7 +62,7 @@ static void btree_free_node(struct btree_node *node, int depth)
             btree_free_node(node->edge[i].ptr, depth - 1);
         }
     }
-    btree_free(node);
+    mem_free(node);
 }
 
 void btree_destroy(struct btree *bt)
@@ -114,10 +71,10 @@ void btree_destroy(struct btree *bt)
         return;
     }
     btree_free_node(bt->root, bt->depth);
-    btree_free(bt);
+    mem_free(bt);
 }
 
-iref btree_size(struct btree *bt)
+uofs btree_size(struct btree *bt)
 {
     return bt->size;
 }

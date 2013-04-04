@@ -3,7 +3,7 @@
 
 static bool uint_less(vptr k1, vptr k2)
 {
-    return (iref)k1 < (iref)k2;
+    return (uofs)k1 < (uofs)k2;
 }
 
 static bool pque_check_impl(struct pque *pq)
@@ -11,8 +11,8 @@ static bool pque_check_impl(struct pque *pq)
     if (!pq) {
         return true;
     }
-    for (iref i = 1; i < pq->size; ++i) {
-        iref p = (i - 1) / 2;
+    for (uofs i = 1; i < pq->size; ++i) {
+        uofs p = (i - 1) / 2;
         if (!pq->cmpf(pq->heap[p], pq->heap[i])) {
             fprintf(test_out(), "Heap violation at %zi (parent %zi)\n", i, p);
             return false;
@@ -23,8 +23,8 @@ static bool pque_check_impl(struct pque *pq)
 
 static void pque_print_test(struct pque *pq)
 {
-    for (iref i = 0; i < pq->size; ++i) {
-        fprintf(test_out(), "%lu ", (iref)pq->heap[i]);
+    for (uofs i = 0; i < pq->size; ++i) {
+        fprintf(test_out(), "%lu ", (uofs)pq->heap[i]);
     }
     fprintf(test_out(), "\n");
 }
@@ -38,7 +38,7 @@ static bool pque_check(struct pque *pq)
     return true;
 }
 
-static void pque_test_sort(iref keys, int n)
+static void pque_test_sort(uofs keys, int n)
 {
     for (int i = 0; i < n; ++i) {
     }
@@ -63,7 +63,7 @@ void pque_test()
     uintptr_t keys[] = {
         10, 20, 30, 5, 15
     };
-    for (iref i = 0; i < ARRAY_SIZE(keys); ++i) {
+    for (uofs i = 0; i < ARRAY_SIZE(keys); ++i) {
         pque_insert(pq, (vptr)keys[i]);
         TEST_CHECK(pque_check(pq));
         TEST_CHECK(pque_size(pq) == i + 1);
@@ -74,7 +74,7 @@ void pque_test()
     // Check reallocations
     pq = pque_create(uint_less, 8);
     TEST_CHECK(pq != NULL);
-    for (iref i = 0; i < 12; ++i) {
+    for (uofs i = 0; i < 12; ++i) {
         vptr key = (vptr)(999 - i);
         pque_insert(pq, key);
         TEST_CHECK(pque_check(pq));

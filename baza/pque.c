@@ -3,26 +3,26 @@
 struct pque {
     vptr *heap;
     pque_compare cmpf;
-    iref size;
-    iref capacity;
+    uofs size;
+    uofs capacity;
 };
 
-struct pque *pque_create(pque_compare cmpf, iref capacity)
+struct pque *pque_create(pque_compare cmpf, uofs capacity)
 {
     assert(cmpf);
     if (!cmpf) {
         return NULL;
     }
-    struct pque *pq = malloc(sizeof(struct pque));
+    struct pque *pq = mem_alloc(sizeof(struct pque));
     if (!pq) {
         return NULL;
     }
     if (capacity < 1) {
         capacity = 1;
     }
-    pq->heap = malloc(capacity * sizeof(vptr));
+    pq->heap = mem_alloc(capacity * sizeof(vptr));
     if (!pq->heap) {
-        free(pq);
+        mem_free(pq);
         return NULL;
     }
     pq->cmpf = cmpf;
@@ -34,20 +34,20 @@ struct pque *pque_create(pque_compare cmpf, iref capacity)
 void pque_destroy(struct pque *pq)
 {
     if (pq) {
-        free(pq->heap);
-        free(pq);
+        mem_free(pq->heap);
+        mem_free(pq);
     }
 }
 
-iref pque_size(struct pque *pq)
+uofs pque_size(struct pque *pq)
 {
     return pq? pq->size: 0;
 }
 
-static void pque_heapify(struct pque *pq, iref i)
+static void pque_heapify(struct pque *pq, uofs i)
 {
     while (i != 0) {
-        iref p = (i - 1) / 2;
+        uofs p = (i - 1) / 2;
         if (!pq->cmpf(pq->heap[p], pq->heap[i])) {
             vptr temp = pq->heap[p];
             pq->heap[p] = pq->heap[i];
@@ -60,11 +60,11 @@ static void pque_heapify(struct pque *pq, iref i)
 void pque_insert(struct pque *pq, vptr key)
 {
     if (pq->size == pq->capacity) {
-        iref capacity = pq->capacity + pq->capacity / 2;
+        uofs capacity = pq->capacity + pq->capacity / 2;
         if (capacity <= pq->capacity) {
             capacity += pq->capacity + 1;
         }
-        void *new = malloc(capacity * sizeof(vptr));
+        void *new = mem_alloc(capacity * sizeof(vptr));
         if (!new) {
             return;
         }
@@ -96,10 +96,10 @@ vptr pque_pop(struct pque *pq)
     pq->heap[0] = pq->heap[pq->size - 1];
     pq->size -= 1;
 
-    for (iref i = 0; ; ) {
-        iref imin = i;
-        iref j1 = 2 * i + 1;
-        iref j2 = j1 + 1;
+    for (uofs i = 0; ; ) {
+        uofs imin = i;
+        uofs j1 = 2 * i + 1;
+        uofs j2 = j1 + 1;
         if (j1 < pq->size && !pq->cmpf(pq->heap[i], pq->heap[j1])) {
             imin = j1;
         }

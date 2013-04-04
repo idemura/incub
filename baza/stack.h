@@ -4,8 +4,8 @@
 #include "defs.h"
 
 struct stack {
-    iref mem_auto[64]; // 512 bytes on x64
-    iref *mem_heap;
+    iref buf_auto[64]; // 512 bytes on x64
+    iref *buf_heap;
     iref *top;
 };
 

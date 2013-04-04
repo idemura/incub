@@ -9,7 +9,9 @@ void stack_test()
     stack_alloc(&st, 8);
     TEST_CHECK(stack_empty(&st));
     stack_push(&st, 10);
+    TEST_CHECK(!stack_empty(&st));
     stack_push(&st, 20);
+    TEST_CHECK(!stack_empty(&st));
     TEST_CHECK(stack_pop(&st) == 20);
     TEST_CHECK(stack_pop(&st) == 10);
     TEST_CHECK(stack_empty(&st));

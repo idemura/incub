@@ -2,19 +2,19 @@
 
 void stack_alloc(struct stack *st, iref capacity)
 {
-    if (capacity > FIELD_SIZEOF(struct stack, mem_auto)) {
-        st->mem_heap = malloc(capacity * sizeof(iref));
-        st->top = st->mem_heap;
+    if (capacity > FIELD_SIZEOF(struct stack, buf_auto)) {
+        st->buf_heap = malloc(capacity * sizeof(iref));
+        st->top = st->buf_heap;
     } else {
-        st->mem_heap = NULL;
-        st->top = st->mem_auto;
+        st->buf_heap = NULL;
+        st->top = st->buf_auto;
     }
 }
 
 void stack_free(struct stack *st)
 {
-    if (st->mem_heap) {
-        free(st->mem_heap);
+    if (st->buf_heap) {
+        free(st->buf_heap);
     }
 }
 
@@ -32,5 +32,5 @@ iref stack_pop(struct stack *st)
 
 bool stack_empty(struct stack *st)
 {
-    return st->top == st->mem_auto || st->top == st->mem_heap;
+    return st->top == st->buf_auto || st->top == st->buf_heap;
 }

@@ -155,7 +155,7 @@ void btree_test_insert(key_t *keys, iref keys_num)
         TEST_CHECK(btree_check_print(bt));
         TEST_CHECK(btree_size(bt) == i + 1);
         for (iref j = 0; j < i; ++j) {
-            void *val = btree_find(bt, keys[j]);
+            vptr val = btree_find(bt, keys[j]);
             if (val != &keys[j]) {
                 fprintf(test_out(), "Key %li not found\n", keys[j]);
             }

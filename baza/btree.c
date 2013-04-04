@@ -123,7 +123,7 @@ iref btree_size(struct btree *bt)
 }
 
 static void btree_insert_in(struct btree_node *node, int i,
-        key_t key, void *value)
+        key_t key, vptr value)
 {
     if (i != node->num && node->edge[i].key == key) {
         node->edge[i].ptr = value;
@@ -208,7 +208,7 @@ static bool btree_locate(struct btree *bt, key_t key,
     return true;
 }
 
-void btree_insert(struct btree *bt, key_t key, void *value)
+void btree_insert(struct btree *bt, key_t key, vptr value)
 {
     // struct stack st;
     int jkey;
@@ -271,7 +271,7 @@ void btree_insert(struct btree *bt, key_t key, void *value)
     bt->size += 1;
 }
 
-void *btree_find(struct btree *bt, key_t key)
+vptr btree_find(struct btree *bt, key_t key)
 {
     int jkey;
     struct btree_node *node;

@@ -1,18 +1,26 @@
 #include "defs.h"
 #include <stdio.h>
 
-// TODO:
-// Add allocator for btree nodes, because it allocs same block size always,
-// possible optimizations.
+/*
+TODO:
+-----
+Make compare function in BTree.
+Binary search in BTree node.
 
-// Multithreaded btree. Smart lock of nodes. Have no idea how to do this.
+Add allocator for btree nodes, because it allocs same block size always,
+possible optimizations.
 
-// Btree disk operations. I/O queue. File chunks allocator.
+Make linked list on leaves (bottom level nodes).
 
-// Command and interpreter. Do I need VM?
+Multithreaded btree. Smart lock of nodes. Have no idea how to do this.
 
-// HTTP server. This will just report something. Main thing is to listen for
-// commands.
+Btree disk operations. I/O queue. File chunks allocator.
+
+Command and interpreter. Do I need VM?
+
+HTTP server. This will just report something. Main thing is to listen for
+commands.
+*/
 
 int main()
 {

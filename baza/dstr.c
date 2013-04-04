@@ -14,7 +14,7 @@ char *dstr_dup(const char *strz)
 {
     uofs len = strlen(strz);
     uofs capacity = len < MIN_CAPACITY? MIN_CAPACITY: len;
-    struct dstr *ds = malloc(sizeof(struct dstr) + capacity + 1);
+    struct dstr *ds = mem_alloc(sizeof(struct dstr) + capacity + 1);
     ds->len = len;
     ds->capacity = capacity;
     memcpy(ds->buf, strz, len + 1);
@@ -26,7 +26,7 @@ char *dstr_new(uofs capacity)
     if (capacity < MIN_CAPACITY) {
         capacity = MIN_CAPACITY;
     }
-    struct dstr *ds = malloc(sizeof(struct dstr) + capacity + 1);
+    struct dstr *ds = mem_alloc(sizeof(struct dstr) + capacity + 1);
     ds->capacity = capacity;
     ds->len = 0;
     ds->buf[0] = 0;
@@ -41,7 +41,7 @@ uofs dstr_len(const char *s)
 void dstr_free(const char *s)
 {
     if (s) {
-        free(DSTR(s));
+        mem_free(DSTR(s));
     }
 }
 

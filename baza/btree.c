@@ -1,5 +1,5 @@
 #include "btree.h"
-#include "defs.h"
+#include "stack.h"
 #include <memory.h>
 
 struct mem_block {
@@ -210,9 +210,7 @@ static bool btree_locate(struct btree *bt, key_t key,
 
 void btree_insert(struct btree *bt, key_t key, void *value)
 {
-    int jkey_stack_auto[40];
-    int *jkey_stack_heap = NULL;
-    int *jkey_stack = NULL;
+    // struct stack st;
     int jkey;
     struct btree_node *node;
 
@@ -224,14 +222,6 @@ void btree_insert(struct btree *bt, key_t key, void *value)
     if (btree_locate(bt, key, &node, &jkey)) {
         node->edge[jkey].ptr = value;
         return;
-    }
-
-    // Check for full stack: jkey_stack == jkey_stack_heap / jkey_stack_auto
-    if (bt->depth > ARRAY_SIZE(jkey_stack_auto)) {
-        jkey_stack_heap = malloc(sizeof(*jkey_stack) * bt->depth);
-        jkey_stack = jkey_stack_heap + bt->depth;
-    } else {
-        jkey_stack = jkey_stack_auto + ARRAY_SIZE(jkey_stack_auto);
     }
 
     struct btree_node *left = NULL;
@@ -279,10 +269,6 @@ void btree_insert(struct btree *bt, key_t key, void *value)
         btree_insert_in(node, jkey, key, value);
     }
     bt->size += 1;
-
-    if (jkey_stack_heap) {
-        free(jkey_stack_heap);
-    }
 }
 
 void *btree_find(struct btree *bt, key_t key)

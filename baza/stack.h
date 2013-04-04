@@ -11,8 +11,10 @@ struct stack {
 
 void stack_alloc(struct stack *st, iref capacity);
 void stack_free(struct stack *st);
-void stack_push(struct stack *st, iref x);
-iref stack_pop(struct stack *st);
+void stack_pushi(struct stack *st, iref x);
+iref stack_popi(struct stack *st);
+void stack_pushv(struct stack *st, vptr x);
+vptr stack_popv(struct stack *st);
 bool stack_empty(struct stack *st);
 
 #endif

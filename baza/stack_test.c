@@ -8,12 +8,12 @@ void stack_test()
     struct stack st;
     stack_alloc(&st, 8);
     TEST_CHECK(stack_empty(&st));
-    stack_push(&st, 10);
+    stack_pushi(&st, 10);
     TEST_CHECK(!stack_empty(&st));
-    stack_push(&st, 20);
+    stack_pushi(&st, 20);
     TEST_CHECK(!stack_empty(&st));
-    TEST_CHECK(stack_pop(&st) == 20);
-    TEST_CHECK(stack_pop(&st) == 10);
+    TEST_CHECK(stack_popi(&st) == 20);
+    TEST_CHECK(stack_popi(&st) == 10);
     TEST_CHECK(stack_empty(&st));
     stack_free(&st);
 
@@ -21,10 +21,10 @@ void stack_test()
     stack_alloc(&st, n);
     TEST_CHECK(stack_empty(&st));
     for (iref i = 0; i < n; ++i) {
-      stack_push(&st, i);
+      stack_pushi(&st, i);
     }
     for (iref i = 0; i < n; ++i) {
-      TEST_CHECK(stack_pop(&st) == (n - 1 - i));
+      TEST_CHECK(stack_popi(&st) == (n - 1 - i));
     }
     TEST_CHECK(stack_empty(&st));
     stack_free(&st);

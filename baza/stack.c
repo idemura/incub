@@ -18,16 +18,26 @@ void stack_free(struct stack *st)
     }
 }
 
-void stack_push(struct stack *st, iref x)
+void stack_pushi(struct stack *st, iref x)
 {
     *st->top = x;
     st->top++;
 }
 
-iref stack_pop(struct stack *st)
+iref stack_popi(struct stack *st)
 {
     st->top--;
     return *st->top;
+}
+
+void stack_pushv(struct stack *st, vptr x)
+{
+    stack_pushi(st, (iref)x);
+}
+
+vptr stack_popv(struct stack *st)
+{
+    return (vptr)stack_popi(st);
 }
 
 bool stack_empty(struct stack *st)

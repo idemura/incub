@@ -9,6 +9,7 @@
 #include <string.h>
 
 typedef size_t iref;
+typedef void * vptr;
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 #define FIELD_SIZEOF(s, f) (sizeof(((s*)0)->f))

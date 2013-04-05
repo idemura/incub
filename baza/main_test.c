@@ -25,6 +25,10 @@ void base_test()
 {
     test_begin("Base");
     TEST_CHECK(sizeof(uofs) == sizeof(vptr));
+#ifdef NDEBUG
+    // This assert shouldn't break.
+    assert(false);
+#endif
     test_end();
 }
 

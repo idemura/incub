@@ -186,12 +186,22 @@ static bool btree_locate(struct btree *bt, key_t key,
     return true;
 }
 
+static void btree_grow(struct btree *bt, key_t key, struct btree_node *node,
+        struct btree_node *new_node)
+{
+    bt->root = btree_new_node(bt->max_keys);
+    bt->root->edge[0].ptr = node;
+    bt->root->edge[0].key = key;
+    bt->root->edge[1].ptr = new_node;
+    bt->root->num = 1;
+    new_node->parent = node->parent = bt->root;
+    bt->depth += 1;
+}
+
 void btree_insert(struct btree *bt, key_t key, vptr value)
 {
     struct stack st;
     struct btree_node *node = NULL;
-    // int jkey = -1;
-    // int jkey_up;
 
     assert(value);
     if (!bt || !value) {
@@ -209,22 +219,21 @@ void btree_insert(struct btree *bt, key_t key, vptr value)
     assert(bt->max_keys % 2 == 1);
     const int h = bt->max_keys / 2;
 
-    struct btree_node *new_node = NULL;
     while (node->num == bt->max_keys) {
         struct btree_node *new_node = btree_new_node(bt->max_keys);
+        btree_copy_edges(new_node, node, h + 1, node->num);
         new_node->parent = node->parent;
 
-        btree_copy_edges(new_node, node, h + 1, node->num);
         node->num = h;
         key_t new_key = node->edge[h].key;
 
         int jkey = stack_popi(&st);
         if (key < new_key) {
-            assert(jkey < h);
+            assert(jkey <= h);
             btree_insert_in(node, jkey, key, value);
         } else {
-            assert(jkey >= h);
-            btree_insert_in(new_node, jkey - h, key, value);
+            assert(jkey > h);
+            btree_insert_in(new_node, jkey - h - 1, key, value);
         }
 
         key = new_key;
@@ -233,20 +242,11 @@ void btree_insert(struct btree *bt, key_t key, vptr value)
             jkey = stack_topi(&st);
             assert(node->parent->edge[jkey].ptr == node);
             node->parent->edge[jkey].ptr = new_node;
+            value = node;
+            node = node->parent;
         } else {
-            bt->root = btree_new_node(bt->max_keys);
-            new_node->parent = node->parent = bt->root;
-            bt->root->edge[0].ptr = node;
-            bt->root->edge[0].key = new_key;
-            bt->root->edge[1].ptr = new_node;
-            bt->root->num = 1;
-            bt->depth += 1;
-            // break;
-        }
-
-        value = node;
-        node = node->parent;
-        if (!node) {
+            btree_grow(bt, key, node, new_node);
+            node = NULL;
             break;
         }
     }

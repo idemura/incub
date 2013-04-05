@@ -203,26 +203,26 @@ void btree_test()
     bt = btree_create(2);
     btree_destroy(bt);
 
-    key_t keys1[] = {
+    key_t keys0[] = {
         10, 20, 15
+    };
+    btree_test_insert(keys0, ARRAY_SIZE(keys0));
+    key_t keys1[] = {
+        10, 20, 15, 7
     };
     btree_test_insert(keys1, ARRAY_SIZE(keys1));
     key_t keys2[] = {
-        10, 20, 15, 7
+        10, 20, 15, 13
     };
     btree_test_insert(keys2, ARRAY_SIZE(keys2));
     key_t keys3[] = {
-        10, 20, 15, 13
+        10, 20, 15, 17
     };
     btree_test_insert(keys3, ARRAY_SIZE(keys3));
     key_t keys4[] = {
-        10, 20, 15, 17
-    };
-    btree_test_insert(keys4, ARRAY_SIZE(keys4));
-    key_t keys5[] = {
         10, 20, 15, 23
     };
-    btree_test_insert(keys5, ARRAY_SIZE(keys5));
+    btree_test_insert(keys4, ARRAY_SIZE(keys4));
 
     test_end();
 }

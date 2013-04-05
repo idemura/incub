@@ -84,6 +84,10 @@ void pque_test()
         TEST_CHECK(pque_size(pq) == i + 1);
     }
     TEST_CHECK(pque_pop(pq) == (vptr)5);
+    TEST_CHECK(pque_pop(pq) == (vptr)10);
+    TEST_CHECK(pque_pop(pq) == (vptr)15);
+    TEST_CHECK(pque_pop(pq) == (vptr)20);
+    TEST_CHECK(pque_pop(pq) == (vptr)30);
     pque_destroy(pq);
 
     // Check reallocations

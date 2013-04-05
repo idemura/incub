@@ -47,7 +47,7 @@ static uofs btree_node_size(int num_keys)
 
 static struct btree_node *btree_new_node(int max_keys)
 {
-    struct btree_node* node = mem_alloc(btree_node_size(max_keys));
+    struct btree_node *node = mem_alloc(btree_node_size(max_keys));
     node->parent = NULL;
     node->num = 0;
     node->edge[0].ptr = NULL;

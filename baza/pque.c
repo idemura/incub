@@ -2,12 +2,12 @@
 
 struct pque {
     vptr *heap;
-    pque_compare cmpf;
+    compare_fn cmpf;
     uofs size;
     uofs capacity;
 };
 
-struct pque *pque_create(pque_compare cmpf, uofs capacity)
+struct pque *pque_create(compare_fn cmpf, uofs capacity)
 {
     assert(cmpf);
     if (!cmpf) {
@@ -48,7 +48,7 @@ static void pque_heapify(struct pque *pq, uofs i)
 {
     while (i != 0) {
         uofs p = (i - 1) / 2;
-        if (!pq->cmpf(pq->heap[p], pq->heap[i])) {
+        if (pq->cmpf(pq->heap[p], pq->heap[i]) > 0) {
             vptr temp = pq->heap[p];
             pq->heap[p] = pq->heap[i];
             pq->heap[i] = temp;
@@ -100,10 +100,10 @@ vptr pque_pop(struct pque *pq)
         uofs imin = i;
         uofs j1 = 2 * i + 1;
         uofs j2 = j1 + 1;
-        if (j1 < pq->size && !pq->cmpf(pq->heap[i], pq->heap[j1])) {
+        if (j1 < pq->size && pq->cmpf(pq->heap[i], pq->heap[j1]) > 0) {
             imin = j1;
         }
-        if (j2 < pq->size && !pq->cmpf(pq->heap[i], pq->heap[j2])) {
+        if (j2 < pq->size && pq->cmpf(pq->heap[i], pq->heap[j2]) > 0) {
             imin = j2;
         }
         if (imin == i) {

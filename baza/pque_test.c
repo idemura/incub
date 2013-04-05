@@ -1,9 +1,9 @@
 #include "pque.c"
 #include "test.h"
 
-static bool uint_less(vptr k1, vptr k2)
+static int uint_less(vptr k1, vptr k2)
 {
-    return (uofs)k1 < (uofs)k2;
+    return (uofs)k1 - (uofs)k2;
 }
 
 static bool pque_check_impl(struct pque *pq)
@@ -13,7 +13,7 @@ static bool pque_check_impl(struct pque *pq)
     }
     for (uofs i = 1; i < pq->size; ++i) {
         uofs p = (i - 1) / 2;
-        if (!pq->cmpf(pq->heap[p], pq->heap[i])) {
+        if (pq->cmpf(pq->heap[p], pq->heap[i]) > 0) {
             fprintf(test_out(), "Heap violation at %zi (parent %zi)\n", i, p);
             return false;
         }

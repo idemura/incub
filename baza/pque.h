@@ -5,9 +5,7 @@
 
 struct pque;
 
-typedef bool (*pque_compare)(vptr k1, vptr k2);
-
-struct pque *pque_create(pque_compare cmpf, uofs capacity);
+struct pque *pque_create(compare_fn cmpf, uofs capacity);
 void pque_destroy(struct pque *pq);
 uofs pque_size(struct pque *pq);
 void pque_insert(struct pque *pq, vptr key);

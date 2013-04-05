@@ -146,7 +146,7 @@ static bool btree_check_print(struct btree *bt)
     return ret;
 }
 
-void btree_test_insert(key_t *keys, uofs keys_num)
+static void btree_test_insert(key_t *keys, uofs keys_num)
 {
     uofs mem = mem_total();
 

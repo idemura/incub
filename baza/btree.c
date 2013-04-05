@@ -116,12 +116,11 @@ static void btree_copy_edge(struct btree_node *dst, struct btree_node *src,
 }
 
 static bool btree_locate(struct btree *bt, key_t key,
-        struct btree_node **node_out, int *jkey_out) {
+        struct btree_node **node_out, struct stack *st) {
     int jkey;
 
     if (!bt) {
         *node_out = NULL;
-        *jkey_out = 0;
         return false;
     }
 
@@ -130,6 +129,9 @@ static bool btree_locate(struct btree *bt, key_t key,
     int depth = bt->depth + 1;
     while (1) {
         jkey = btree_find_edge(node, key);
+        if (st) {
+            stack_pushi(st, jkey);
+        }
         found = (jkey != node->num && node->edge[jkey].key == key);
         depth -= 1;
         if (found || depth == 0) {
@@ -141,7 +143,6 @@ static bool btree_locate(struct btree *bt, key_t key,
     if (!found) {
         assert(depth == 0);
         *node_out = node;
-        *jkey_out = jkey;
         return false;
     }
 
@@ -150,6 +151,9 @@ static bool btree_locate(struct btree *bt, key_t key,
         while (1) {
             assert(node);
             jkey = node->num;
+            if (st) {
+                stack_pushi(st, jkey);
+            }
             depth -= 1;
             if (depth == 0) {
                 break;
@@ -161,32 +165,42 @@ static bool btree_locate(struct btree *bt, key_t key,
     assert(node);
     assert(depth == 0);
     *node_out = node;
-    *jkey_out = jkey;
     return true;
 }
 
 void btree_insert(struct btree *bt, key_t key, vptr value)
 {
-    // struct stack st;
-    int jkey;
+    struct stack st;
     struct btree_node *node;
+    // int jkey;
+    // int jkey_up;
 
     assert(value);
     if (!bt || !value) {
         return;
     }
 
-    if (btree_locate(bt, key, &node, &jkey)) {
-        node->edge[jkey].ptr = value;
+    stack_alloc(&st, bt->depth);
+
+    if (btree_locate(bt, key, &node, &st)) {
+        stack_free(&st);
+        node->edge[stack_popi(&st)].ptr = value;
         return;
     }
+
+    // assert(!stack_empty(&st));
+    // jkey_up = stack_popi(&st);
+    // assert(jkey_up == jkey);
+    int jkey = stack_popi(&st);
 
     struct btree_node *left = NULL;
     while (node && node->num == bt->max_keys) {
         assert(node->num % 2 == 0);
         int h = node->num / 2;
-        left = btree_new_node(bt->max_keys);
-        left->parent = node->parent;
+
+        // jkey_up = node->parent? stack_popi(&st): 0;
+        struct btree_node *right = btree_new_node(bt->max_keys);
+        right->parent = node->parent;
 
         key_t new_key = key;
         // Virtually insert key in node `node` and find what key will be at
@@ -226,20 +240,23 @@ void btree_insert(struct btree *bt, key_t key, vptr value)
         btree_insert_in(node, jkey, key, value);
     }
     bt->size += 1;
+    stack_free(&st);
 }
 
 vptr btree_find(struct btree *bt, key_t key)
 {
-    int jkey;
+    struct stack st;
     struct btree_node *node;
 
     if (!bt) {
         return NULL;
     }
 
-    if (btree_locate(bt, key, &node, &jkey)) {
-        return node->edge[jkey].ptr;
-    } else {
-        return NULL;
+    stack_alloc(&st, bt->depth);
+    vptr value = NULL;
+    if (btree_locate(bt, key, &node, &st)) {
+        value = node->edge[stack_popi(&st)].ptr;
     }
+    stack_free(&st);
+    return value;
 }

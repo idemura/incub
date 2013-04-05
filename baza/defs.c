@@ -30,10 +30,16 @@ struct mem_block {
 
 static uofs mem_bytes;
 
+static uofs mem_adjust(uofs size)
+{
+    return ((size + (MEM_ALIGN - 1)) & ~(MEM_ALIGN - 1)) + MEM_PAD;
+
+}
+
 vptr mem_alloc(uofs size)
 {
-    size = (size + (MEM_ALIGN - 1)) & ~(MEM_ALIGN - 1);
-    struct mem_block *mb = malloc(sizeof(struct mem_block) + size + MEM_PAD);
+    uofs adjusted = mem_adjust(size);
+    struct mem_block *mb = malloc(sizeof(struct mem_block) + adjusted);
     if (!mb) {
         fprintf(stderr,
                 "OUT OF HEAP MEMORY\n"
@@ -45,7 +51,7 @@ vptr mem_alloc(uofs size)
     mb->size = size;
     mem_bytes += mb->size;
 #ifdef DEBUG
-    memset(mb->p, 0xcc, size + MEM_PAD);
+    memset(mb->p, 0xcc, adjusted);
 #endif
     return mb->p;
 }
@@ -58,8 +64,8 @@ void mem_free(vptr p)
     struct mem_block *mb = (void*)((char*)p - sizeof(struct mem_block));
     mem_bytes -= mb->size;
 #ifdef DEBUG
-    for (uofs i = 0; i < MEM_PAD; ++i) {
-        assert(mb->p[mb->size + i] == 0xcc);
+    for (uofs i = mb->size, n = mem_adjust(mb->size); i < n; ++i) {
+        assert(mb->p[i] == 0xcc);
     }
 #endif
     free(mb);

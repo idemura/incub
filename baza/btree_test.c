@@ -180,7 +180,7 @@ static void btree_test_insert(key_t *keys, uofs keys_num)
         }
     }
 
-    key_t *new_val = malloc(keys_num * sizeof(key_t));
+    key_t *new_val = mem_alloc(keys_num * sizeof(key_t));
     memset(new_val, 0, keys_num * sizeof(key_t));
     for (uofs i = 0; i < keys_num; ++i) {
         // fprintf(test_out(), "Update %li\n", keys[i]);
@@ -188,7 +188,7 @@ static void btree_test_insert(key_t *keys, uofs keys_num)
         TEST_CHECK(btree_find(bt, keys[i]) == &new_val[i]);
         TEST_CHECK(btree_size(bt) == keys_num);
     }
-    free(new_val);
+    mem_free(new_val);
 
     btree_destroy(bt);
     TEST_CHECK(mem_total() == mem);

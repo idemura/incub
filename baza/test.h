@@ -1,6 +1,7 @@
 #ifndef TEST_H_
 #define TEST_H_
 
+#include "defs.h"
 #include <stdio.h>
 
 #define TEST_CHECK(expr) \

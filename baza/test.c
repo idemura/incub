@@ -14,13 +14,13 @@
   limitations under the License.
 */
 #include "test.h"
-#include "defs.h"
 #include <string.h>
 
 static const char *s_name;
 static int s_failed_asserts;
 static int s_failed;
 static int s_passed;
+static uofs s_memory;
 static FILE *s_out;
 
 bool color_text(char *out, size_t out_len, const char *in)
@@ -80,6 +80,7 @@ void test_begin(const char *name)
 {
     s_name = name;
     s_failed_asserts = 0;
+    s_memory = mem_total();
 }
 
 void test_end()
@@ -94,6 +95,11 @@ void test_end()
         s_failed++;
         if (color_text(fmt, sizeof(fmt), "#1FAILED# %s\n")) {
             fprintf(stderr, fmt, s_name);
+        }
+    }
+    if (mem_total() != s_memory) {
+        if (color_text(fmt, sizeof(fmt), "#3Warning# %s memory leak: %lu\n")) {
+            fprintf(stderr, fmt, s_name, mem_total() - s_memory);
         }
     }
 }

@@ -84,6 +84,7 @@ void pque_insert(struct pque *pq, vptr key)
             return;
         }
         memcpy(new, pq->heap, pq->size * sizeof(vptr));
+        mem_free(pq->heap);
         pq->capacity = capacity;
         pq->heap = new;
     }

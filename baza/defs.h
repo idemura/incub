@@ -6,7 +6,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
+#include <memory.h>
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 #define FIELD_SIZEOF(s, f) (sizeof(((s*)0)->f))

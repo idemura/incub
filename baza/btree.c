@@ -122,7 +122,7 @@ static int btree_find_edge(struct btree_node *node, key_t key)
     return node->num;
 }
 
-static void btree_copy_edge(struct btree_node *dst, struct btree_node *src,
+static void btree_copy_edges(struct btree_node *dst, struct btree_node *src,
         int start, int end)
 {
     dst->num = end - start;
@@ -195,7 +195,7 @@ void btree_insert(struct btree *bt, key_t key, vptr value)
         return;
     }
 
-    stack_alloc(&st);
+    stack_alloc(&st, 0);
 
     if (btree_locate(bt, key, &node, &st)) {
         stack_free(&st);
@@ -229,24 +229,30 @@ void btree_insert(struct btree *bt, key_t key, vptr value)
             r = h + 1;
         }
 
-        // btree_copy_edge(
+        btree_copy_edges(right, node, r, node->num);
+        int jkey_up = node->parent? stack_topi(&st): 0;
+        // if (node->parent) {
+        //     assert(
+        //     assert(node
+
+        // btree_copy_edges(
 
         key_t new_key = key;
         // Virtually insert key in node `node` and find what key will be at
         // index `h`. This follows to 3 cases:
         if (jkey < h) {
             new_key = node->edge[h - 1].key;
-            btree_copy_edge(left, node, 0, h - 1);
+            btree_copy_edges(left, node, 0, h - 1);
             btree_insert_in(left, jkey, key, value);
-            btree_copy_edge(node, node, h, node->num);
+            btree_copy_edges(node, node, h, node->num);
         } else if (jkey == h) {
-            btree_copy_edge(left, node, 0, h);
+            btree_copy_edges(left, node, 0, h);
             left->edge[left->num].ptr = value;
-            btree_copy_edge(node, node, h, node->num);
+            btree_copy_edges(node, node, h, node->num);
         } else {
             new_key = node->edge[h].key;
-            btree_copy_edge(left, node, 0, h);
-            btree_copy_edge(node, node, h + 1, node->num);
+            btree_copy_edges(left, node, 0, h);
+            btree_copy_edges(node, node, h + 1, node->num);
             btree_insert_in(node, jkey - h - 1, key, value);
         }
         assert(left->num == h);
@@ -281,7 +287,7 @@ vptr btree_find(struct btree *bt, key_t key)
         return NULL;
     }
 
-    stack_alloc(&st);
+    stack_alloc(&st, bt->depth);
     vptr value = NULL;
     if (btree_locate(bt, key, &node, &st)) {
         value = node->edge[stack_popi(&st)].ptr;

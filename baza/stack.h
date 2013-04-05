@@ -12,7 +12,7 @@ struct stack {
     uofs *bottom;
 };
 
-void stack_alloc(struct stack *st);
+void stack_alloc(struct stack *st, uofs capacity);
 void stack_free(struct stack *st);
 void stack_pushi(struct stack *st, uofs x);
 void stack_pushv(struct stack *st, vptr x);

@@ -79,7 +79,7 @@ void pque_insert(struct pque *pq, vptr key)
         if (capacity <= pq->capacity) {
             capacity += pq->capacity + 1;
         }
-        void *new = mem_alloc(capacity * sizeof(vptr));
+        vptr new = mem_alloc(capacity * sizeof(vptr));
         if (!new) {
             return;
         }

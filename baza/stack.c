@@ -15,11 +15,17 @@
 */
 #include "stack.h"
 
-void stack_alloc(struct stack *st)
+void stack_alloc(struct stack *st, uofs capacity)
 {
-    st->buf = NULL;
-    st->top = st->buf_auto;
-    st->bottom = st->buf_auto + AUTO_STACK_SIZE;
+    if (capacity > AUTO_STACK_SIZE) {
+        st->buf = mem_alloc(capacity * sizeof(uofs));
+        st->top = st->buf;
+        st->bottom = st->top + capacity;
+    } else {
+        st->buf = NULL;
+        st->top = st->buf_auto;
+        st->bottom = st->top + AUTO_STACK_SIZE;
+    }
 }
 
 void stack_free(struct stack *st)

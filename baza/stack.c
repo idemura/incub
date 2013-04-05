@@ -83,5 +83,11 @@ vptr stack_topv(struct stack *st)
 
 bool stack_empty(struct stack *st)
 {
-    return st->top == st->buf;
+    return stack_size(st) == 0;
+}
+
+uofs stack_size(struct stack *st)
+{
+    assert(st->top >= st->buf);
+    return st->top - st->buf;
 }

@@ -21,5 +21,6 @@ vptr stack_popv(struct stack *st);
 uofs stack_topi(struct stack *st);
 vptr stack_topv(struct stack *st);
 bool stack_empty(struct stack *st);
+uofs stack_size(struct stack *st);
 
 #endif

@@ -128,7 +128,7 @@ static bool btree_check(struct btree *bt)
     return true;
 }
 
-static void btree_print_nodes(struct btree_node *node, int depth)
+static void btree_print(struct btree_node *node, int depth)
 {
     if (!node) {
         return;
@@ -147,18 +147,18 @@ static void btree_print_nodes(struct btree_node *node, int depth)
     fprintf(test_out(), "%p\n", (void*)node->edge[node->num].ptr);
     if (depth > 0) {
         for (int i = 0; i <= node->num; ++i) {
-            btree_print_nodes(node->edge[node->num].ptr, depth - 1);
+            btree_print(node->edge[node->num].ptr, depth - 1);
         }
     }
 }
 
 static bool btree_check_print(struct btree *bt)
 {
-    bool ret = btree_check(bt);
-    if (!ret) {
-        btree_print_nodes(bt->root, bt->depth);
+    if (btree_check(bt)) {
+        return true;
     }
-    return ret;
+    btree_print(bt->root, bt->depth);
+    return false;
 }
 
 static void btree_test_insert(key_t *keys, uofs keys_num)
@@ -172,11 +172,11 @@ static void btree_test_insert(key_t *keys, uofs keys_num)
         TEST_CHECK(btree_check_print(bt));
         TEST_CHECK(btree_size(bt) == i + 1);
         for (uofs j = 0; j < i; ++j) {
-            vptr val = btree_find(bt, keys[j]);
-            if (val != &keys[j]) {
+            vptr value = btree_find(bt, keys[j]);
+            if (value != &keys[j]) {
                 fprintf(test_out(), "Key %li not found\n", keys[j]);
             }
-            TEST_CHECK(val == &keys[j]);
+            TEST_CHECK(value == &keys[j]);
         }
     }
 
@@ -204,29 +204,25 @@ void btree_test()
     btree_destroy(bt);
 
     key_t keys1[] = {
-        10, 20, 15, 5
+        10, 20, 15
     };
     btree_test_insert(keys1, ARRAY_SIZE(keys1));
     key_t keys2[] = {
-        10, 20, 15, 5, 3
+        10, 20, 15, 7
     };
     btree_test_insert(keys2, ARRAY_SIZE(keys2));
     key_t keys3[] = {
-        10, 20, 15, 5, 7
+        10, 20, 15, 13
     };
     btree_test_insert(keys3, ARRAY_SIZE(keys3));
     key_t keys4[] = {
-        10, 20, 15, 5, 13
+        10, 20, 15, 17
     };
     btree_test_insert(keys4, ARRAY_SIZE(keys4));
     key_t keys5[] = {
-        10, 20, 15, 5, 17
+        10, 20, 15, 23
     };
     btree_test_insert(keys5, ARRAY_SIZE(keys5));
-    key_t keys6[] = {
-        10, 20, 15, 5, 23
-    };
-    btree_test_insert(keys6, ARRAY_SIZE(keys6));
 
     test_end();
 }

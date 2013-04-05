@@ -26,6 +26,7 @@ void stack_pushi(struct stack *st, uofs x)
 
 uofs stack_popi(struct stack *st)
 {
+    assert(!stack_empty(st));
     st->top--;
     return *st->top;
 }

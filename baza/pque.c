@@ -109,17 +109,17 @@ vptr pque_pop(struct pque *pq)
     }
 
     vptr min_key = pq->heap[0];
-    pq->heap[0] = pq->heap[pq->size - 1];
     pq->size -= 1;
+    pq->heap[0] = pq->heap[pq->size];
 
     for (uofs i = 0; ; ) {
         uofs imin = i;
         uofs j1 = 2 * i + 1;
         uofs j2 = j1 + 1;
-        if (j1 < pq->size && pq->cmpf(pq->heap[i], pq->heap[j1]) > 0) {
+        if (j1 < pq->size && pq->cmpf(pq->heap[imin], pq->heap[j1]) > 0) {
             imin = j1;
         }
-        if (j2 < pq->size && pq->cmpf(pq->heap[i], pq->heap[j2]) > 0) {
+        if (j2 < pq->size && pq->cmpf(pq->heap[imin], pq->heap[j2]) > 0) {
             imin = j2;
         }
         if (imin == i) {

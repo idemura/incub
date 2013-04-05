@@ -21,7 +21,7 @@ static int uint_less(vptr k1, vptr k2)
     return (uofs)k1 - (uofs)k2;
 }
 
-static bool pque_check_impl(struct pque *pq)
+static bool pque_check(struct pque *pq)
 {
     if (!pq) {
         return true;
@@ -36,7 +36,7 @@ static bool pque_check_impl(struct pque *pq)
     return true;
 }
 
-static void pque_print_test(struct pque *pq)
+static void pque_print(struct pque *pq)
 {
     for (uofs i = 0; i < pq->size; ++i) {
         fprintf(test_out(), "%lu ", (uofs)pq->heap[i]);
@@ -44,13 +44,13 @@ static void pque_print_test(struct pque *pq)
     fprintf(test_out(), "\n");
 }
 
-static bool pque_check(struct pque *pq)
+static bool pque_check_print(struct pque *pq)
 {
-    if (!pque_check_impl(pq)) {
-        pque_print_test(pq);
-        return false;
+    if (pque_check(pq)) {
+        return true;
     }
-    return true;
+    pque_print(pq);
+    return false;
 }
 
 static void pque_test_sort(uofs keys, int n)
@@ -80,21 +80,27 @@ void pque_test()
     };
     for (uofs i = 0; i < ARRAY_SIZE(keys); ++i) {
         pque_insert(pq, (vptr)keys[i]);
-        TEST_CHECK(pque_check(pq));
+        TEST_CHECK(pque_check_print(pq));
         TEST_CHECK(pque_size(pq) == i + 1);
     }
     TEST_CHECK(pque_pop(pq) == (vptr)5);
     pque_destroy(pq);
 
     // Check reallocations
+    const uofs n = 10;
     pq = pque_create(uint_less, 8);
     TEST_CHECK(pq != NULL);
-    for (uofs i = 0; i < 12; ++i) {
-        vptr key = (vptr)(999 - i);
+    for (uofs i = 0; i < n; ++i) {
+        vptr key = (vptr)(199 - i);
         pque_insert(pq, key);
-        TEST_CHECK(pque_check(pq));
+        TEST_CHECK(pque_check_print(pq));
         TEST_CHECK(pque_top(pq) == key);
         TEST_CHECK(pque_size(pq) == i + 1);
+    }
+    for (uofs i = 0; i < n; ++i) {
+        vptr key = (vptr)(200 - n + i);
+        TEST_CHECK(pque_pop(pq) == key);
+        TEST_CHECK(pque_check_print(pq));
     }
     pque_destroy(pq);
 

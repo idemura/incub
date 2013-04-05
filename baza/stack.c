@@ -44,6 +44,7 @@ void stack_pushi(struct stack *st, uofs x)
         uofs *new = mem_alloc(new_size * sizeof(uofs));
         memcpy(new, st->buf, size * sizeof(uofs));
         stack_free(st);
+        stack_free(st);
         st->buf = new;
         st->top = new + size;
         st->bottom = new + new_size;

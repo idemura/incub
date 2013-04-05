@@ -1,3 +1,18 @@
+/*
+  Copyright 2013 Igor Demura
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+*/
 #include "btree.h"
 #include "stack.h"
 #include <memory.h>
@@ -201,6 +216,20 @@ void btree_insert(struct btree *bt, key_t key, vptr value)
         // jkey_up = node->parent? stack_popi(&st): 0;
         struct btree_node *right = btree_new_node(bt->max_keys);
         right->parent = node->parent;
+
+        int l, r;
+        if (jkey < h) {
+            l = h - 1;
+            r = h;
+        } else if (jkey == h) {
+            l = h;
+            r = h;
+        } else {
+            l = h;
+            r = h + 1;
+        }
+
+        // btree_copy_edge(
 
         key_t new_key = key;
         // Virtually insert key in node `node` and find what key will be at

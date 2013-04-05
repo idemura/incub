@@ -25,4 +25,5 @@ Debug mode:
 ## License
 
 Copyright 2013 Igor Demura
-Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
+Licensed under the Apache License, Version 2.0:
+http://www.apache.org/licenses/LICENSE-2.0

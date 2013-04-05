@@ -20,7 +20,7 @@ Debug mode:
 
 ## Author
 
-- Igor Demura
+- Igor Demura, igor.demura@gmail.com
 
 ## License
 

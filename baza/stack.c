@@ -15,26 +15,29 @@
 */
 #include "stack.h"
 
-void stack_alloc(struct stack *st, uofs capacity)
+void stack_alloc(struct stack *st)
 {
-    if (capacity > FIELD_SIZEOF(struct stack, buf_auto)) {
-        st->buf_heap = mem_alloc(capacity * sizeof(uofs));
-        st->top = st->buf_heap;
-    } else {
-        st->buf_heap = NULL;
-        st->top = st->buf_auto;
-    }
+    st->buf = NULL;
+    st->top = st->buf_auto;
+    st->bottom = st->buf_auto + AUTO_STACK_SIZE;
 }
 
 void stack_free(struct stack *st)
 {
-    if (st->buf_heap) {
-        mem_free(st->buf_heap);
-    }
+    mem_free(st->buf);
 }
 
 void stack_pushi(struct stack *st, uofs x)
 {
+    if (st->top == st->bottom) {
+        const uofs size = st->buf? st->bottom - st->buf: AUTO_STACK_SIZE;
+        uofs *new_buf = mem_alloc(2 * size * sizeof(uofs));
+        memcpy(new_buf, st->buf? st->buf: st->buf_auto, size * sizeof(uofs));
+        mem_free(st->buf);
+        st->buf = new_buf;
+        st->top = st->buf + size;
+        st->bottom = st->buf + 2 * size;
+    }
     *st->top = x;
     st->top++;
 }
@@ -69,5 +72,5 @@ vptr stack_topv(struct stack *st)
 
 bool stack_empty(struct stack *st)
 {
-    return st->top == st->buf_auto || st->top == st->buf_heap;
+    return st->top == st->buf_auto || st->top == st->buf;
 }

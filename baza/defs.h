@@ -13,6 +13,7 @@
 
 typedef size_t uofs;
 typedef void *vptr;
+
 typedef int (*compare_fn)(vptr k1, vptr k2);
 
 vptr mem_alloc(uofs size);

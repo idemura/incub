@@ -195,7 +195,7 @@ void btree_insert(struct btree *bt, key_t key, vptr value)
         return;
     }
 
-    stack_alloc(&st, bt->depth);
+    stack_alloc(&st);
 
     if (btree_locate(bt, key, &node, &st)) {
         stack_free(&st);
@@ -281,7 +281,7 @@ vptr btree_find(struct btree *bt, key_t key)
         return NULL;
     }
 
-    stack_alloc(&st, bt->depth);
+    stack_alloc(&st);
     vptr value = NULL;
     if (btree_locate(bt, key, &node, &st)) {
         value = node->edge[stack_popi(&st)].ptr;

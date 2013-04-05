@@ -3,13 +3,16 @@
 
 #include "defs.h"
 
+#define AUTO_STACK_SIZE 32
+
 struct stack {
-    uofs buf_auto[32]; // 512 bytes on x64
-    uofs *buf_heap;
+    uofs buf_auto[AUTO_STACK_SIZE];
+    uofs *buf;
     uofs *top;
+    uofs *bottom;
 };
 
-void stack_alloc(struct stack *st, uofs capacity);
+void stack_alloc(struct stack *st);
 void stack_free(struct stack *st);
 void stack_pushi(struct stack *st, uofs x);
 void stack_pushv(struct stack *st, vptr x);

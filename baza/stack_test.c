@@ -21,7 +21,7 @@ void stack_test()
     test_begin("Stack");
 
     struct stack st;
-    stack_alloc(&st, 8);
+    stack_alloc(&st);
     TEST_CHECK(stack_empty(&st));
     stack_pushi(&st, 10);
     TEST_CHECK(!stack_empty(&st));
@@ -33,7 +33,7 @@ void stack_test()
     stack_free(&st);
 
     const uofs n = 1000;
-    stack_alloc(&st, n);
+    stack_alloc(&st);
     TEST_CHECK(stack_empty(&st));
     for (uofs i = 0; i < n; ++i) {
       stack_pushi(&st, i);

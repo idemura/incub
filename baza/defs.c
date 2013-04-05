@@ -14,6 +14,7 @@
   limitations under the License.
 */
 #include "defs.h"
+#include <stdio.h>
 
 #define MEM_ALIGN sizeof(uofs)
 #ifdef DEBUG
@@ -34,6 +35,11 @@ vptr mem_alloc(uofs size)
     size = (size + (MEM_ALIGN - 1)) & ~(MEM_ALIGN - 1);
     struct mem_block *mb = malloc(sizeof(struct mem_block) + size + MEM_PAD);
     if (!mb) {
+        fprintf(stderr,
+                "OUT OF HEAP MEMORY\n"
+                "  Total allocated: %zu\n"
+                "  Requested: %zu\n", mem_bytes, size);
+        exit(1);
         return NULL;
     }
     mb->size = size;

@@ -22,27 +22,31 @@ void stack_alloc(struct stack *st, uofs capacity)
         st->top = st->buf;
         st->bottom = st->top + capacity;
     } else {
-        st->buf = NULL;
-        st->top = st->buf_auto;
+        st->buf = st->buf_auto;
+        st->top = st->buf;
         st->bottom = st->top + AUTO_STACK_SIZE;
     }
 }
 
 void stack_free(struct stack *st)
 {
-    mem_free(st->buf);
+    if (st->buf != st->buf_auto) {
+        mem_free(st->buf);
+    }
+    st->buf = NULL;
 }
 
 void stack_pushi(struct stack *st, uofs x)
 {
     if (st->top == st->bottom) {
-        const uofs size = st->buf? st->bottom - st->buf: AUTO_STACK_SIZE;
-        uofs *new_buf = mem_alloc(2 * size * sizeof(uofs));
-        memcpy(new_buf, st->buf? st->buf: st->buf_auto, size * sizeof(uofs));
-        mem_free(st->buf);
-        st->buf = new_buf;
-        st->top = st->buf + size;
-        st->bottom = st->buf + 2 * size;
+        const uofs size = st->bottom - st->buf;
+        const uofs new_size = 2 * size;
+        uofs *new = mem_alloc(new_size * sizeof(uofs));
+        memcpy(new, st->buf, size * sizeof(uofs));
+        stack_free(st);
+        st->buf = new;
+        st->top = new + size;
+        st->bottom = new + new_size;
     }
     *st->top = x;
     st->top++;
@@ -78,5 +82,5 @@ vptr stack_topv(struct stack *st)
 
 bool stack_empty(struct stack *st)
 {
-    return st->top == st->buf_auto || st->top == st->buf;
+    return st->top == st->buf;
 }

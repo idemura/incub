@@ -11,9 +11,9 @@ CFLAGS = -Wall -std=c99 -pedantic $(DISABLE_WARNINGS)
 LFLAGS = -Wall
 cfg ?= opt
 ifeq ($(cfg), debug)
-	CFLAGS += -O0 -g -ggdb -DDEBUG
+	CFLAGS += -O0 -g -ggdb
 else
-	CFLAGS += -O2
+	CFLAGS += -O2 -DNDEBUG
 endif
 main_src = defs.c dstr.c stack.c btree.c pque.c main.c
 test_src = defs.c test.c dstr_test.c stack_test.c btree_test.c pque_test.c main_test.c

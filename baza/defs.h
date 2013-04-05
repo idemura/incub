@@ -11,6 +11,12 @@
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 #define FIELD_SIZEOF(s, f) (sizeof(((s*)0)->f))
 
+#ifdef NDEBUG
+#define DEBUG 0
+#else
+#define DEBUG 1
+#endif
+
 typedef size_t uofs;
 typedef void *vptr;
 

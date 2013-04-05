@@ -231,10 +231,10 @@ void btree_insert(struct btree *bt, key_t key, vptr value)
 
         btree_copy_edges(right, node, r, node->num);
         int jkey_up = node->parent? stack_topi(&st): 0;
-        // if (node->parent) {
-        //     assert(
-        //     assert(node
-
+        if (node->parent) {
+            assert(node->parent->edge[jkey_up].ptr = node);
+            node->parent->edge[jkey_up].ptr = right;
+        }
         // btree_copy_edges(
 
         key_t new_key = key;

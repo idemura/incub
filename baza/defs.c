@@ -17,7 +17,7 @@
 #include <stdio.h>
 
 #define MEM_ALIGN sizeof(uofs)
-#ifdef DEBUG
+#if DEBUG
 #define MEM_PAD MEM_ALIGN
 #else
 #define MEM_PAD 0
@@ -50,7 +50,7 @@ vptr mem_alloc(uofs size)
     }
     mb->size = size;
     mem_bytes += mb->size;
-#ifdef DEBUG
+#if DEBUG
     memset(mb->p, 0xcc, adjusted);
 #endif
     return mb->p;
@@ -63,7 +63,7 @@ void mem_free(vptr p)
     }
     struct mem_block *mb = (void*)((char*)p - sizeof(struct mem_block));
     mem_bytes -= mb->size;
-#ifdef DEBUG
+#if DEBUG
     for (uofs i = mb->size, n = mem_adjust(mb->size); i < n; ++i) {
         assert(mb->p[i] == 0xcc);
     }

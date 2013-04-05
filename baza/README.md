@@ -18,7 +18,7 @@ Debug mode:
     make main cfg=debug && make test cfg=debug
     ./bin/debug/baza_test
 
-## Contributors
+## Author
 
 - Igor Demura
 

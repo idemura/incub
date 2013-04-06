@@ -231,7 +231,6 @@ void btree_test()
     key_t keys5[] = {
         10, 30, 50, 20, 55, 15, 60, 5, 45, 2, 7
     };
-    printf("--------------------------------\n");
     btree_test_insert(keys5, ARRAY_SIZE(keys5));
 
     test_end();

@@ -187,15 +187,6 @@ static bool btree_locate(struct btree *bt, key_t key,
     return true;
 }
 
-void dbg_print(struct btree_node *node, const char *msg)
-{
-    printf("%p %s\n  | ", (void*)node, msg);
-    for (int i = 0; i < node->num; ++i) {
-        printf("%lu ", node->edge[i].key);
-    }
-    printf("|\n");
-}
-
 static void btree_grow(struct btree *bt, key_t key, struct btree_node *node,
         struct btree_node *temp)
 {
@@ -205,7 +196,6 @@ static void btree_grow(struct btree *bt, key_t key, struct btree_node *node,
     bt->root->edge[1].ptr = temp;
     bt->root->num = 1;
     temp->parent = node->parent = bt->root;
-    dbg_print(bt->root, "New root");
     bt->depth += 1;
 }
 
@@ -231,53 +221,32 @@ void btree_insert(struct btree *bt, key_t key, vptr value)
     const int h = bt->max_keys / 2;
 
     while (node->num == bt->max_keys) {
-        printf("Key %lu, value %p, stack size %lu\n", key, value, stack_size(&st));
-        dbg_print(node, "Split");
-        if (node->parent) {
-            dbg_print(node, "Parent");
-        } else {
-            printf("Upper node is NULL\n");
-        }
-
         struct btree_node *temp = btree_temp(bt->max_keys);
         btree_copy_edges(temp, node, h + 1, node->num);
         temp->parent = node->parent;
-        dbg_print(temp, "Temp");
 
         node->num = h;
-        dbg_print(node, "Node after cut");
         key_t new_key = node->edge[h].key;
-        printf("New key %lu\n", new_key);
 
         int jkey = stack_popi(&st);
         if (key < new_key) {
-            // Insert left
-            printf("Insert left @%d\n", jkey);
             assert(jkey <= h);
             btree_insert_in(node, jkey, key, value);
-            dbg_print(node, "Node after insert (left)");
         } else {
-            // Insert right
-            printf("Insert right @%d -> %d\n", jkey, jkey - h - 1);
             assert(jkey > h);
             jkey -= h + 1;
             btree_insert_in(temp, jkey, key, value);
-            dbg_print(temp, "Node after insert (left)");
         }
 
         key = new_key;
 
         if (node->parent) {
             jkey = stack_topi(&st);
-            printf("Has parent, insert back @%d\n", jkey);
-            dbg_print(node->parent, "Parent again");
             assert(node->parent->edge[jkey].ptr == node);
             node->parent->edge[jkey].ptr = temp;
             value = node;
             node = node->parent;
-            printf("New value %p new node %p new key %lu\n", value, (void*)node, key);
         } else {
-            printf("Grow tree\n");
             btree_grow(bt, key, node, temp);
             node = NULL;
             break;
@@ -285,8 +254,6 @@ void btree_insert(struct btree *bt, key_t key, vptr value)
     }
 
     if (node) {
-        printf("Final insert @%lu of %lu\n", stack_topi(&st), key);
-        dbg_print(node, "Final insert");
         btree_insert_in(node, stack_popi(&st), key, value);
     }
 

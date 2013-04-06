@@ -63,7 +63,7 @@ uofs stack_popi(struct stack *st)
 uofs stack_topi(struct stack *st)
 {
     assert(!stack_empty(st));
-    return *(st->top - 1);
+    return st->top[-1];
 }
 
 void stack_pushv(struct stack *st, vptr x)

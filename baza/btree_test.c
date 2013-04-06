@@ -203,9 +203,12 @@ void btree_test()
     bt = btree_create(2);
     btree_destroy(bt);
 
+    // Test leaf insertion
     key_t keys0[] = {
         10, 20, 15
     };
+
+    // Test grow one level
     btree_test_insert(keys0, ARRAY_SIZE(keys0));
     key_t keys1[] = {
         10, 20, 15, 7
@@ -223,6 +226,13 @@ void btree_test()
         10, 20, 15, 23
     };
     btree_test_insert(keys4, ARRAY_SIZE(keys4));
+
+    // Test grow two levels
+    key_t keys5[] = {
+        10, 30, 50, 20, 55, 15, 60, 5, 45, 2, 7
+    };
+    printf("--------------------------------\n");
+    btree_test_insert(keys5, ARRAY_SIZE(keys5));
 
     test_end();
 }

@@ -16,6 +16,7 @@
 #include "btree.h"
 #include "stack.h"
 #include <memory.h>
+#include <stdio.h>
 
 struct btree_node;
 
@@ -45,7 +46,7 @@ static uofs btree_node_size(int num_keys)
            offsetof(struct btree_edge, key);
 }
 
-static struct btree_node *btree_new_node(int max_keys)
+static struct btree_node *btree_temp(int max_keys)
 {
     struct btree_node *node = mem_alloc(btree_node_size(max_keys));
     node->parent = NULL;
@@ -63,7 +64,7 @@ struct btree *btree_create(int min_keys)
     if (bt) {
         bt->min_keys = min_keys - 1;
         bt->max_keys = 2 * min_keys - 1;
-        bt->root = btree_new_node(bt->max_keys);
+        bt->root = btree_temp(bt->max_keys);
         bt->size = 0;
         bt->depth = 0;
     }
@@ -186,15 +187,25 @@ static bool btree_locate(struct btree *bt, key_t key,
     return true;
 }
 
-static void btree_grow(struct btree *bt, key_t key, struct btree_node *node,
-        struct btree_node *new_node)
+void dbg_print(struct btree_node *node, const char *msg)
 {
-    bt->root = btree_new_node(bt->max_keys);
+    printf("%p %s\n  | ", (void*)node, msg);
+    for (int i = 0; i < node->num; ++i) {
+        printf("%lu ", node->edge[i].key);
+    }
+    printf("|\n");
+}
+
+static void btree_grow(struct btree *bt, key_t key, struct btree_node *node,
+        struct btree_node *temp)
+{
+    bt->root = btree_temp(bt->max_keys);
     bt->root->edge[0].ptr = node;
     bt->root->edge[0].key = key;
-    bt->root->edge[1].ptr = new_node;
+    bt->root->edge[1].ptr = temp;
     bt->root->num = 1;
-    new_node->parent = node->parent = bt->root;
+    temp->parent = node->parent = bt->root;
+    dbg_print(bt->root, "New root");
     bt->depth += 1;
 }
 
@@ -220,38 +231,62 @@ void btree_insert(struct btree *bt, key_t key, vptr value)
     const int h = bt->max_keys / 2;
 
     while (node->num == bt->max_keys) {
-        struct btree_node *new_node = btree_new_node(bt->max_keys);
-        btree_copy_edges(new_node, node, h + 1, node->num);
-        new_node->parent = node->parent;
+        printf("Key %lu, value %p, stack size %lu\n", key, value, stack_size(&st));
+        dbg_print(node, "Split");
+        if (node->parent) {
+            dbg_print(node, "Parent");
+        } else {
+            printf("Upper node is NULL\n");
+        }
+
+        struct btree_node *temp = btree_temp(bt->max_keys);
+        btree_copy_edges(temp, node, h + 1, node->num);
+        temp->parent = node->parent;
+        dbg_print(temp, "Temp");
 
         node->num = h;
+        dbg_print(node, "Node after cut");
         key_t new_key = node->edge[h].key;
+        printf("New key %lu\n", new_key);
 
         int jkey = stack_popi(&st);
         if (key < new_key) {
+            // Insert left
+            printf("Insert left @%d\n", jkey);
             assert(jkey <= h);
             btree_insert_in(node, jkey, key, value);
+            dbg_print(node, "Node after insert (left)");
         } else {
+            // Insert right
+            printf("Insert right @%d -> %d\n", jkey, jkey - h - 1);
             assert(jkey > h);
-            btree_insert_in(new_node, jkey - h - 1, key, value);
+            jkey -= h + 1;
+            btree_insert_in(temp, jkey, key, value);
+            dbg_print(temp, "Node after insert (left)");
         }
 
         key = new_key;
 
         if (node->parent) {
             jkey = stack_topi(&st);
+            printf("Has parent, insert back @%d\n", jkey);
+            dbg_print(node->parent, "Parent again");
             assert(node->parent->edge[jkey].ptr == node);
-            node->parent->edge[jkey].ptr = new_node;
+            node->parent->edge[jkey].ptr = temp;
             value = node;
             node = node->parent;
+            printf("New value %p new node %p new key %lu\n", value, (void*)node, key);
         } else {
-            btree_grow(bt, key, node, new_node);
+            printf("Grow tree\n");
+            btree_grow(bt, key, node, temp);
             node = NULL;
             break;
         }
     }
 
     if (node) {
+        printf("Final insert @%lu of %lu\n", stack_topi(&st), key);
+        dbg_print(node, "Final insert");
         btree_insert_in(node, stack_popi(&st), key, value);
     }
 

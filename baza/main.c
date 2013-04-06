@@ -19,8 +19,8 @@
 /*
 TODO:
 -----
-Use stack and refactor splitting.
-Make compare function in BTree.
+-- Use stack and refactor splitting.
+-- Make compare function in BTree.
 Binary search in BTree node.
 Mem counter: atomic add/sub
 

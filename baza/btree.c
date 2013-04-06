@@ -22,7 +22,7 @@ struct btree_node;
 
 struct btree_edge {
     struct btree_node* ptr;
-    key_t key;
+    vptr key;
 };
 
 struct btree_node {
@@ -32,6 +32,7 @@ struct btree_node {
 };
 
 struct btree {
+    compare_fn cmpf;
     struct btree_node *root;
     int depth;
     uofs size;
@@ -55,13 +56,14 @@ static struct btree_node *btree_temp(int max_keys)
     return node;
 }
 
-struct btree *btree_create(int min_keys)
+struct btree *btree_create(compare_fn cmpf, int min_keys)
 {
     if (min_keys < 2) {
         return NULL;
     }
     struct btree *bt = mem_alloc(sizeof(*bt));
     if (bt) {
+        bt->cmpf = cmpf;
         bt->min_keys = min_keys - 1;
         bt->max_keys = 2 * min_keys - 1;
         bt->root = btree_temp(bt->max_keys);
@@ -99,13 +101,8 @@ uofs btree_size(struct btree *bt)
 }
 
 static void btree_insert_in(struct btree_node *node, int i,
-        key_t key, vptr value)
+    vptr key, vptr value)
 {
-    if (i != node->num && node->edge[i].key == key) {
-        node->edge[i].ptr = value;
-        return;
-    }
-
     int j = node->num;
     node->edge[j + 1].ptr = node->edge[j].ptr;
     for (; j > i; --j) {
@@ -116,10 +113,10 @@ static void btree_insert_in(struct btree_node *node, int i,
     node->num += 1;
 }
 
-static int btree_find_edge(struct btree_node *node, key_t key)
+static int btree_find_edge(compare_fn cmpf, struct btree_node *node, vptr key)
 {
     for (int i = 0; i < node->num; ++i) {
-        if (key <= node->edge[i].key) {
+        if (cmpf(node->edge[i].key, key) >= 0) {
             return i;
         }
     }
@@ -127,15 +124,16 @@ static int btree_find_edge(struct btree_node *node, key_t key)
 }
 
 static void btree_copy_edges(struct btree_node *dst, struct btree_node *src,
-        int start, int end)
+    int start, int end)
 {
     dst->num = end - start;
     memcpy(dst->edge, src->edge + start, sizeof(struct btree_edge) * dst->num);
     dst->edge[dst->num].ptr = src->edge[end].ptr;
 }
 
-static bool btree_locate(struct btree *bt, key_t key,
-        struct btree_node **node_out, struct stack *st) {
+static bool btree_locate(struct btree *bt, vptr key,
+    struct btree_node **node_out, struct stack *st)
+{
     int jkey;
 
     if (!bt) {
@@ -147,11 +145,11 @@ static bool btree_locate(struct btree *bt, key_t key,
     struct btree_node *node = bt->root;
     int depth = bt->depth + 1;
     while (1) {
-        jkey = btree_find_edge(node, key);
+        jkey = btree_find_edge(bt->cmpf, node, key);
         if (st) {
             stack_pushi(st, jkey);
         }
-        found = (jkey != node->num && node->edge[jkey].key == key);
+        found = jkey != node->num && bt->cmpf(node->edge[jkey].key, key) == 0;
         depth -= 1;
         if (found || depth == 0) {
             break;
@@ -187,8 +185,8 @@ static bool btree_locate(struct btree *bt, key_t key,
     return true;
 }
 
-static void btree_grow(struct btree *bt, key_t key, struct btree_node *node,
-        struct btree_node *temp)
+static void btree_grow(struct btree *bt, vptr key, struct btree_node *node,
+    struct btree_node *temp)
 {
     bt->root = btree_temp(bt->max_keys);
     bt->root->edge[0].ptr = node;
@@ -199,7 +197,7 @@ static void btree_grow(struct btree *bt, key_t key, struct btree_node *node,
     bt->depth += 1;
 }
 
-void btree_insert(struct btree *bt, key_t key, vptr value)
+void btree_insert(struct btree *bt, vptr key, vptr value)
 {
     struct stack st;
     struct btree_node *node = NULL;
@@ -226,10 +224,10 @@ void btree_insert(struct btree *bt, key_t key, vptr value)
         temp->parent = node->parent;
 
         node->num = h;
-        key_t new_key = node->edge[h].key;
+        vptr new_key = node->edge[h].key;
 
         int jkey = stack_popi(&st);
-        if (key < new_key) {
+        if (bt->cmpf(key, new_key) < 0) {
             assert(jkey <= h);
             btree_insert_in(node, jkey, key, value);
         } else {
@@ -261,7 +259,7 @@ void btree_insert(struct btree *bt, key_t key, vptr value)
     stack_free(&st);
 }
 
-vptr btree_find(struct btree *bt, key_t key)
+vptr btree_find(struct btree *bt, vptr key)
 {
     struct stack st;
     struct btree_node *node;

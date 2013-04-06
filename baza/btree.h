@@ -3,14 +3,12 @@
 
 #include "defs.h"
 
-typedef uofs key_t;
-
 struct btree;
 
-struct btree *btree_create(int min_keys);
+struct btree *btree_create(compare_fn cmpf, int min_keys);
 void btree_destroy(struct btree *bt);
 uofs btree_size(struct btree *bt);
-void btree_insert(struct btree *bt, key_t key, vptr value);
-vptr btree_find(struct btree *bt, key_t key);
+void btree_insert(struct btree *bt, vptr key, vptr value);
+vptr btree_find(struct btree *bt, vptr key);
 
 #endif

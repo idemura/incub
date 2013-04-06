@@ -16,7 +16,7 @@
 #include "pque.c"
 #include "test.h"
 
-static int uint_less(vptr k1, vptr k2)
+static int uint_cmp(vptr k1, vptr k2)
 {
     return (uofs)k1 - (uofs)k2;
 }
@@ -39,7 +39,7 @@ static bool pque_check(struct pque *pq)
 static void pque_print(struct pque *pq)
 {
     for (uofs i = 0; i < pq->size; ++i) {
-        fprintf(test_out(), "%lu ", (uofs)pq->heap[i]);
+        fprintf(test_out(), "%zu ", (uofs)pq->heap[i]);
     }
     fprintf(test_out(), "\n");
 }
@@ -67,13 +67,13 @@ void pque_test()
     // Destroy NULL is OK
     pque_destroy(NULL);
 
-    pq = pque_create(uint_less, 1);
+    pq = pque_create(uint_cmp, 1);
     TEST_CHECK(pq != NULL);
     TEST_CHECK(pque_size(pq) == 0);
     TEST_CHECK(pque_top(pq) == NULL);
     pque_destroy(pq);
 
-    pq = pque_create(uint_less, 8);
+    pq = pque_create(uint_cmp, 8);
     TEST_CHECK(pq != NULL);
     uintptr_t keys[] = {
         10, 20, 30, 5, 15
@@ -92,7 +92,7 @@ void pque_test()
 
     // Check reallocations
     const uofs n = 10;
-    pq = pque_create(uint_less, 8);
+    pq = pque_create(uint_cmp, 8);
     TEST_CHECK(pq != NULL);
     for (uofs i = 0; i < n; ++i) {
         vptr key = (vptr)(199 - i);

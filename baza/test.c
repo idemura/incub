@@ -98,7 +98,7 @@ void test_end()
         }
     }
     if (mem_total() != s_memory) {
-        if (color_text(fmt, sizeof(fmt), "#3Warning# %s memory leak: %lu\n")) {
+        if (color_text(fmt, sizeof(fmt), "#3Warning# %s memory leak: %zu\n")) {
             fprintf(stderr, fmt, s_name, mem_total() - s_memory);
         }
     }

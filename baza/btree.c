@@ -115,12 +115,18 @@ static void btree_insert_in(struct btree_node *node, int i,
 
 static int btree_find_edge(compare_fn cmpf, struct btree_node *node, vptr key)
 {
-    for (int i = 0; i < node->num; ++i) {
-        if (cmpf(node->edge[i].key, key) >= 0) {
-            return i;
+    int l = 0;
+    int h = node->num;
+    while (l < h) {
+        int m = l + (h - l) / 2;
+        assert(m < node->num);
+        if (cmpf(key, node->edge[m].key) <= 0) {
+            h = m;
+        } else {
+            l = m + 1;
         }
     }
-    return node->num;
+    return l;
 }
 
 static void btree_copy_edges(struct btree_node *dst, struct btree_node *src,

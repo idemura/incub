@@ -201,11 +201,47 @@ static void btree_test_insert(uofs *keys, uofs keys_num)
     TEST_CHECK(mem_total() == mem);
 }
 
+static void btree_test_find_edge()
+{
+    struct btree_node* node = btree_new_node(4);
+    node->edge[0].key = (vptr)10;
+    node->edge[1].key = (vptr)20;
+    node->edge[2].key = (vptr)30;
+    node->edge[3].key = (vptr)40;
+
+    node->num = 1;
+    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)5) == 0);
+    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)10) == 0);
+    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)15) == 1);
+
+    node->num = 3;
+    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)5) == 0);
+    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)10) == 0);
+    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)15) == 1);
+    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)20) == 1);
+    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)25) == 2);
+    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)30) == 2);
+    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)35) == 3);
+
+    node->num = 4;
+    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)5) == 0);
+    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)10) == 0);
+    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)15) == 1);
+    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)20) == 1);
+    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)25) == 2);
+    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)30) == 2);
+    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)35) == 3);
+    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)40) == 3);
+    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)45) == 4);
+    mem_free(node);
+}
+
 void btree_test()
 {
     struct btree *bt = NULL;
 
     test_begin("BTree");
+    btree_test_find_edge();
 
     bt = btree_create(uint_cmp, 2);
     btree_destroy(bt);

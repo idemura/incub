@@ -16,7 +16,6 @@
 #include "btree.h"
 #include "stack.h"
 #include <memory.h>
-#include <stdio.h>
 
 struct btree_node;
 

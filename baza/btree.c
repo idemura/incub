@@ -47,7 +47,7 @@ static uofs btree_node_size(int num_keys)
            offsetof(struct btree_edge, key);
 }
 
-static struct btree_node *btree_temp(int max_keys)
+static struct btree_node *btree_new_node(int max_keys)
 {
     struct btree_node *node = mem_alloc(btree_node_size(max_keys));
     node->parent = NULL;
@@ -66,7 +66,7 @@ struct btree *btree_create(compare_fn cmpf, int min_keys)
         bt->cmpf = cmpf;
         bt->min_keys = min_keys - 1;
         bt->max_keys = 2 * min_keys - 1;
-        bt->root = btree_temp(bt->max_keys);
+        bt->root = btree_new_node(bt->max_keys);
         bt->size = 0;
         bt->depth = 0;
     }
@@ -188,7 +188,7 @@ static bool btree_locate(struct btree *bt, vptr key,
 static void btree_grow(struct btree *bt, vptr key, struct btree_node *node,
     struct btree_node *temp)
 {
-    bt->root = btree_temp(bt->max_keys);
+    bt->root = btree_new_node(bt->max_keys);
     bt->root->edge[0].ptr = node;
     bt->root->edge[0].key = key;
     bt->root->edge[1].ptr = temp;
@@ -219,7 +219,7 @@ void btree_insert(struct btree *bt, vptr key, vptr value)
     const int h = bt->max_keys / 2;
 
     while (node->num == bt->max_keys) {
-        struct btree_node *temp = btree_temp(bt->max_keys);
+        struct btree_node *temp = btree_new_node(bt->max_keys);
         btree_copy_edges(temp, node, h + 1, node->num);
         temp->parent = node->parent;
 

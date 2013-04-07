@@ -5,10 +5,13 @@
 Make linked list on leaves (bottom level nodes). In order to do this
 need to implement iterator: find to iterator with get/set/walk operations.
 
-Mem counter: atomic add/sub
+Add perf and time measure functions. Make perf tests.
+Create log functions with timestamp. Set file, flush mode.
+Mem counter: atomic add/sub.
+
+Btree disk operations. I/O queue and I/O thread performing writes.
 
 Multithreaded btree. Smart lock of nodes. Have no idea how to do this.
-Btree disk operations. I/O queue. File chunks allocator.
 
 Command and interpreter. Do I need VM?
 

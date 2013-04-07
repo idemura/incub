@@ -208,12 +208,10 @@ static void btree_test_find_edge()
     node->edge[1].key = (vptr)20;
     node->edge[2].key = (vptr)30;
     node->edge[3].key = (vptr)40;
-
     node->num = 1;
     TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)5) == 0);
     TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)10) == 0);
     TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)15) == 1);
-
     node->num = 3;
     TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)5) == 0);
     TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)10) == 0);
@@ -222,7 +220,6 @@ static void btree_test_find_edge()
     TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)25) == 2);
     TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)30) == 2);
     TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)35) == 3);
-
     node->num = 4;
     TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)5) == 0);
     TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)10) == 0);

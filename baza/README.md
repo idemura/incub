@@ -10,8 +10,7 @@ Baza open-source key-value store.
 
 Build release and run tests:
 
-    make && make test
-    ./bin/opt/baza_test
+    make && make run_test
 
 Debug mode:
 

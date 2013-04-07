@@ -21,7 +21,7 @@ TODO:
 -----
 -- Use stack and refactor splitting.
 -- Make compare function in BTree.
-Binary search in BTree node.
+-- Binary search in BTree node.
 Make linked list on leaves (bottom level nodes).
 
 Mem counter: atomic add/sub

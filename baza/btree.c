@@ -26,6 +26,8 @@ struct btree_edge {
 
 struct btree_node {
     struct btree_node *parent;
+    struct btree_node *next;
+    struct btree_node *prev;
     int num;
     struct btree_edge edge[];
 };
@@ -50,6 +52,8 @@ static struct btree_node *btree_new_node(int max_keys)
 {
     struct btree_node *node = mem_alloc(btree_node_size(max_keys));
     node->parent = NULL;
+    node->next = NULL;
+    node->prev = NULL;
     node->num = 0;
     node->edge[0].ptr = NULL;
     return node;
@@ -224,12 +228,18 @@ void btree_insert(struct btree *bt, vptr key, vptr value)
     const int h = bt->max_keys / 2;
 
     while (node->num == bt->max_keys) {
+        vptr new_key = node->edge[h].key;
+
+        // Copy upper `h` edges into temp node.
         struct btree_node *temp = btree_new_node(bt->max_keys);
         btree_copy_edges(temp, node, h + 1, node->num);
         temp->parent = node->parent;
-
+        // Leave lower `h` edges in node.
         node->num = h;
-        vptr new_key = node->edge[h].key;
+
+        temp->prev = node;
+        temp->next = node->next;
+        node->next = temp;
 
         int jkey = stack_popi(&st);
         if (bt->cmpf(key, new_key) < 0) {

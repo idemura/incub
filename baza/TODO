@@ -1,7 +1,9 @@
 -- Use stack and refactor splitting.
 -- Make compare function in BTree.
 -- Binary search in BTree node.
-Make linked list on leaves (bottom level nodes).
+
+Make linked list on leaves (bottom level nodes). In order to do this
+need to implement iterator: find to iterator with get/set/walk operations.
 
 Mem counter: atomic add/sub
 

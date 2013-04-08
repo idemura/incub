@@ -120,6 +120,7 @@ void test_check(int ok, const char *expr, const char *file, int line)
 void test_report()
 {
     char fmt[80];
+    int64_t usec = timer_int(&s_start);
     if (s_failed == 0) {
         if (color_text(fmt, sizeof(fmt), "Tests: %d #2passed#\n")) {
             fprintf(stderr, fmt, s_passed);
@@ -129,6 +130,7 @@ void test_report()
             fprintf(stderr, fmt, s_passed, s_failed);
         }
     }
+    fprintf(stderr, "Done in %i ms\n", (int)(usec / 1000));
 }
 
 int test_failed_count()

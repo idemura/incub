@@ -16,6 +16,7 @@
 #include "test.h"
 #include "defs.h"
 
+void defs_test();
 void dstr_test();
 void stack_test();
 void pque_test();
@@ -41,6 +42,7 @@ int main()
 {
     test_init();
 
+    defs_test();
     base_test();
     dstr_test();
     stack_test();

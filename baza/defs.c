@@ -98,7 +98,7 @@ void log_print(const char* format, ...)
     if (log_newline) {
         struct timeval tv;
         timer_get(&tv);
-        fprintf(log_file, "%2li.%03i: ", tv.tv_sec, tv.tv_usec / 1000);
+        fprintf(log_file, "%2li.%03i: ", tv.tv_sec, (int)(tv.tv_usec / 1000));
     }
 
     va_list va;
@@ -110,6 +110,17 @@ void log_print(const char* format, ...)
     log_newline = format_len > 0 && format[format_len - 1] == '\n';
 }
 
+static void timer_diff(struct timeval *end, struct timeval *start,
+    struct timeval *res)
+{
+    res->tv_sec = end->tv_sec - start->tv_sec;
+    res->tv_usec = end->tv_usec - start->tv_usec;
+    if (res->tv_usec < 0) {
+        res->tv_usec += 1000000;
+        res->tv_sec -= 1;
+    }
+}
+
 void timer_get(struct timeval *tv)
 {
     static struct timeval s_init;
@@ -117,14 +128,14 @@ void timer_get(struct timeval *tv)
     if (s_init.tv_sec == 0) {
         s_init = *tv;
     }
-    timersub(tv, &s_init, tv);
+    timer_diff(tv, &s_init, tv);
 }
 
 int64_t timer_sub(struct timeval *end, struct timeval *start)
 {
     struct timeval sub;
-    timersub(end, start, &sub);
-    return (uint64_t)sub.tv_sec * 1000000ll + sub.tv_usec;
+    timer_diff(end, start, &sub);
+    return (uint64_t)sub.tv_sec * 1000000 + sub.tv_usec;
 }
 
 int64_t timer_int(struct timeval *start)

@@ -16,7 +16,7 @@ else
 	CFLAGS += -O2 -DNDEBUG
 endif
 main_src = defs.c dstr.c stack.c btree.c pque.c main.c
-test_src = defs.c test.c dstr_test.c stack_test.c btree_test.c pque_test.c main_test.c
+test_src = test.c defs_test.c dstr_test.c stack_test.c btree_test.c pque_test.c main_test.c
 out_main = bin/$(cfg)/baza
 out_test = bin/$(cfg)/baza_test
 

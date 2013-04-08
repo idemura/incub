@@ -30,7 +30,7 @@ int main()
     dstr_test();
     stack_test();
     pque_test();
-    // btree_test();
+    btree_test();
 
     test_report();
     return test_failed_count() == 0? 0: 1;

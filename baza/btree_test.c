@@ -75,15 +75,12 @@ static bool btree_check_keys(compare_fn cmpf,
     }
 
     if (depth > 1) {
-        for (i = 0; i < node->num; ++i) {
+        for (i = 0; i <= node->num; ++i) {
             if (!btree_check_keys(cmpf, node->edge[i].ptr, depth - 1,
-                    min_keys, max_keys, node->edge[i].key)) {
+                    min_keys, max_keys,
+                    i == node->num? max_keyval: node->edge[i].key)) {
                 return false;
             }
-        }
-        if (!btree_check_keys(cmpf, node->edge[node->num].ptr, depth - 1,
-                min_keys, max_keys, max_keyval)) {
-            return false;
         }
     }
     return true;
@@ -102,7 +99,7 @@ static bool btree_check_parent(struct btree_node *node, int depth,
     }
 
     if (depth > 1) {
-        for (int i = 0; i <= node->num; ++i) {
+        for (int i = 0; i < node->num; ++i) {
             if (!btree_check_parent(node->edge[i].ptr, depth - 1, node)) {
                 return false;
             }
@@ -147,14 +144,14 @@ static void btree_print(struct btree_node *node, int depth)
         return;
     }
     fprintf(test_out(), "   ");
-    for (int i = 0; i < node->num; ++i) {
+    for (int i = 0; i <= node->num; ++i) {
         fprintf(test_out(), "%p %zu ", (void*)node->edge[i].ptr,
             (uofs)node->edge[i].key);
     }
-    fprintf(test_out(), "%p\n", (void*)node->edge[node->num].ptr);
+    fprintf(test_out(), "\n");
     if (depth > 0) {
         for (int i = 0; i <= node->num; ++i) {
-            btree_print(node->edge[node->num].ptr, depth - 1);
+            btree_print(node->edge[i].ptr, depth - 1);
         }
     }
 }
@@ -188,7 +185,7 @@ static void btree_test_case(vptr *keys, uofs keys_num)
     }
 
     // Test iterator
-
+/*
     // Stupid insertion sort
     for (uofs i = 0; i < keys_num; ++i) {
         uofs imin = i;
@@ -205,12 +202,11 @@ static void btree_test_case(vptr *keys, uofs keys_num)
     TEST_CHECK(btree_find(bt, keys[0], &iter));
     for (uofs i = 0; i < keys_num; ++i) {
         log_print("iter key %zu\n", (uofs)keys[i]);
-        TEST_CHECK(!btree_iter_next_end(&iter));
         TEST_CHECK(uint_cmp(btree_iter_key(&iter), keys[i]) == 0);
-        btree_iter_next(&iter);
+        TEST_CHECK(btree_iter_next(&iter));
     }
-    TEST_CHECK(btree_iter_next_end(&iter));
-
+    TEST_CHECK(!btree_iter_next(&iter));
+*/
     for (uofs i = 0; i < keys_num; ++i) {
         // fprintf(test_out(), "Update %zu\n", (uofs)keys[i]);
         vptr new_val = (vptr)(1000 + i);

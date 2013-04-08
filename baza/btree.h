@@ -20,6 +20,5 @@ vptr btree_iter_key(struct btree_iter *iter);
 vptr btree_iter_value(struct btree_iter *iter);
 bool btree_iter_next(struct btree_iter *iter);
 bool btree_iter_prev(struct btree_iter *iter);
-bool btree_iter_end(struct btree_iter *iter);
 
 #endif

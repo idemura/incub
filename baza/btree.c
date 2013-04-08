@@ -323,8 +323,3 @@ bool btree_iter_next(struct btree_iter *iter)
     iter->j = 0;
     return iter->node != NULL;
 }
-
-bool btree_iter_next_end(struct btree_iter *iter)
-{
-    return iter->node == NULL;
-}

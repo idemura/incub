@@ -14,7 +14,8 @@
   limitations under the License.
 */
 #include "defs.h"
-#include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
 
 #define MEM_ALIGN sizeof(uofs)
 #if DEBUG
@@ -29,6 +30,8 @@ struct mem_block {
 };
 
 static uofs mem_bytes;
+static FILE *log_file;
+static bool log_newline = true;
 
 static uofs mem_adjust(uofs size)
 {
@@ -74,4 +77,59 @@ void mem_free(vptr p)
 uofs mem_total()
 {
     return mem_bytes;
+}
+
+void log_setfile(FILE *f)
+{
+    log_file = f;
+}
+
+FILE *log_getfile()
+{
+    return log_file;
+}
+
+void log_print(const char* format, ...)
+{
+    if (!log_file) {
+        log_file = stdout;
+    }
+
+    if (log_newline) {
+        struct timeval tv;
+        timer_get(&tv);
+        fprintf(log_file, "%2li.%03i: ", tv.tv_sec, tv.tv_usec / 1000);
+    }
+
+    va_list va;
+    va_start(va, format);
+    vfprintf(log_file, format, va);
+    va_end(va);
+
+    size_t format_len = strlen(format);
+    log_newline = format_len > 0 && format[format_len - 1] == '\n';
+}
+
+void timer_get(struct timeval *tv)
+{
+    static struct timeval s_init;
+    gettimeofday(tv, NULL);
+    if (s_init.tv_sec == 0) {
+        s_init = *tv;
+    }
+    timersub(tv, &s_init, tv);
+}
+
+int64_t timer_sub(struct timeval *end, struct timeval *start)
+{
+    struct timeval sub;
+    timersub(end, start, &sub);
+    return (uint64_t)sub.tv_sec * 1000000ll + sub.tv_usec;
+}
+
+int64_t timer_int(struct timeval *start)
+{
+    struct timeval end;
+    timer_get(&end);
+    return timer_sub(&end, start);
 }

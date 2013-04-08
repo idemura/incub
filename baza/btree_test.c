@@ -168,34 +168,58 @@ static bool btree_check_print(struct btree *bt)
     return false;
 }
 
-static void btree_test_insert(uofs *keys, uofs keys_num)
+static void btree_test_case(vptr *keys, uofs keys_num)
 {
     uofs mem = mem_total();
+    struct btree_iter iter;
 
     struct btree *bt = btree_create(uint_cmp, 2);
     for (uofs i = 0; i < keys_num; ++i) {
         // fprintf(test_out(), "Insert %zu\n", (uofs)keys[i]);
-        btree_insert(bt, (vptr)keys[i], &keys[i]);
+        btree_insert(bt, keys[i], &keys[i]);
         TEST_CHECK(btree_check_print(bt));
         TEST_CHECK(btree_size(bt) == i + 1);
-        for (uofs j = 0; j < i; ++j) {
-            vptr value = btree_find(bt, (vptr)keys[j]);
-            if (value != &keys[j]) {
-                fprintf(test_out(), "Key %zu not found\n", (uofs)keys[j]);
-            }
-            TEST_CHECK(value == &keys[j]);
+        for (uofs j = 0; j <= i; ++j) {
+            bool found = btree_find(bt, keys[j], &iter);
+            TEST_CHECK(found);
+            TEST_CHECK(uint_cmp(btree_iter_key(&iter), keys[j]) == 0);
+            TEST_CHECK(btree_iter_value(&iter) == &keys[j]);
         }
     }
 
-    vptr *new_val = mem_alloc(keys_num * sizeof(vptr));
-    memset(new_val, 0, keys_num * sizeof(vptr));
+    // Test iterator
+
+    // Stupid insertion sort
+    for (uofs i = 0; i < keys_num; ++i) {
+        uofs imin = i;
+        for (int j = i + 1; j < keys_num; ++j) {
+            if (uint_cmp(keys[j], keys[imin]) < 0) {
+                imin = j;
+            }
+        }
+        vptr temp = keys[i];
+        keys[i] = keys[imin];
+        keys[imin] = temp;
+    }
+
+    TEST_CHECK(btree_find(bt, keys[0], &iter));
+    for (uofs i = 0; i < keys_num; ++i) {
+        log_print("iter key %zu\n", (uofs)keys[i]);
+        TEST_CHECK(!btree_iter_next_end(&iter));
+        TEST_CHECK(uint_cmp(btree_iter_key(&iter), keys[i]) == 0);
+        btree_iter_next(&iter);
+    }
+    TEST_CHECK(btree_iter_next_end(&iter));
+
     for (uofs i = 0; i < keys_num; ++i) {
         // fprintf(test_out(), "Update %zu\n", (uofs)keys[i]);
-        btree_insert(bt, (vptr)keys[i], &new_val[i]);
-        TEST_CHECK(btree_find(bt, (vptr)keys[i]) == &new_val[i]);
+        vptr new_val = (vptr)(1000 + i);
+        btree_insert(bt, keys[i], new_val);
+        TEST_CHECK(btree_find(bt, keys[i], &iter));
+        TEST_CHECK(uint_cmp(btree_iter_key(&iter), keys[i]) == 0);
+        TEST_CHECK(btree_iter_value(&iter) == new_val);
         TEST_CHECK(btree_size(bt) == keys_num);
     }
-    mem_free(new_val);
 
     btree_destroy(bt);
     TEST_CHECK(mem_total() == mem);
@@ -247,31 +271,31 @@ void btree_test()
     uofs keys0[] = {
         10, 20, 15
     };
-    btree_test_insert(keys0, ARRAY_SIZE(keys0));
+    btree_test_case((vptr*)keys0, ARRAY_SIZE(keys0));
 
     // Test grow one level
     uofs keys1[] = {
         10, 20, 15, 7
     };
-    btree_test_insert(keys1, ARRAY_SIZE(keys1));
+    btree_test_case((vptr*)keys1, ARRAY_SIZE(keys1));
     uofs keys2[] = {
         10, 20, 15, 13
     };
-    btree_test_insert(keys2, ARRAY_SIZE(keys2));
+    btree_test_case((vptr*)keys2, ARRAY_SIZE(keys2));
     uofs keys3[] = {
         10, 20, 15, 17
     };
-    btree_test_insert(keys3, ARRAY_SIZE(keys3));
+    btree_test_case((vptr*)keys3, ARRAY_SIZE(keys3));
     uofs keys4[] = {
         10, 20, 15, 23
     };
-    btree_test_insert(keys4, ARRAY_SIZE(keys4));
+    btree_test_case((vptr*)keys4, ARRAY_SIZE(keys4));
 
     // Test grow two levels
     uofs keys5[] = {
         10, 30, 50, 20, 55, 15, 60, 5, 45, 2, 7
     };
-    btree_test_insert(keys5, ARRAY_SIZE(keys5));
+    btree_test_case((vptr*)keys5, ARRAY_SIZE(keys5));
 
     test_end();
 }

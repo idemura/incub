@@ -44,8 +44,7 @@ struct btree {
 static uofs btree_node_size(int num_keys)
 {
     return sizeof(struct btree_node) +
-           sizeof(struct btree_edge) * (uofs)num_keys +
-           offsetof(struct btree_edge, key);
+           sizeof(struct btree_edge) * (uofs)(num_keys + 1);
 }
 
 static struct btree_node *btree_new_node(int max_keys)
@@ -56,6 +55,7 @@ static struct btree_node *btree_new_node(int max_keys)
     node->prev = NULL;
     node->num = 0;
     node->edge[0].ptr = NULL;
+    node->edge[0].key = NULL;
     return node;
 }
 
@@ -106,9 +106,7 @@ uofs btree_size(struct btree *bt)
 static void btree_insert_in(struct btree_node *node, int i,
     vptr key, vptr value)
 {
-    int j = node->num;
-    node->edge[j + 1].ptr = node->edge[j].ptr;
-    for (; j > i; --j) {
+    for (int j = node->num + 1; j > i; --j) {
         node->edge[j] = node->edge[j - 1];
     }
     node->edge[i].ptr = value;
@@ -136,8 +134,8 @@ static void btree_copy_edges(struct btree_node *dst, struct btree_node *src,
     int start, int end)
 {
     dst->num = end - start;
-    memcpy(dst->edge, src->edge + start, sizeof(struct btree_edge) * dst->num);
-    dst->edge[dst->num].ptr = src->edge[end].ptr;
+    memcpy(dst->edge, src->edge + start,
+        sizeof(struct btree_edge) * (dst->num + 1));
 }
 
 static bool btree_locate(struct btree *bt, vptr key,
@@ -201,6 +199,7 @@ static void btree_grow(struct btree *bt, vptr key, struct btree_node *node,
     bt->root->edge[0].ptr = node;
     bt->root->edge[0].key = key;
     bt->root->edge[1].ptr = temp;
+    bt->root->edge[1].key = NULL;
     bt->root->num = 1;
     temp->parent = node->parent = bt->root;
     bt->depth += 1;
@@ -211,8 +210,9 @@ void btree_insert(struct btree *bt, vptr key, vptr value)
     struct stack st;
     struct btree_node *node = NULL;
 
+    assert(key);
     assert(value);
-    if (!bt || !value) {
+    if (!bt || !key || !value) {
         return;
     }
 
@@ -274,20 +274,57 @@ void btree_insert(struct btree *bt, vptr key, vptr value)
     stack_free(&st);
 }
 
-vptr btree_find(struct btree *bt, vptr key)
+bool btree_find(struct btree *bt, vptr key, struct btree_iter *iter)
 {
     struct stack st;
-    struct btree_node *node;
 
+    assert(iter);
     if (!bt) {
-        return NULL;
+        iter->node = NULL;
+        iter->j = 0;
+        return false;
     }
 
     stack_alloc(&st, bt->depth);
-    vptr value = NULL;
-    if (btree_locate(bt, key, &node, &st)) {
-        value = node->edge[stack_popi(&st)].ptr;
-    }
+    bool found = btree_locate(bt, key, &iter->node, &st);
+    iter->j = stack_popi(&st);
     stack_free(&st);
-    return value;
+    return found;
+}
+
+vptr btree_iter_key(struct btree_iter *iter)
+{
+    if (iter->node) {
+        return iter->node->edge[iter->j].key;
+    }
+    return NULL;
+}
+
+vptr btree_iter_value(struct btree_iter *iter)
+{
+    if (iter->node) {
+        return iter->node->edge[iter->j].ptr;
+    }
+    return NULL;
+}
+
+bool btree_iter_next(struct btree_iter *iter)
+{
+    if (iter->node == NULL) {
+        return false;
+    }
+    if (iter->j <= iter->node->num) {
+        if (iter->node->edge[iter->j].key) {
+            iter->j++;
+            return true;
+        }
+    }
+    iter->node = iter->node->next;
+    iter->j = 0;
+    return iter->node != NULL;
+}
+
+bool btree_iter_next_end(struct btree_iter *iter)
+{
+    return iter->node == NULL;
 }

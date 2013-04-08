@@ -1,6 +1,20 @@
 #include "defs.c"
 #include "test.h"
 
+static void defs_base_test()
+{
+    TEST_CHECK(sizeof(uofs) == sizeof(vptr));
+
+#ifdef NDEBUG
+    // This assert shouldn't break.
+    assert(false);
+#endif
+
+    // log_print("Timestamp");
+    // log_print(" %.3f\n", 0.0f);
+    // log_print("Next line\n");
+}
+
 static void defs_time_test()
 {
     struct timeval start, end, res;
@@ -18,7 +32,8 @@ static void defs_time_test()
 
 void defs_test()
 {
-    test_begin("Defs");
+    test_begin("Base");
+    defs_base_test();
     defs_time_test();
     test_end();
 }

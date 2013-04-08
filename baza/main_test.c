@@ -22,32 +22,15 @@ void stack_test();
 void pque_test();
 void btree_test();
 
-void base_test()
-{
-    test_begin("Base");
-    TEST_CHECK(sizeof(uofs) == sizeof(vptr));
-#ifdef NDEBUG
-    // This assert shouldn't break.
-    assert(false);
-#endif
-
-    // log_print("Timestamp");
-    // log_print(" %.3f\n", 0.0f);
-    // log_print("Next line\n");
-
-    test_end();
-}
-
 int main()
 {
     test_init();
 
     defs_test();
-    base_test();
     dstr_test();
     stack_test();
     pque_test();
-    btree_test();
+    // btree_test();
 
     test_report();
     return test_failed_count() == 0? 0: 1;

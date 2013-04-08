@@ -28,7 +28,7 @@ void stack_test()
     TEST_CHECK(stack_topi(&st) == 10);
     stack_pushi(&st, 20);
     TEST_CHECK(!stack_empty(&st));
-    TEST_CHECK(stack_topi(&st) == 10);
+    TEST_CHECK(stack_topi(&st) == 20);
     TEST_CHECK(stack_popi(&st) == 20);
     TEST_CHECK(stack_popi(&st) == 10);
     TEST_CHECK(stack_empty(&st));

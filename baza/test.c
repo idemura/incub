@@ -22,6 +22,7 @@ static int s_failed;
 static int s_passed;
 static uofs s_memory;
 static FILE *s_out;
+static struct timeval s_start;
 
 bool color_text(char *out, size_t out_len, const char *in)
 {
@@ -74,6 +75,7 @@ bool color_text(char *out, size_t out_len, const char *in)
 
 void test_init()
 {
+    timer_get(&s_start);
 }
 
 void test_begin(const char *name)
@@ -115,7 +117,7 @@ void test_check(int ok, const char *expr, const char *file, int line)
     }
 }
 
-int test_report()
+void test_report()
 {
     char fmt[80];
     if (s_failed == 0) {
@@ -127,7 +129,16 @@ int test_report()
             fprintf(stderr, fmt, s_passed, s_failed);
         }
     }
-    return s_failed == 0? 0: 1;
+}
+
+int test_failed_count()
+{
+    return s_failed;
+}
+
+int test_passed_count()
+{
+    return s_passed;
 }
 
 FILE *test_out()
@@ -138,7 +149,7 @@ FILE *test_out()
     return s_out;
 }
 
-void set_test_out(FILE *f)
+void test_setout(FILE *f)
 {
     s_out = f;
 }

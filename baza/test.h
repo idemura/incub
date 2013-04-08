@@ -13,8 +13,10 @@ void test_init();
 void test_begin(const char *name);
 void test_end();
 void test_check(int ok, const char *expr, const char *file, int line);
-int test_report();
+void test_report();
+int test_failed_count();
+int test_passed_count();
 FILE *test_out();
-void set_test_out(FILE *f);
+void  test_setout(FILE *f);
 
 #endif

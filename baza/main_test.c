@@ -29,15 +29,24 @@ void base_test()
     // This assert shouldn't break.
     assert(false);
 #endif
+
+    // log_print("Timestamp");
+    // log_print(" %.3f\n", 0.0f);
+    // log_print("Next line\n");
+
     test_end();
 }
 
 int main()
 {
+    test_init();
+
     base_test();
     dstr_test();
     stack_test();
     pque_test();
     btree_test();
-    return test_report();
+
+    test_report();
+    return test_failed_count() == 0? 0: 1;
 }

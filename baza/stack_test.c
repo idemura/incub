@@ -25,8 +25,10 @@ void stack_test()
     TEST_CHECK(stack_empty(&st));
     stack_pushi(&st, 10);
     TEST_CHECK(!stack_empty(&st));
+    TEST_CHECK(stack_topi(&st) == 10);
     stack_pushi(&st, 20);
     TEST_CHECK(!stack_empty(&st));
+    TEST_CHECK(stack_topi(&st) == 10);
     TEST_CHECK(stack_popi(&st) == 20);
     TEST_CHECK(stack_popi(&st) == 10);
     TEST_CHECK(stack_empty(&st));
@@ -37,6 +39,7 @@ void stack_test()
     TEST_CHECK(stack_empty(&st));
     for (uofs i = 0; i < n; ++i) {
       stack_pushi(&st, i);
+      TEST_CHECK(stack_topi(&st) == i);
     }
     for (uofs i = 0; i < n; ++i) {
       TEST_CHECK(stack_popi(&st) == (n - 1 - i));
@@ -48,8 +51,10 @@ void stack_test()
     TEST_CHECK(stack_empty(&st));
     stack_pushi(&st, 11);
     TEST_CHECK(!stack_empty(&st));
+    TEST_CHECK(stack_topi(&st) == 11);
     stack_pushi(&st, 22);
     TEST_CHECK(!stack_empty(&st));
+    TEST_CHECK(stack_topi(&st) == 22);
     TEST_CHECK(stack_popi(&st) == 22);
     TEST_CHECK(stack_popi(&st) == 11);
     TEST_CHECK(stack_empty(&st));

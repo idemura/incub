@@ -53,11 +53,11 @@ static void btree_dbg_node(struct btree_node *node)
     if (!node) {
         return;
     }
-    log_print("%p |", (void*)node);
+    log_print("%p [", (void*)node);
     for (int i = 0; i <= node->num; ++i) {
         log_print(" %zu", (uofs)node->edge[i].key);
     }
-    log_print(" | %d\n", node->num);
+    log_print(" ] %d\n", node->num);
 #endif
 }
 
@@ -336,4 +336,9 @@ bool btree_iter_next(struct btree_iter *iter)
     iter->node = iter->node->next;
     iter->j = 0;
     return iter->node != NULL;
+}
+
+bool btree_iter_prev(struct btree_iter *iter)
+{
+    return false;
 }

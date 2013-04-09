@@ -1,6 +1,10 @@
 #ifndef BTREE_H_
 #define BTREE_H_
 
+/*
+  B+ tree implementation. It's memory only yet. Disk is in future plans.
+*/
+
 #include "defs.h"
 
 struct btree;

@@ -199,7 +199,6 @@ static void btree_test_find_edge()
 
 static void btree_test_case(vptr *keys, uofs keys_num)
 {
-    uofs mem = mem_total();
     struct btree_iter iter;
 
     struct btree *bt = btree_create(uint_cmp, 2);
@@ -250,7 +249,6 @@ static void btree_test_case(vptr *keys, uofs keys_num)
     }
 
     btree_destroy(bt);
-    TEST_CHECK(mem_total() == mem);
 }
 
 void btree_test()

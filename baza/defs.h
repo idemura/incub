@@ -26,9 +26,14 @@ typedef void *vptr;
 
 typedef int (*compare_fn)(vptr k1, vptr k2);
 
+struct mem_stat {
+    uofs total;
+    uofs instances;
+};
+
 vptr mem_alloc(uofs size);
 void mem_free(vptr p);
-uofs mem_total();
+void mem_stat(struct mem_stat *stat);
 
 void log_print(const char* format, ...);
 void  log_setfile(FILE *f);

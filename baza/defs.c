@@ -29,7 +29,7 @@ struct mem_block {
     unsigned char p[];
 };
 
-static uofs s_memory;
+static struct mem_stat smem_stat;
 static FILE *slog_file;
 static bool  slog_newline = true;
 static uint32_t slog_flag = LOG_TIMESTAMP;
@@ -46,17 +46,20 @@ vptr mem_alloc(uofs size)
     struct mem_block *mb = malloc(sizeof(struct mem_block) + adjusted);
     if (!mb) {
         fprintf(stderr,
-                "OUT OF HEAP MEMORY\n"
-                "  Total allocated: %zu\n"
-                "  Requested: %zu\n", s_memory, size);
+            "OUT OF HEAP MEMORY\n"
+            "  Total allocated: %zu in %zu instances\n"
+            "  Requested: %zu\n",
+            smem_stat.total, smem_stat.instances,
+            size);
         exit(1);
         return NULL;
     }
     mb->size = size;
-    s_memory += mb->size;
 #if DEBUG
     memset(mb->p, 0xcc, adjusted);
 #endif
+    smem_stat.instances++;
+    smem_stat.total += mb->size;
     return mb->p;
 }
 
@@ -66,18 +69,19 @@ void mem_free(vptr p)
         return;
     }
     struct mem_block *mb = (void*)((char*)p - sizeof(struct mem_block));
-    s_memory -= mb->size;
 #if DEBUG
     for (uofs i = mb->size, n = mem_adjust(mb->size); i < n; ++i) {
         assert(mb->p[i] == 0xcc);
     }
 #endif
+    smem_stat.instances--;
+    smem_stat.total -= mb->size;
     free(mb);
 }
 
-uofs mem_total()
+void mem_stat(struct mem_stat *stat)
 {
-    return s_memory;
+    *stat = smem_stat;
 }
 
 void log_setfile(FILE *f)

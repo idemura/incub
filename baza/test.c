@@ -82,7 +82,10 @@ void test_begin(const char *name)
 {
     s_name = name;
     s_failed_asserts = 0;
-    s_memory = mem_total();
+
+    struct mem_stat stat;
+    mem_stat(&stat);
+    s_memory = stat.total;
 }
 
 void test_end()
@@ -99,9 +102,12 @@ void test_end()
             fprintf(stderr, fmt, s_name);
         }
     }
-    if (mem_total() != s_memory) {
+
+    struct mem_stat stat;
+    mem_stat(&stat);
+    if (stat.total != s_memory) {
         if (color_text(fmt, sizeof(fmt), "#3Warning# %s memory leak: %zu\n")) {
-            fprintf(stderr, fmt, s_name, mem_total() - s_memory);
+            fprintf(stderr, fmt, s_name, stat.total - s_memory);
         }
     }
 }

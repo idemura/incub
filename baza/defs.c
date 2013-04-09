@@ -29,9 +29,10 @@ struct mem_block {
     unsigned char p[];
 };
 
-static uofs mem_bytes;
-static FILE *log_file;
-static bool log_newline = true;
+static uofs s_memory;
+static FILE *slog_file;
+static bool  slog_newline = true;
+static uint32_t slog_flag = LOG_TIMESTAMP;
 
 static uofs mem_adjust(uofs size)
 {
@@ -47,12 +48,12 @@ vptr mem_alloc(uofs size)
         fprintf(stderr,
                 "OUT OF HEAP MEMORY\n"
                 "  Total allocated: %zu\n"
-                "  Requested: %zu\n", mem_bytes, size);
+                "  Requested: %zu\n", s_memory, size);
         exit(1);
         return NULL;
     }
     mb->size = size;
-    mem_bytes += mb->size;
+    s_memory += mb->size;
 #if DEBUG
     memset(mb->p, 0xcc, adjusted);
 #endif
@@ -65,7 +66,7 @@ void mem_free(vptr p)
         return;
     }
     struct mem_block *mb = (void*)((char*)p - sizeof(struct mem_block));
-    mem_bytes -= mb->size;
+    s_memory -= mb->size;
 #if DEBUG
     for (uofs i = mb->size, n = mem_adjust(mb->size); i < n; ++i) {
         assert(mb->p[i] == 0xcc);
@@ -76,38 +77,51 @@ void mem_free(vptr p)
 
 uofs mem_total()
 {
-    return mem_bytes;
+    return s_memory;
 }
 
 void log_setfile(FILE *f)
 {
-    log_file = f;
+    slog_file = f;
 }
 
 FILE *log_getfile()
 {
-    return log_file;
+    return slog_file;
+}
+
+bool log_flag(uint32_t prop, bool val)
+{
+    bool ret = (slog_flag & prop) != 0;
+    if (val) {
+        slog_flag |= prop;
+    } else {
+        slog_flag &= ~prop;
+    }
+    return ret;
 }
 
 void log_print(const char* format, ...)
 {
-    if (!log_file) {
-        log_file = stdout;
+    if (!slog_file) {
+        slog_file = stdout;
     }
 
-    if (log_newline) {
-        struct timeval tv;
-        timer_get(&tv);
-        fprintf(log_file, "%2li.%03i: ", tv.tv_sec, (int)(tv.tv_usec / 1000));
+    if (slog_flag & LOG_TIMESTAMP) {
+        if (slog_newline) {
+            struct timeval tv;
+            timer_get(&tv);
+            fprintf(slog_file, "%2li.%03i: ", tv.tv_sec, (int)(tv.tv_usec / 1000));
+        }
     }
 
     va_list va;
     va_start(va, format);
-    vfprintf(log_file, format, va);
+    vfprintf(slog_file, format, va);
     va_end(va);
 
     size_t format_len = strlen(format);
-    log_newline = format_len > 0 && format[format_len - 1] == '\n';
+    slog_newline = format_len > 0 && format[format_len - 1] == '\n';
 }
 
 static void timer_diff(struct timeval *end, struct timeval *start,

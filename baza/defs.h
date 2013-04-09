@@ -19,6 +19,8 @@
 #define DEBUG 1
 #endif
 
+#define LOG_TIMESTAMP 1u
+
 typedef size_t uofs;
 typedef void *vptr;
 
@@ -31,6 +33,7 @@ uofs mem_total();
 void log_print(const char* format, ...);
 void  log_setfile(FILE *f);
 FILE *log_getfile();
+bool log_flag(uint32_t prop, bool val);
 
 void timer_get(struct timeval *tv);
 int64_t timer_sub(struct timeval *end, struct timeval *start);

@@ -47,6 +47,20 @@ static uofs btree_node_size(int num_keys)
            sizeof(struct btree_edge) * (uofs)(num_keys + 1);
 }
 
+static void btree_dbg_node(struct btree_node *node)
+{
+#ifdef DEBUG
+    if (!node) {
+        return;
+    }
+    log_print("%p |", (void*)node);
+    for (int i = 0; i <= node->num; ++i) {
+        log_print(" %zu", (uofs)node->edge[i].key);
+    }
+    log_print(" | %d\n", node->num);
+#endif
+}
+
 static struct btree_node *btree_new_node(int max_keys)
 {
     struct btree_node *node = mem_alloc(btree_node_size(max_keys));
@@ -313,8 +327,8 @@ bool btree_iter_next(struct btree_iter *iter)
     if (iter->node == NULL) {
         return false;
     }
-    if (iter->j <= iter->node->num) {
-        if (iter->node->edge[iter->j].key) {
+    if (iter->j < iter->node->num) {
+        if (iter->node->edge[iter->j + 1].key) {
             iter->j++;
             return true;
         }

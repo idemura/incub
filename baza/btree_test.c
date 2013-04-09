@@ -165,62 +165,6 @@ static bool btree_check_print(struct btree *bt)
     return false;
 }
 
-static void btree_test_case(vptr *keys, uofs keys_num)
-{
-    uofs mem = mem_total();
-    struct btree_iter iter;
-
-    struct btree *bt = btree_create(uint_cmp, 2);
-    for (uofs i = 0; i < keys_num; ++i) {
-        // fprintf(test_out(), "Insert %zu\n", (uofs)keys[i]);
-        btree_insert(bt, keys[i], &keys[i]);
-        TEST_CHECK(btree_check_print(bt));
-        TEST_CHECK(btree_size(bt) == i + 1);
-        for (uofs j = 0; j <= i; ++j) {
-            bool found = btree_find(bt, keys[j], &iter);
-            TEST_CHECK(found);
-            TEST_CHECK(uint_cmp(btree_iter_key(&iter), keys[j]) == 0);
-            TEST_CHECK(btree_iter_value(&iter) == &keys[j]);
-        }
-    }
-
-    // Test iterator
-/*
-    // Stupid insertion sort
-    for (uofs i = 0; i < keys_num; ++i) {
-        uofs imin = i;
-        for (int j = i + 1; j < keys_num; ++j) {
-            if (uint_cmp(keys[j], keys[imin]) < 0) {
-                imin = j;
-            }
-        }
-        vptr temp = keys[i];
-        keys[i] = keys[imin];
-        keys[imin] = temp;
-    }
-
-    TEST_CHECK(btree_find(bt, keys[0], &iter));
-    for (uofs i = 0; i < keys_num; ++i) {
-        log_print("iter key %zu\n", (uofs)keys[i]);
-        TEST_CHECK(uint_cmp(btree_iter_key(&iter), keys[i]) == 0);
-        TEST_CHECK(btree_iter_next(&iter));
-    }
-    TEST_CHECK(!btree_iter_next(&iter));
-*/
-    for (uofs i = 0; i < keys_num; ++i) {
-        // fprintf(test_out(), "Update %zu\n", (uofs)keys[i]);
-        vptr new_val = (vptr)(1000 + i);
-        btree_insert(bt, keys[i], new_val);
-        TEST_CHECK(btree_find(bt, keys[i], &iter));
-        TEST_CHECK(uint_cmp(btree_iter_key(&iter), keys[i]) == 0);
-        TEST_CHECK(btree_iter_value(&iter) == new_val);
-        TEST_CHECK(btree_size(bt) == keys_num);
-    }
-
-    btree_destroy(bt);
-    TEST_CHECK(mem_total() == mem);
-}
-
 static void btree_test_find_edge()
 {
     struct btree_node* node = btree_new_node(4);
@@ -251,6 +195,62 @@ static void btree_test_find_edge()
     TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)40) == 3);
     TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)45) == 4);
     mem_free(node);
+}
+
+static void btree_test_case(vptr *keys, uofs keys_num)
+{
+    uofs mem = mem_total();
+    struct btree_iter iter;
+
+    struct btree *bt = btree_create(uint_cmp, 2);
+    for (uofs i = 0; i < keys_num; ++i) {
+        // fprintf(test_out(), "Insert %zu\n", (uofs)keys[i]);
+        btree_insert(bt, keys[i], &keys[i]);
+        TEST_CHECK(btree_check_print(bt));
+        TEST_CHECK(btree_size(bt) == i + 1);
+        for (uofs j = 0; j <= i; ++j) {
+            bool found = btree_find(bt, keys[j], &iter);
+            TEST_CHECK(found);
+            TEST_CHECK(uint_cmp(btree_iter_key(&iter), keys[j]) == 0);
+            TEST_CHECK(btree_iter_value(&iter) == &keys[j]);
+        }
+    }
+
+    // Test iterator
+    // Stupid insertion sort
+    for (uofs i = 0; i < keys_num; ++i) {
+        uofs imin = i;
+        for (int j = i + 1; j < keys_num; ++j) {
+            if (uint_cmp(keys[j], keys[imin]) < 0) {
+                imin = j;
+            }
+        }
+        vptr temp = keys[i];
+        keys[i] = keys[imin];
+        keys[imin] = temp;
+    }
+
+    TEST_CHECK(btree_find(bt, keys[0], &iter));
+    for (uofs i = 0; i < keys_num; ++i) {
+        TEST_CHECK(uint_cmp(btree_iter_key(&iter), keys[i]) == 0);
+        if (i + 1 != keys_num) {
+            TEST_CHECK(btree_iter_next(&iter));
+        }
+    }
+    TEST_CHECK(!btree_iter_next(&iter));
+
+    for (uofs i = 0; i < keys_num; ++i) {
+        // fprintf(test_out(), "Update %zu\n", (uofs)keys[i]);
+        vptr new_val = (vptr)(1000 + i);
+        btree_insert(bt, keys[i], new_val);
+        TEST_CHECK(btree_find(bt, keys[i], &iter));
+        TEST_CHECK(uint_cmp(btree_iter_key(&iter), keys[i]) == 0);
+        TEST_CHECK(btree_iter_value(&iter) == new_val);
+        TEST_CHECK(btree_size(bt) == keys_num);
+    }
+
+    btree_destroy(bt);
+    TEST_CHECK(mem_total() == mem);
 }
 
 void btree_test()

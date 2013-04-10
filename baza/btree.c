@@ -345,6 +345,13 @@ bool btree_iter_next(struct btree_iter *iter)
             return true;
         }
     }
+#ifdef DEBUG
+    if (iter->node->next) {
+        assert(iter->node->edge[iter->node->num].key != NULL);
+    } else {
+        assert(iter->node->edge[iter->node->num].key == NULL);
+    }
+#endif
     iter->node = iter->node->next;
     iter->j = 0;
     return iter->node != NULL;

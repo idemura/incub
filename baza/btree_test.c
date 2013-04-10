@@ -261,13 +261,13 @@ void btree_test()
     bt = btree_create(NULL, uint_cmp, 2);
     btree_destroy(bt);
 
-    // Test leaf insertion
+    // Test leaf insertion.
     uofs keys0[] = {
         20, 80, 60, 40
     };
     btree_test_case((vptr*)keys0, ARRAY_SIZE(keys0));
 
-    // Test grow one level
+    // Test grow one level.
     uofs keys1[] = {
         20, 80, 60, 40, 10
     };
@@ -289,9 +289,9 @@ void btree_test()
     };
     btree_test_case((vptr*)keys5, ARRAY_SIZE(keys5));
 
-    // Test grow two levels
+    // Test grow two levels.
     uofs keys6[] = {
-        20, 80, 60, 40, 10, 30, 70, 90, 15, 85, 32, 35, 62, 65, 38, 61
+        20, 80, 60, 40, 10, 30, 70, 90, 15, 85, 32, 35, 62, 65, 38, 61, 36
     };
     btree_test_case((vptr*)keys6, ARRAY_SIZE(keys6));
 

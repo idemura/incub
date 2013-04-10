@@ -51,13 +51,13 @@ static bool btree_check_keys(compare_fn cmpf,
     }
 
     TEST_CHECKR(btree_check_keys_num(node, min_keys, max_keys),
-        "Node %p num %i, must be %d-%d\n",
+        "Node %p num %i, must be %d-%d",
         (void*)node, node->num, min_keys, max_keys);
 
     int i;
     for (i = 1; i < node->num; ++i) {
         TEST_CHECKR(cmpf(node->edge[i - 1].key, node->edge[i].key) < 0,
-            "Node %p key order: %zu >= %zu @%i,%i\n",
+            "Node %p key order: %zu >= %zu @%i,%i",
             (void*)node,
             (uofs)node->edge[i - 1].key, (uofs)node->edge[i].key,
             i - 1, i);
@@ -65,7 +65,7 @@ static bool btree_check_keys(compare_fn cmpf,
 
     for (i = 0; i < node->num; ++i) {
         TEST_CHECKR(cmpf(node->edge[i].key, max_keyval) < 0,
-            "Node %p key bound: %zu >= %zu @%i\n",
+            "Node %p key bound: %zu >= %zu @%i",
             (void*)node, (uofs)node->edge[i].key, (uofs)max_keyval, i);
     }
 
@@ -89,7 +89,7 @@ static bool btree_check_parent(struct btree_node *node, int depth,
     }
 
     TEST_CHECKR(node->parent == parent,
-        "Node %p parent %p (%p expected)\n",
+        "Node %p parent %p (%p expected)",
         (void*)node, (void*)node->parent, (void*)parent);
 
     if (depth > 0) {
@@ -133,16 +133,9 @@ static void btree_print_node(struct btree_node *node, int depth)
         return;
     }
 
-    fprintf(test_out(), "%p parent=%p num=%i depth=%i\n",
-        (void*)node, (void*)node->parent, node->num, depth);
-    if (node->num == 0) {
-        return;
-    }
-    fprintf(test_out(), "  ");
-    for (int i = 0; i < node->num; ++i) {
-        fprintf(test_out(), "%zu ", (uofs)node->edge[i].key);
-    }
-    fprintf(test_out(), "| %zu\n", (uofs)node->edge[node->num].key);
+    fprintf(test_out(), "depth %d\n", depth);
+    btreedbg_node(node);
+
     if (depth > 0) {
         for (int i = 0; i <= node->num; ++i) {
             btree_print_node(node->edge[i].ptr, depth - 1);
@@ -203,9 +196,6 @@ static bool btree_test_case(vptr *keys, uofs keys_num)
     struct btree *bt = btree_create(NULL, uint_cmp, 2);
     for (uofs i = 0; i < keys_num; ++i) {
         btree_insert(bt, keys[i], &keys[i]);
-        if (i + 1 == keys_num) {
-            int y = 0;
-        }
         TEST_CHECKR(btree_check_print(bt), NULL);
         TEST_CHECKR(btree_size(bt) == i + 1,
             "Size %zu, expected %zu", btree_size(bt), i + 1);
@@ -214,18 +204,16 @@ static bool btree_test_case(vptr *keys, uofs keys_num)
             TEST_CHECKR(found, "Key %zu not found", (uofs)keys[j]);
             if (found) {
                 TEST_CHECKR(uint_cmp(btree_iter_key(&iter), keys[j]) == 0,
-                    "Key found not equal: %zu (%zu expected)\n",
+                    "Key found not equal: %zu (%zu expected)",
                     (uofs)btree_iter_key(&iter),
                     (uofs)keys[j]);
                 TEST_CHECKR(btree_iter_value(&iter) == &keys[j],
-                    "Value found not equal: %p (%p expected)\n",
+                    "Value found not equal: %p (%p expected)",
                     btree_iter_value(&iter),
                     (void*)&keys[j]);
             }
         }
     }
-
-    btree_print(bt);
 
     // Test iterator.
     // Stupid insertion sort.
@@ -261,6 +249,7 @@ static bool btree_test_case(vptr *keys, uofs keys_num)
     }
 
     btree_destroy(bt);
+    return true;
 }
 
 void btree_test()
@@ -273,35 +262,35 @@ void btree_test()
     bt = btree_create(NULL, uint_cmp, 2);
     btree_destroy(bt);
 
-    // // Test leaf insertion.
-    // uofs keys0[] = {
-    //     20, 80, 60, 40
-    // };
-    // btree_test_case((vptr*)keys0, ARRAY_SIZE(keys0));
+    // Test leaf insertion.
+    uofs keys0[] = {
+        20, 80, 60, 40
+    };
+    btree_test_case((vptr*)keys0, ARRAY_SIZE(keys0));
 
-    // // Test grow one level.
-    // uofs keys1[] = {
-    //     20, 80, 60, 40, 10
-    // };
-    // btree_test_case((vptr*)keys1, ARRAY_SIZE(keys1));
-    // uofs keys2[] = {
-    //     20, 80, 60, 40, 30
-    // };
-    // btree_test_case((vptr*)keys2, ARRAY_SIZE(keys2));
-    // uofs keys3[] = {
-    //     20, 80, 60, 40, 50
-    // };
-    // btree_test_case((vptr*)keys3, ARRAY_SIZE(keys3));
-    // uofs keys4[] = {
-    //     20, 80, 60, 40, 70
-    // };
-    // btree_test_case((vptr*)keys4, ARRAY_SIZE(keys4));
-    // uofs keys5[] = {
-    //     20, 80, 60, 40, 90
-    // };
-    // btree_test_case((vptr*)keys5, ARRAY_SIZE(keys5));
+    // Test one level.
+    uofs keys1[] = {
+        20, 80, 60, 40, 10
+    };
+    btree_test_case((vptr*)keys1, ARRAY_SIZE(keys1));
+    uofs keys2[] = {
+        20, 80, 60, 40, 30
+    };
+    btree_test_case((vptr*)keys2, ARRAY_SIZE(keys2));
+    uofs keys3[] = {
+        20, 80, 60, 40, 50
+    };
+    btree_test_case((vptr*)keys3, ARRAY_SIZE(keys3));
+    uofs keys4[] = {
+        20, 80, 60, 40, 70
+    };
+    btree_test_case((vptr*)keys4, ARRAY_SIZE(keys4));
+    uofs keys5[] = {
+        20, 80, 60, 40, 90
+    };
+    btree_test_case((vptr*)keys5, ARRAY_SIZE(keys5));
 
-    // Test grow two levels.
+    // Test two levels.
     uofs keys6[] = {
         20, 80, 60, 40, 10, 30, 70, 90, 15, 85, 32, 35, 62, 65, 38, 61, 36
     };

@@ -68,43 +68,43 @@ void pque_test()
     pque_destroy(NULL);
 
     pq = pque_create(uint_cmp, 1);
-    TEST_CHECK(pq != NULL);
-    TEST_CHECK(pque_size(pq) == 0);
-    TEST_CHECK(pque_top(pq) == NULL);
+    TEST_ASSERT(pq != NULL);
+    TEST_ASSERT(pque_size(pq) == 0);
+    TEST_ASSERT(pque_top(pq) == NULL);
     pque_destroy(pq);
 
     pq = pque_create(uint_cmp, 8);
-    TEST_CHECK(pq != NULL);
+    TEST_ASSERT(pq != NULL);
     uintptr_t keys[] = {
         10, 20, 30, 5, 15
     };
     for (uofs i = 0; i < ARRAY_SIZE(keys); ++i) {
         pque_insert(pq, (vptr)keys[i]);
-        TEST_CHECK(pque_check_print(pq));
-        TEST_CHECK(pque_size(pq) == i + 1);
+        TEST_ASSERT(pque_check_print(pq));
+        TEST_ASSERT(pque_size(pq) == i + 1);
     }
-    TEST_CHECK(pque_pop(pq) == (vptr)5);
-    TEST_CHECK(pque_pop(pq) == (vptr)10);
-    TEST_CHECK(pque_pop(pq) == (vptr)15);
-    TEST_CHECK(pque_pop(pq) == (vptr)20);
-    TEST_CHECK(pque_pop(pq) == (vptr)30);
+    TEST_ASSERT(pque_pop(pq) == (vptr)5);
+    TEST_ASSERT(pque_pop(pq) == (vptr)10);
+    TEST_ASSERT(pque_pop(pq) == (vptr)15);
+    TEST_ASSERT(pque_pop(pq) == (vptr)20);
+    TEST_ASSERT(pque_pop(pq) == (vptr)30);
     pque_destroy(pq);
 
     // Check reallocations
     const uofs n = 10;
     pq = pque_create(uint_cmp, 8);
-    TEST_CHECK(pq != NULL);
+    TEST_ASSERT(pq != NULL);
     for (uofs i = 0; i < n; ++i) {
         vptr key = (vptr)(199 - i);
         pque_insert(pq, key);
-        TEST_CHECK(pque_check_print(pq));
-        TEST_CHECK(pque_top(pq) == key);
-        TEST_CHECK(pque_size(pq) == i + 1);
+        TEST_ASSERT(pque_check_print(pq));
+        TEST_ASSERT(pque_top(pq) == key);
+        TEST_ASSERT(pque_size(pq) == i + 1);
     }
     for (uofs i = 0; i < n; ++i) {
         vptr key = (vptr)(200 - n + i);
-        TEST_CHECK(pque_pop(pq) == key);
-        TEST_CHECK(pque_check_print(pq));
+        TEST_ASSERT(pque_pop(pq) == key);
+        TEST_ASSERT(pque_check_print(pq));
     }
     pque_destroy(pq);
 

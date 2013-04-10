@@ -4,15 +4,21 @@
 #include "defs.h"
 #include <stdio.h>
 
-#define TEST_CHECK(expr) \
+#define TEST_ASSERT(expr) \
     do { \
-        test_check(expr, #expr, __FILE__, __LINE__); \
+        test_check(expr, #expr, __FILE__, __LINE__, NULL); \
+    } while (0)
+
+#define TEST_CHECK(expr, ...) \
+    do { \
+        test_check(expr, #expr, __FILE__, __LINE__, __VA_ARGS__); \
     } while (0)
 
 void test_init();
 void test_begin(const char *name);
 void test_end();
-void test_check(int ok, const char *expr, const char *file, int line);
+void test_check(int ok, const char *expr, const char *file, int line,
+        const char *format, ...);
 void test_report();
 int test_failed_count();
 int test_passed_count();

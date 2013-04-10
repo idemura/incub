@@ -148,6 +148,7 @@ static int btree_find_edge(compare_fn cmpf, struct btree_node *node, vptr key)
     return l;
 }
 
+// Do not forget to reset parent after this function. But not in leaf!
 static void btree_copy_edges(struct btree_node *dst, struct btree_node *src,
     int start, int end)
 {
@@ -243,6 +244,7 @@ void btree_insert(struct btree *bt, vptr key, vptr value)
 
     assert(bt->max_keys % 2 == 0);
     const int h = bt->max_keys / 2;
+    int depth = bt->depth;
 
     while (node->num == bt->max_keys) {
         struct btree_node *temp = btree_new_node(bt->max_keys);
@@ -274,6 +276,15 @@ void btree_insert(struct btree *bt, vptr key, vptr value)
         assert(key);
         assert(temp->num == h);
         assert(node->num == h);
+
+        if (depth != 0) {
+            for (int i = 0; i <= temp->num; ++i) {
+                if (temp->edge[i].ptr) {
+                    temp->edge[i].ptr->parent = temp;
+                }
+            }
+            depth--;
+        }
 
         temp->prev = node;
         temp->next = node->next;

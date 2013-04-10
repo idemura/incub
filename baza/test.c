@@ -15,6 +15,7 @@
 */
 #include "test.h"
 #include <string.h>
+#include <stdarg.h>
 
 static const char *s_name;
 static int s_failed_asserts;
@@ -94,12 +95,12 @@ void test_end()
     if (s_failed_asserts == 0) {
         s_passed++;
         if (color_text(fmt, sizeof(fmt), "#2Passed# %s\n")) {
-            fprintf(stderr, fmt, s_name);
+            fprintf(test_out(), fmt, s_name);
         }
     } else {
         s_failed++;
         if (color_text(fmt, sizeof(fmt), "#1FAILED# %s\n")) {
-            fprintf(stderr, fmt, s_name);
+            fprintf(test_out(), fmt, s_name);
         }
     }
 
@@ -107,17 +108,31 @@ void test_end()
     mem_stat(&stat);
     if (stat.total != s_memory) {
         if (color_text(fmt, sizeof(fmt), "#3Warning# %s memory leak: %zu\n")) {
-            fprintf(stderr, fmt, s_name, stat.total - s_memory);
+            fprintf(test_out(), fmt, s_name, stat.total - s_memory);
         }
     }
 }
 
-void test_check(int ok, const char *expr, const char *file, int line)
+void test_check(int ok, const char *expr, const char *file, int line,
+    const char *format, ...)
 {
     char fmt[80];
     if (!ok) {
-        if (color_text(fmt, sizeof(fmt), "#1FAILED# in %s %s:%d: %s\n")) {
-            fprintf(stderr, fmt, s_name, file, line, expr);
+        if (format) {
+            if (color_text(fmt, sizeof(fmt), "#1FAILED# in %s %s:%d: ")) {
+                fprintf(test_out(), fmt, s_name, file, line, expr);
+            }
+            if (format) {
+                va_list va;
+                va_start(va, format);
+                vfprintf(test_out(), format, va);
+                va_end(va);
+            }
+            fprintf(test_out(), "\n");
+        } else {
+            if (color_text(fmt, sizeof(fmt), "#1FAILED# in %s %s:%d: %s\n")) {
+                fprintf(test_out(), fmt, s_name, file, line, expr);
+            }
         }
         s_failed_asserts++;
     }
@@ -129,14 +144,14 @@ void test_report()
     int64_t usec = timer_int(&s_start);
     if (s_failed == 0) {
         if (color_text(fmt, sizeof(fmt), "Tests: %d #2passed#\n")) {
-            fprintf(stderr, fmt, s_passed);
+            fprintf(test_out(), fmt, s_passed);
         }
     } else {
         if (color_text(fmt, sizeof(fmt), "Tests: %d #2passed#, %d #1FAILED#!\n")) {
-            fprintf(stderr, fmt, s_passed, s_failed);
+            fprintf(test_out(), fmt, s_passed, s_failed);
         }
     }
-    fprintf(stderr, "Done in %i ms\n", (int)(usec / 1000));
+    fprintf(test_out(), "Done in %i ms\n", (int)(usec / 1000));
 }
 
 int test_failed_count()

@@ -132,28 +132,32 @@ static bool btree_check(struct btree *bt)
     return true;
 }
 
-static void btree_print(struct btree_node *node, int depth)
+static void btree_print_node(struct btree_node *node, int depth)
 {
     if (!node) {
         return;
     }
 
     fprintf(test_out(), "%p parent=%p num=%i depth=%i\n",
-        (void*)node->parent, (void*)node, node->num, depth);
+        (void*)node, (void*)node->parent, node->num, depth);
     if (node->num == 0) {
         return;
     }
-    fprintf(test_out(), "   ");
-    for (int i = 0; i <= node->num; ++i) {
-        fprintf(test_out(), "%p %zu ", (void*)node->edge[i].ptr,
-            (uofs)node->edge[i].key);
+    fprintf(test_out(), "  ");
+    for (int i = 0; i < node->num; ++i) {
+        fprintf(test_out(), "%zu ", (uofs)node->edge[i].key);
     }
-    fprintf(test_out(), "\n");
+    fprintf(test_out(), "| %zu\n", (uofs)node->edge[node->num].key);
     if (depth > 0) {
         for (int i = 0; i <= node->num; ++i) {
-            btree_print(node->edge[i].ptr, depth - 1);
+            btree_print_node(node->edge[i].ptr, depth - 1);
         }
     }
+}
+
+static void btree_print(struct btree *bt)
+{
+    btree_print_node(bt->root, bt->depth);
 }
 
 static bool btree_check_print(struct btree *bt)
@@ -161,7 +165,7 @@ static bool btree_check_print(struct btree *bt)
     if (btree_check(bt)) {
         return true;
     }
-    btree_print(bt->root, bt->depth);
+    btree_print(bt);
     return false;
 }
 
@@ -173,27 +177,27 @@ static void btree_test_find_edge()
     node->edge[2].key = (vptr)30;
     node->edge[3].key = (vptr)40;
     node->num = 1;
-    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)5) == 0);
-    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)10) == 0);
-    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)15) == 1);
+    TEST_ASSERT(btree_find_edge(uint_cmp, node, (vptr)5) == 0);
+    TEST_ASSERT(btree_find_edge(uint_cmp, node, (vptr)10) == 0);
+    TEST_ASSERT(btree_find_edge(uint_cmp, node, (vptr)15) == 1);
     node->num = 3;
-    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)5) == 0);
-    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)10) == 0);
-    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)15) == 1);
-    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)20) == 1);
-    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)25) == 2);
-    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)30) == 2);
-    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)35) == 3);
+    TEST_ASSERT(btree_find_edge(uint_cmp, node, (vptr)5) == 0);
+    TEST_ASSERT(btree_find_edge(uint_cmp, node, (vptr)10) == 0);
+    TEST_ASSERT(btree_find_edge(uint_cmp, node, (vptr)15) == 1);
+    TEST_ASSERT(btree_find_edge(uint_cmp, node, (vptr)20) == 1);
+    TEST_ASSERT(btree_find_edge(uint_cmp, node, (vptr)25) == 2);
+    TEST_ASSERT(btree_find_edge(uint_cmp, node, (vptr)30) == 2);
+    TEST_ASSERT(btree_find_edge(uint_cmp, node, (vptr)35) == 3);
     node->num = 4;
-    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)5) == 0);
-    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)10) == 0);
-    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)15) == 1);
-    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)20) == 1);
-    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)25) == 2);
-    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)30) == 2);
-    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)35) == 3);
-    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)40) == 3);
-    TEST_CHECK(btree_find_edge(uint_cmp, node, (vptr)45) == 4);
+    TEST_ASSERT(btree_find_edge(uint_cmp, node, (vptr)5) == 0);
+    TEST_ASSERT(btree_find_edge(uint_cmp, node, (vptr)10) == 0);
+    TEST_ASSERT(btree_find_edge(uint_cmp, node, (vptr)15) == 1);
+    TEST_ASSERT(btree_find_edge(uint_cmp, node, (vptr)20) == 1);
+    TEST_ASSERT(btree_find_edge(uint_cmp, node, (vptr)25) == 2);
+    TEST_ASSERT(btree_find_edge(uint_cmp, node, (vptr)30) == 2);
+    TEST_ASSERT(btree_find_edge(uint_cmp, node, (vptr)35) == 3);
+    TEST_ASSERT(btree_find_edge(uint_cmp, node, (vptr)40) == 3);
+    TEST_ASSERT(btree_find_edge(uint_cmp, node, (vptr)45) == 4);
     mem_free(node);
 }
 
@@ -203,15 +207,17 @@ static void btree_test_case(vptr *keys, uofs keys_num)
 
     struct btree *bt = btree_create(NULL, uint_cmp, 2);
     for (uofs i = 0; i < keys_num; ++i) {
-        // fprintf(test_out(), "Insert %zu\n", (uofs)keys[i]);
         btree_insert(bt, keys[i], &keys[i]);
-        TEST_CHECK(btree_check_print(bt));
-        TEST_CHECK(btree_size(bt) == i + 1);
+        TEST_ASSERT(btree_check_print(bt));
+        TEST_CHECK(btree_size(bt) == i + 1,
+            "Size %zu, expected %zu", btree_size(bt), i + 1);
         for (uofs j = 0; j <= i; ++j) {
             bool found = btree_find(bt, keys[j], &iter);
-            TEST_CHECK(found);
-            TEST_CHECK(uint_cmp(btree_iter_key(&iter), keys[j]) == 0);
-            TEST_CHECK(btree_iter_value(&iter) == &keys[j]);
+            TEST_CHECK(found, "Key %zu not found", (uofs)keys[j]);
+            if (found) {
+                TEST_ASSERT(uint_cmp(btree_iter_key(&iter), keys[j]) == 0);
+                TEST_ASSERT(btree_iter_value(&iter) == &keys[j]);
+            }
         }
     }
 
@@ -229,23 +235,23 @@ static void btree_test_case(vptr *keys, uofs keys_num)
         keys[imin] = temp;
     }
 
-    TEST_CHECK(btree_find(bt, keys[0], &iter));
+    TEST_ASSERT(btree_find(bt, keys[0], &iter));
     for (uofs i = 0; i < keys_num; ++i) {
-        TEST_CHECK(uint_cmp(btree_iter_key(&iter), keys[i]) == 0);
+        TEST_ASSERT(uint_cmp(btree_iter_key(&iter), keys[i]) == 0);
         if (i + 1 != keys_num) {
-            TEST_CHECK(btree_iter_next(&iter));
+            TEST_ASSERT(btree_iter_next(&iter));
         }
     }
-    TEST_CHECK(!btree_iter_next(&iter));
+    TEST_ASSERT(!btree_iter_next(&iter));
 
     for (uofs i = 0; i < keys_num; ++i) {
         // fprintf(test_out(), "Update %zu\n", (uofs)keys[i]);
         vptr new_val = (vptr)(1000 + i);
         btree_insert(bt, keys[i], new_val);
-        TEST_CHECK(btree_find(bt, keys[i], &iter));
-        TEST_CHECK(uint_cmp(btree_iter_key(&iter), keys[i]) == 0);
-        TEST_CHECK(btree_iter_value(&iter) == new_val);
-        TEST_CHECK(btree_size(bt) == keys_num);
+        TEST_ASSERT(btree_find(bt, keys[i], &iter));
+        TEST_ASSERT(uint_cmp(btree_iter_key(&iter), keys[i]) == 0);
+        TEST_ASSERT(btree_iter_value(&iter) == new_val);
+        TEST_ASSERT(btree_size(bt) == keys_num);
     }
 
     btree_destroy(bt);

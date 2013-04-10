@@ -115,7 +115,8 @@ void log_print(const char* format, ...)
         if (slog_newline) {
             struct timeval tv;
             timer_get(&tv);
-            fprintf(slog_file, "%2li.%03i: ", tv.tv_sec, (int)(tv.tv_usec / 1000));
+            fprintf(slog_file, "%2li.%03i: ", tv.tv_sec,
+                (int)(tv.tv_usec / 1000));
         }
     }
 

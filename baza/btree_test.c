@@ -201,7 +201,7 @@ static void btree_test_case(vptr *keys, uofs keys_num)
 {
     struct btree_iter iter;
 
-    struct btree *bt = btree_create(uint_cmp, 2);
+    struct btree *bt = btree_create(NULL, uint_cmp, 2);
     for (uofs i = 0; i < keys_num; ++i) {
         // fprintf(test_out(), "Insert %zu\n", (uofs)keys[i]);
         btree_insert(bt, keys[i], &keys[i]);
@@ -215,8 +215,8 @@ static void btree_test_case(vptr *keys, uofs keys_num)
         }
     }
 
-    // Test iterator
-    // Stupid insertion sort
+    // Test iterator.
+    // Stupid insertion sort.
     for (uofs i = 0; i < keys_num; ++i) {
         uofs imin = i;
         for (int j = i + 1; j < keys_num; ++j) {
@@ -258,38 +258,42 @@ void btree_test()
     test_begin("BTree");
     btree_test_find_edge();
 
-    bt = btree_create(uint_cmp, 2);
+    bt = btree_create(NULL, uint_cmp, 2);
     btree_destroy(bt);
 
     // Test leaf insertion
     uofs keys0[] = {
-        10, 20, 15
+        20, 80, 60, 40
     };
     btree_test_case((vptr*)keys0, ARRAY_SIZE(keys0));
 
     // Test grow one level
     uofs keys1[] = {
-        10, 20, 15, 7
+        20, 80, 60, 40, 10
     };
     btree_test_case((vptr*)keys1, ARRAY_SIZE(keys1));
     uofs keys2[] = {
-        10, 20, 15, 13
+        20, 80, 60, 40, 30
     };
     btree_test_case((vptr*)keys2, ARRAY_SIZE(keys2));
     uofs keys3[] = {
-        10, 20, 15, 17
+        20, 80, 60, 40, 50
     };
     btree_test_case((vptr*)keys3, ARRAY_SIZE(keys3));
     uofs keys4[] = {
-        10, 20, 15, 23
+        20, 80, 60, 40, 70
     };
     btree_test_case((vptr*)keys4, ARRAY_SIZE(keys4));
-
-    // Test grow two levels
     uofs keys5[] = {
-        10, 30, 50, 20, 55, 15, 60, 5, 45, 2, 7
+        20, 80, 60, 40, 90
     };
     btree_test_case((vptr*)keys5, ARRAY_SIZE(keys5));
+
+    // Test grow two levels
+    uofs keys6[] = {
+        20, 80, 60, 40, 10, 30, 70, 90, 15, 85, 32, 35, 62, 65, 38, 61
+    };
+    btree_test_case((vptr*)keys6, ARRAY_SIZE(keys6));
 
     test_end();
 }

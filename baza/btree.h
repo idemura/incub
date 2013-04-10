@@ -7,6 +7,8 @@
 
 #include "defs.h"
 
+struct disk_file;
+
 struct btree;
 struct btree_node;
 
@@ -15,7 +17,9 @@ struct btree_iter {
     int j;
 };
 
-struct btree *btree_create(compare_fn cmpf, int min_keys);
+struct btree *btree_create(struct disk_file *file,
+    compare_fn cmpf, int min_keys);
+
 void btree_destroy(struct btree *bt);
 uofs btree_size(struct btree *bt);
 void btree_insert(struct btree *bt, vptr key, vptr value);

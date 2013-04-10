@@ -13,27 +13,11 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 */
+#include "disk.c"
 #include "test.h"
-#include "defs.h"
 
-void defs_test();
-void dstr_test();
-void stack_test();
-void pque_test();
-void disk_test();
-void btree_test();
-
-int main()
+void disk_test()
 {
-    test_init();
-
-    defs_test();
-    dstr_test();
-    stack_test();
-    pque_test();
-    disk_test();
-    btree_test();
-
-    test_report();
-    return test_failed_count() == 0? 0: 1;
+    test_begin("Disk");
+    test_end();
 }

@@ -13,27 +13,16 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 */
-#include "test.h"
-#include "defs.h"
+#include "disk.h"
 
-void defs_test();
-void dstr_test();
-void stack_test();
-void pque_test();
-void disk_test();
-void btree_test();
+// struct disk_file_raw {
+//     struct disk_file file;
+//     int fd;
+// };
 
-int main()
-{
-    test_init();
-
-    defs_test();
-    dstr_test();
-    stack_test();
-    pque_test();
-    disk_test();
-    btree_test();
-
-    test_report();
-    return test_failed_count() == 0? 0: 1;
-}
+// struct disk_file *open_file(const char *name)
+// {
+//     struct disk_file_raw *obj = mem_alloc(sizeof(*obj));
+//     obj->fd = open(name);
+//     return &obj->file;
+// }

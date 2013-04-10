@@ -15,6 +15,7 @@
 */
 #include "btree.h"
 #include "stack.h"
+#include "disk.h"
 #include <memory.h>
 
 struct btree_node;
@@ -33,6 +34,7 @@ struct btree_node {
 };
 
 struct btree {
+    struct disk_file *file;
     compare_fn cmpf;
     struct btree_node *root;
     int depth;
@@ -73,16 +75,18 @@ static struct btree_node *btree_new_node(int max_keys)
     return node;
 }
 
-struct btree *btree_create(compare_fn cmpf, int min_keys)
+struct btree *btree_create(struct disk_file *file,
+    compare_fn cmpf, int min_keys)
 {
     if (min_keys < 2) {
         return NULL;
     }
     struct btree *bt = mem_alloc(sizeof(*bt));
     if (bt) {
+        bt->file = file;
         bt->cmpf = cmpf;
-        bt->min_keys = min_keys - 1;
-        bt->max_keys = 2 * min_keys - 1;
+        bt->min_keys = min_keys;
+        bt->max_keys = 2 * min_keys;
         bt->root = btree_new_node(bt->max_keys);
         bt->size = 0;
         bt->depth = 0;
@@ -117,7 +121,7 @@ uofs btree_size(struct btree *bt)
     return bt->size;
 }
 
-static void btree_insert_in(struct btree_node *node, int i,
+static void btree_insert_at(struct btree_node *node, int i,
     vptr key, vptr value)
 {
     for (int j = node->num + 1; j > i; --j) {
@@ -231,41 +235,49 @@ void btree_insert(struct btree *bt, vptr key, vptr value)
     }
 
     stack_alloc(&st, 0);
-
     if (btree_locate(bt, key, &node, &st)) {
         node->edge[stack_popi(&st)].ptr = value;
         stack_free(&st);
         return;
     }
 
-    assert(bt->max_keys % 2 == 1);
+    assert(bt->max_keys % 2 == 0);
     const int h = bt->max_keys / 2;
 
     while (node->num == bt->max_keys) {
-        vptr new_key = node->edge[h].key;
-
-        // Copy upper `h` edges into temp node.
         struct btree_node *temp = btree_new_node(bt->max_keys);
-        btree_copy_edges(temp, node, h + 1, node->num);
         temp->parent = node->parent;
-        // Leave lower `h` edges in node.
-        node->num = h;
+
+        // Virtually insert in full node and split it on two. New key at
+        // index `h`, three cases available:
+        vptr split_key = NULL;
+        int jkey = stack_popi(&st);
+        if (jkey < h) {
+            split_key = node->edge[h - 1].key;
+            btree_copy_edges(temp, node, h, node->num);
+            node->num = h - 1;
+            btree_insert_at(node, jkey, key, value);
+        } else if (jkey > h) {
+            split_key = node->edge[h].key;
+            btree_copy_edges(temp, node, h + 1, node->num);
+            node->num = h;
+            btree_insert_at(temp, jkey - h - 1, key, value);
+        } else {
+            split_key = key;
+            btree_copy_edges(temp, node, h, node->num);
+            node->num = h;
+            node->edge[node->num].key = key;
+            node->edge[node->num].ptr = value;
+        }
+        key = split_key;
+        value = node;
+        assert(key);
+        assert(temp->num == h);
+        assert(node->num == h);
 
         temp->prev = node;
         temp->next = node->next;
         node->next = temp;
-
-        int jkey = stack_popi(&st);
-        if (bt->cmpf(key, new_key) < 0) {
-            assert(jkey <= h);
-            btree_insert_in(node, jkey, key, value);
-        } else {
-            assert(jkey > h);
-            jkey -= h + 1;
-            btree_insert_in(temp, jkey, key, value);
-        }
-
-        key = new_key;
 
         if (node->parent) {
             jkey = stack_topi(&st);
@@ -281,7 +293,7 @@ void btree_insert(struct btree *bt, vptr key, vptr value)
     }
 
     if (node) {
-        btree_insert_in(node, stack_popi(&st), key, value);
+        btree_insert_at(node, stack_popi(&st), key, value);
     }
 
     bt->size += 1;

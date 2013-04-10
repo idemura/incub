@@ -113,7 +113,7 @@ void test_end()
     }
 }
 
-void test_check(int ok, const char *expr, const char *file, int line,
+bool test_check(int ok, const char *expr, const char *file, int line,
     const char *format, ...)
 {
     char fmt[80];
@@ -136,6 +136,7 @@ void test_check(int ok, const char *expr, const char *file, int line,
         }
         s_failed_asserts++;
     }
+    return ok;
 }
 
 void test_report()

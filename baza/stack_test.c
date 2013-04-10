@@ -22,47 +22,47 @@ void stack_test()
 
     struct stack st;
     stack_alloc(&st, 0);
-    TEST_ASSERT(stack_empty(&st));
+    TEST_CHECK(stack_empty(&st));
     stack_pushi(&st, 10);
-    TEST_ASSERT(!stack_empty(&st));
-    TEST_ASSERT(stack_topi(&st) == 10);
+    TEST_CHECK(!stack_empty(&st));
+    TEST_CHECK(stack_topi(&st) == 10);
     stack_pushi(&st, 20);
-    TEST_ASSERT(!stack_empty(&st));
-    TEST_ASSERT(stack_topi(&st) == 20);
-    TEST_ASSERT(stack_popi(&st) == 20);
-    TEST_ASSERT(stack_popi(&st) == 10);
-    TEST_ASSERT(stack_empty(&st));
+    TEST_CHECK(!stack_empty(&st));
+    TEST_CHECK(stack_topi(&st) == 20);
+    TEST_CHECK(stack_popi(&st) == 20);
+    TEST_CHECK(stack_popi(&st) == 10);
+    TEST_CHECK(stack_empty(&st));
     stack_free(&st);
 
     const uofs n = 100;
     stack_alloc(&st, 0);
-    TEST_ASSERT(stack_empty(&st));
+    TEST_CHECK(stack_empty(&st));
     for (uofs i = 0; i < n; ++i) {
       stack_pushi(&st, i);
-      TEST_ASSERT(stack_topi(&st) == i);
+      TEST_CHECK(stack_topi(&st) == i);
     }
     for (uofs i = 0; i < n; ++i) {
-      TEST_ASSERT(stack_popi(&st) == (n - 1 - i));
+      TEST_CHECK(stack_popi(&st) == (n - 1 - i));
     }
-    TEST_ASSERT(stack_empty(&st));
+    TEST_CHECK(stack_empty(&st));
     stack_free(&st);
 
     stack_alloc(&st, 90);
-    TEST_ASSERT(stack_empty(&st));
+    TEST_CHECK(stack_empty(&st));
     stack_pushi(&st, 11);
-    TEST_ASSERT(!stack_empty(&st));
-    TEST_ASSERT(stack_topi(&st) == 11);
+    TEST_CHECK(!stack_empty(&st));
+    TEST_CHECK(stack_topi(&st) == 11);
     stack_pushi(&st, 22);
-    TEST_ASSERT(!stack_empty(&st));
-    TEST_ASSERT(stack_topi(&st) == 22);
-    TEST_ASSERT(stack_popi(&st) == 22);
-    TEST_ASSERT(stack_popi(&st) == 11);
-    TEST_ASSERT(stack_empty(&st));
+    TEST_CHECK(!stack_empty(&st));
+    TEST_CHECK(stack_topi(&st) == 22);
+    TEST_CHECK(stack_popi(&st) == 22);
+    TEST_CHECK(stack_popi(&st) == 11);
+    TEST_CHECK(stack_empty(&st));
     for (uofs i = 0; i < n; ++i) {
       stack_pushi(&st, i);
     }
     for (uofs i = 0; i < n; ++i) {
-      TEST_ASSERT(stack_popi(&st) == (n - 1 - i));
+      TEST_CHECK(stack_popi(&st) == (n - 1 - i));
     }
     stack_free(&st);
 

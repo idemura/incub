@@ -244,7 +244,7 @@ void btree_insert(struct btree *bt, vptr key, vptr value)
 
     assert(bt->max_keys % 2 == 0);
     const int h = bt->max_keys / 2;
-    int depth = bt->depth;
+    int depth = 0;
 
     while (node->num == bt->max_keys) {
         struct btree_node *temp = btree_new_node(bt->max_keys);
@@ -283,7 +283,7 @@ void btree_insert(struct btree *bt, vptr key, vptr value)
                     temp->edge[i].ptr->parent = temp;
                 }
             }
-            depth--;
+            depth++;
         }
 
         temp->prev = node;

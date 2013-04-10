@@ -3,7 +3,9 @@
 
 static void defs_base_test()
 {
-    TEST_ASSERT(sizeof(uofs) == sizeof(vptr));
+    TEST_CHECKM(sizeof(uofs) == sizeof(vptr),
+        "sizeof(uofs) %zu != sizeof(vptr) %zu\n",
+        sizeof(uofs), sizeof(vptr));
 
 #ifdef NDEBUG
     // This assert shouldn't break.
@@ -23,11 +25,15 @@ static void defs_time_test()
     start.tv_sec = 10;
     start.tv_usec = 500000;
     timer_diff(&end, &start, &res);
-    TEST_ASSERT(res.tv_sec == 11 && res.tv_usec == 100000);
+    TEST_CHECKM(res.tv_sec == 11 && res.tv_usec == 100000,
+        "Time diff 1 sec=%li usec=%li\n",
+        res.tv_sec, res.tv_usec);
     start.tv_sec = 10;
     start.tv_usec = 850000;
     timer_diff(&end, &start, &res);
-    TEST_ASSERT(res.tv_sec == 10 && res.tv_usec == 750000);
+    TEST_CHECKM(res.tv_sec == 10 && res.tv_usec == 750000,
+        "Time diff 2 sec=%li usec=%li\n",
+        res.tv_sec, res.tv_usec);
 }
 
 void defs_test()

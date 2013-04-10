@@ -26,6 +26,7 @@ void btree_test();
 int main()
 {
     test_init();
+    log_setfile(test_out());
 
     defs_test();
     dstr_test();

@@ -229,23 +229,37 @@ static bool btree_test_case(vptr *keys, uofs keys_num)
         keys[imin] = temp;
     }
 
-    TEST_CHECK(btree_find(bt, keys[0], &iter));
+    TEST_CHECKM(btree_find(bt, keys[0], &iter),
+        "Can't find first key %zu",
+        (uofs)keys[0]);
     for (uofs i = 0; i < keys_num; ++i) {
-        TEST_CHECK(uint_cmp(btree_iter_key(&iter), keys[i]) == 0);
+        TEST_CHECKM(uint_cmp(btree_iter_key(&iter), keys[i]) == 0,
+            "Iterator key %zu (%zu expected)",
+            (uofs)btree_iter_key(&iter), (uofs)keys[i]);
         if (i + 1 != keys_num) {
-            TEST_CHECK(btree_iter_next(&iter));
+            TEST_CHECKM(btree_iter_next(&iter),
+                "Can't go next");
         }
     }
-    TEST_CHECK(!btree_iter_next(&iter));
+    TEST_CHECKM(!btree_iter_next(&iter),
+        "Iterator expected to reach end");
 
     for (uofs i = 0; i < keys_num; ++i) {
         // fprintf(test_out(), "Update %zu\n", (uofs)keys[i]);
         vptr new_val = (vptr)(1000 + i);
         btree_insert(bt, keys[i], new_val);
-        TEST_CHECK(btree_find(bt, keys[i], &iter));
-        TEST_CHECK(uint_cmp(btree_iter_key(&iter), keys[i]) == 0);
-        TEST_CHECK(btree_iter_value(&iter) == new_val);
-        TEST_CHECK(btree_size(bt) == keys_num);
+        TEST_CHECKM(btree_find(bt, keys[i], &iter),
+            "Can't find %zu after update",
+            (uofs)keys[i]);
+        TEST_CHECKM(uint_cmp(btree_iter_key(&iter), keys[i]) == 0,
+            "After update: key %zu (%zu expected)",
+            (uofs)btree_iter_key(&iter), (uofs)keys[i]);
+        TEST_CHECKM(btree_iter_value(&iter) == new_val,
+            "After update: value %p (%p expected)",
+            btree_iter_value(&iter), new_val);
+        TEST_CHECKM(btree_size(bt) == keys_num,
+            "After update: size %zu (%zu expected)",
+            btree_size(bt), keys_num);
     }
 
     btree_destroy(bt);

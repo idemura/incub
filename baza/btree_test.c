@@ -249,7 +249,7 @@ static bool btree_test_case(vptr *keys, uofs keys_num)
         vptr new_val = (vptr)(1000 + i);
         btree_insert(bt, keys[i], new_val);
         TEST_CHECKM(btree_find(bt, keys[i], &iter),
-            "Can't find %zu after update",
+            "After update: can't find %zu",
             (uofs)keys[i]);
         TEST_CHECKM(uint_cmp(btree_iter_key(&iter), keys[i]) == 0,
             "After update: key %zu (%zu expected)",

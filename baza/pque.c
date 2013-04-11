@@ -91,7 +91,7 @@ void pque_insert(struct pque *pq, vptr key)
 
     pq->heap[pq->size] = key;
     pque_heapify(pq, pq->size);
-    pq->size += 1;
+    pq->size++;
 }
 
 vptr pque_top(struct pque *pq)
@@ -109,7 +109,7 @@ vptr pque_pop(struct pque *pq)
     }
 
     vptr min_key = pq->heap[0];
-    pq->size -= 1;
+    pq->size--;
     pq->heap[0] = pq->heap[pq->size];
 
     for (uofs i = 0; ; ) {

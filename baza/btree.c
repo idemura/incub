@@ -129,7 +129,7 @@ static void btree_insert_at(struct btree_node *node, int i,
     }
     node->edge[i].ptr = value;
     node->edge[i].key = key;
-    node->num += 1;
+    node->num++;
 }
 
 static int btree_find_edge(compare_fn cmpf, struct btree_node *node, vptr key)
@@ -176,7 +176,7 @@ static bool btree_locate(struct btree *bt, vptr key,
             stack_pushi(st, jkey);
         }
         found = jkey != node->num && bt->cmpf(node->edge[jkey].key, key) == 0;
-        depth -= 1;
+        depth--;
         if (found || depth == 0) {
             break;
         }
@@ -197,7 +197,7 @@ static bool btree_locate(struct btree *bt, vptr key,
             if (st) {
                 stack_pushi(st, jkey);
             }
-            depth -= 1;
+            depth--;
             if (depth == 0) {
                 break;
             }
@@ -221,7 +221,7 @@ static void btree_grow(struct btree *bt, vptr key, struct btree_node *node,
     bt->root->edge[1].key = NULL;
     bt->root->num = 1;
     temp->parent = node->parent = bt->root;
-    bt->depth += 1;
+    bt->depth++;
 }
 
 void btree_insert(struct btree *bt, vptr key, vptr value)
@@ -308,7 +308,7 @@ void btree_insert(struct btree *bt, vptr key, vptr value)
         btree_insert_at(node, stack_popi(&st), key, value);
     }
 
-    bt->size += 1;
+    bt->size++;
     stack_free(&st);
 }
 

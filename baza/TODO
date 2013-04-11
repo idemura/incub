@@ -4,6 +4,7 @@
 
 -- Make linked list on leaves (bottom level nodes).
 -- Iterator.
+Store one key only in leaf.
 
 -- Add perf and time measure functions.
 Make perf tests.

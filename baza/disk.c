@@ -15,6 +15,8 @@
 */
 #include "disk.h"
 
+static uofs s_block = 4096;
+
 // struct disk_file_raw {
 //     struct disk_file file;
 //     int fd;
@@ -26,3 +28,13 @@
 //     obj->fd = open(name);
 //     return &obj->file;
 // }
+
+void disk_setblocksize(uofs block)
+{
+    s_block = block;
+}
+
+uofs disk_getblocksize()
+{
+    return s_block;
+}

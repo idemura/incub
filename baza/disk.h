@@ -12,4 +12,7 @@ struct disk_file {
     int (*get_offset) (struct disk_file *file, uofs *offset);
 };
 
+void disk_setblocksize(uofs block);
+uofs disk_getblocksize();
+
 #endif

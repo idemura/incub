@@ -28,10 +28,9 @@ static bool pque_check(struct pque *pq)
     }
     for (uofs i = 1; i < pq->size; ++i) {
         uofs p = (i - 1) / 2;
-        if (pq->cmpf(pq->heap[p], pq->heap[i]) > 0) {
-            fprintf(test_out(), "Heap violation at %zi (parent %zi)\n", i, p);
-            return false;
-        }
+        TEST_CHECKR(pq->cmpf(pq->heap[p], pq->heap[i]) <= 0,
+            "Heap violation at %zi (parent %zi)\n",
+            i, p);
     }
     return true;
 }
@@ -68,26 +67,38 @@ void pque_test()
     pque_destroy(NULL);
 
     pq = pque_create(uint_cmp, 1);
-    TEST_CHECK(pq != NULL);
-    TEST_CHECK(pque_size(pq) == 0);
-    TEST_CHECK(pque_top(pq) == NULL);
+    TEST_CHECKM(pq != NULL,
+        "pque_create NULL");
+    TEST_CHECKM(pque_size(pq) == 0,
+        "pque empty size %zu",
+        pque_size(pq));
+    TEST_CHECKM(pque_top(pq) == NULL,
+        "pque empty top != NULL");
     pque_destroy(pq);
 
     pq = pque_create(uint_cmp, 8);
-    TEST_CHECK(pq != NULL);
-    uintptr_t keys[] = {
+    TEST_CHECKM(pq != NULL,
+        "pque_create NULL");
+
+    uofs keys[] = {
         10, 20, 30, 5, 15
+    };
+    uofs keys_sorted[] = {
+        5, 10, 15, 20, 30
     };
     for (uofs i = 0; i < ARRAY_SIZE(keys); ++i) {
         pque_insert(pq, (vptr)keys[i]);
-        TEST_CHECK(pque_check_print(pq));
-        TEST_CHECK(pque_size(pq) == i + 1);
+        pque_check_print(pq);
+        TEST_CHECKM(pque_size(pq) == i + 1,
+            "pque_size %zu (%zu expected)",
+            pque_size(pq), i + 1);
     }
-    TEST_CHECK(pque_pop(pq) == (vptr)5);
-    TEST_CHECK(pque_pop(pq) == (vptr)10);
-    TEST_CHECK(pque_pop(pq) == (vptr)15);
-    TEST_CHECK(pque_pop(pq) == (vptr)20);
-    TEST_CHECK(pque_pop(pq) == (vptr)30);
+    for (uofs i = 0; i < ARRAY_SIZE(keys); ++i) {
+        uofs key_pop = (uofs)pque_pop(pq);
+        TEST_CHECKM(key_pop == keys_sorted[i],
+            "pque_pop %zu (%zu expected)",
+            key_pop, keys_sorted[i]);
+    }
     pque_destroy(pq);
 
     // Check reallocations
@@ -97,14 +108,21 @@ void pque_test()
     for (uofs i = 0; i < n; ++i) {
         vptr key = (vptr)(199 - i);
         pque_insert(pq, key);
-        TEST_CHECK(pque_check_print(pq));
-        TEST_CHECK(pque_top(pq) == key);
-        TEST_CHECK(pque_size(pq) == i + 1);
+        pque_check_print(pq);
+        TEST_CHECKM(pque_top(pq) == key,
+            "pque_top %zu (%zu expected)",
+            (uofs)pque_top(pq), (uofs)key);
+        TEST_CHECKM(pque_size(pq) == i + 1,
+            "pque_size size %zu (%zu expected)",
+            pque_size(pq), i + 1);
     }
     for (uofs i = 0; i < n; ++i) {
         vptr key = (vptr)(200 - n + i);
-        TEST_CHECK(pque_pop(pq) == key);
-        TEST_CHECK(pque_check_print(pq));
+        vptr key_pop = pque_pop(pq);
+        TEST_CHECKM(key_pop == key,
+            "pque_pop %zu (%zu expected)",
+            key_pop, key);
+        pque_check_print(pq);
     }
     pque_destroy(pq);
 

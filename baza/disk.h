@@ -3,7 +3,11 @@
 
 #include "defs.h"
 
-struct disk_file {
+// File contains data like handle and etc. and pointer to function ser working
+// with this file.
+struct file;
+
+struct idisk_file {
     int (*write) (struct disk_file *file, const void *buf,
         uofs buf_size, uofs *written);
 
@@ -14,5 +18,8 @@ struct disk_file {
 
 void disk_setblocksize(uofs block);
 uofs disk_getblocksize();
+struct file *open_file(const char *name, int mode);
+void close_file(struct file *f);
 
 #endif
+

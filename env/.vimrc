@@ -7,5 +7,6 @@ set ignorecase
 set incsearch
 set hlsearch
 set colorcolumn=80
+set expandtab
 syntax on
 

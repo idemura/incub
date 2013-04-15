@@ -8,5 +8,6 @@ set incsearch
 set hlsearch
 set colorcolumn=80
 set expandtab
+set nowrap
 syntax on
 

@@ -14,27 +14,54 @@
   limitations under the License.
 */
 #include "disk.h"
+#include <fcntl.h>
+#include <unistd.h>
 
-static uofs s_block = 4096;
+struct disk_file {
+    int fd;
+};
 
-// struct disk_file_raw {
-//     struct disk_file file;
-//     int fd;
-// };
+static struct disk_io sdisk_io;
 
-// struct disk_file *open_file(const char *name)
-// {
-//     struct disk_file_raw *obj = mem_alloc(sizeof(*obj));
-//     obj->fd = open(name);
-//     return &obj->file;
-// }
-
-void disk_setblocksize(uofs block)
+static struct file *disk_open(const char *name, int mode)
 {
-    s_block = block;
+    int fd = open(name, );
+    return NULL;
 }
 
-uofs disk_getblocksize()
+static void disk_close(struct file *f)
 {
-    return s_block;
+}
+
+static int disk_write(struct file *f, const void *buf, uofs buf_size, uofs *written)
+{
+    return IO_OK;
+}
+
+static int disk_read(struct file *f, void *buf, uofs buf_size, uofs *read)
+{
+    return IO_OK;
+}
+
+static int disk_seek(struct file *f, uofs offset)
+{
+    return IO_OK;
+}
+
+static int disk_get_offset(struct file *f, uofs *offset)
+{
+    return IO_OK;
+}
+
+struct disk_io *get_disk_io()
+{
+    if (!sdisk_io.open) {
+        sdisk_io.open = disk_open;
+        sdisk_io.close = disk_close;
+        sdisk_io.write = disk_write;
+        sdisk_io.read = disk_read;
+        sdisk_io.seek = disk_seek;
+        sdisk_io.get_offset = disk_get_offset;
+    }
+    return &sdisk_io;
 }

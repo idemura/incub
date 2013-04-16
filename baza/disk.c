@@ -14,41 +14,68 @@
   limitations under the License.
 */
 #include "disk.h"
+#include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 
 struct disk_file {
     int fd;
+    int mode;
 };
 
 static struct disk_io sdisk_io;
 
-static struct file *disk_open(const char *name, int mode)
+static file_t disk_open(const char *name, int mode)
 {
-    int fd = open(name, );
-    return NULL;
+    int flags = 0;
+    if (mode & MODE_READ) {
+        flags |= O_RDONLY;
+    }
+    if (mode & MODE_WRITE) {
+        flags |= O_WRONLY;
+    }
+    if (mode & MODE_CREATE) {
+        mode |= O_CREAT;
+    }
+    if (mode & MODE_TRUNC) {
+        mode |= O_TRUNC;
+    }
+    int fd = open(name, flags, S_IRUSR | S_IWUSR);
+    if (fd < 0) {
+        return NULL;
+    }
+
+    struct disk_file *file = mem_alloc(sizeof(*file));
+    file->fd = fd;
+    file->mode = mode;
+    return file;
 }
 
-static void disk_close(struct file *f)
+static void disk_close(file_t f)
 {
+    if (!f) {
+        return;
+    }
+    struct disk_file *file = f;
+    close(file->fd);
 }
 
-static int disk_write(struct file *f, const void *buf, uofs buf_size, uofs *written)
+static int disk_write(file_t f, const void *buf, uofs buf_size, uofs *written)
 {
     return IO_OK;
 }
 
-static int disk_read(struct file *f, void *buf, uofs buf_size, uofs *read)
+static int disk_read(file_t f, void *buf, uofs buf_size, uofs *read)
 {
     return IO_OK;
 }
 
-static int disk_seek(struct file *f, uofs offset)
+static int disk_seek(file_t f, uofs offset)
 {
     return IO_OK;
 }
 
-static int disk_get_offset(struct file *f, uofs *offset)
+static int disk_get_offset(file_t f, uofs *offset)
 {
     return IO_OK;
 }

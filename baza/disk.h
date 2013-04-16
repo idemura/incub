@@ -5,31 +5,24 @@
 
 #define IO_OK   0
 
-#define MODE_READ   1
-#define MODE_WRITE  2
+#define MODE_READ       0x01
+#define MODE_WRITE      0x02
+#define MODE_CREATE     0x04
+#define MODE_TRUNC      0x08
 
-// File contains data like handle and etc. and pointer to function set working
-// with this file.
-struct file;
+typedef void *file_t;
 
 struct disk_io {
-    struct file *(*open) (const char *name, int mode);
-    void (*close) (struct file *f);
-    int  (*write) (struct file *f, const void *buf,
+    file_t (*open) (const char *name, int mode);
+    void (*close) (file_t f);
+    int  (*write) (file_t f, const void *buf,
             uofs buf_size, uofs *written);
-    int  (*read) (struct file *f, void *buf, uofs buf_size, uofs *read);
-    int  (*seek) (struct file *f, uofs offset);
-    int  (*get_offset) (struct file *f, uofs *offset);
+    int  (*read) (file_t f, void *buf, uofs buf_size, uofs *read);
+    int  (*seek) (file_t f, uofs offset);
+    int  (*get_offset) (file_t f, uofs *offset);
 };
 
-// void set_disk_io(struct disk_io *io);
-// struct file *disk_open(const char *name, int mode);
-// void disk_close(struct file *f);
-// int  disk_write(struct file *f, const void *buf, uofs buf_size, uofs *written);
-// int  disk_read(struct file *f, void *buf, uofs buf_size, uofs *read);
-// int  disk_seek(struct file *f, uofs offset);
-// int  disk_get_offset(struct file *f, uofs *offset);
-
 struct disk_io *get_disk_io();
+struct disk_io *get_memory_io();
 
 #endif

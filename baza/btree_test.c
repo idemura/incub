@@ -16,6 +16,8 @@
 #include "btree.c"
 #include "test.h"
 
+static const char *sbtree_file = "test_btree";
+
 static int uint_cmp(vptr k1, vptr k2)
 {
     return (uofs)k1 - (uofs)k2;
@@ -193,7 +195,7 @@ static bool btree_test_case(vptr *keys, uofs keys_num)
 {
     struct btree_iter iter;
 
-    struct btree *bt = btree_create(NULL, uint_cmp, 2);
+    struct btree *bt = btree_create(NULL, sbtree_file, uint_cmp, 2);
     for (uofs i = 0; i < keys_num; ++i) {
         btree_insert(bt, keys[i], &keys[i]);
         TEST_CHECKR(btree_check_print(bt), NULL);
@@ -273,7 +275,7 @@ void btree_test()
     test_begin("BTree");
     btree_test_find_edge();
 
-    bt = btree_create(NULL, uint_cmp, 2);
+    bt = btree_create(NULL, sbtree_file, uint_cmp, 2);
     btree_destroy(bt);
 
     // Test leaf insertion.

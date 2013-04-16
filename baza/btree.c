@@ -15,7 +15,7 @@
 */
 #include "btree.h"
 #include "stack.h"
-#include "disk.h"
+#include "dstr.h"
 #include <memory.h>
 
 struct btree_node;
@@ -34,7 +34,8 @@ struct btree_node {
 };
 
 struct btree {
-    struct disk_file *file;
+    struct disk_io *io;
+    char *name; // File or directory to serialize
     compare_fn cmpf;
     struct btree_node *root;
     int depth;
@@ -75,7 +76,7 @@ static struct btree_node *btree_new_node(int max_keys)
     return node;
 }
 
-struct btree *btree_create(struct disk_file *file,
+struct btree *btree_create(struct disk_io *io, const char *name,
     compare_fn cmpf, int min_keys)
 {
     if (min_keys < 2) {
@@ -83,7 +84,8 @@ struct btree *btree_create(struct disk_file *file,
     }
     struct btree *bt = mem_alloc(sizeof(*bt));
     if (bt) {
-        bt->file = file;
+        bt->io = io;
+        bt->name = dstr_dup(name);
         bt->cmpf = cmpf;
         bt->min_keys = min_keys;
         bt->max_keys = 2 * min_keys;
@@ -113,6 +115,7 @@ void btree_destroy(struct btree *bt)
         return;
     }
     btree_free_node(bt->root, bt->depth);
+    dstr_free(bt->name);
     mem_free(bt);
 }
 

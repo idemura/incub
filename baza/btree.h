@@ -6,8 +6,7 @@
 */
 
 #include "defs.h"
-
-struct disk_file;
+#include "disk.h"
 
 struct btree;
 struct btree_node;
@@ -17,7 +16,7 @@ struct btree_iter {
     int j;
 };
 
-struct btree *btree_create(struct disk_file *file,
+struct btree *btree_create(struct disk_io *io, const char *name,
     compare_fn cmpf, int min_keys);
 
 void btree_destroy(struct btree *bt);

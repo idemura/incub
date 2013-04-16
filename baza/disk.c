@@ -24,6 +24,7 @@ struct disk_file {
 };
 
 static struct disk_io sdisk_io;
+static struct disk_io smemory_file_io;
 
 static file_t disk_open(const char *name, int mode)
 {
@@ -35,10 +36,10 @@ static file_t disk_open(const char *name, int mode)
         flags |= O_WRONLY;
     }
     if (mode & MODE_CREATE) {
-        mode |= O_CREAT;
+        flags |= O_CREAT;
     }
     if (mode & MODE_TRUNC) {
-        mode |= O_TRUNC;
+        flags |= O_TRUNC;
     }
     int fd = open(name, flags, S_IRUSR | S_IWUSR);
     if (fd < 0) {
@@ -60,14 +61,23 @@ static void disk_close(file_t f)
     close(file->fd);
 }
 
-static int disk_write(file_t f, const void *buf, uofs buf_size, uofs *written)
+static int disk_write(file_t f, const void *buf, uofs buf_size,
+    uofs *bytes_written)
 {
     return IO_OK;
 }
 
-static int disk_read(file_t f, void *buf, uofs buf_size, uofs *read)
+static int disk_read(file_t f, void *buf, uofs buf_size, uofs *bytes_read)
 {
-    return IO_OK;
+    struct disk_file *file = f;
+    ssize_t res = read(file->fd, buf, buf_size);
+    if (res == -1) {
+        *bytes_read = 0;
+        return IO_ERROR;
+    } else {
+        *bytes_read = (uofs)res;
+        return IO_OK;
+    }
 }
 
 static int disk_seek(file_t f, uofs offset)
@@ -90,5 +100,18 @@ struct disk_io *get_disk_io()
         sdisk_io.seek = disk_seek;
         sdisk_io.get_offset = disk_get_offset;
     }
+    return &sdisk_io;
+}
+
+struct disk_io *get_memory_file_io()
+{
+    // if (!smemory_file_io.open) {
+    //     smemory_file_io.open = mem_open;
+    //     smemory_file_io.close = mem_close;
+    //     smemory_file_io.write = mem_write;
+    //     smemory_file_io.read = mem_read;
+    //     smemory_file_io.seek = mem_seek;
+    //     smemory_file_io.get_offset = mem_get_offset;
+    // }
     return &sdisk_io;
 }

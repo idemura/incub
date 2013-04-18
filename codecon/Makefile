@@ -15,14 +15,14 @@ ifeq ($(cfg), debug)
 else
 	CFLAGS += -O2 -DNDEBUG
 endif
-main_src = defs.c main.c
-out_main = main.out
+sol_src = sol.c
+sol_out = sol.out
 
 main:
-	$(CC) $(CFLAGS) $(main_src) -o $(out_main)
+	$(CC) $(CFLAGS) $(sol_src) -o $(sol_out)
 
 run_main: main
-	@./$(out_main)
+	@./$(sol_out)
 
 .PHONY: clean
 clean:

@@ -17,19 +17,19 @@ else
 endif
 main_src = defs.c dstr.c stack.c pque.c disk.c btree.c main.c
 test_src = test.c defs_test.c dstr_test.c stack_test.c pque_test.c disk_test.c btree_test.c main_test.c
-out_main = bin/$(cfg)/baza
-out_test = bin/$(cfg)/baza_test
+main_out = bin/$(cfg)/baza
+test_out = bin/$(cfg)/baza_test
 
 main:
 	@mkdir -p bin/$(cfg)
-	$(CC) $(CFLAGS) $(main_src) -o $(out_main)
+	$(CC) $(CFLAGS) $(main_src) -o $(main_out)
 
 test:
 	@mkdir -p bin/$(cfg)
-	$(CC) $(CFLAGS) $(test_src) -o $(out_test) -DTEST
+	$(CC) $(CFLAGS) $(test_src) -o $(test_out) -DTEST
 
 run_test: test
-	@$(out_test)
+	@$(test_out)
 
 .PHONY: clean
 clean:

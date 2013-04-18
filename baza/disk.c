@@ -62,32 +62,51 @@ static void disk_close(file_t f)
 }
 
 static int disk_write(file_t f, const void *buf, uofs buf_size,
-    uofs *bytes_written)
+    uofs *committed)
 {
-    return IO_OK;
+    assert(f);
+    struct disk_file *file = f;
+    ssize_t res = write(file->fd, buf, buf_size);
+    if (res == -1) {
+        *committed = 0;
+        return IO_ERROR;
+    } else {
+        *committed = (uofs)res;
+        return res == buf_size? IO_OK: IO_ERROR;
+    }
 }
 
 static int disk_read(file_t f, void *buf, uofs buf_size, uofs *bytes_read)
 {
+    assert(f);
     struct disk_file *file = f;
     ssize_t res = read(file->fd, buf, buf_size);
     if (res == -1) {
-        *bytes_read = 0;
+        *committed = 0;
         return IO_ERROR;
     } else {
-        *bytes_read = (uofs)res;
+        *committed = (uofs)res;
         return IO_OK;
     }
 }
 
-static int disk_seek(file_t f, uofs offset)
+static int disk_seek(file_t f, uofs offset, int origin, uofs *new_ofs)
 {
+    const int map_origin[] = {
+        SEEK_SET, SEEK_CUR, SEEK_END
+    };
+    assert(f);
+    struct disk_file *file = f;
+    off_t ofs = lseek(file->fd, offset, map_origin[origin]);
+    if (new_ofs) {
+        *new_ofs = ofs;
+    }
     return IO_OK;
 }
 
 static int disk_get_offset(file_t f, uofs *offset)
 {
-    return IO_OK;
+    return disk_seek(f, 0, ORIGIN_CUR, offset);
 }
 
 struct disk_io *get_disk_io()

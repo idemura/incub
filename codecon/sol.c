@@ -52,10 +52,9 @@ int powmod(int x, int p)
 
 int is_comparable(int n, char *m1, char *m2)
 {
-    int i;
     int ls = 0;
     int gt = 0;
-    for (i = 0; i < n; ++i) {
+    for (int i = 0; i < n; ++i) {
         ls += m1[i] <= m2[i];
         gt += m1[i] >= m2[i];
     }

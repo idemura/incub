@@ -50,19 +50,6 @@ int powmod(int x, int p)
     return acc;
 }
 
-int mulsum_mod(int a1, int a2, int b1, int b2)
-{
-    long long a12 = (long long)a1 * (long long)a2;
-    long long b12 = (long long)b1 * (long long)b2;
-    long long sum = a12 + b12;
-    return (int)(sum % MOD);
-}
-
-int combinations(int n)
-{
-    return powmod('9' - '0' + 1, n);
-}
-
 int is_comparable(int n, char *m1, char *m2)
 {
     int ls = 0;
@@ -84,22 +71,33 @@ int check_step(int n, char *m1, char *m2, int i)
         return !c;
     }
 
+    int acc = 0;
+
     if (m1[i] == '?' && m2[i] == '?') {
-        printf("Two ? in pattern, exit\n");
-        exit(-1);
+        for (int j = '0'; j <= '9'; ++j) {
+            m1[i] = j;
+            for (int k = '0'; k <= '9'; ++k) {
+                m2[i] = k;
+                acc += check_step(n, m1, m2, i + 1);
+            }
+        }
+        // Important to return ? back
+        m1[i] = m2[i] = '?';
+        return acc;
     }
+
     if (m1[i] != '?' && m2[i] != '?') {
         return check_step(n, m1, m2, i + 1);
     }
 
     char *p = (m1[i] == '?'? m1: m2) + i;
-    int acc = 0;
     for (int j = '0'; j <= '9'; ++j) {
         *p = j;
         acc += check_step(n, m1, m2, i + 1);
     }
-    // Important to return -1 back
+    // Important to return ? back
     *p = '?';
+
     return acc;
 }
 
@@ -110,22 +108,27 @@ int check(int n, char *m1, char *m2)
 
 int count(int n, char *m1, char *m2)
 {
-    printf("m1 %s\nm2 %s\n", m1, m2);
+    // printf("m1 %s\nm2 %s\nn = %d\n", m1, m2, n);
 
     int gt = 1, ls = 1;
     int no_q = 0; // Need this because mod arithmetics.
     int comb = 1;
+    int q2 = 0;
+    int eq = 1;
     for (int i = 0; i < n; ++i) {
         int qa = m1[i] == '?';
         int qb = m2[i] == '?';
         if (qa && qb) {
+            q2++;
             ls = mulmod(ls, 55);
             gt = mulmod(gt, 55);
             comb = mulmod(comb, 100);
         } else if (qa || qb) {
             // ls_i and gt_i are less or equal and greater or equal count.
-            int ls_i = (m1[i] == '?' ? m2[i] - '0' : '9' - m1[i]) + 1;
-            int gt_i = ('9' - '0') - ls_i + 1;
+            int ls_i = m1[i] == '?' ? m2[i] - '0' : '9' - m1[i];
+            int gt_i = ('9' - '0') - ls_i;
+            ls_i++;
+            gt_i++;
             ls = mulmod(ls, ls_i);
             gt = mulmod(gt, gt_i);
             comb = mulmod(comb, 10);
@@ -133,6 +136,7 @@ int count(int n, char *m1, char *m2)
             no_q++;
             int diff = m1[i] - m2[i];
             if (diff != 0) {
+                eq = 0;
                 if (diff < 0) {
                     gt = 0;
                 } else {
@@ -143,18 +147,16 @@ int count(int n, char *m1, char *m2)
     }
 
     if (no_q == n) {
-        // This is pair without wildcard. Answer depends on if this pair
-        // is comparable itself or not. If `ls` and `gt` are zeroes this pair
+        // This is pair without wild card. Answer depends on if this pair
+        // is comparable itself or not. If `ls` and `gt` are zeros this pair
         // is incomparable.
         return ls == 0 && gt == 0 ? 1 : 0;
     }
 
-    // Equal pair counted wtice if we have both less and greater combinations.
-    int eq_twice = ls && gt;
-
-    // Subtract 1 because fully equal pair is both counted in `ls` and `gt`.
-    int comparable = sub_mod(addmod(ls, gt), eq_twice);
-    return modsub(comb, comparable);
+    // Equal pair counted twice in some combinations.
+    int twice = (q2 ? powmod(10, q2) : 1) * eq;
+    int comparable = submod(addmod(ls, gt), twice);
+    return submod(comb, comparable);
 }
 
 int main(int argc, char **argv)
@@ -171,11 +173,11 @@ int main(int argc, char **argv)
     fscanf(fin, " %s", m2);
     int n_count = count(n, m1, m2);
     printf("%d\n", n_count);
-    int n_check = check(n, m1, m2);
-    printf("\ncheck %d\n", n_check);
-    if (n_check == n_count) {
-        printf("OK!\n");
-    }
+    // int n_check = check(n, m1, m2);
+    // printf("check %d\n", n_check);
+    // if (n_check == n_count) {
+    //     printf("OK!\n");
+    // }
     free(m1);
     free(m2);
     close_input(fin);

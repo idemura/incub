@@ -2,12 +2,12 @@ default: main
 
 RM = rm -f
 ifeq ($(shell uname), Darwin)
-	CC = clang
+	CC = gcc
 else
 	CC = gcc
 endif
 DISABLE_WARNINGS = -Wno-unused-function
-CFLAGS = -Wall -std=c99 -pedantic $(DISABLE_WARNINGS)
+CFLAGS = -Wall -std=c89 -pedantic $(DISABLE_WARNINGS)
 LFLAGS = -Wall
 cfg ?= debug
 ifeq ($(cfg), debug)

@@ -1,8 +1,12 @@
 #include <stdlib.h>
 #include <memory.h>
 #include <stdio.h>
+#include <assert.h>
 
 const int MOD = 1000000007;
+
+#define DIG0 '0'
+#define DIG9 '9'
 
 FILE *get_input(int argc, char **argv);
 void close_input(FILE *fin);
@@ -55,6 +59,18 @@ inline static int mulmod(int x, int y)
     }
 }
 
+int powmod(int x, int p)
+{
+    int acc = 1;
+    for (; p; p >>= 1) {
+        if (p & 1) {
+            acc = mulmod(acc, x);
+        }
+        x = mulmod(x, x);
+    }
+    return acc;
+}
+
 int mulsum_mod(int a1, int a2, int b1, int b2)
 {
     long long a12 = (long long)a1 * (long long)a2;
@@ -63,27 +79,30 @@ int mulsum_mod(int a1, int a2, int b1, int b2)
     return (int)(sum % MOD);
 }
 
+int combinations(int n)
+{
+    return powmod(DIG9 - DIG0 + 1, n);
+}
+
 int is_comparable(int n, char *m1, char *m2)
 {
     int ls = 0;
     int gt = 0;
     for (int i = 0; i < n; ++i) {
-        if (m1[i] != m2[i]) {
-            m1[i] < m2[i]? ls++: gt++;
-            if (ls && gt) {
-                printf("%s\n%s not comparable\n", m1, m2);
-                return 0;
-            }
-        }
+        ls += m1[i] <= m2[i];
+        gt += m1[i] >= m2[i];
     }
-    printf("%s\n%s comparable\n", m1, m2);
-    return 1;
+    return ls == n || gt == n;
 }
 
 int check_step(int n, char *m1, char *m2, int i)
 {
     if (i == n) {
-        return !is_comparable(n, m1, m2);
+        int c = is_comparable(n, m1, m2);
+        // if (c) {
+        //     printf("%s\n%s\n\n", m1, m2);
+        // }
+        return !c;
     }
 
     if (m1[i] == '?' && m2[i] == '?') {
@@ -96,7 +115,7 @@ int check_step(int n, char *m1, char *m2, int i)
 
     char *p = (m1[i] == '?'? m1: m2) + i;
     int acc = 0;
-    for (int j = '0'; j <= '9'; ++j) {
+    for (int j = DIG0; j <= DIG9; ++j) {
         *p = j;
         acc += check_step(n, m1, m2, i + 1);
     }
@@ -112,6 +131,7 @@ int check(int n, char *m1, char *m2)
 
 int count(int n, char *m1, char *m2)
 {
+    printf("m1 %s\nm2 %s\n", m1, m2);
     // Classify first.
     int gt_num = 0, ls_num = 0, eq_num = 0, q1 = 0, q2 = 0;
     for (int i = 0; i < n; ++i) {
@@ -158,15 +178,6 @@ int count(int n, char *m1, char *m2)
         }
     }
 
-    // int any_q2 = 1;
-    // int m = 100;
-    // for (int p = q2; p; p >>= 1) {
-    //     if (p & 1) {
-    //         any_q2 = mulmod(any_q2, m);
-    //     }
-    //     m = mulmod(m, m);
-    // }
-
     int *any = malloc(sizeof(*any) * q1);
     any[q1 - 1] = 1;
     for (int i = q1 - 1; i--;) {
@@ -180,45 +191,32 @@ int count(int n, char *m1, char *m2)
     printf(" ]\n");
 
     // So, first `q1` are digit-? pairs (or vice versa).
-    int gt = 1, ls = 1, total = 0;
-    int ls_prev = 0;
-    int gt_prev = 0;
+    int gt = 1, ls = 1;
     for (int i = 0; i < q1; ++i) {
         int ls_i;
         if (m1[i] == '?') {
-            ls_i = m2[i] - '0';
+            ls_i = m2[i] - DIG0;
         } else {
-            ls_i = '9' - m1[i];
+            ls_i = DIG9 - m1[i];
         }
-        int gt_i = 9 - ls_i;
-        printf("ls_i %d gt_i %d\n", ls_i, gt_i);
-        if (ls_i > 1)
-            ls = mulmod(ls, ls_i);
-        if (gt_i > 1)
-            gt = mulmod(gt, gt_i);
-        int dn = mulmod(mulsum_mod(ls_prev, gt_i, gt_prev, ls_i), any[i]);
-        total += dn;
-        printf("total +%d -> %d\n  any[i] %d\n  ls_prev %d\n  gt_prev %d\n",
-            dn, total,
-            any[i],
-            ls_prev, gt_prev);
-        ls_prev = ls;
-        gt_prev = gt;
+        int gt_i = (DIG9 - DIG0) - ls_i;
+        // ls_i and gt_i are less or equal and greater or equal count.
+        ls_i++;
+        gt_i++;
+
+        ls = mulmod(ls, ls_i);
+        gt = mulmod(gt, gt_i);
     }
+    printf("ls %d gt %d\n", ls, gt);
 
-    // // And now we should count ?-? pairs.
-    // for (int i = 0; i < q2; ++i) {
-    //     ls = mulmod(ls, 45);
-    //     gt = mulmod(gt, 45);
-    //     total +=
-    // }
-
-    return total;
+    // Subtract 1 because fully equal pair is both counted in `ls` and `gt`.
+    int comparable = ls + gt - 1;
+    return combinations(n) - comparable;
 }
 
 int main(int argc, char **argv)
 {
-    FILE *fin = get_input(argc, argv);
+        FILE *fin = get_input(argc, argv);
     int n;
     fscanf(fin, " %d", &n);
     if (n <= 0) {
@@ -228,9 +226,13 @@ int main(int argc, char **argv)
     fscanf(fin, " %s", m1);
     char *m2 = malloc(n + 1);
     fscanf(fin, " %s", m2);
-    int answer = count(n, m1, m2);
-    printf("%d\n", answer);
-    printf("check %d\n", check(n, m1, m2));
+    int n_count = count(n, m1, m2);
+    printf("%d\n", n_count);
+    int n_check = check(n, m1, m2);
+    printf("\ncheck %d\n", n_check);
+    if (n_check == n_count) {
+        printf("OK!\n");
+    }
     free(m1);
     free(m2);
     close_input(fin);

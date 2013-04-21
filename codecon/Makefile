@@ -2,7 +2,7 @@ default: main
 
 RM = rm -f
 ifeq ($(shell uname), Darwin)
-	CC = gcc
+	CC = clang
 else
 	CC = gcc
 endif

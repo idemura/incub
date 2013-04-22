@@ -5,7 +5,7 @@
 
 const int MOD = 1000000007;
 
-FILE *get_input(int argc, char **argv);
+FILE *open_input(int argc, char **argv);
 void close_input(FILE *fin);
 
 int addmod(int x, int y)
@@ -157,16 +157,15 @@ int main(int argc, char **argv)
     char *m1 = 0;
     char *m2 = 0;
     int n_count = 0;
-    int n;
-    FILE *fin = get_input(argc, argv);
-    fscanf(fin, " %d", &n);
+    int n = 0;
+    scanf(" %d", &n);
     if (n <= 0) {
         return -1;
     }
     m1 = malloc(n + 1);
-    fscanf(fin, " %s", m1);
+    scanf(" %s", m1);
     m2 = malloc(n + 1);
-    fscanf(fin, " %s", m2);
+    scanf(" %s", m2);
     n_count = count(n, m1, m2);
     printf("%d\n", n_count);
     /*
@@ -178,30 +177,5 @@ int main(int argc, char **argv)
     */
     free(m1);
     free(m2);
-    close_input(fin);
     return 0;
-}
-
-FILE *get_input(int argc, char **argv)
-{
-    int i;
-    for (i = 0; i < argc; ++i) {
-        if (strcmp(argv[i], "-f") == 0) {
-            if (i + 1 < argc) {
-                FILE *f = fopen(argv[i + 1], "rt");
-                if (f) {
-                    return f;
-                }
-            }
-            break;
-        }
-    }
-    return stdin;
-}
-
-void close_input(FILE *fin)
-{
-    if (fin && fin != stdin) {
-        fclose(fin);
-    }
 }

@@ -15,7 +15,7 @@ ifeq ($(cfg), debug)
 else
 	CFLAGS += -O2 -DNDEBUG
 endif
-sol_src = sol.c
+sol_src = sol.c rb.c
 sol_out = sol.out
 
 main:

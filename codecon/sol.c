@@ -2,8 +2,10 @@
 #include <memory.h>
 #include <stdio.h>
 #include <assert.h>
+#include <search.h>
 
 #define array_of(a) (sizeof(a) / sizeof(a[0]))
+
 #define GEN_MAX 200000
 
 struct op {

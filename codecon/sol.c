@@ -21,29 +21,7 @@ void no_free(void *p) {
 
 int main(int argc, char **argv)
 {
-    int t = 0, sx, sy, ex, ey;
-    int i, nx, ny;
-    char *wind = 0;
-    char chr_x, chr_y;
-
-    scanf("%d %d %d %d %d", &t, &sx, &sy, &ex, &ey);
-    wind = malloc((t + 1) * sizeof(*wind));
-    scanf(" %s", wind);
-
-    chr_x = ex > sx? 'E': 'W';
-    nx = abs(ex - sx);
-    chr_y = ey > sy? 'N': 'S';
-    ny = abs(ey - sy);
-    for (i = 0; i < t; ++i) {
-        if (wind[i] == chr_x && nx > 0)
-            nx--;
-        if (wind[i] == chr_y && ny > 0)
-            ny--;
-        if (nx == 0 && ny == 0) {
-            break;
-        }
-    }
-    free(wind);
-    printf("%d\n", i < t? i + 1: -1);
+    int t = 0;
+    scanf("%d", &n);
     return 0;
 }

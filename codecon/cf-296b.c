@@ -1,12 +1,16 @@
-#include <stdlib.h>
-#include <memory.h>
-#include <stdio.h>
+#define _GNU_SOURCE
 #include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+#include <search.h>
+#include <stdio.h>
+
+#define array_of(a) (sizeof(a) / sizeof(a[0]))
+
+typedef void *rbtree_t;
+typedef long long int lli;
 
 const int MOD = 1000000007;
-
-FILE *open_input(int argc, char **argv);
-void close_input(FILE *fin);
 
 int addmod(int x, int y)
 {

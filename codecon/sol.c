@@ -21,7 +21,7 @@ void no_free(void *p) {
 
 int main(int argc, char **argv)
 {
-    int t = 0;
+    int n = 0;
     scanf("%d", &n);
     return 0;
 }

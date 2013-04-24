@@ -1,2 +1,2 @@
 #!/bin/sh
-cat in | ./sol.out
+make STD=c89 && cat in | ./sol.out

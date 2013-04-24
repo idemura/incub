@@ -86,14 +86,14 @@ void pque_test()
     uofs keys_sorted[] = {
         5, 10, 15, 20, 30
     };
-    for (uofs i = 0; i < ARRAY_SIZE(keys); ++i) {
+    for (uofs i = 0; i < ARRAY_SIZEOF(keys); ++i) {
         pque_insert(pq, (vptr)keys[i]);
         pque_check_print(pq);
         TEST_CHECKM(pque_size(pq) == i + 1,
             "pque_size %zu (%zu expected)",
             pque_size(pq), i + 1);
     }
-    for (uofs i = 0; i < ARRAY_SIZE(keys); ++i) {
+    for (uofs i = 0; i < ARRAY_SIZEOF(keys); ++i) {
         uofs key_pop = (uofs)pque_pop(pq);
         TEST_CHECKM(key_pop == keys_sorted[i],
             "pque_pop %zu (%zu expected)",

@@ -5,7 +5,7 @@
 #include <search.h>
 #include <stdio.h>
 
-#define array_of(a) (sizeof(a) / sizeof(a[0]))
+#define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
 
 typedef void *rbtree_t;
 typedef long long int lli;

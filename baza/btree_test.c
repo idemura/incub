@@ -282,35 +282,35 @@ void btree_test()
     uofs keys0[] = {
         20, 80, 60, 40
     };
-    btree_test_case((vptr*)keys0, ARRAY_SIZE(keys0));
+    btree_test_case((vptr*)keys0, ARRAY_SIZEOF(keys0));
 
     // Test one level.
     uofs keys1[] = {
         20, 80, 60, 40, 10
     };
-    btree_test_case((vptr*)keys1, ARRAY_SIZE(keys1));
+    btree_test_case((vptr*)keys1, ARRAY_SIZEOF(keys1));
     uofs keys2[] = {
         20, 80, 60, 40, 30
     };
-    btree_test_case((vptr*)keys2, ARRAY_SIZE(keys2));
+    btree_test_case((vptr*)keys2, ARRAY_SIZEOF(keys2));
     uofs keys3[] = {
         20, 80, 60, 40, 50
     };
-    btree_test_case((vptr*)keys3, ARRAY_SIZE(keys3));
+    btree_test_case((vptr*)keys3, ARRAY_SIZEOF(keys3));
     uofs keys4[] = {
         20, 80, 60, 40, 70
     };
-    btree_test_case((vptr*)keys4, ARRAY_SIZE(keys4));
+    btree_test_case((vptr*)keys4, ARRAY_SIZEOF(keys4));
     uofs keys5[] = {
         20, 80, 60, 40, 90
     };
-    btree_test_case((vptr*)keys5, ARRAY_SIZE(keys5));
+    btree_test_case((vptr*)keys5, ARRAY_SIZEOF(keys5));
 
     // Test two levels.
     uofs keys6[] = {
         20, 80, 60, 40, 10, 30, 70, 90, 15, 85, 32, 35, 62, 65, 38, 61, 36
     };
-    btree_test_case((vptr*)keys6, ARRAY_SIZE(keys6));
+    btree_test_case((vptr*)keys6, ARRAY_SIZEOF(keys6));
 
     test_end();
 }

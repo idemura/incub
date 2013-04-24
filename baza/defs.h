@@ -10,7 +10,7 @@
 #include <sys/time.h>
 #include <stdio.h>
 
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+#define ARRAY_SIZEOF(x) (sizeof(x) / sizeof((x)[0]))
 #define FIELD_SIZEOF(s, f) (sizeof(((s*)0)->f))
 
 #ifdef NDEBUG

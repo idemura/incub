@@ -18,34 +18,9 @@ int int_cmpf(const void *p1, const void *p2) {
 void nothing(void *p) {
 }
 
-
 int main(int argc, char **argv)
 {
-    int n = 0, i;
-    int nmax;
-    int *a = 0;
-    int count[1000];
-    int yes = 1;
-
+    int n = 0;
     scanf("%d", &n);
-    a = malloc(sizeof(int) * n);
-    for (i = 0; i < n; ++i) {
-        scanf(" %d", &a[i]);
-    }
-
-    nmax = (n + 1) / 2;
-    memset(count, 0, sizeof(count));
-    for (i = 0; i < n; ++i) {
-        int q = ++count[a[i] - 1];
-        if (q > nmax) {
-            yes = 0;
-            break;
-        }
-    }
-
-    int op = 10;
-
-    free(a);
-    printf(yes? "YES\n": "NO\n");
     return 0;
 }

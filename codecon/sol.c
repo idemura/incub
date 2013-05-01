@@ -43,6 +43,7 @@ void linked_cmpts(alist *al, int n, alist *lc, int *lc_n)
     int i;
 
     memset(visit, 0, sizeof visit);
+    *lc_n = 0;
     for (i = 0; i < n; ++i) {
         if (!visit[i]) {
             dfs(i, al, visit, lc + *lc_n);
@@ -97,6 +98,9 @@ int main(int argc, char **argv)
     int al_n = 0, lc_n = 0, m = 0, i, j;
     alist al[SIZE_MAX]; /* adjacency list of initial graph */
     alist lc[SIZE_MAX]; /* linked components */
+
+    memset(al, 0, sizeof al);
+    memset(lc, 0, sizeof al);
 
     scanf("%d%d", &al_n, &m);
     for (i = 0; i < al_n; ++i) {

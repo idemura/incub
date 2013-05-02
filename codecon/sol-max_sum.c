@@ -1,3 +1,32 @@
+/*
+  From http://uva.onlinejudge.org/
+  Problem #108: Maximum sum
+
+  Given a 2-dimensional array of positive and negative integers, find the
+  sub-rectangle with the largest sum. The sum of a rectangle is the sum of all
+  the elements in that rectangle. In this problem the sub-rectangle with the
+  largest sum is referred to as the maximal sub-rectangle. A sub-rectangle is
+  any contiguous sub-array of size N or greater located within the whole array.
+
+  Input and Output
+  The input consists of an N-by-N array of integers. The input begins with a
+  single positive integer N on a line by itself indicating the size of the
+  square two dimensional array. This is followed by N^2 integers separated by
+  white-space (newlines and spaces). These N^2 integers make up the array in
+  row-major order. N may be as large as 100. The numbers in the array will be
+  in the range [-127, 127].
+
+  The output is the sum of the maximal sub-rectangle.
+
+  Sample Input
+    4
+     0 -2 -7  0
+     9  2 -6  2
+    -4  1 -4  1
+    -1  8  0 -2
+  Sample Output
+    15
+*/
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>

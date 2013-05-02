@@ -24,6 +24,18 @@ int mmul(int a, int b)
     return (int)( ((lli)a * (lli)b) % MOD );
 }
 
+int mpow(int a, int p)
+{
+    int x = 1;
+    for (; p; p >>= 1) {
+        if (p & 1) {
+            x = mmul(x, a);
+        }
+        a = mmul(a, a);
+    }
+    return x;
+}
+
 int mrev(int a)
 {
     /* Performs Euler's algorithm for find Bezout's coefficients. Assume `a` is
@@ -85,28 +97,18 @@ int digit_lower_bound(int d, int pos, int lo, int hi)
 
 int cnk(int n, int k)
 {
-    // printf("cnk n=%d k=%d\n", n, k);
-    /* Dynamic programming is here. */
-    if (k == 0 && n >= 0) {
-        return 1;
-    }
-    if (n == 0) {
-        return 0;
-    }
-    return madd(cnk(n - 1, k), cnk(n - 1, k - 1));
+    return cnk_table[k];
 }
 
 int *create_cnk_table(int n)
 {
-    int *t = malloc((n + 1) * sizeof *t);
+    int *t = malloc(n * sizeof *t);
     int i;
     t[0] = 1;
-    for (i = 1; i <= n; ++i) {
+    for (i = 1; i < n; ++i) {
         int r = mrev(i);
         t[i] = mmul(mmul(t[i - 1], n - i), r);
-        printf("%d ", t[i]);
     }
-    printf("\n");
     return t;
 }
 
@@ -114,9 +116,7 @@ int solve(int pos, int lo, int hi);
 
 int solve_digit(int d, int pos, int lo, int hi)
 {
-    printf("solve for digit %d\n", d);
     int d_lo = digit_lower_bound(d, pos, lo, hi);
-    printf("d_lo %d -> %d\n", d_lo, get_num(d_lo));
     if (nth_digit(pos, get_num(d_lo)) == d) {
         int d_hi = digit_lower_bound(d + 1, pos, lo, hi);
         return solve(pos - 1, d_lo, d_hi);
@@ -126,27 +126,21 @@ int solve_digit(int d, int pos, int lo, int hi)
 
 int solve(int pos, int lo, int hi)
 {
+    int i, a_res, b_res;
+
     if (lo == hi) {
-        printf("lo == hi: %d %d\n", lo, hi);
         return 0;
     }
     if (pos < 0) {
-        printf("rec leaf, lo=%d hi=%d return %d\n", lo, hi, hi - lo);
-        // int count = hi - lo;
-        printf("sums of long numbers:");
         int count = 0;
-        for (int i = lo; i < hi; ++i) {
-            printf("cnk of n=%d i=%d\n", n, i);
-            int ci = cnk(n, i);
-            count = madd(count, ci);
-            printf(" %d", get_num(i));
+        for (i = lo; i < hi; ++i) {
+            count = madd(count, cnk(n, i));
         }
-        printf("\n");
         return count;
     }
 
-    int a_res = solve_digit(a, pos, lo, hi);
-    int b_res = solve_digit(b, pos, lo, hi);
+    a_res = solve_digit(a, pos, lo, hi);
+    b_res = solve_digit(b, pos, lo, hi);
     return madd(a_res, b_res);
 }
 
@@ -170,6 +164,7 @@ int pow10(int n)
 int main(int argc, char **argv)
 {
     int combinations = 0;
+    int min_sum, lmin, max_sum, lmax;
 /*
 #ifndef ONLINE_JUDGE
      freopen("in", "r", stdin);
@@ -182,26 +177,21 @@ int main(int argc, char **argv)
         b = temp;
     }
 
-    cnk_table = create_cnk_table(4);
-    return 0;
+    cnk_table = create_cnk_table(n + 1);
 
     /* Simplify a bit by reducing leading digits that are zeroes */
-    int min_sum = a * n;
-    int max_sum = b * n;
-    printf("min_sum %d max_sum %d\n", a * n, max_sum);
-    int lmin = high_digit_pos(min_sum);
-    int lmax = high_digit_pos(max_sum);
-    printf("lmin %d lmax %d\n", lmin, lmax);
+    min_sum = a * n;
+    max_sum = b * n;
+    lmin = high_digit_pos(min_sum);
+    lmax = high_digit_pos(max_sum);
     if (lmin != lmax) {
         int c1, c2;
         div_t qr = div(pow10(lmax) - a * n, b - a);
         int k = qr.rem ? qr.quot + 1 : qr.quot;
-        printf("%d %d %d\n", get_num(k - 1), get_num(k), get_num(k + 1));
         c1 = solve(lmin, 0, k);
         c2 = solve(lmax, k, n + 1);
         combinations = madd(c1, c2);
     } else {
-        printf("starting from pos %d\n", lmin);
         combinations = solve(lmin, 0, n + 1);
     }
 

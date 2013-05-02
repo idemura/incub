@@ -6,7 +6,7 @@ ifeq ($(shell uname), Darwin)
 else
 	CC = gcc
 endif
-DISABLE_WARNINGS = -Wno-unused-function
+DISABLE_WARNINGS =
 STD ?= c99
 CFLAGS = -Wall -std=$(STD) -pedantic $(DISABLE_WARNINGS) -D_GNU_SOURCE
 LFLAGS = -Wall

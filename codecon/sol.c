@@ -8,7 +8,14 @@
 
 #define MOD 1000000007
 
+typedef long long int lli;
+
 int a, b, n;
+
+int madd(int a, int b)
+{
+    return (int)( ((lli)a + (lli)b) % MOD );
+}
 
 /* Gets nth digit of `n` in decimal form. Digits counted from the rightmost,
    least significant, which is 0
@@ -33,11 +40,6 @@ int get_num(int k)
 
 int digit_lower_bound(int d, int pos, int lo, int hi)
 {
-    // int dlo = nth_digit(pos, get_num(lo));
-    // int dhi = nth_digit(pos, get_num(hi));
-    // if (nlo < d && nhi < d || nlo > d && nhi > d) {
-    //     return -1;
-    // }
     while (lo < hi) {
         int mid = (lo + hi) / 2;
         int nmid = get_num(mid);
@@ -51,10 +53,64 @@ int digit_lower_bound(int d, int pos, int lo, int hi)
     return lo;
 }
 
+int Cnk(int k, int n)
+{
+    /* Dynamic programming is here. */
+    if (k == 0 && n >= 0) {
+        return 1;
+    }
+    if (n == 0) {
+        return 0;
+    }
+    return madd(Cnk(k, n - 1), Cnk(k - 1, n - 1));
+}
+
+int solve(int pos, int lo, int hi);
+
+int solve_digit(int d, int pos, int lo, int hi)
+{
+    printf("solve for digit %d\n", d);
+    int d_lo = digit_lower_bound(d, pos, lo, hi);
+    printf("d_lo %d -> %d\n", d_lo, get_num(d_lo));
+    if (nth_digit(pos, get_num(d_lo)) == d) {
+        int d_hi = digit_lower_bound(d + 1, pos, lo, hi);
+        return solve(pos - 1, d_lo, d_hi);
+    }
+    return 0;
+}
+
+int solve(int pos, int lo, int hi)
+{
+    if (lo == hi) {
+        printf("lo == hi: %d %d\n", lo, hi);
+        return 0;
+    }
+    if (pos < 0) {
+        printf("rec leaf, lo=%d hi=%d return %d\n", lo, hi, hi - lo);
+        // int count = hi - lo;
+        printf("sums of long numbers:");
+        int count = 0;
+        for (int i = lo; i < hi; ++i) {
+            int ck = Cnk(i, n);
+            count = madd(count, ck);
+            printf(" %d", get_num(i));
+        }
+        printf("\n");
+        return count;
+    }
+
+    int a_res = solve_digit(a, pos, lo, hi);
+    int b_res = solve_digit(b, pos, lo, hi);
+    return madd(a_res, b_res);
+}
+
 int main(int argc, char **argv)
 {
-    int i, j;
-
+/*
+#ifndef ONLINE_JUDGE
+     freopen("in", "r", stdin);
+ #endif
+*/
     scanf("%d%d%d", &a, &b, &n);
     if (a > b) {
         int temp = a;
@@ -62,22 +118,15 @@ int main(int argc, char **argv)
         b = temp;
     }
 
-    // Min and max sum of digits
-    int min_sum = a * n;
+    /* Simplify a bit by reducing leading digits that are zeroes */
     int max_sum = b * n;
-    a = 3;
-    b = 7;
-    n = 14;
-    int lb = digit_lower_bound(5, 1, 0, n + 1);
-    printf("lb %d\n", lb);
-    printf("this num is %d\n", get_num(lb));
-    printf("prev num is %d\n", get_num(lb - 1));
-    printf("next num is %d\n", get_num(lb + 1));
+    int pos = 6;
+    while (nth_digit(pos, max_sum) == 0) {
+        pos--;
+    }
 
-    printf("%d\n", nth_digit(123, 0));
-    printf("%d\n", nth_digit(123, 1));
-    printf("%d\n", nth_digit(123, 2));
-    printf("%d\n", nth_digit(123, 3));
-
+    printf("starting from pos %d\n", pos);
+    int combinations = solve(pos, 0, n + 1);
+    printf("%d\n", combinations);
     return 0;
 }

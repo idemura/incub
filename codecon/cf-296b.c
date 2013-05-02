@@ -1,4 +1,3 @@
-#define _GNU_SOURCE
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,29 +12,29 @@ typedef long long int lli;
 
 const int MOD = 1000000007;
 
-int addmod(int x, int y)
+int madd(int x, int y)
 {
     return ((long long)x + (long long)y) % MOD;
 }
 
-int submod(int x, int y)
+int msub(int x, int y)
 {
     return ((long long)x - (long long)y + MOD) % MOD;
 }
 
-int mulmod(int x, int y)
+int mmul(int x, int y)
 {
     return ((long long)x * (long long)y) % MOD;
 }
 
-int powmod(int x, int p)
+int mpow(int x, int p)
 {
     int acc = 1;
     for (; p; p >>= 1) {
         if (p & 1) {
-            acc = mulmod(acc, x);
+            acc = mmul(acc, x);
         }
-        x = mulmod(x, x);
+        x = mmul(x, x);
     }
     return acc;
 }
@@ -117,18 +116,18 @@ int count(int n, char *m1, char *m2)
         int qb = m2[i] == '?';
         if (qa && qb) {
             q2++;
-            ls = mulmod(ls, 55);
-            gt = mulmod(gt, 55);
-            comb = mulmod(comb, 100);
+            ls = mmul(ls, 55);
+            gt = mmul(gt, 55);
+            comb = mmul(comb, 100);
         } else if (qa || qb) {
             /* ls_i and gt_i are less or equal and greater or equal count. */
             int ls_i = m1[i] == '?' ? m2[i] - '0' : '9' - m1[i];
             int gt_i = ('9' - '0') - ls_i;
             ls_i++;
             gt_i++;
-            ls = mulmod(ls, ls_i);
-            gt = mulmod(gt, gt_i);
-            comb = mulmod(comb, 10);
+            ls = mmul(ls, ls_i);
+            gt = mmul(gt, gt_i);
+            comb = mmul(comb, 10);
         } else {
             int diff = m1[i] - m2[i];
             if (diff != 0) {
@@ -152,9 +151,9 @@ int count(int n, char *m1, char *m2)
     }
 
     /* Equal pair counted twice in some combinations. */
-    twice = (q2 ? powmod(10, q2) : 1) * eq;
-    comparable = submod(addmod(ls, gt), twice);
-    return submod(comb, comparable);
+    twice = (q2 ? mpow(10, q2) : 1) * eq;
+    comparable = msub(madd(ls, gt), twice);
+    return msub(comb, comparable);
 }
 
 int main(int argc, char **argv)

@@ -8,7 +8,7 @@ else
 endif
 DISABLE_WARNINGS = -Wno-unused-function
 STD ?= c99
-CFLAGS = -Wall -std=$(STD) -pedantic $(DISABLE_WARNINGS)
+CFLAGS = -Wall -std=$(STD) -pedantic $(DISABLE_WARNINGS) -D_GNU_SOURCE
 LFLAGS = -Wall
 cfg ?= debug
 ifeq ($(cfg), debug)

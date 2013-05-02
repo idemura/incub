@@ -1,2 +1,0 @@
-#!/bin/sh
-make STD=c99 && cat in | ./sol.out

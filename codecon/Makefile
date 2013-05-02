@@ -1,4 +1,4 @@
-default: main
+default: sol
 
 RM = rm -f
 ifeq ($(shell uname), Darwin)
@@ -18,12 +18,14 @@ else
 endif
 sol_src = sol.c rb.c
 sol_out = sol.out
+lib_src = lib.c
+lib_out = lib.out
 
-main:
+sol:
 	$(CC) $(CFLAGS) $(sol_src) -o $(sol_out)
 
-run_main: main
-	@./$(sol_out)
+lib:
+	$(CC) $(CFLAGS) $(lib_src) -o $(lib_out)
 
 .PHONY: clean
 clean:

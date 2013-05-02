@@ -67,6 +67,20 @@ void ext_euclid(int a, int b, int *gcd, int *x_out, int *y_out)
     }
 }
 
+int is_prime(int n)
+{
+    if (n <= 2) {
+        return 1;
+    }
+    int f = 2;
+    div_t qr = div(n, f);
+    while (qr.rem != 0 && qr.quot > f) {
+        f++;
+        qr = div(n, f);
+    }
+    return qr.rem != 0;
+}
+
 /* Revert by modulo with 2 ways:
     1) ext_euclid(x, MOD, &gcd, &inv, 0);
     2) inv = mpow(x, MOD - 2), by Euler theorem, phi(MOD) = MOD - 2

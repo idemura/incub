@@ -12,10 +12,16 @@
 typedef long long int lli;
 
 int a, b, n;
+int *cnk_table;
 
 int madd(int a, int b)
 {
     return (int)( ((lli)a + (lli)b) % MOD );
+}
+
+int mmul(int a, int b)
+{
+    return (int)( ((lli)a * (lli)b) % MOD );
 }
 
 int mrev(int a)
@@ -24,21 +30,21 @@ int mrev(int a)
        less than `b`. It's true for this task.
     */
     int b = MOD;
-    int a0 = a;
-    int b0 = b;
     int x = 0, y = 1;
-    int u = 1, v = 0, m, n, q, r;
-    gcd = b;
+    int u = 1, v = 0;
     while (a != 0) {
         div_t qr = div(b, a);
-        m = x - u * qr.quot;
-        n = y - v * qr.quot;
+        int m = x - u * qr.quot;
+        int n = y - v * qr.quot;
         b = a;
-        a = quot.rem;
+        a = qr.rem;
         x = u, y = v;
         u = m, v = n;
     }
-    printf("%d * %d + %d * %d = %d\n", a, x, b, y, a * x + b * y);
+    if (x < 0) {
+        x += MOD;
+    }
+    return x;
 }
 
 /* Gets nth digit of `n` in decimal form. Digits counted from the rightmost,
@@ -77,9 +83,9 @@ int digit_lower_bound(int d, int pos, int lo, int hi)
     return lo;
 }
 
-int Cnk(int n, int k)
+int cnk(int n, int k)
 {
-    // printf("Cnk n=%d k=%d\n", n, k);
+    // printf("cnk n=%d k=%d\n", n, k);
     /* Dynamic programming is here. */
     if (k == 0 && n >= 0) {
         return 1;
@@ -87,7 +93,21 @@ int Cnk(int n, int k)
     if (n == 0) {
         return 0;
     }
-    return madd(Cnk(n - 1, k), Cnk(n - 1, k - 1));
+    return madd(cnk(n - 1, k), cnk(n - 1, k - 1));
+}
+
+int *create_cnk_table(int n)
+{
+    int *t = malloc((n + 1) * sizeof *t);
+    int i;
+    t[0] = 1;
+    for (i = 1; i <= n; ++i) {
+        int r = mrev(i);
+        t[i] = mmul(mmul(t[i - 1], n - i), r);
+        printf("%d ", t[i]);
+    }
+    printf("\n");
+    return t;
 }
 
 int solve(int pos, int lo, int hi);
@@ -116,8 +136,8 @@ int solve(int pos, int lo, int hi)
         printf("sums of long numbers:");
         int count = 0;
         for (int i = lo; i < hi; ++i) {
-            printf("Cnk of n=%d i=%d\n", n, i);
-            int ci = Cnk(n, i);
+            printf("cnk of n=%d i=%d\n", n, i);
+            int ci = cnk(n, i);
             count = madd(count, ci);
             printf(" %d", get_num(i));
         }
@@ -149,9 +169,6 @@ int pow10(int n)
 
 int main(int argc, char **argv)
 {
-    mrev(3);
-    return 0;
-
     int combinations = 0;
 /*
 #ifndef ONLINE_JUDGE
@@ -164,6 +181,9 @@ int main(int argc, char **argv)
         a = b;
         b = temp;
     }
+
+    cnk_table = create_cnk_table(4);
+    return 0;
 
     /* Simplify a bit by reducing leading digits that are zeroes */
     int min_sum = a * n;
@@ -185,6 +205,7 @@ int main(int argc, char **argv)
         combinations = solve(lmin, 0, n + 1);
     }
 
+    free(cnk_table);
     printf("%d\n", combinations);
     return 0;
 }

@@ -10,8 +10,9 @@
 #include <sys/time.h>
 #include <stdio.h>
 
-#define ARRAY_SIZEOF(x) (sizeof(x) / sizeof((x)[0]))
-#define FIELD_SIZEOF(s, f) (sizeof(((s*)0)->f))
+#define ARRAY_SIZEOF(a)     (sizeof(a) / sizeof((a)[0]))
+#define FIELD_SIZEOF(s, f)  (sizeof(((s*)0)->f))
+#define ZERO(p, n)          memset(p, 0, n);
 
 #ifdef NDEBUG
 #define DEBUG 0

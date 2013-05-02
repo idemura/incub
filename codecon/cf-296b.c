@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
+#define ZERO(x)         memset(x, 0, sizeof(x))
 
 typedef void *rbtree_t;
 typedef long long int lli;

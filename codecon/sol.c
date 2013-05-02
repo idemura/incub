@@ -6,6 +6,7 @@
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
 #define ZERO(p, n)      memset(p, 0, n);
 
+/* MOD is prime */
 #define MOD 1000000007
 
 typedef long long int lli;
@@ -15,6 +16,29 @@ int a, b, n;
 int madd(int a, int b)
 {
     return (int)( ((lli)a + (lli)b) % MOD );
+}
+
+int mrev(int a)
+{
+    /* Performs Euler's algorithm for find Bezout's coefficients. Assume `a` is
+       less than `b`. It's true for this task.
+    */
+    int b = MOD;
+    int a0 = a;
+    int b0 = b;
+    int x = 0, y = 1;
+    int u = 1, v = 0, m, n, q, r;
+    gcd = b;
+    while (a != 0) {
+        div_t qr = div(b, a);
+        m = x - u * qr.quot;
+        n = y - v * qr.quot;
+        b = a;
+        a = quot.rem;
+        x = u, y = v;
+        u = m, v = n;
+    }
+    printf("%d * %d + %d * %d = %d\n", a, x, b, y, a * x + b * y);
 }
 
 /* Gets nth digit of `n` in decimal form. Digits counted from the rightmost,
@@ -53,8 +77,9 @@ int digit_lower_bound(int d, int pos, int lo, int hi)
     return lo;
 }
 
-int Cnk(int k, int n)
+int Cnk(int n, int k)
 {
+    // printf("Cnk n=%d k=%d\n", n, k);
     /* Dynamic programming is here. */
     if (k == 0 && n >= 0) {
         return 1;
@@ -62,7 +87,7 @@ int Cnk(int k, int n)
     if (n == 0) {
         return 0;
     }
-    return madd(Cnk(k, n - 1), Cnk(k - 1, n - 1));
+    return madd(Cnk(n - 1, k), Cnk(n - 1, k - 1));
 }
 
 int solve(int pos, int lo, int hi);
@@ -91,8 +116,9 @@ int solve(int pos, int lo, int hi)
         printf("sums of long numbers:");
         int count = 0;
         for (int i = lo; i < hi; ++i) {
-            int ck = Cnk(i, n);
-            count = madd(count, ck);
+            printf("Cnk of n=%d i=%d\n", n, i);
+            int ci = Cnk(n, i);
+            count = madd(count, ci);
             printf(" %d", get_num(i));
         }
         printf("\n");
@@ -104,8 +130,29 @@ int solve(int pos, int lo, int hi)
     return madd(a_res, b_res);
 }
 
+int high_digit_pos(int n)
+{
+    int l = 6;
+    for(; nth_digit(l, n) == 0; l--) {
+    }
+    return l;
+}
+
+int pow10(int n)
+{
+    int p = 1;
+    for(; n != 0; n--) {
+        p *= 10;
+    }
+    return p;
+}
+
 int main(int argc, char **argv)
 {
+    mrev(3);
+    return 0;
+
+    int combinations = 0;
 /*
 #ifndef ONLINE_JUDGE
      freopen("in", "r", stdin);
@@ -119,14 +166,25 @@ int main(int argc, char **argv)
     }
 
     /* Simplify a bit by reducing leading digits that are zeroes */
+    int min_sum = a * n;
     int max_sum = b * n;
-    int pos = 6;
-    while (nth_digit(pos, max_sum) == 0) {
-        pos--;
+    printf("min_sum %d max_sum %d\n", a * n, max_sum);
+    int lmin = high_digit_pos(min_sum);
+    int lmax = high_digit_pos(max_sum);
+    printf("lmin %d lmax %d\n", lmin, lmax);
+    if (lmin != lmax) {
+        int c1, c2;
+        div_t qr = div(pow10(lmax) - a * n, b - a);
+        int k = qr.rem ? qr.quot + 1 : qr.quot;
+        printf("%d %d %d\n", get_num(k - 1), get_num(k), get_num(k + 1));
+        c1 = solve(lmin, 0, k);
+        c2 = solve(lmax, k, n + 1);
+        combinations = madd(c1, c2);
+    } else {
+        printf("starting from pos %d\n", lmin);
+        combinations = solve(lmin, 0, n + 1);
     }
 
-    printf("starting from pos %d\n", pos);
-    int combinations = solve(pos, 0, n + 1);
     printf("%d\n", combinations);
     return 0;
 }

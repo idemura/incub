@@ -7,7 +7,7 @@
 #define ZERO(p, n)      memset(p, 0, n);
 
 /* MOD is prime */
-#define MOD 1000000007
+#define MOD 7340033
 
 typedef long long int lli;
 

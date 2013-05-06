@@ -166,8 +166,27 @@ void free_ftab(int *tab)
     free(tab);
 }
 
+void all_sums_of(int n, int *ms)
+{
+    if (n == 0) {
+        printf("%d %d %d %d\n", ms[0], ms[1], ms[2], ms[3]);
+        return;
+    }
+    for (int i = 0; i < 4; ++i) {
+        if (i == 0 || ms[i - 1] >= ms[i] + 1) {
+            ms[i]++;
+            all_sums_of(n - 1, ms);
+            ms[i]--;
+        }
+    }
+}
+
 int main(int argc, char **argv)
 {
+    int ms[4] = {};
+    // printf("init:\n%d %d %d %d\n", ms[0], ms[1], ms[2], ms[3]);
+    all_sums_of(3, ms);
+    return 0;
     printf("%d\n", f(4, 3));
     printf("%d\n", f(3, 2));
     int *tab = make_ftab(4, 3);

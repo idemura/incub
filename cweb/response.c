@@ -13,7 +13,7 @@ void resp_printf(response_t *r, const char *fmt, ...)
 {
     va_list va;
     va_start(va);
-    uofs len = vsnpintf(NULL, 0, fmt, va) + 1;
+    uofs len = vsnpintf(r->buf, 0, fmt, va) + 1;
     if (r->buf_written + len > buf_size) {
         r->buf = mem_alloc();
     }

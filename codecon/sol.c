@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <limits.h>
 
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
 #define ZERO(p, n)      memset(p, 0, n);
@@ -11,7 +12,175 @@
 
 typedef long long int lli;
 
+void printm(int *t, int n, int m)
+{
+    int *p = t;
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < m; ++j) {
+            printf("%2d ", *p++);
+        }
+        printf("\n");
+    }
+}
+
+int rec(int *t, int n, int k, int i, int j) {
+    if (j < 0) {
+        return 0;
+    }
+    int *tij = &t[i * (k + 1) + j];
+    if (*tij >= 0) {
+        return *tij;
+    }
+    lli s = (lli)rec(t, n, k, i - 1, j - 4) +
+            (lli)(4 * rec(t, n, k, i - 1, j - 3)) +
+            (lli)(6 * rec(t, n, k, i - 1, j - 2)) +
+            (lli)(4 * rec(t, n, k, i - 1, j - 1));
+    return *tij = s % MOD;
+}
+
+int solve(int n, int k)
+{
+    int i, m, r;
+    int *t = 0, tab_size = 0, ans;
+
+    printf("---------------------\n");
+    printf("input n %d k %d\n", n, k);
+    if (n % 2 == 0) {
+        return k == 0;
+    }
+    if (k == 0) {
+        return 1;
+    }
+    /* Draw first square. */
+    n >>= 1;
+    if (n == 0) {
+        return k == 0;
+    }
+    k--;
+    printf("OK, n and k now: %d %d\n", n, k);
+
+    m = 0; /* `m` is count of left bits set */
+    r = n;
+    for (; r & 1; r >>= 1) {
+        ++m;
+    }
+    printf("m %d r %d\n", m, r);
+
+    tab_size = m * (k + 1);
+    t = malloc(tab_size * sizeof *t);
+    for (i = 0; i < tab_size; ++i) {
+        t[i] = -1;
+    }
+    printm(t, m, k + 1);
+
+    for (i = 0; i < m; ++i) {
+        t[(k + 1) * i] = 1;
+    }
+    printf("set col 0:\n");
+    printm(t, m, k + 1);
+    t[1] = r != 0;
+    printf("set t[1]:\n");
+    printm(t, m, k + 1);
+    for (i = 2; i <= k; ++i) {
+        t[i] = 0;
+    }
+    printf("set row 0:\n");
+    printm(t, m, k + 1);
+    /*  ok, let's do it this way:
+        recursively in function frec n, k:
+            if k == 0:
+                return 1;
+            if n == 1 || n % 2 == 0:
+                return 0;
+            so, k > 0 and n odd here. We should split:
+            k--;
+            so possible different combination of how to split new k steps
+            into groups of 4, with order difference:
+            k 0 0 0
+    */
+
+    // for (i = 1; i < m; ++i) {
+    //     for (j = 1; j <= k; ++j) {
+    //         int ij = (i - 1) * (k + 1) + j;
+    //         lli sum = 4 * t[ij - 1];
+    //         if (j >= 2) {
+    //             sum += 6 * t[ij - 2];
+    //             if (j >= 3) {
+    //                 sum += 4 * t[ij - 3];
+    //                 if (j >= 4) {
+    //                     sum += t[ij - 4];
+    //                 }
+    //             }
+    //         }
+    //         t[i * (k + 1) + j] = sum % MOD;
+    //         printf("set %i %i\n", i, j);
+    //         printm(t, m, k + 1);
+    //     }
+    // }
+    // ans = t[(m - 1) * (k + 1) + k];
+    ans = rec(t, m, k, m - 1, k);
+    printf("sol matrix:\n");
+    printm(t, m, k + 1);
+    printf("ans %d\n", ans);
+    free(t);
+    return ans;
+}
+
+int f(int k, int g)
+{
+    if (g == 1) {
+        return 1;
+    }
+    int s = 0;
+    for (int i = 0; i <= k; ++i) {
+        s += f(k - i, g - 1);
+    }
+    return s;
+}
+
+int* make_ftab(int k, int g)
+{
+    int *tab = malloc((k + 1) * g * sizeof *tab);
+    for (int i = 0; i <= k; ++i) {
+        tab[i] = 1;
+    }
+    for (int j = 1; j < g; ++j) {
+        int s = 0;
+        for (int i = 0; i <= k; ++i) {
+            int ij = (k + 1) * j + i;
+            s += tab[ij - (k + 1)];
+            tab[ij] = s;
+        }
+    }
+    for (int j = 0; j < g; ++j) {
+        for (int i = 0; i <= k; ++i) {
+            printf("%2d ", tab[(k + 1) * j + i]);
+        }
+        printf("\n");
+    }
+    return tab;
+}
+
+void free_ftab(int *tab)
+{
+    free(tab);
+}
+
 int main(int argc, char **argv)
 {
+    printf("%d\n", f(4, 3));
+    printf("%d\n", f(3, 2));
+    int *tab = make_ftab(4, 3);
+    free_ftab(tab);
+    return 0;
+
+    int T, i;
+    int N, K;
+
+    scanf("%d", &T);
+    for (i = 0; i < T; ++i) {
+        scanf("%d%d", &N, &K);
+        printf("%d\n", solve(N, K));
+    }
     return 0;
 }

@@ -15,7 +15,7 @@ ifeq ($(cfg), debug)
 else
 	CFLAGS += -O2 -DNDEBUG
 endif
-main_src = defs.c dstr.c main.c
+main_src = scgilib.c defs.c dstr.c main.c
 main_out = bin/$(cfg)/cweb
 
 main:

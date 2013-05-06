@@ -45,7 +45,7 @@ int ipow(int a, int p)
     return x;
 }
 
-void ext_euclid(int a, int b, int *gcd, int *x_out, int *y_out)
+void egcd(int a, int b, int *gcd, int *x_out, int *y_out)
 {
     int x = 0, y = 1;
     int u = 1, v = 0;
@@ -67,6 +67,22 @@ void ext_euclid(int a, int b, int *gcd, int *x_out, int *y_out)
     }
 }
 
+int egcd_rec(int a, int b, int *xa, int *xb)
+{
+    if (a == 0) {
+        *xb = 1;
+        *xa = 0;
+        return b;
+    }
+    int q = b / a;
+    int r = b % a;
+    int ya, yb;
+    int gcd = egcd(r, a, &ya, &yb);
+    *xa = yb - q * ya;
+    *xb = ya;
+    return gcd;
+}
+
 int is_prime(int n)
 {
     if (n <= 2) {
@@ -83,7 +99,7 @@ int is_prime(int n)
 
 /* Revert by modulo with 2 ways:
     1) ext_euclid(x, MOD, &gcd, &inv, 0);
-    2) inv = mpow(x, MOD - 2), by Euler theorem, phi(MOD) = MOD - 2
+    2) inv = mpow(x, MOD - 2), by Euler theorem, phi(MOD) = MOD - 1
 */
 
 int main()

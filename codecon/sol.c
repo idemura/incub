@@ -12,6 +12,11 @@
 
 typedef long long int lli;
 
+int mini(int a, int b)
+{
+    return a < b ? a : b;
+}
+
 void printm(int *t, int n, int m)
 {
     int *p = t;
@@ -181,11 +186,43 @@ void all_sums_of(int n, int *ms)
     }
 }
 
+static int sums_total = 0;
+void sums2(int n, int nmax, int j, int *ms)
+{
+    // printf("%d%d\n", 4 - j, n);
+    // printf("rec params n %d nmax %d j %d ms %d %d %d %d\n", n, nmax, j,
+    //         ms[0], ms[1], ms[2], ms[3]);
+
+    // if (n < 0) {
+    //     printf("n is negative, %d\n", n);
+    //     return;
+    // }
+    if (j == 4 || n == 0) {
+        for (int i = j; i < 4; ++i) {
+            ms[i] = 0;
+        }
+        if (n == 0) {
+            // printf("--> %d %d %d %d\n", ms[0], ms[1], ms[2], ms[3]);
+            sums_total++;
+        }
+        return;
+    }
+    int from = mini(n, nmax);
+    for (int k = from; k > 0; --k) {
+        // printf("j %d - k %d\n", j, k);
+        ms[j] = k;
+        sums2(n - k, k, j + 1, ms);
+    }
+}
+
 int main(int argc, char **argv)
 {
-    int ms[4] = {};
+    int n_start = 500;
+    int ms[4] = {0};
     // printf("init:\n%d %d %d %d\n", ms[0], ms[1], ms[2], ms[3]);
-    all_sums_of(3, ms);
+    // all_sums_of(n_start, ms);
+    sums2(n_start, n_start, 0, ms);
+    printf("TOTAL: %d\n", sums_total);
     return 0;
     printf("%d\n", f(4, 3));
     printf("%d\n", f(3, 2));

@@ -13,7 +13,7 @@ cfg ?= opt
 ifeq ($(cfg), debug)
 	CFLAGS += -O0 -g -ggdb
 else
-	CFLAGS += -O2 -DNDEBUG
+	CFLAGS += -O2 -flto -ffast-math -DNDEBUG
 endif
 main_src = defs.c dstr.c stack.c pque.c disk.c btree.c main.c
 test_src = test.c defs_test.c dstr_test.c stack_test.c pque_test.c disk_test.c btree_test.c main_test.c

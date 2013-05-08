@@ -14,7 +14,7 @@ cfg ?= debug
 ifeq ($(cfg), debug)
 	CFLAGS += -O0 -g -ggdb
 else
-	CFLAGS += -O2 -DNDEBUG
+	CFLAGS += -O2 -flto -ffast-math -DNDEBUG
 endif
 sol_src = sol.c rb.c
 sol_out = sol.out

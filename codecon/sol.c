@@ -171,16 +171,25 @@ void free_ftab(int *tab)
     free(tab);
 }
 
-void all_sums_of(int n, int *ms)
+void all_sums_of(int n, int *ms, int *ms_last)
 {
     if (n == 0) {
-        printf("%d %d %d %d\n", ms[0], ms[1], ms[2], ms[3]);
+        if (ms_last[0] != ms[0] ||
+                ms_last[1] != ms[1] ||
+                ms_last[2] != ms[2] ||
+                ms_last[3] != ms[3]) {
+            printf("%d %d %d %d\n", ms[0], ms[1], ms[2], ms[3]);
+            ms_last[0] = ms[0];
+            ms_last[1] = ms[1];
+            ms_last[2] = ms[2];
+            ms_last[3] = ms[3];
+        }
         return;
     }
     for (int i = 0; i < 4; ++i) {
         if (i == 0 || ms[i - 1] >= ms[i] + 1) {
             ms[i]++;
-            all_sums_of(n - 1, ms);
+            all_sums_of(n - 1, ms, ms_last);
             ms[i]--;
         }
     }
@@ -224,6 +233,7 @@ int main(int argc, char **argv)
     sums2(n_start, n_start, 0, ms);
     printf("TOTAL: %d\n", sums_total);
     return 0;
+
     printf("%d\n", f(4, 3));
     printf("%d\n", f(3, 2));
     int *tab = make_ftab(4, 3);

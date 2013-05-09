@@ -53,11 +53,12 @@ static uofs btree_node_size(int num_keys)
 static void btreedbg_node(struct btree_node *node)
 {
 #ifdef DEBUG
+    int i;
     if (!node) {
         return;
     }
     log_print("%p parent %p %d [", (void*)node, (void*)node->parent, node->num);
-    for (int i = 0; i < node->num; ++i) {
+    for (i = 0; i < node->num; ++i) {
         log_print(" %zu", (uofs)node->edge[i].key);
     }
     log_print(" ] %zu\n", (uofs)node->edge[node->num].key);
@@ -102,7 +103,8 @@ static void btree_free_node(struct btree_node *node, int depth)
         return;
     }
     if (depth > 0) {
-        for (int i = 0; i <= node->num; ++i) {
+        int i;
+        for (i = 0; i <= node->num; ++i) {
             btree_free_node(node->edge[i].ptr, depth - 1);
         }
     }
@@ -127,7 +129,8 @@ uofs btree_size(struct btree *bt)
 static void btree_insert_at(struct btree_node *node, int i,
     vptr key, vptr value)
 {
-    for (int j = node->num + 1; j > i; --j) {
+    int j;
+    for (j = node->num + 1; j > i; --j) {
         node->edge[j] = node->edge[j - 1];
     }
     node->edge[i].ptr = value;
@@ -281,8 +284,9 @@ void btree_insert(struct btree *bt, vptr key, vptr value)
         assert(node->num == h);
 
         if (depth != 0) {
+            int i;
             // Do not do this in leaf, `ptr` there is a value.
-            for (int i = 0; i <= temp->num; ++i) {
+            for (i = 0; i <= temp->num; ++i) {
                 if (temp->edge[i].ptr) {
                     temp->edge[i].ptr->parent = temp;
                 }

@@ -232,7 +232,7 @@ void sums2(int n, int nmax, int j, int *ms)
 int main(int argc, char **argv)
 {
     int n_start = 500;
-    int ms[4] = {0};
+    int ms[4] = {};
     // printf("init:\n%d %d %d %d\n", ms[0], ms[1], ms[2], ms[3]);
     // all_sums_of(n_start, ms);
     sums2(n_start, n_start, 0, ms);

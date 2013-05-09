@@ -11,7 +11,7 @@ CFLAGS = -Wall -std=gnu89 -march=native $(DISABLE_WARNINGS) -D_POSIX_C_SOURCE=20
 LFLAGS = -Wall
 cfg ?= opt
 ifeq ($(cfg), debug)
-	CFLAGS += -O0 -g -ggdb
+	CFLAGS += -O0 -g
 else
 	CFLAGS += -O2 -flto -ffast-math -DNDEBUG
 endif

@@ -20,12 +20,13 @@ void disk_test()
 {
     test_begin("Disk");
     struct disk_io *io = get_disk_io();
-    TEST_CHECKM(io, "I/O interface is NULL");
+    TEST_CHECKM(io != 0, "I/O interface is NULL");
     file_t f = io->open("tmp13", MODE_READ | MODE_WRITE | MODE_CREATE |
                                  MODE_TRUNC);
-    TEST_CHECKM(f, "File not opened");
-    char buf[] = "Hello file";
-    io->write(f, buf, sizeof(buf));
+    TEST_CHECKM(f != 0, "File not opened");
+    char buf[] = "Hello file\n";
+    uofs committed = 0;
+    io->write(f, buf, sizeof(buf), &committed);
     io->close(f);
     test_end();
 }

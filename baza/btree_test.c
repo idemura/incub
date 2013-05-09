@@ -25,12 +25,13 @@ static int uint_cmp(vptr k1, vptr k2)
 
 static uofs btree_count(struct btree_node *node, int depth)
 {
+    int i;
     assert(node);
     if (depth == 0) {
         return node->num;
     }
     uofs edge_sum = 0;
-    for (int i = 0; i <= node->num; ++i) {
+    for (i = 0; i <= node->num; ++i) {
         edge_sum += btree_count(node->edge[i].ptr, depth - 1);
     }
     return edge_sum + node->num;
@@ -48,6 +49,8 @@ static bool btree_check_keys(compare_fn cmpf,
     int max_keys,
     vptr max_keyval)
 {
+    int i;
+
     if (!node) {
         return true;
     }
@@ -56,7 +59,6 @@ static bool btree_check_keys(compare_fn cmpf,
         "Node %p num %i, must be %d-%d",
         (void*)node, node->num, min_keys, max_keys);
 
-    int i;
     for (i = 1; i < node->num; ++i) {
         TEST_CHECKR(cmpf(node->edge[i - 1].key, node->edge[i].key) < 0,
             "Node %p key order: %zu >= %zu @%i,%i",
@@ -95,7 +97,8 @@ static bool btree_check_parent(struct btree_node *node, int depth,
         (void*)node, (void*)node->parent, (void*)parent);
 
     if (depth > 0) {
-        for (int i = 0; i <= node->num; ++i) {
+        int i;
+        for (i = 0; i <= node->num; ++i) {
             if (!btree_check_parent(node->edge[i].ptr, depth - 1, node)) {
                 return false;
             }
@@ -139,7 +142,8 @@ static void btree_print_node(struct btree_node *node, int depth)
     btreedbg_node(node);
 
     if (depth > 0) {
-        for (int i = 0; i <= node->num; ++i) {
+        int i;
+        for (i = 0; i <= node->num; ++i) {
             btree_print_node(node->edge[i].ptr, depth - 1);
         }
     }
@@ -193,15 +197,16 @@ static void btree_test_find_edge()
 
 static bool btree_test_case(vptr *keys, uofs keys_num)
 {
+    uofs i, j;
     struct btree_iter iter;
 
     struct btree *bt = btree_create(NULL, sbtree_file, uint_cmp, 2);
-    for (uofs i = 0; i < keys_num; ++i) {
+    for (i = 0; i < keys_num; ++i) {
         btree_insert(bt, keys[i], &keys[i]);
         TEST_CHECKR(btree_check_print(bt), NULL);
         TEST_CHECKR(btree_size(bt) == i + 1,
             "Size %zu, expected %zu", btree_size(bt), i + 1);
-        for (uofs j = 0; j <= i; ++j) {
+        for (j = 0; j <= i; ++j) {
             bool found = btree_find(bt, keys[j], &iter);
             TEST_CHECKR(found, "Key %zu not found", (uofs)keys[j]);
             if (found) {
@@ -219,9 +224,9 @@ static bool btree_test_case(vptr *keys, uofs keys_num)
 
     // Test iterator.
     // Stupid insertion sort.
-    for (uofs i = 0; i < keys_num; ++i) {
+    for (i = 0; i < keys_num; ++i) {
         uofs imin = i;
-        for (int j = i + 1; j < keys_num; ++j) {
+        for (j = i + 1; j < keys_num; ++j) {
             if (uint_cmp(keys[j], keys[imin]) < 0) {
                 imin = j;
             }
@@ -234,7 +239,7 @@ static bool btree_test_case(vptr *keys, uofs keys_num)
     TEST_CHECKM(btree_find(bt, keys[0], &iter),
         "Can't find first key %zu",
         (uofs)keys[0]);
-    for (uofs i = 0; i < keys_num; ++i) {
+    for (i = 0; i < keys_num; ++i) {
         TEST_CHECKM(uint_cmp(btree_iter_key(&iter), keys[i]) == 0,
             "Iterator key %zu (%zu expected)",
             (uofs)btree_iter_key(&iter), (uofs)keys[i]);
@@ -246,7 +251,7 @@ static bool btree_test_case(vptr *keys, uofs keys_num)
     TEST_CHECKM(!btree_iter_next(&iter),
         "Iterator expected to reach end");
 
-    for (uofs i = 0; i < keys_num; ++i) {
+    for (i = 0; i < keys_num; ++i) {
         // fprintf(test_out(), "Update %zu\n", (uofs)keys[i]);
         vptr new_val = (vptr)(1000 + i);
         btree_insert(bt, keys[i], new_val);

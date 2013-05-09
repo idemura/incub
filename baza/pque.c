@@ -108,11 +108,13 @@ vptr pque_pop(struct pque *pq)
         return NULL;
     }
 
+    uofs i;
+
     vptr min_key = pq->heap[0];
     pq->size--;
     pq->heap[0] = pq->heap[pq->size];
 
-    for (uofs i = 0; ; ) {
+    for (i = 0; ; ) {
         uofs imin = i;
         uofs j1 = 2 * i + 1;
         uofs j2 = j1 + 1;

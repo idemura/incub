@@ -62,8 +62,10 @@ node query(int nod, int lo, int hi, int a, int b){
 }
 
 int main() {
+    int i;
+
     scanf("%d", &N);
-    for(int i = 0; i < N; i++){
+    for(i = 0; i < N; i++){
         scanf("%d", a + i);
         cur[i] = a[i];
         X.push_back(a[i]);
@@ -71,7 +73,7 @@ int main() {
 
     int Q;
     scanf("%d", &Q);
-    for(int i = 0; i < Q; i++){
+    for(i = 0; i < Q; i++){
         scanf("%d%d%d", typ + i, x + i, y + i);
         if(typ[i] == 1){
             x[i]--;
@@ -84,12 +86,12 @@ int main() {
     X.erase(unique(X.begin(), X.end()), X.end());
 
     M = (int)X.size();
-    for(int i = 0; i < N; i++){
+    for(i = 0; i < N; i++){
         update(1, 0, M - 1, getID(a[i]), a[i], 1);
         cur[i] = a[i];
     }
 
-    for(int i = 0; i < Q; i++){
+    for(i = 0; i < Q; i++){
         if(typ[i] == 1){
             update(1, 0, M - 1, getID(cur[x[i]]), -cur[x[i]], -1);
             cur[x[i]] += y[i];

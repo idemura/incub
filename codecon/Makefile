@@ -12,7 +12,7 @@ CFLAGS = -Wall -std=$(STD) -march=native $(DISABLE_WARNINGS) -D_GNU_SOURCE
 LFLAGS = -Wall
 cfg ?= debug
 ifeq ($(cfg), debug)
-	CFLAGS += -O0 -g -ggdb
+	CFLAGS += -O0 -g
 else
 	CFLAGS += -O2 -flto -ffast-math -DNDEBUG
 endif

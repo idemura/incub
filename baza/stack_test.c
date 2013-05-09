@@ -18,6 +18,8 @@
 
 void stack_test()
 {
+    uofs i;
+
     test_begin("Stack");
 
     struct stack st;
@@ -37,11 +39,11 @@ void stack_test()
     const uofs n = 100;
     stack_alloc(&st, 0);
     TEST_CHECK(stack_empty(&st));
-    for (uofs i = 0; i < n; ++i) {
+    for (i = 0; i < n; ++i) {
       stack_pushi(&st, i);
       TEST_CHECK(stack_topi(&st) == i);
     }
-    for (uofs i = 0; i < n; ++i) {
+    for (i = 0; i < n; ++i) {
       TEST_CHECK(stack_popi(&st) == (n - 1 - i));
     }
     TEST_CHECK(stack_empty(&st));
@@ -58,10 +60,10 @@ void stack_test()
     TEST_CHECK(stack_popi(&st) == 22);
     TEST_CHECK(stack_popi(&st) == 11);
     TEST_CHECK(stack_empty(&st));
-    for (uofs i = 0; i < n; ++i) {
+    for (i = 0; i < n; ++i) {
       stack_pushi(&st, i);
     }
-    for (uofs i = 0; i < n; ++i) {
+    for (i = 0; i < n; ++i) {
       TEST_CHECK(stack_popi(&st) == (n - 1 - i));
     }
     stack_free(&st);

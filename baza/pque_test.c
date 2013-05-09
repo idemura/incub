@@ -26,7 +26,8 @@ static bool pque_check(struct pque *pq)
     if (!pq) {
         return true;
     }
-    for (uofs i = 1; i < pq->size; ++i) {
+    uofs i;
+    for (i = 1; i < pq->size; ++i) {
         uofs p = (i - 1) / 2;
         TEST_CHECKR(pq->cmpf(pq->heap[p], pq->heap[i]) <= 0,
             "Heap violation at %zi (parent %zi)\n",
@@ -37,7 +38,8 @@ static bool pque_check(struct pque *pq)
 
 static void pque_print(struct pque *pq)
 {
-    for (uofs i = 0; i < pq->size; ++i) {
+    uofs i;
+    for (i = 0; i < pq->size; ++i) {
         fprintf(test_out(), "%zu ", (uofs)pq->heap[i]);
     }
     fprintf(test_out(), "\n");
@@ -54,12 +56,11 @@ static bool pque_check_print(struct pque *pq)
 
 static void pque_test_sort(uofs keys, int n)
 {
-    for (int i = 0; i < n; ++i) {
-    }
 }
 
 void pque_test()
 {
+    uofs i;
     struct pque *pq = NULL;
     test_begin("PQue");
 
@@ -86,14 +87,14 @@ void pque_test()
     uofs keys_sorted[] = {
         5, 10, 15, 20, 30
     };
-    for (uofs i = 0; i < ARRAY_SIZEOF(keys); ++i) {
+    for (i = 0; i < ARRAY_SIZEOF(keys); ++i) {
         pque_insert(pq, (vptr)keys[i]);
         pque_check_print(pq);
         TEST_CHECKM(pque_size(pq) == i + 1,
             "pque_size %zu (%zu expected)",
             pque_size(pq), i + 1);
     }
-    for (uofs i = 0; i < ARRAY_SIZEOF(keys); ++i) {
+    for (i = 0; i < ARRAY_SIZEOF(keys); ++i) {
         uofs key_pop = (uofs)pque_pop(pq);
         TEST_CHECKM(key_pop == keys_sorted[i],
             "pque_pop %zu (%zu expected)",
@@ -105,7 +106,7 @@ void pque_test()
     const uofs n = 10;
     pq = pque_create(uint_cmp, 8);
     TEST_CHECK(pq != NULL);
-    for (uofs i = 0; i < n; ++i) {
+    for (i = 0; i < n; ++i) {
         vptr key = (vptr)(199 - i);
         pque_insert(pq, key);
         pque_check_print(pq);
@@ -116,7 +117,7 @@ void pque_test()
             "pque_size size %zu (%zu expected)",
             pque_size(pq), i + 1);
     }
-    for (uofs i = 0; i < n; ++i) {
+    for (i = 0; i < n; ++i) {
         vptr key = (vptr)(200 - n + i);
         vptr key_pop = pque_pop(pq);
         TEST_CHECKM(key_pop == key,

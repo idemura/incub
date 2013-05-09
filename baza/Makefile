@@ -7,11 +7,11 @@ else
 	CC = gcc
 endif
 DISABLE_WARNINGS = -Wno-unused-function
-CFLAGS = -Wall -std=c99 -march=native -pedantic $(DISABLE_WARNINGS)
+CFLAGS = -Wall -std=gnu89 -march=native $(DISABLE_WARNINGS)
 LFLAGS = -Wall
 cfg ?= opt
 ifeq ($(cfg), debug)
-	CFLAGS += -O0 -g -ggdb
+	CFLAGS += -O0 -g
 else
 	CFLAGS += -O2 -flto -ffast-math -DNDEBUG
 endif

@@ -24,7 +24,7 @@ struct disk_file {
 };
 
 static struct disk_io sdisk_io;
-static struct disk_io smemory_file_io;
+// static struct disk_io smemory_file_io;
 
 static file_t disk_open(const char *name, int mode)
 {
@@ -52,17 +52,17 @@ static file_t disk_open(const char *name, int mode)
     return file;
 }
 
-static void disk_close(file_t f)
+static int disk_close(file_t f)
 {
-    if (!f) {
-        return;
-    }
     struct disk_file *file = f;
-    close(file->fd);
+    if (file) {
+        close(file->fd);
+        mem_free(file);
+    }
+    return IO_OK;
 }
 
-static int disk_write(file_t f, const void *buf, uofs buf_size,
-    uofs *committed)
+static int disk_write(file_t f, const void *buf, uofs buf_size, uofs *committed)
 {
     assert(f);
     struct disk_file *file = f;
@@ -76,7 +76,7 @@ static int disk_write(file_t f, const void *buf, uofs buf_size,
     }
 }
 
-static int disk_read(file_t f, void *buf, uofs buf_size, uofs *bytes_read)
+static int disk_read(file_t f, void *buf, uofs buf_size, uofs *committed)
 {
     assert(f);
     struct disk_file *file = f;

@@ -230,7 +230,7 @@ void sums(int n, int nmax, int j, int *ms)
     }
 }
 
-void pascal_tri(int n)
+int pascal_tri(int n)
 {
     int *l[2] = {
         malloc(2 * (n + 1) * sizeof l[0][0]),
@@ -252,12 +252,19 @@ void pascal_tri(int n)
         }
         printf("\n");
     }
+    int first4 = mini(4, n);
+    int sum = 0;
+    for (i = 0; i < first4; ++i) {
+        sum += l[ri][i];
+    }
+    return sum;
 }
 
 int main(int argc, char **argv)
 {
     int test_n = 6;
-    pascal_tri(test_n - 1);
+    int sum4 = pascal_tri(test_n - 1);
+    printf("Sum 4 pascal coefs: %d\n", sum4);
     int ms[4] = {};
     // printf("init:\n%d %d %d %d\n", ms[0], ms[1], ms[2], ms[3]);
     // all_sums_of(test_n, ms);

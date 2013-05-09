@@ -18,6 +18,7 @@
 #ifndef SCGILIB_H
 #define SCGILIB_H
 
+#include <sys/select.h>
 #include <unistd.h>
 #include <fcntl.h>
 

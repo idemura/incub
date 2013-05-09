@@ -7,8 +7,8 @@ else
 	CC = gcc
 endif
 DISABLE_WARNINGS =
-STD ?= c99
-CFLAGS = -Wall -std=$(STD) -march=native -pedantic $(DISABLE_WARNINGS) -D_GNU_SOURCE
+STD ?= gnu89
+CFLAGS = -Wall -std=$(STD) -march=native $(DISABLE_WARNINGS) -D_GNU_SOURCE
 LFLAGS = -Wall
 cfg ?= debug
 ifeq ($(cfg), debug)

@@ -15,6 +15,7 @@
 */
 #include "defs.h"
 #include "scgilib.h"
+#include <time.h>
 
 int http_404(scgi_request *req)
 {
@@ -50,27 +51,29 @@ int main(int argc, char **argv)
         return -1;
     }
 
+    printf("SCGI started on port %d\n", port);
+
     // Enter an infinite loop, serving up responses to SCGI connections forever.
     for (;;) {
-        int dead = 0;
+        int c;
 
         // Check for connections every `sleep_time` microseconds.
         // A typical server will spend the vast majority of its time sleeping,
         // too large will cause Internal Server Error due timeout.
-        unsigned int sleep_time = 20 * 1000;
-        usleep(sleep_time);
+        unsigned int sleep_time = 10; // Milliseconds
+        struct timespec ts = {
+            .tv_sec = 0,
+            .tv_nsec = sleep_time * 1000000
+        };
+        nanosleep(&ts, NULL);
 
-        int connections = 0;
-        while (connections < max_connections_accept)
-        {
+        for (c = 0; c < max_connections_accept; ++c) {
+            int dead = 0;
             scgi_request *req = scgi_recv();
             if (!req) {
                 break;
             }
 
-            connections++;
-
-            dead = 0;
             req->dead = &dead;
             handle_request(req);
             if (!dead) {

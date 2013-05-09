@@ -23,6 +23,7 @@
 #include <netdb.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 
 /*
  * Doubly-linked list of ports to listen on

@@ -7,7 +7,7 @@ else
 	CC = gcc
 endif
 DISABLE_WARNINGS = -Wno-unused-function
-CFLAGS = -Wall -std=c99 -march=native -pedantic $(DISABLE_WARNINGS)
+CFLAGS = -Wall -std=gnu89 -march=native $(DISABLE_WARNINGS) -D_POSIX_C_SOURCE=200809L
 LFLAGS = -Wall
 cfg ?= opt
 ifeq ($(cfg), debug)

@@ -19,9 +19,10 @@ int mini(int a, int b)
 
 void printm(int *t, int n, int m)
 {
+    int i, j;
     int *p = t;
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < m; ++j) {
+    for (i = 0; i < n; ++i) {
+        for (j = 0; j < m; ++j) {
             printf("%2d ", *p++);
         }
         printf("\n");
@@ -137,7 +138,8 @@ int f(int k, int g)
         return 1;
     }
     int s = 0;
-    for (int i = 0; i <= k; ++i) {
+    int i;
+    for (i = 0; i <= k; ++i) {
         s += f(k - i, g - 1);
     }
     return s;
@@ -145,20 +147,21 @@ int f(int k, int g)
 
 int* make_ftab(int k, int g)
 {
+    int i, j;
     int *tab = malloc((k + 1) * g * sizeof *tab);
-    for (int i = 0; i <= k; ++i) {
+    for (i = 0; i <= k; ++i) {
         tab[i] = 1;
     }
-    for (int j = 1; j < g; ++j) {
+    for (j = 1; j < g; ++j) {
         int s = 0;
-        for (int i = 0; i <= k; ++i) {
+        for (i = 0; i <= k; ++i) {
             int ij = (k + 1) * j + i;
             s += tab[ij - (k + 1)];
             tab[ij] = s;
         }
     }
-    for (int j = 0; j < g; ++j) {
-        for (int i = 0; i <= k; ++i) {
+    for (j = 0; j < g; ++j) {
+        for (i = 0; i <= k; ++i) {
             printf("%2d ", tab[(k + 1) * j + i]);
         }
         printf("\n");
@@ -173,6 +176,7 @@ void free_ftab(int *tab)
 
 void all_sums_of(int n, int *ms, int *ms_last)
 {
+    int i;
     if (n == 0) {
         if (ms_last[0] != ms[0] ||
                 ms_last[1] != ms[1] ||
@@ -186,7 +190,7 @@ void all_sums_of(int n, int *ms, int *ms_last)
         }
         return;
     }
-    for (int i = 0; i < 4; ++i) {
+    for (i = 0; i < 4; ++i) {
         if (i == 0 || ms[i - 1] >= ms[i] + 1) {
             ms[i]++;
             all_sums_of(n - 1, ms, ms_last);
@@ -198,6 +202,7 @@ void all_sums_of(int n, int *ms, int *ms_last)
 static int sums_total = 0;
 void sums2(int n, int nmax, int j, int *ms)
 {
+    int i, k;
     // printf("%d%d\n", 4 - j, n);
     // printf("rec params n %d nmax %d j %d ms %d %d %d %d\n", n, nmax, j,
     //         ms[0], ms[1], ms[2], ms[3]);
@@ -207,7 +212,7 @@ void sums2(int n, int nmax, int j, int *ms)
     //     return;
     // }
     if (j == 4 || n == 0) {
-        for (int i = j; i < 4; ++i) {
+        for (i = j; i < 4; ++i) {
             ms[i] = 0;
         }
         if (n == 0) {
@@ -217,7 +222,7 @@ void sums2(int n, int nmax, int j, int *ms)
         return;
     }
     int from = mini(n, nmax);
-    for (int k = from; k > 0; --k) {
+    for (k = from; k > 0; --k) {
         // printf("j %d - k %d\n", j, k);
         ms[j] = k;
         sums2(n - k, k, j + 1, ms);

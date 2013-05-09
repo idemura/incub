@@ -236,17 +236,19 @@ void pascal_tri(int n)
         malloc(2 * (n + 1) * sizeof l[0][0]),
     };
     l[1] = l[0] + n + 1;
-    int i, j, d = 0;
+    l[0][0] = 1;
+    int i, j, ri = 0;
     for (i = 1; i <= n; ++i) {
-        l[!d][0] = 1;
+        int wi = 1 - ri;
+        l[wi][0] = 1;
         for (j = 1; j < i; ++j) {
-            l[!d][j] = l[d][j - 1] + l[d][j];
+            l[wi][j] = l[ri][j - 1] + l[ri][j];
         }
-        l[!d][j] = 1;
-        d = !d;
+        l[wi][j] = 1;
+        ri = wi;
         printf("%d: ", i);
         for (j = 0; j <= i; ++j) {
-            printf("%d ", l[d][j]);
+            printf("%d ", l[ri][j]);
         }
         printf("\n");
     }

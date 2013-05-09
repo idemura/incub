@@ -200,7 +200,7 @@ void all_sums_of(int n, int *ms, int *ms_last)
 }
 
 static int sums_total = 0;
-void sums2(int n, int nmax, int j, int *ms)
+void sums(int n, int nmax, int j, int *ms)
 {
     int i, k;
     // printf("%d%d\n", 4 - j, n);
@@ -216,26 +216,50 @@ void sums2(int n, int nmax, int j, int *ms)
             ms[i] = 0;
         }
         if (n == 0) {
-            // printf("--> %d %d %d %d\n", ms[0], ms[1], ms[2], ms[3]);
+            printf("--> %d %d %d %d\n", ms[0], ms[1], ms[2], ms[3]);
             sums_total++;
         }
         return;
     }
-    int from = mini(n, nmax);
+    // int from = mini(n, nmax);
+    int from = n;
     for (k = from; k > 0; --k) {
         // printf("j %d - k %d\n", j, k);
         ms[j] = k;
-        sums2(n - k, k, j + 1, ms);
+        sums(n - k, k, j + 1, ms);
+    }
+}
+
+void pascal_tri(int n)
+{
+    int *l[2] = {
+        malloc(2 * (n + 1) * sizeof l[0][0]),
+    };
+    l[1] = l[0] + n + 1;
+    int i, j, d = 0;
+    for (i = 1; i <= n; ++i) {
+        l[!d][0] = 1;
+        for (j = 1; j < i; ++j) {
+            l[!d][j] = l[d][j - 1] + l[d][j];
+        }
+        l[!d][j] = 1;
+        d = !d;
+        printf("%d: ", i);
+        for (j = 0; j <= i; ++j) {
+            printf("%d ", l[d][j]);
+        }
+        printf("\n");
     }
 }
 
 int main(int argc, char **argv)
 {
-    int n_start = 500;
+    int test_n = 6;
+    pascal_tri(test_n - 1);
     int ms[4] = {};
     // printf("init:\n%d %d %d %d\n", ms[0], ms[1], ms[2], ms[3]);
-    // all_sums_of(n_start, ms);
-    sums2(n_start, n_start, 0, ms);
+    // all_sums_of(test_n, ms);
+    sums(test_n, test_n, 0, ms);
     printf("TOTAL: %d\n", sums_total);
     return 0;
 

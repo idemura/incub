@@ -18,60 +18,43 @@
 #include "response.h"
 #include <time.h>
 
-int send_text(scgi_request *req, response_t *r)
+void send_response(scgi_request *req, response *r)
 {
-    resp_set_content_type(r, CONTENT_TYPE_TEXT);
-    resp_set_status(r, 200);
-    char *buffer = resp_buffer(r);
-    int rc = scgi_write(req, buffer);
-    resp_buffer_free(buffer);
-    return rc;
+    char *buf = resp_buffer(r);
+    scgi_write(req, buf);
+    resp_buffer_free(buf);
 }
 
-int http_404(scgi_request *req)
+void http_error(scgi_request *req, response *r, int err_code)
 {
-    return 0;
+    resp_set_status(r, err_code);
+    resp_printf(r, "HTTP error %d\n", err_code);
 }
 
-int home(scgi_request *req, response_t *r)
+void home(scgi_request *req, response *r)
 {
-    resp_printf(r, "Hello magic %d", 13);
-    return send_text(req, r);
+    resp_printf(r, "Hello magic %d, this is home directory\n", 13);
 }
 
-int handle_request(scgi_request *req)
+void handle_request(scgi_request *req)
 {
-    int rc = 0;
-
-    response_t r;
+    response r;
     resp_init(&r);
 
-    printf("query string: %s\n", req->query_string);
+    printf("query string: '%s'\n", req->query_string);
     printf("uri: %s\n", req->request_uri);
 
-    char response[] =
-            "Status: 200\r\n"
-            "Content-Type: text/plain\r\n"
-            "\r\n"
-            "scgi works! new mode";
     if (req->request_method == SCGI_METHOD_GET) {
         if (strcmp(req->request_uri, "/") == 0) {
-            rc = home(req, &r);
+            home(req, &r);
+        } else {
+            http_error(req, &r, 404);
         }
+    } else {
+        http_error(req, &r, 501);
     }
+    send_response(req, &r);
     resp_free(&r);
-    return scgi_write(req, response);
-}
-
-int test()
-{
-    response_t r;
-    resp_init(&r);
-    resp_printf(&r, "Hello %s\n", "igord");
-    resp_printf(&r, "$HOME %s\n", getenv("HOME"));
-    printf("%s\n", r.buf);
-    resp_free(&r);
-    exit(0);
 }
 
 int main(int argc, char **argv)

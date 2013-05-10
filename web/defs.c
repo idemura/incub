@@ -70,7 +70,8 @@ void mem_free(vptr p)
     }
     struct mem_block *mb = (void*)((char*)p - sizeof(struct mem_block));
 #if DEBUG
-    for (uofs i = mb->size, n = mem_adjust(mb->size); i < n; ++i) {
+    uofs i, n = mem_adjust(mb->size);
+    for (i = mb->size; i < n; ++i) {
         assert(mb->p[i] == 0xcc);
     }
 #endif

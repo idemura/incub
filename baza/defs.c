@@ -65,14 +65,12 @@ vptr mem_alloc(uofs size)
 
 void mem_free(vptr p)
 {
-    uofs i, n = 0;
-
     if (!p) {
         return;
     }
     struct mem_block *mb = (void*)((char*)p - sizeof(struct mem_block));
 #if DEBUG
-    n = mem_adjust(mb->size);
+    uofs i, n = mem_adjust(mb->size);
     for (i = mb->size; i < n; ++i) {
         assert(mb->p[i] == 0xcc);
     }

@@ -20,20 +20,20 @@
 
 void send_response(scgi_request *req, response *r)
 {
-    char *buf = resp_buffer(r);
+    char *buf = resp_output(r);
     scgi_write(req, buf);
-    resp_buffer_free(buf);
+    resp_output_free(buf);
 }
 
 void http_error(scgi_request *req, response *r, int err_code)
 {
     resp_set_status(r, err_code);
-    resp_printf(r, "HTTP error %d\n", err_code);
+    buf_printf(resp_buffer(r), "HTTP error %d\n", err_code);
 }
 
 void home(scgi_request *req, response *r)
 {
-    resp_printf(r, "Hello magic %d, this is home directory\n", 13);
+    buf_printf(resp_buffer(r), "Hello magic %d, this is home directory\n", 13);
 }
 
 void handle_request(scgi_request *req)

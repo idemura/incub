@@ -4,11 +4,15 @@
 #include "defs.h"
 
 typedef struct {
+    char *data;
+    uofs written;
+    uofs size;
+} buffer;
+
+typedef struct {
     int status;
     int content_type;
-    uofs buf_size;
-    uofs buf_written;
-    char *buf;
+    buffer buf;
 } response;
 
 enum {
@@ -17,13 +21,17 @@ enum {
     CONTENT_TYPE_COUNT,
 };
 
+void  buf_init(buffer *b);
+void  buf_free(buffer *b);
+char *buf_data(buffer *b);
+void  buf_printf(buffer *b, const char *fmt, ...);
+
 void  resp_init(response *r);
 void  resp_free(response *r);
-char *resp_data(response *r);
-void  resp_printf(response *r, const char *fmt, ...);
+buffer *resp_buffer(response *r);
 void  resp_set_content_type(response *r, int content_type);
 void  resp_set_status(response *r, int status);
-char *resp_buffer(response *r);
-void  resp_buffer_free(char *buf);
+char *resp_output(response *r);
+void  resp_output_free(char *buf);
 
 #endif

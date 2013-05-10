@@ -23,7 +23,19 @@
 #include <netdb.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
+
+/*
+ * Memory allocation macro
+ */
+#define SCGI_CREATE(result, type, number)               \
+do                                  \
+{                                   \
+   if (!((result) = (type *) calloc ((number), sizeof(type))))      \
+   {                                    \
+      fprintf(stderr, "scgilib: Out of RAM! Emergency shutdown.\n" );   \
+      abort();                              \
+   }                                    \
+} while(0)
 
 /*
  * Doubly-linked list of ports to listen on

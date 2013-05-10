@@ -258,17 +258,4 @@ int scgi_send( scgi_request *req, char *txt, int len );
 int scgi_write( scgi_request *req, char *txt );
 scgi_request *scgi_recv( void );
 
-/*
- * Memory allocation macro
- */
-#define SCGI_CREATE(result, type, number)				\
-do									\
-{									\
-   if (!((result) = (type *) calloc ((number), sizeof(type))))		\
-   {									\
-      fprintf(stderr, "scgilib: Out of RAM! Emergency shutdown.\n" );	\
-      abort();								\
-   }									\
-} while(0)
-
-#endif //ends the "#ifdef SCGILIB_H" from the beginning of the file
+#endif

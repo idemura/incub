@@ -1,4 +1,5 @@
 #include "response.h"
+#include "scgilib.h"
 
 void resp_init(response_t *r)
 {
@@ -9,15 +10,23 @@ void resp_init(response_t *r)
     r->buf = mem_alloc(r->buf_size);
 }
 
+void resp_free(response_t *r)
+{
+    mem_free(r->buf);
+    r->buf = 0;
+    r->buf_size = r->buf->buf_written = 0;
+}
+
 void resp_printf(response_t *r, const char *fmt, ...)
 {
+    // XXX:
     va_list va;
     va_start(va);
-    uofs len = vsnpintf(r->buf, 0, fmt, va) + 1;
+    uofs len = vsnpintf(r->buf + r->buf_written, r->buf_size - r->buf_written,
+        fmt, va) + 1;
     if (r->buf_written + len > buf_size) {
         r->buf = mem_alloc();
     }
-
     va_end(va);
 }
 
@@ -31,6 +40,12 @@ void resp_set_status(response_t *r, int status)
     r->status = status;
 }
 
-int resp_send(response_t *r)
+char *resp_buffer(response_t *r)
 {
+    // Put header and text together and send this buffer.
+}
+
+void resp_buffer_free(char *buf)
+{
+    mem_free(buf);
 }

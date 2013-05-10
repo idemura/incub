@@ -17,14 +17,35 @@
 #include "scgilib.h"
 #include <time.h>
 
+int send_text(scgi_request *req, response_t *r)
+{
+    resp_set_content_type(r, CONTENT_TYPE_TEXT);
+    resp_set_status(r, 200);
+    char *buffer = resp_buffer(r);
+    resp_free(r);
+    int rc = scgi_write(req, buffer);
+    resp_buffer_free(buffer);
+    return rc;
+}
+
 int http_404(scgi_request *req)
 {
-    scgi_write(req, "");
     return 0;
+}
+
+int home(scgi_request *req, response_t *r)
+{
+    resp_printf(r, "Hello magic %d", 13);
+    return send_text(req, r);
 }
 
 int handle_request(scgi_request *req)
 {
+    int rc = 0;
+
+    response_t r;
+    resp_init(&r);
+
     printf( "query string: %s\n", req->query_string );
     printf( "uri: %s\n", req->request_uri );
 
@@ -33,11 +54,11 @@ int handle_request(scgi_request *req)
             "Content-Type: text/plain\r\n"
             "\r\n"
             "scgi works! new mode";
-    // if (req->request_method == SCGI_METHOD_GET) {
-    //     if (strcmp(req->request_uri, "/") == 0) {
-    //         home(req)
-    //     }
-    // }
+    if (req->request_method == SCGI_METHOD_GET) {
+        if (strcmp(req->request_uri, "/") == 0) {
+            return home(req);
+        }
+    }
     return scgi_write(req, response);
 }
 

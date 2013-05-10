@@ -243,7 +243,7 @@ void scgi_answer_the_phone( scgi_port *p )
    * SCGI is intended for applications which accept multiple connections asynchronously, so
    * if a socket cannot be set to non-blocking for some reason, it gets the boot.
    */
-  if ( ( fcntl( caller, F_SETFL, FNDELAY ) ) == -1 )
+  if ( ( fcntl( caller, F_SETFL, O_NONBLOCK ) ) == -1 )
   {
     scgi_perror( "Warning: scgilib was unable to set a socket to non-blocking mode.  scgilib hung up the phone on this socket." );
     close(caller);

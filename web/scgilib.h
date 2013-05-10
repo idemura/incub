@@ -27,10 +27,6 @@ typedef struct SCGI_HEADER scgi_header;
 typedef struct SCGI_REQUEST scgi_request;
 typedef struct SCGI_DESC scgi_desc;
 
-#if !defined(FNDELAY)
-#define FNDELAY O_NDELAY
-#endif
-
 /*
  * If a browser connects, but doesn't do anything, how long until kicking them off
  * (See also the next comment below)

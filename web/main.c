@@ -15,6 +15,7 @@
 */
 #include "defs.h"
 #include "scgilib.h"
+#include "response.h"
 #include <time.h>
 
 int send_text(scgi_request *req, response_t *r)
@@ -22,7 +23,6 @@ int send_text(scgi_request *req, response_t *r)
     resp_set_content_type(r, CONTENT_TYPE_TEXT);
     resp_set_status(r, 200);
     char *buffer = resp_buffer(r);
-    resp_free(r);
     int rc = scgi_write(req, buffer);
     resp_buffer_free(buffer);
     return rc;
@@ -46,8 +46,8 @@ int handle_request(scgi_request *req)
     response_t r;
     resp_init(&r);
 
-    printf( "query string: %s\n", req->query_string );
-    printf( "uri: %s\n", req->request_uri );
+    printf("query string: %s\n", req->query_string);
+    printf("uri: %s\n", req->request_uri);
 
     char response[] =
             "Status: 200\r\n"
@@ -56,10 +56,22 @@ int handle_request(scgi_request *req)
             "scgi works! new mode";
     if (req->request_method == SCGI_METHOD_GET) {
         if (strcmp(req->request_uri, "/") == 0) {
-            return home(req);
+            rc = home(req, &r);
         }
     }
+    resp_free(&r);
     return scgi_write(req, response);
+}
+
+int test()
+{
+    response_t r;
+    resp_init(&r);
+    resp_printf(&r, "Hello %s\n", "igord");
+    resp_printf(&r, "$HOME %s\n", getenv("HOME"));
+    printf("%s\n", r.buf);
+    resp_free(&r);
+    exit(0);
 }
 
 int main(int argc, char **argv)

@@ -1,10 +1,13 @@
 #ifndef RESPONSE_H_
 #define RESPONSE_H_
 
+#include "defs.h"
+
 typedef struct {
     int status;
     int content_type;
     uofs buf_size;
+    uofs buf_written;
     char *buf;
 } response_t;
 
@@ -15,7 +18,7 @@ enum {
 };
 
 void  resp_init(response_t *r);
-void  resp_free(response_t *r)
+void  resp_free(response_t *r);
 void  resp_printf(response_t *r, const char *fmt, ...);
 void  resp_set_content_type(response_t *r, int content_type);
 void  resp_set_status(response_t *r, int status);

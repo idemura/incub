@@ -1,0 +1,27 @@
+Incubator for projects
+----------------------
+
+[ Baza ]
+Btree based database, like sqlite3. Main things to do is multithreading,
+saving to disk and logging(journaling). I think it will be tightly coupled with
+my web project. Experiments with LSM tree.
+
+[ Web ]
+SCGI web app in... C. Sounds crazy, but I think it is good. I want to do
+something like calculator, safe password storage and possibly image processor.
+
+[ Exp ]
+Experiments in different languages. Primary in Haskell. I love functional
+programming.
+
+[ CodeCon ]
+Code contest problems playground.
+
+[ Env ]
+Settings for my editor and so on.
+
+License
+-------
+
+Copyright (c) Igor Demura 2012
+Licensed under the Apache License, Version 2.0

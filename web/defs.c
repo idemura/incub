@@ -51,7 +51,7 @@ vptr mem_alloc(uofs size)
             "  Requested: %zu\n",
             smem_stat.total, smem_stat.instances,
             size);
-        exit(1);
+        exit(-1);
         return NULL;
     }
     mb->size = size;

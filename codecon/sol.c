@@ -199,7 +199,11 @@ void all_sums_of(int n, int *ms, int *ms_last)
     }
 }
 
+#define SUMMANDS 4
+
+static counts[120];
 static int sums_total = 0;
+
 void sums(int n, int nmax, int j, int *ms)
 {
     int i, k;
@@ -211,12 +215,15 @@ void sums(int n, int nmax, int j, int *ms)
     //     printf("n is negative, %d\n", n);
     //     return;
     // }
-    if (j == 4 || n == 0) {
-        for (i = j; i < 4; ++i) {
+    if (j == SUMMANDS || n == 0) {
+        for (i = j; i < SUMMANDS; ++i) {
             ms[i] = 0;
         }
         if (n == 0) {
-            printf("--> %d %d %d %d\n", ms[0], ms[1], ms[2], ms[3]);
+            printf("%d %d %d %d\n", ms[0], ms[1], ms[2], ms[3]);
+            for (i = 0; i < SUMMANDS; ++i) {
+                counts[ms[i]]++;
+            }
             sums_total++;
         }
         return;
@@ -246,30 +253,52 @@ int pascal_tri(int n)
         }
         l[wi][j] = 1;
         ri = wi;
-        printf("%d: ", i);
-        for (j = 0; j <= i; ++j) {
-            printf("%d ", l[ri][j]);
-        }
-        printf("\n");
+        // printf("%d: ", i);
+        // for (j = 0; j <= i; ++j) {
+        //     printf("%d ", l[ri][j]);
+        // }
+        // printf("\n");
     }
-    int first4 = mini(4, n);
+    int first_s = mini(SUMMANDS, n);
     int sum = 0;
-    for (i = 0; i < first4; ++i) {
+    for (i = 0; i < first_s; ++i) {
         sum += l[ri][i];
     }
     return sum;
 }
 
-int main(int argc, char **argv)
+void test_case(int test_n)
 {
-    int test_n = 6;
-    int sum4 = pascal_tri(test_n - 1);
-    printf("Sum 4 pascal coefs: %d\n", sum4);
-    int ms[4] = {};
+    int i;
+    sums_total = 0;
+    memset(counts, 0, sizeof counts);
+    printf("test_n %d\n", test_n);
+    int sum_s = pascal_tri(test_n - 1);
+    printf("Sum %d pascal coefs: %d\n", SUMMANDS, sum_s);
+    int ms[SUMMANDS] = {};
     // printf("init:\n%d %d %d %d\n", ms[0], ms[1], ms[2], ms[3]);
     // all_sums_of(test_n, ms);
     sums(test_n, test_n, 0, ms);
     printf("TOTAL: %d\n", sums_total);
+    printf("num stats:\n");
+    for (i = test_n; i >= 0; i--) {
+        printf("  %d - %d\n", i, counts[i]);
+    }
+}
+
+int main(int argc, char **argv)
+{
+    int i;
+    if (argc >= 2) {
+        int n0 = atoi(argv[1]);
+        int n1 = n0;
+        if (argc >= 3) {
+            n1 = atoi(argv[2]);
+        }
+        for (i = n0; i <= n1; i++) {
+            test_case(i);
+        }
+    }
     return 0;
 
     printf("%d\n", f(4, 3));
@@ -278,8 +307,7 @@ int main(int argc, char **argv)
     free_ftab(tab);
     return 0;
 
-    int T, i;
-    int N, K;
+    int T, N, K;
 
     scanf("%d", &T);
     for (i = 0; i < T; ++i) {

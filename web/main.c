@@ -13,9 +13,9 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 */
-#include "defs.h"
-#include "scgilib.h"
 #include "response.h"
+#include "template.h"
+#include "scgilib.h"
 #include <time.h>
 
 void send_response(scgi_request *req, response *r)
@@ -59,6 +59,9 @@ void handle_request(scgi_request *req)
 
 int main(int argc, char **argv)
 {
+    tpl_test();
+    return 0;
+
     const int max_connections_accept = 5;
 
     int port = 9000;
@@ -79,7 +82,7 @@ int main(int argc, char **argv)
         unsigned int sleep_time = 10; // Milliseconds
         struct timespec ts = {
             .tv_sec = 0,
-            .tv_nsec = sleep_time * 1000000
+            .tv_nsec = sleep_time * 1000000,
         };
         nanosleep(&ts, NULL);
 

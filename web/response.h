@@ -3,7 +3,7 @@
 
 #include "defs.h"
 
-typedef struct {
+typedef struct buffer {
     char *data;
     uofs written;
     uofs size;

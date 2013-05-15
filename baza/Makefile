@@ -8,7 +8,6 @@ else
 endif
 DISABLE_WARNINGS = -Wno-unused-function
 CFLAGS = -Wall -std=gnu89 -march=native $(DISABLE_WARNINGS)
-LFLAGS = -Wall
 cfg ?= debug
 ifeq ($(cfg), debug)
 	CFLAGS += -O0 -g

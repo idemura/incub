@@ -6,26 +6,19 @@ ifeq ($(shell uname), Darwin)
 else
 	CC = gcc
 endif
-DISABLE_WARNINGS =
+DISABLE_WARNINGS = -Wno-unused-function
 STD ?= gnu89
 CFLAGS = -Wall -std=$(STD) -march=native $(DISABLE_WARNINGS)
-LFLAGS = -Wall
 cfg ?= debug
 ifeq ($(cfg), debug)
 	CFLAGS += -O0 -g
 else
 	CFLAGS += -O2 -flto -ffast-math -DNDEBUG
 endif
-sol_src = sol.c rb.c
-sol_out = sol.out
-lib_src = lib.c
-lib_out = lib.out
+sol_src = sol.c
 
 sol:
-	$(CC) $(CFLAGS) $(sol_src) -o $(sol_out)
-
-lib:
-	$(CC) $(CFLAGS) $(lib_src) -o $(lib_out)
+	$(CC) $(CFLAGS) $(sol_src) -o sol.out
 
 .PHONY: clean
 clean:

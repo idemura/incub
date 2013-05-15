@@ -77,7 +77,7 @@ int egcd_rec(int a, int b, int *xa, int *xb)
     int q = b / a;
     int r = b % a;
     int ya, yb;
-    int gcd = egcd(r, a, &ya, &yb);
+    int gcd = egcd_rec(r, a, &ya, &yb);
     *xa = yb - q * ya;
     *xb = ya;
     return gcd;
@@ -102,8 +102,7 @@ int is_prime(int n)
     2) inv = mpow(x, MOD - 2), by Euler theorem, phi(MOD) = MOD - 1
 */
 
-/* Pascal triangle for [0 .. n]. Memory should be freed by `pascal_free`.
- */
+// Pascal triangle for [0 .. n]. Memory should be freed by `pascal_free`.
 int **pascal(int n)
 {
     int **pas = malloc((n + 1) * sizeof *pas);

@@ -7,7 +7,7 @@
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
 #define ZERO(p, n)      memset(p, 0, n);
 
-/* MOD is prime */
+// Prime
 #define MOD 7340033
 
 typedef long long int lli;
@@ -15,6 +15,34 @@ typedef long long int lli;
 int mini(int a, int b)
 {
     return a < b ? a : b;
+}
+
+// Pascal triangle for [0 .. n]. Memory should be freed by `pascal_free`.
+int **pascal(int n)
+{
+    int **pas = malloc((n + 1) * sizeof pas[0]);
+    pas[0] = malloc((2 + n) * (n + 1) / 2 * sizeof pas[0][0]);
+    int l = 0;
+    pas[l][0] = 1;
+    int i, j;
+    for (i = 1; i <= n; ++i) {
+        pas[l + 1] = pas[l] + i;
+        pas[l + 1][0] = 1;
+        for (j = 1; j < i; ++j) {
+            pas[l + 1][j] = pas[l][j - 1] + pas[l][j];
+        }
+        pas[l + 1][j] = 1;
+        l++;
+    }
+    return pas;
+}
+
+void pascal_free(int **pas)
+{
+    if (pas) {
+        free(pas[0]);
+        free(pas);
+    }
 }
 
 void printm(int *t, int n, int m)
@@ -199,9 +227,10 @@ void all_sums_of(int n, int *ms, int *ms_last)
     }
 }
 
+// jjj
 #define SUMMANDS 4
 
-static int counts[120];
+static int counts[1001];
 static int sums_total = 0;
 
 void sums(int n, int nmax, int j, int *ms)
@@ -220,7 +249,7 @@ void sums(int n, int nmax, int j, int *ms)
             ms[i] = 0;
         }
         if (n == 0) {
-            // printf("%d %d %d %d\n", ms[0], ms[1], ms[2], ms[3]);
+            printf("%d %d %d %d\n", ms[0], ms[1], ms[2], ms[3]);
             for (i = 0; i < SUMMANDS; ++i) {
                 counts[ms[i]]++;
             }
@@ -237,32 +266,47 @@ void sums(int n, int nmax, int j, int *ms)
     }
 }
 
-/* Pascal triangle for [0 .. n]. Memory should be freed by `pascal_free`.
- */
-int **pascal(int n)
+int count_0(int **pas, int n)
 {
-    int **pas = malloc((n + 1) * sizeof *pas);
-    pas[0] = malloc((2 + n) * (n + 1) / 2 * sizeof **pas);
-    int l = 0;
-    pas[l][0] = 1;
-    int i, j;
-    for (i = 1; i <= n; ++i) {
-        pas[l + 1] = pas[l] + i;
-        pas[l + 1][0] = 1;
-        for (j = 1; j < i; ++j) {
-            pas[l + 1][j] = pas[l][j - 1] + pas[l][j];
-        }
-        pas[l + 1][j] = 1;
-        l++;
+    if (n == 0) {
+        return 0; // Not sure, probably 4 is better
     }
-    return pas;
+    int s = 0;
+    s += pas[n - 1][0] * 3;
+    if (1 < n) {
+        s += pas[n - 1][1] * 2;
+        if (2 < n) {
+            s += pas[n - 1][2];
+        }
+    }
+    return s;
 }
 
-void pascal_free(int **pas)
+int count_n(int **pas, int n)
 {
-    if (pas) {
-        free(pas[0]);
-        free(pas);
+    if (n == 0) {
+        return 1;
+    }
+    int s = 0;
+    s += pas[n - 1][0] * 2;
+    if (1 < n) {
+        s += pas[n - 1][1] * 3;
+        if (2 < n) {
+            s += pas[n - 1][2] * 4;
+        }
+    }
+    return s;
+}
+
+void init_table(int **pas, int n, int *tab0, int *tabx)
+{
+    int i;
+    for (i = 0; i <= n; i++) {
+        tab0[i] = count_0(pas, i);
+    }
+    for (i = n; i >= 0; i--) {
+        tabx[n - i] = i == 0 ? count_0(pas, n)
+                             : count_n(pas, n - i);
     }
 }
 
@@ -276,12 +320,48 @@ int pascal_sum_n(int **pascal, int n, int nsum)
     return n;
 }
 
-int compos(int **C, int n)
+void print_for(int n, int *tab0, int *tabx)
 {
-    int n1 = C[n - 1][0];
-    int n2 = C[n - 1][1];
-    int n3 = C[n - 1][2];
-    return n1 * 3 + n2 * 2 + n3;
+    int i;
+    for (i = 0; i <= n; ++i) {
+        int c = i == 0? tab0[n] : tabx[n - i];
+        printf("%d - %d\n", i, c);
+    }
+}
+
+void sol_table(int N, int K, int *tab0, int *tabx)
+{
+#define Rn 30
+#define Cn 1001
+    int st[Rn][Cn] = {};
+    int i, j, k;
+    // first index decodes to 2^(i+1)-1
+
+    for (i = 0; i < 10; i++) {
+        st[i][0] = 1;
+    }
+    for (j = 1; j < 10; j++) {
+        st[0][j] = 0; // No way to do in exactly k moves.
+    }
+    for (i = 1; i < 10; i++) {
+        for (j = 1; j < 10; j++) {
+            int s = tab0[i - 1];
+            for (k = 1; k < j; k++) {
+                s += tabx[j - k] * st[i - 1][k];
+            }
+            st[i][j] = s;
+        }
+    }
+
+    int d = 1;
+    for (i = 0; i < 10; ++i) {
+        printf("%d: ", d);
+        for (j = 0; j < 10; j++) {
+            printf("%d ", st[i][j]);
+        }
+        printf("\n");
+        d = 2 * d + 1;
+    }
 }
 
 void test_case(int test_n)
@@ -291,21 +371,45 @@ void test_case(int test_n)
     memset(counts, 0, sizeof counts);
     printf("test_n %d\n", test_n);
     int **pas = pascal(test_n);
-    int sum_s = pascal_sum_n(pas, test_n - 1, SUMMANDS);
-    printf("Sum %d pascal coefs: %d\n", SUMMANDS, sum_s);
-    int ms[SUMMANDS] = {};
-    // printf("init:\n%d %d %d %d\n", ms[0], ms[1], ms[2], ms[3]);
-    // all_sums_of(test_n, ms);
-    sums(test_n, test_n, 0, ms);
-    printf("TOTAL: %d\n", sums_total);
-    printf("num stats:\n");
-    int num_sum = 0;
-    for (i = test_n; i >= 0; i--) {
-        printf("  %d - %d\n", i, counts[i]);
-        num_sum += counts[i];
+
+    // int sum_s = pascal_sum_n(pas, test_n - 1, SUMMANDS);
+    // printf("Sum %d pascal coefs: %d\n", SUMMANDS, sum_s);
+
+    // int ms[SUMMANDS] = {};
+    // // all_sums_of(test_n, ms);
+    // sums(test_n, test_n, 0, ms);
+    // printf("TOTAL: %d\n", sums_total);
+    // printf("num stats:\n");
+
+    // int num_sum = 0;
+    // for (i = test_n; i >= 0; i--) {
+    //     printf("  %d - %d\n", i, counts[i]);
+    //     num_sum += counts[i];
+    // }
+    // printf("nums sum %d\n", num_sum);
+
+    // printf("zeros by formula %d\n", count_0(pas, test_n));
+    for (i = 0; i <= test_n; i++) {
+        int c = i == 0 ? count_0(pas, test_n)
+                       : count_n(pas, test_n - i);
+        printf("#%d %d\n", i, c);
     }
-    printf("nums sum %d\n", num_sum);
-    printf("zeros by formula %d\n", compos(pas, test_n));
+
+    int tab0[1000+1], tabx[1000+1];
+    init_table(pas, test_n, tab0, tabx);
+    printf("tab0\n");
+    for (i = 0; i <= test_n; i++) {
+        printf("%d ", tab0[i]);
+    }
+    printf("\n");
+    printf("tabx\n");
+    for (i = 0; i <= test_n; i++) {
+        printf("%d ", tabx[i]);
+    }
+    printf("\n");
+    print_for(test_n, tab0, tabx);
+    printf("---------\n");
+    sol_table(10, 10, tab0, tabx);
     pascal_free(pas);
 }
 

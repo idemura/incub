@@ -201,7 +201,7 @@ void all_sums_of(int n, int *ms, int *ms_last)
 
 #define SUMMANDS 4
 
-static counts[120];
+static int counts[120];
 static int sums_total = 0;
 
 void sums(int n, int nmax, int j, int *ms)
@@ -220,7 +220,7 @@ void sums(int n, int nmax, int j, int *ms)
             ms[i] = 0;
         }
         if (n == 0) {
-            printf("%d %d %d %d\n", ms[0], ms[1], ms[2], ms[3]);
+            // printf("%d %d %d %d\n", ms[0], ms[1], ms[2], ms[3]);
             for (i = 0; i < SUMMANDS; ++i) {
                 counts[ms[i]]++;
             }
@@ -237,34 +237,51 @@ void sums(int n, int nmax, int j, int *ms)
     }
 }
 
-int pascal_tri(int n)
+/* Pascal triangle for [0 .. n]. Memory should be freed by `pascal_free`.
+ */
+int **pascal(int n)
 {
-    int *l[2] = {
-        malloc(2 * (n + 1) * sizeof l[0][0]),
-    };
-    l[1] = l[0] + n + 1;
-    l[0][0] = 1;
-    int i, j, ri = 0;
+    int **pas = malloc((n + 1) * sizeof *pas);
+    pas[0] = malloc((2 + n) * (n + 1) / 2 * sizeof **pas);
+    int l = 0;
+    pas[l][0] = 1;
+    int i, j;
     for (i = 1; i <= n; ++i) {
-        int wi = 1 - ri;
-        l[wi][0] = 1;
+        pas[l + 1] = pas[l] + i;
+        pas[l + 1][0] = 1;
         for (j = 1; j < i; ++j) {
-            l[wi][j] = l[ri][j - 1] + l[ri][j];
+            pas[l + 1][j] = pas[l][j - 1] + pas[l][j];
         }
-        l[wi][j] = 1;
-        ri = wi;
-        // printf("%d: ", i);
-        // for (j = 0; j <= i; ++j) {
-        //     printf("%d ", l[ri][j]);
-        // }
-        // printf("\n");
+        pas[l + 1][j] = 1;
+        l++;
     }
-    int first_s = mini(SUMMANDS, n);
-    int sum = 0;
-    for (i = 0; i < first_s; ++i) {
-        sum += l[ri][i];
+    return pas;
+}
+
+void pascal_free(int **pas)
+{
+    if (pas) {
+        free(pas[0]);
+        free(pas);
     }
-    return sum;
+}
+
+int pascal_sum_n(int **pascal, int n, int nsum)
+{
+    n = mini(n + 1, nsum);
+    int i, sum = 0;
+    for (i = 0; i < n; i++) {
+        sum += pascal[n][i];
+    }
+    return n;
+}
+
+int compos(int **C, int n)
+{
+    int n1 = C[n - 1][0];
+    int n2 = C[n - 1][1];
+    int n3 = C[n - 1][2];
+    return n1 * 3 + n2 * 2 + n3;
 }
 
 void test_case(int test_n)
@@ -273,7 +290,8 @@ void test_case(int test_n)
     sums_total = 0;
     memset(counts, 0, sizeof counts);
     printf("test_n %d\n", test_n);
-    int sum_s = pascal_tri(test_n - 1);
+    int **pas = pascal(test_n);
+    int sum_s = pascal_sum_n(pas, test_n - 1, SUMMANDS);
     printf("Sum %d pascal coefs: %d\n", SUMMANDS, sum_s);
     int ms[SUMMANDS] = {};
     // printf("init:\n%d %d %d %d\n", ms[0], ms[1], ms[2], ms[3]);
@@ -281,9 +299,14 @@ void test_case(int test_n)
     sums(test_n, test_n, 0, ms);
     printf("TOTAL: %d\n", sums_total);
     printf("num stats:\n");
+    int num_sum = 0;
     for (i = test_n; i >= 0; i--) {
         printf("  %d - %d\n", i, counts[i]);
+        num_sum += counts[i];
     }
+    printf("nums sum %d\n", num_sum);
+    printf("zeros by formula %d\n", compos(pas, test_n));
+    pascal_free(pas);
 }
 
 int main(int argc, char **argv)

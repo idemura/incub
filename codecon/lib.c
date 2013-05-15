@@ -102,6 +102,35 @@ int is_prime(int n)
     2) inv = mpow(x, MOD - 2), by Euler theorem, phi(MOD) = MOD - 1
 */
 
+/* Pascal triangle for [0 .. n]. Memory should be freed by `pascal_free`.
+ */
+int **pascal(int n)
+{
+    int **pas = malloc((n + 1) * sizeof *pas);
+    pas[0] = malloc((2 + n) * (n + 1) / 2 * sizeof **pas);
+    int l = 0;
+    pas[l][0] = 1;
+    int i, j;
+    for (i = 1; i <= n; ++i) {
+        pas[l + 1] = pas[l] + i;
+        pas[l + 1][0] = 1;
+        for (j = 1; j < i; ++j) {
+            pas[l + 1][j] = pas[l][j - 1] + pas[l][j];
+        }
+        pas[l + 1][j] = 1;
+        l++;
+    }
+    return pas;
+}
+
+void pascal_free(int **pas)
+{
+    if (pas) {
+        free(pas[0]);
+        free(pas);
+    }
+}
+
 int main()
 {
     return 0;

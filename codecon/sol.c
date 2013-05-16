@@ -340,9 +340,9 @@ void sol_table(int N, int K, int *tab0, int *tabx)
     for (i = 0; i < 10; i++) {
         st[i][0] = 1;
     }
-    for (j = 1; j < 10; j++) {
-        st[0][j] = 0; // No way to do in exactly k moves.
-    }
+    // for (j = 1; j < 10; j++) {
+    //     st[0][j] = 0; // No way to do in exactly k moves.
+    // }
     for (i = 1; i < 10; i++) {
         for (j = 1; j < 10; j++) {
             int s = tab0[i - 1];

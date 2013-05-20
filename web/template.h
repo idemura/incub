@@ -12,6 +12,6 @@ typedef struct {
 template *tpl_parse(char *code);
 void tpl_free(template *t);
 int  tpl_execute(template *t, struct buffer *buffer);
-void tpl_test();
+void tpl_test(void);
 
 #endif

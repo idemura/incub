@@ -198,7 +198,7 @@ int tpl_execute(template *t, struct buffer *buffer)
     return 0;
 }
 
-void tpl_test()
+void tpl_test(void)
 {
     char tpl[] = {
         "<p>\n"

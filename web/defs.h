@@ -38,7 +38,7 @@ void mem_stat(struct mem_stat *stat);
 
 void log_print(const char* format, ...);
 void  log_setfile(FILE *f);
-FILE *log_getfile();
+FILE *log_getfile(void);
 bool log_flag(uint32_t prop, bool val);
 
 void timer_get(struct timeval *tv);

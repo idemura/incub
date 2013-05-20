@@ -74,7 +74,7 @@ bool color_text(char *out, size_t out_len, const char *in)
     return out_len > 1;
 }
 
-void test_init()
+void test_init(void)
 {
     timer_get(&s_start);
 }
@@ -89,7 +89,7 @@ void test_begin(const char *name)
     s_memory = stat.total;
 }
 
-void test_end()
+void test_end(void)
 {
     char fmt[80];
     if (s_failed_asserts == 0) {
@@ -139,7 +139,7 @@ bool test_check(int ok, const char *expr, const char *file, int line,
     return ok;
 }
 
-void test_report()
+void test_report(void)
 {
     char fmt[80];
     int64_t usec = timer_int(&s_start);
@@ -155,17 +155,17 @@ void test_report()
     fprintf(test_out(), "Done in %i ms\n", (int)(usec / 1000));
 }
 
-int test_failed_count()
+int test_failed_count(void)
 {
     return s_failed;
 }
 
-int test_passed_count()
+int test_passed_count(void)
 {
     return s_passed;
 }
 
-FILE *test_out()
+FILE *test_out(void)
 {
     if (!s_out) {
         s_out = stderr;

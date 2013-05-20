@@ -20,15 +20,15 @@
             return false; \
     } while (0)
 
-void test_init();
+void test_init(void);
 void test_begin(const char *name);
-void test_end();
+void test_end(void);
 bool test_check(int ok, const char *expr, const char *file, int line,
         const char *format, ...);
-void test_report();
-int test_failed_count();
-int test_passed_count();
-FILE *test_out();
+void test_report(void);
+int test_failed_count(void);
+int test_passed_count(void);
+FILE *test_out(void);
 void  test_setout(FILE *f);
 
 #endif

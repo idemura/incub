@@ -1,7 +1,7 @@
 #include "defs.c"
 #include "test.h"
 
-static void defs_base_test()
+static void defs_base_test(void)
 {
     TEST_CHECKM(sizeof(uofs) == sizeof(vptr),
         "sizeof(uofs) %zu != sizeof(vptr) %zu\n",
@@ -17,7 +17,7 @@ static void defs_base_test()
     // log_print("Next line\n");
 }
 
-static void defs_time_test()
+static void defs_time_test(void)
 {
     struct timeval start, end, res;
     end.tv_sec = 21;
@@ -36,7 +36,7 @@ static void defs_time_test()
         res.tv_sec, res.tv_usec);
 }
 
-void defs_test()
+void defs_test(void)
 {
     test_begin("Base");
     defs_base_test();

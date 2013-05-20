@@ -16,7 +16,7 @@
 #include "disk.c"
 #include "test.h"
 
-void disk_test()
+void disk_test(void)
 {
     test_begin("Disk");
     struct disk_io *io = get_disk_io();

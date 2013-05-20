@@ -90,7 +90,7 @@ void log_setfile(FILE *f)
     slog_file = f;
 }
 
-FILE *log_getfile()
+FILE *log_getfile(void)
 {
     return slog_file;
 }

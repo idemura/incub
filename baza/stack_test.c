@@ -16,7 +16,7 @@
 #include "stack.c"
 #include "test.h"
 
-void stack_test()
+void stack_test(void)
 {
     uofs i;
 

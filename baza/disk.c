@@ -109,7 +109,7 @@ static int disk_get_offset(file_t f, uofs *offset)
     return disk_seek(f, 0, ORIGIN_CUR, offset);
 }
 
-struct disk_io *get_disk_io()
+struct disk_io *get_disk_io(void)
 {
     if (!sdisk_io.open) {
         sdisk_io.open = disk_open;
@@ -122,7 +122,7 @@ struct disk_io *get_disk_io()
     return &sdisk_io;
 }
 
-struct disk_io *get_memory_file_io()
+struct disk_io *get_memory_file_io(void)
 {
     // if (!smemory_file_io.open) {
     //     smemory_file_io.open = mem_open;

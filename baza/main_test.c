@@ -16,12 +16,12 @@
 #include "test.h"
 #include "defs.h"
 
-void defs_test();
-void dstr_test();
-void stack_test();
-void pque_test();
-void disk_test();
-void btree_test();
+void defs_test(void);
+void dstr_test(void);
+void stack_test(void);
+void pque_test(void);
+void disk_test(void);
+void btree_test(void);
 
 int main()
 {

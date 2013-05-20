@@ -58,7 +58,7 @@ static void pque_test_sort(uofs keys, int n)
 {
 }
 
-void pque_test()
+void pque_test(void)
 {
     uofs i;
     struct pque *pq = NULL;

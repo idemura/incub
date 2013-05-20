@@ -27,7 +27,7 @@ struct disk_io {
     int  (*get_offset) (file_t f, uofs *offset);
 };
 
-struct disk_io *get_disk_io();
-struct disk_io *get_memory_file_io();
+struct disk_io *get_disk_io(void);
+struct disk_io *get_memory_file_io(void);
 
 #endif

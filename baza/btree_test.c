@@ -163,7 +163,7 @@ static bool btree_check_print(struct btree *bt)
     return false;
 }
 
-static void btree_test_find_edge()
+static void btree_test_find_edge(void)
 {
     struct btree_node* node = btree_new_node(4);
     node->edge[0].key = (vptr)10;
@@ -273,7 +273,7 @@ static bool btree_test_case(vptr *keys, uofs keys_num)
     return true;
 }
 
-void btree_test()
+void btree_test(void)
 {
     struct btree *bt = NULL;
 

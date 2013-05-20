@@ -1,7 +1,7 @@
 #include "dstr.c"
 #include "test.h"
 
-void dstr_test()
+void dstr_test(void)
 {
     test_begin("DStr");
 

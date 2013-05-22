@@ -11,6 +11,16 @@
 
 typedef long long int lli;
 
+int mini(int a, int b)
+{
+    return a < b ? a : b;
+}
+
+int maxi(int a, int b)
+{
+    return a > b ? a : b;
+}
+
 int madd(int a, int b)
 {
     return (int)( ((lli)a + (lli)b) % MOD );
@@ -43,6 +53,15 @@ int ipow(int a, int p)
         a *= a;
     }
     return x;
+}
+
+int gcd(int a, int b) {
+    while (b != 0) {
+        int t = a % b;
+        a = b;
+        b = t;
+    }
+    return a;
 }
 
 void egcd(int a, int b, int *gcd, int *x_out, int *y_out)

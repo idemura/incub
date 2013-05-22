@@ -34,7 +34,7 @@ int count_py(int n)
     return c;
 }
 
-int main()
+int main(int argc, char **argv)
 {
     // freopen("in", "r", stdin);
     int n = 0;

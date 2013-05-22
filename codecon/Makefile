@@ -6,7 +6,7 @@ ifeq ($(shell uname), Darwin)
 else
 	CC = gcc
 endif
-DISABLE_WARNINGS = -Wno-unused-function
+DISABLE_WARNINGS = -Wno-unused-function -Wno-unused-result
 STD ?= gnu89
 CFLAGS = -Wall -std=$(STD) -march=native $(DISABLE_WARNINGS) -DDEBUG
 cfg ?= debug

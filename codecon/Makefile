@@ -8,7 +8,7 @@ else
 endif
 DISABLE_WARNINGS = -Wno-unused-function
 STD ?= gnu89
-CFLAGS = -Wall -std=$(STD) -march=native $(DISABLE_WARNINGS)
+CFLAGS = -Wall -std=$(STD) -march=native $(DISABLE_WARNINGS) -DDEBUG
 cfg ?= debug
 ifeq ($(cfg), debug)
 	CFLAGS += -O0 -g

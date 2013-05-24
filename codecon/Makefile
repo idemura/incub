@@ -18,7 +18,7 @@ endif
 sol_src = sol.c
 
 sol:
-	$(CC) $(CFLAGS) $(sol_src) -o sol.out
+	$(CC) $(CFLAGS) $(sol_src) -o sol.out -lm
 
 .PHONY: clean
 clean:

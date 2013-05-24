@@ -11,7 +11,7 @@ typedef long long int lli;
 
 #define MOD 20
 
-int factor[MOD + 1];
+int divisor[MOD + 1];
 int prime[MOD];
 int prime_n;
 
@@ -26,16 +26,16 @@ int sieve(int *list, int list_n)
             int first = prime * prime - 2;
             for (j = first; j < list_n; j += prime) {
                 list[j] = 1;
-                factor[j + 1] = prime;
+                divisor[j + 1] = prime;
             }
-            factor[i + 1] = prime;
+            divisor[i + 1] = prime;
         }
     }
     // Copy primes to the beginning.
     for (i = 0; i < list_n; i++) {
         if (!list[i]) {
             list[w++] = i + 2;
-            factor[i + 1] = i + 2;
+            divisor[i + 1] = i + 2;
         }
     }
     return w;
@@ -46,29 +46,49 @@ void factorize(int n)
     printf("input factorize %d\n", n);
     int i = n;
     for (; i != 1;) {
-        int f = factor[i - 1];
-        printf("factor %d\n", f);
+        int f = divisor[i - 1];
+        printf("divisor %d\n", f);
         i /= f;
     }
 }
 
-void factorize_factorial(int n)
+// Factorize sum of (i + 1)!^fp[i], i = 0..n-1.
+void factorize_factorial(int *fp, int n)
 {
-    int fc[MOD + 1] = {};
+    // int fc[MOD + 1] = {};
     int i;
-    printf("input factorize factorial %d\n", n);
-    fc[n - 1] = 1;
+    for (i = n; i-- > 1;) {
+        fp[i - 1] += fp[i];
+    }
+    for (i = 0; i < fp[i]; i++) {
+        printf("%d ", fp[i]);
+    }
+    printf("\n");
+
+    // printf("input factorize factorial %d\n", n);
+    // fc[n - 1] = 1;
     for (i = n; i != 1; i--) {
-        int f = factor[i - 1];
-        int c = fc[i - 1];
-        printf("%d: factor %d and count %d\n", i, f, c);
+        int f = divisor[i - 1];
+        // int c = fc[i - 1] += 1;
+        printf("%d: divisor %d and count %d\n", i, f, fp[i - 1]);
         if (f != i) {
-            fc[f - 1] += c;
-            fc[i / f - 1] += c;
+            int c = fp[i - 1];
+            fp[f - 1] += c;
+            fp[i / f - 1] += c;
+            printf("Updated: %d and %d to %d and %d\n", f, i / f, fp[f - 1], fp[i /f - 1]);
+            fp[i - 1] = 0; // Only for print in the end.
         } else {
             // So, i is a prime
-            printf("%d ^ %d\n", f, fc[i - 1] + 1);
-            fc[f - 1] += 1;
+            printf("prime %d ^ %d\n", f, fp[i - 1]);
+            // fc[f - 1] += c;
+        }
+    }
+    // Put 1 power to zero.
+    fp[0] = 0;
+    printf("--------\n");
+    for (i = 0; i < n; i++) {
+        if (fp[i]) {
+            printf("%d ^ %d\n", i + 1, fp[i]);
         }
     }
     printf("end\n");
@@ -77,11 +97,17 @@ void factorize_factorial(int n)
 int main(void)
 {
     // int i;
+    // for (i = 0; i < 26; i++) {
+    //     printf("%d -> %d\n", i, sqrti(i));
+    // }
     prime_n = sieve(prime, MOD);
     // for (i = 0; i < MOD; i++) {
-    //     printf("%d -> %d\n", i + 1, factor[i]);
+    //     printf("%d -> %d\n", i + 1, divisor[i]);
     // }
     // factorize(14);
-    factorize_factorial(5);
+    int fp[8] = {};
+    fp[7] = 2;
+    fp[2] = 1;
+    factorize_factorial(fp, ARRAY_SIZEOF(fp));
     return 0;
 }

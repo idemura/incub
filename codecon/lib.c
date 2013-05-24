@@ -217,6 +217,28 @@ int sieve(int *list, int list_n)
     return w;
 }
 
+// Function computing the floor of the square root, by Dijkstra
+int sqrti(int n)
+{
+    int p, q, r, h;
+    p = 0;
+    q = 1;
+    r = n;
+    while (q <= n) {
+        q *= 4;
+    }
+    while (q != 1) {
+        q /= 4;
+        h = p + q;
+        p /= 2;
+        if (r >= h) {
+            p += q;
+            r -= h;
+        }
+    }
+    return p;
+}
+
 int main(void)
 {
     return 0;

@@ -56,6 +56,11 @@ int ipow(int a, int p)
     return x;
 }
 
+int minv(int a)
+{
+    return mpow(a, MOD - 2);
+}
+
 int gcd(int a, int b) {
     while (b != 0) {
         int t = a % b;
@@ -121,6 +126,20 @@ int is_prime(int n)
     1) ext_euclid(x, MOD, &gcd, &inv, 0);
     2) inv = mpow(x, MOD - 2), by Euler theorem, phi(MOD) = MOD - 1
 */
+
+/* Inverts all numbers in [0..mod-1] where mod is prime. Result saved in `inv`
+   which is at least `mod` long.
+*/
+void inv_list(int *inv, int mod)
+{
+    int i;
+    inv[0] = 0;
+    inv[1] = 1;
+    for (i = 2; i < mod; i++) {
+        // - n / i * inv(n % i)
+        inv[i] = mod - ((mod / i) * inv[mod % i]) % mod;
+    }
+}
 
 // Pascal triangle for [0 .. n]. Memory should be freed by `pascal_free`.
 int **pascal(int n)
@@ -189,7 +208,7 @@ int sieve(int *list, int list_n)
     return w;
 }
 
-int main()
+int main(void)
 {
     return 0;
 }

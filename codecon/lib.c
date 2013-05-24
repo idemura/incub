@@ -136,7 +136,16 @@ void inv_list(int *inv, int mod)
     inv[0] = 0;
     inv[1] = 1;
     for (i = 2; i < mod; i++) {
-        // - n / i * inv(n % i)
+        // Let consider mod (which is prime) and mod % i. Extended Euclid on
+        // them gives:
+        //  mod * k1 + (mod % i) * k2 = 1
+        // Here k2 = inv(mod % i) = r and already know. Put
+        //  mod % i = mod - mod / i * i
+        // in the first equation and re-group it:
+        //  mod * k1 + (mod - mod / i * i) * r = 1
+        //  mod * (k2 + r) - (mod / i * r) * i = 1
+        // so the result for inv(i):
+        //  inv(i) = - (mod / i) * inv(mod % i)
         inv[i] = mod - ((mod / i) * inv[mod % i]) % mod;
     }
 }

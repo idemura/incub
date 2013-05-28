@@ -199,12 +199,13 @@ void pascal_free(int **pas)
 
 /* Takes `list` with size `list_n` as a buffer (no assumptions on values in it)
    and runs Eratosthenes sieve on it. Returns count of primes in list, which
-   stored in 0..list_n in the list. Max prime can be found is list_n + 1.
+   stored in 0..list_n in the list. Max prime can be found is `list_n + 1`.
 
    Example of usage:
 
-    int primes[100];
+    int primes[12];
     int primes_n = sieve(primes, ARRAY_SIZEOF(primes));
+    // So, max prime found is 13.
 */
 int sieve(int *list, int list_n)
 {

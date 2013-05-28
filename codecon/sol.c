@@ -9,21 +9,6 @@
 
 typedef long long int lli;
 
-int use_mask(char *s)
-{
-    int um = 1 << (s[0] - '0');
-    if (s[1])
-        um |= 1 << (s[1] - '0');
-    if (s[2])
-        um |= 1 << (s[2] - '0');
-    return um;
-}
-
-int popc(int n)
-{
-    return __builtin_popcount((unsigned int)n);
-}
-
 char *s_copy(char *dst, const char *src)
 {
     dst[0] = src[0];
@@ -163,6 +148,5 @@ int main(void)
     }
 
     printf("%d\n", c);
-
     return 0;
 }

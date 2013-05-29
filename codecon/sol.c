@@ -9,105 +9,160 @@
 
 typedef long long int lli;
 
-#define MOD 20
-
-int divisor[MOD + 1];
-int prime[MOD];
-int prime_n;
-
-int sieve(int *list, int list_n)
+int use_mask(char *s)
 {
-    ZERO(list, list_n * sizeof *list);
-    int i, j, w = 0;
-    int sqrt_n = (int)sqrt(list_n);
-    for (i = 0; i <= sqrt_n; ++i) {
-        if (!list[i]) {
-            int prime = i + 2;
-            int first = prime * prime - 2;
-            for (j = first; j < list_n; j += prime) {
-                list[j] = 1;
-                divisor[j + 1] = prime;
-            }
-            divisor[i + 1] = prime;
-        }
-    }
-    // Copy primes to the beginning.
-    for (i = 0; i < list_n; i++) {
-        if (!list[i]) {
-            list[w++] = i + 2;
-            divisor[i + 1] = i + 2;
-        }
-    }
-    return w;
+    int um = 1 << (s[0] - '0');
+    if (s[1])
+        um |= 1 << (s[1] - '0');
+    if (s[2])
+        um |= 1 << (s[2] - '0');
+    return um;
 }
 
-void factorize(int n)
+int popc(int n)
 {
-    printf("input factorize %d\n", n);
-    int i = n;
-    for (; i != 1;) {
-        int f = divisor[i - 1];
-        printf("divisor %d\n", f);
-        i /= f;
-    }
+    return __builtin_popcount((unsigned int)n);
 }
 
-// Factorize sum of (i + 1)!^fp[i], i = 0..n-1.
-void factorize_factorial(int *fp, int n)
+char *s_copy(char *dst, const char *src)
 {
-    // int fc[MOD + 1] = {};
-    int i;
-    for (i = n; i-- > 1;) {
-        fp[i - 1] += fp[i];
-    }
-    for (i = 0; i < fp[i]; i++) {
-        printf("%d ", fp[i]);
-    }
-    printf("\n");
+    dst[0] = src[0];
+    dst[1] = src[1];
+    if (!src[1])
+        return dst + 1;
+    dst[2] = src[2];
+    if (!src[2])
+        return dst + 2;
+    dst[3] = 0;
+    return dst + 3;
+}
 
-    // printf("input factorize factorial %d\n", n);
-    // fc[n - 1] = 1;
-    for (i = n; i != 1; i--) {
-        int f = divisor[i - 1];
-        // int c = fc[i - 1] += 1;
-        printf("%d: divisor %d and count %d\n", i, f, fp[i - 1]);
-        if (f != i) {
-            int c = fp[i - 1];
-            fp[f - 1] += c;
-            fp[i / f - 1] += c;
-            printf("Updated: %d and %d to %d and %d\n", f, i / f, fp[f - 1], fp[i /f - 1]);
-            fp[i - 1] = 0; // Only for print in the end.
-        } else {
-            // So, i is a prime
-            printf("prime %d ^ %d\n", f, fp[i - 1]);
-            // fc[f - 1] += c;
-        }
-    }
-    // Put 1 power to zero.
-    fp[0] = 0;
-    printf("--------\n");
-    for (i = 0; i < n; i++) {
-        if (fp[i]) {
-            printf("%d ^ %d\n", i + 1, fp[i]);
-        }
-    }
-    printf("end\n");
+typedef struct {
+    char s[8];
+    int c;
+    int l;
+    int bit_c;
+    int pad;
+} ip2b;
+
+int ip2b_cmp(const void *v1, const void *v2)
+{
+    ip2b *p1 = v1;
+    ip2b *p2 = v2;
+    // return strcmp(p1->s, p2->s);
+    return *(lli*)p1->s - *(lli*)p2->s;
 }
 
 int main(void)
 {
-    // int i;
-    // for (i = 0; i < 26; i++) {
-    //     printf("%d -> %d\n", i, sqrti(i));
-    // }
-    prime_n = sieve(prime, MOD);
-    // for (i = 0; i < MOD; i++) {
-    //     printf("%d -> %d\n", i + 1, divisor[i]);
-    // }
-    // factorize(14);
-    int fp[8] = {};
-    fp[7] = 2;
-    fp[2] = 1;
-    factorize_factorial(fp, ARRAY_SIZEOF(fp));
+    freopen("in", "r", stdin);
+
+    // char qq[8] = {'a','c'}, ww[8] = {'a','b'};
+    // printf("=> %d\n", *(lli*)qq < *(lli*)ww);
+    // return 0;
+
+    int i, j, k, n = 0, exist[10] = {};
+    scanf("%d", &n);
+    for (i = 0; i < n; i++) {
+        int d;
+        scanf("%d", &d);
+        exist[d] = 1;
+    }
+
+    char str[256][4];
+    int um[256];
+    j = 0;
+    for (i = 0; i < 256; i++) {
+        char *s = str[j];
+        sprintf(s, "%d", i);
+        int v = exist[s[0] - '0'] &&
+                s[1] && exist[s[1] - '0'] &&
+                s[2] && exist[s[2] - '0'];
+        if (v) {
+            um[j] = use_mask(s);
+            j++;
+        }
+    }
+    int str_c = j;
+    printf("str_c %d\n", str_c);
+
+    ip2b bs[65536];
+    k = 0;
+    for (i = 0; i < str_c; i++) {
+        for (j = 0; j < str_c; j++) {
+            int bit_c = popc(um[i] | um[j]);
+            if (bit_c >= n - 1) {
+                *(lli*)bs[k].s = 0;
+                bs[k].l = s_copy(s_copy(bs[k].s, str[i]), str[j]) - bs[k].s;
+                printf("%s - %d\n", bs[k].s, bs[k].l);
+                bs[k].c = 1;
+                bs[k].bit_c = bit_c;
+                k++;
+            }
+        }
+    }
+    printf("--- 1\n");
+    printf("k=%d\n", k);
+
+    for (i = 0; i < k; i++) {
+        printf("%s\n", bs[i].s);
+    }
+    printf("qsort\n");
+    qsort(bs, k, sizeof *bs, ip2b_cmp);
+    for (i = 0; i < k; i++) {
+        printf("%s\n", bs[i].s);
+    }
+
+    j = 0;
+    for (i = 1; i < k; i++) {
+        if (ip2b_cmp(&bs[j], &bs[i]) == 0) {
+            printf("%s == %s\n", bs[j].s, bs[i].s);
+            printf("%d %d\n", j, i);
+            bs[j].c++;
+        } else {
+            j++;
+            bs[j] = bs[i];
+        }
+    }
+    int uniques = j + 1;
+    printf("--- 2\n");
+    printf("uniques %d\n", uniques);
+
+    int c = 0;
+    for (i = 0; i < uniques; i++) {
+        char b[8];
+        ip2b *found;
+        if (bs[i].bit_c != n) {
+            continue;
+        }
+        printf("%s c=%d\n", bs[i].s, bs[i].c);
+
+        for (j = 0; j < bs[i].l; j++) {
+            b[bs[i].l - 1 - j] = bs[i].s[j];
+        }
+        b[j] = 0;
+        printf("rev %s\n", b);
+        found = bsearch(b, bs, k, sizeof *bs, ip2b_cmp);
+        if (found) {
+            c += bs[i].c * found->c;
+        }
+        --j;
+        b[j] = 0;
+        found = bsearch(b, bs, k, sizeof *bs, ip2b_cmp);
+        if (found) {
+            c += bs[i].c * found->c;
+        }
+        while (j >= 3 && b[j - 1] == b[j]) {
+            --j;
+            b[j] = 0;
+            found = bsearch(b, bs, k, sizeof *bs, ip2b_cmp);
+            if (found) {
+                c += bs[i].c * found->c;
+            }
+        }
+    }
+
+    printf("%d\n", c);
+
     return 0;
 }

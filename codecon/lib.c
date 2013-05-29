@@ -22,6 +22,25 @@ int maxi(int a, int b)
     return a > b ? a : b;
 }
 
+// Floor logarithm. Undefined for 0.
+int ilog2f(int n)
+{
+    int i;
+    for (i = 0; n != 1; i++) {
+        n >>= 1;
+    }
+    return i;
+}
+
+// Ceiling logarithm. Undefined for 0.
+int ilog2c(int n)
+{
+    int i;
+    for (i = 0; (1 << i) < n; i++) {
+    }
+    return i;
+}
+
 int madd(int a, int b)
 {
     return (int)( ((lli)a + (lli)b) % MOD );

@@ -38,15 +38,42 @@ int ip2b_cmp(const void *v1, const void *v2)
     return *(lli*)p1->s - *(lli*)p2->s;
 }
 
+int get_mask(int *digit_mask, int n)
+{
+    int m = 0;
+    int r0 = n % 10;
+    n /= 10;
+    int r1 = n % 10;
+    n /= 10;
+    int r2 = n % 10;
+    return
+    if (!digit_mask[r])
+        return 0;
+    m |= digit_mask[r];
+    if (n < 10)
+        return m;
+    // No need to div by 10
+    r = n % 10;
+    if (!digit_mask[r])
+        return 0;
+    m |= digit_mask[r];
+    return m;
+}
+
 int main(void)
 {
-    freopen("in", "r", stdin);
+    int i, j, n, mask[10] = {};
+    ip ips[65536];
 
-    // char qq[8] = {'a','c'}, ww[8] = {'a','b'};
-    // printf("=> %d\n", *(lli*)qq < *(lli*)ww);
-    // return 0;
+    int c = 0;
+    for (i = 0; i < 256; i++) {
+        int m = get_mask(digit_mask, i);
+        if (!m) {
+            continue;
+        }
+        printf("%d is OK.\n", i);
+    }
 
-    int i, j, k, n = 0, exist[10] = {};
     scanf("%d", &n);
     for (i = 0; i < n; i++) {
         int d;
@@ -67,10 +94,6 @@ int main(void)
             um[j] = use_mask(s);
             j++;
         }
-    }
-    int str_c = j;
-    printf("str_c %d\n", str_c);
-
     ip2b bs[65536];
     k = 0;
     for (i = 0; i < str_c; i++) {

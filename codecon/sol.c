@@ -9,165 +9,149 @@
 
 typedef long long int lli;
 
-char *s_copy(char *dst, const char *src)
-{
-    dst[0] = src[0];
-    dst[1] = src[1];
-    if (!src[1])
-        return dst + 1;
-    dst[2] = src[2];
-    if (!src[2])
-        return dst + 2;
-    dst[3] = 0;
-    return dst + 3;
-}
+// char *s_copy(char *dst, const char *src)
+// {
+//     dst[0] = src[0];
+//     dst[1] = src[1];
+//     if (!src[1])
+//         return dst + 1;
+//     dst[2] = src[2];
+//     if (!src[2])
+//         return dst + 2;
+//     dst[3] = 0;
+//     return dst + 3;
+// }
 
-typedef struct {
-    char s[8];
-    int c;
-    int l;
-    int bit_c;
+struct ip {
+    char d[8];
+    int  d_c;
+    int val;
+    int mask;
     int pad;
-} ip2b;
+};
 
-int ip2b_cmp(const void *v1, const void *v2)
+int qsort_ip(const void *v1, const void *v2)
 {
-    ip2b *p1 = v1;
-    ip2b *p2 = v2;
-    // return strcmp(p1->s, p2->s);
-    return *(lli*)p1->s - *(lli*)p2->s;
+    const struct ip *p1 = v1;
+    const struct ip *p2 = v2;
+    return strcmp(p1->d, p2->d);
 }
 
-int get_mask(int *digit_mask, int n)
+void digits(int n, char *d, int *d_c)
 {
-    int m = 0;
-    int r0 = n % 10;
-    n /= 10;
-    int r1 = n % 10;
-    n /= 10;
-    int r2 = n % 10;
-    return
-    if (!digit_mask[r])
-        return 0;
-    m |= digit_mask[r];
-    if (n < 10)
-        return m;
-    // No need to div by 10
-    r = n % 10;
-    if (!digit_mask[r])
-        return 0;
-    m |= digit_mask[r];
+    int i;
+
+    snprintf(d, 8, "%d%d", n >> 8, n & 255);
+    *d_c = strlen(d);
+    for (i = *d_c; i < 8; i++) {
+        d[i] = 0;
+    }
+}
+
+void revert(char *ds, int ds_c, char *ds_out)
+{
+    int i;
+
+    for (i = ds_c - 1; i >= 0; i--) {
+        *ds_out++ = ds[i];
+    }
+}
+
+int get_mask(int *mask, char *d, int d_c)
+{
+    int i, m = 0;
+
+    for (i = 0; i < d_c; i++) {
+        int m_i = mask[d[i] - '0'];
+        if (m_i) {
+            m |= m_i;
+        } else {
+            m = 0;
+            break;
+        }
+    }
     return m;
+}
+
+int find(struct ip *ip, int i, int j, char *d)
+{
+    while (i < j) {
+        int m = (i + j) / 2;
+        if (strcmp(d, ip[m].d) <= 0) {
+            j = m;
+        } else {
+            i = m + 1;
+        }
+    }
+    return i;
+}
+
+int popc(int n)
+{
+    int c = 0;
+    for (; n; n >>= 1) {
+        if (n & 1)
+            c++;
+    }
+    return c;
+}
+
+int count(struct ip *ip, int ip_c, char *d)
+{
+    int j;
+    int i = find(ip, 0, ip_c, d);
+    if (i == ip_c) {
+        return 0;
+    }
+    if (!ip[i].mask) {
+        return 0;
+    }
+    int c = 1;
+    for (j = i + 1; j < ip_c && strcmp(ip[i].d, ip[j].d) == 0; j++) {
+        c++;
+    }
+    return c;
 }
 
 int main(void)
 {
-    int i, j, n, mask[10] = {};
-    ip ips[65536];
+    freopen("in", "r", stdin);
 
-    int c = 0;
-    for (i = 0; i < 256; i++) {
-        int m = get_mask(digit_mask, i);
-        if (!m) {
-            continue;
-        }
-        printf("%d is OK.\n", i);
-    }
+    int i, j, n, mask[10] = {};
+    struct ip ip[65536];
 
     scanf("%d", &n);
     for (i = 0; i < n; i++) {
         int d;
         scanf("%d", &d);
-        exist[d] = 1;
-    }
-
-    char str[256][4];
-    int um[256];
-    j = 0;
-    for (i = 0; i < 256; i++) {
-        char *s = str[j];
-        sprintf(s, "%d", i);
-        int v = exist[s[0] - '0'] &&
-                s[1] && exist[s[1] - '0'] &&
-                s[2] && exist[s[2] - '0'];
-        if (v) {
-            um[j] = use_mask(s);
-            j++;
-        }
-    ip2b bs[65536];
-    k = 0;
-    for (i = 0; i < str_c; i++) {
-        for (j = 0; j < str_c; j++) {
-            int bit_c = popc(um[i] | um[j]);
-            if (bit_c >= n - 1) {
-                *(lli*)bs[k].s = 0;
-                bs[k].l = s_copy(s_copy(bs[k].s, str[i]), str[j]) - bs[k].s;
-                printf("%s - %d\n", bs[k].s, bs[k].l);
-                bs[k].c = 1;
-                bs[k].bit_c = bit_c;
-                k++;
-            }
-        }
-    }
-    printf("--- 1\n");
-    printf("k=%d\n", k);
-
-    for (i = 0; i < k; i++) {
-        printf("%s\n", bs[i].s);
-    }
-    printf("qsort\n");
-    qsort(bs, k, sizeof *bs, ip2b_cmp);
-    for (i = 0; i < k; i++) {
-        printf("%s\n", bs[i].s);
+        mask[d] = 1 << d;
     }
 
     j = 0;
-    for (i = 1; i < k; i++) {
-        if (ip2b_cmp(&bs[j], &bs[i]) == 0) {
-            printf("%s == %s\n", bs[j].s, bs[i].s);
-            printf("%d %d\n", j, i);
-            bs[j].c++;
-        } else {
+    for (i = 0; i < 65536; i++) {
+        digits(i, ip[j].d, &ip[j].d_c);
+        ip[j].mask = get_mask(mask, ip[j].d, ip[j].d_c);
+        if (ip[j].mask) {
+            ip[j].val = i;
             j++;
-            bs[j] = bs[i];
         }
     }
-    int uniques = j + 1;
-    printf("--- 2\n");
-    printf("uniques %d\n", uniques);
+    int ip_c = j;
+
+    qsort(ip, ip_c, sizeof *ip, qsort_ip);
 
     int c = 0;
-    for (i = 0; i < uniques; i++) {
-        char b[8];
-        ip2b *found;
-        if (bs[i].bit_c != n) {
+    for (i = 0; i < ip_c; i++) {
+        if (popc(ip[i].mask) != n) {
             continue;
         }
-        printf("%s c=%d\n", bs[i].s, bs[i].c);
-
-        for (j = 0; j < bs[i].l; j++) {
-            b[bs[i].l - 1 - j] = bs[i].s[j];
-        }
-        b[j] = 0;
-        printf("rev %s\n", b);
-        found = bsearch(b, bs, k, sizeof *bs, ip2b_cmp);
-        if (found) {
-            c += bs[i].c * found->c;
-        }
-        --j;
-        b[j] = 0;
-        found = bsearch(b, bs, k, sizeof *bs, ip2b_cmp);
-        if (found) {
-            c += bs[i].c * found->c;
-        }
-        while (j >= 3 && b[j - 1] == b[j]) {
-            --j;
-            b[j] = 0;
-            found = bsearch(b, bs, k, sizeof *bs, ip2b_cmp);
-            if (found) {
-                c += bs[i].c * found->c;
-            }
-        }
+        char r[8] = {};
+        int l = ip[i].d_c;
+        revert(ip[i].d, l, r);
+        c += count(ip, ip_c, r);
+        l--;
+        ip[i].d[l] = 0;
+        c += count(ip, ip_c, r);
     }
 
     printf("%d\n", c);

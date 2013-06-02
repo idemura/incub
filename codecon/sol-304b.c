@@ -1,3 +1,7 @@
+/*
+   You have been given two dates and your task is to calculate how many days
+   are between them.
+*/
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>

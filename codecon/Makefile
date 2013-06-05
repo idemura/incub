@@ -4,10 +4,10 @@ RM = rm -f
 ifeq ($(shell uname), Darwin)
 	CC = clang
 else
-	CC = gcc
+	CC = g++
 endif
 DISABLE_WARNINGS = -Wno-unused-function -Wno-unused-result
-STD ?= gnu89
+STD ?= c++0x
 CFLAGS = -Wall -std=$(STD) -march=native $(DISABLE_WARNINGS) -DDEBUG
 cfg ?= debug
 ifeq ($(cfg), debug)
@@ -15,10 +15,10 @@ ifeq ($(cfg), debug)
 else
 	CFLAGS += -O2 -flto -ffast-math -DNDEBUG
 endif
-sol_src = sol.c
+sol_src = sol.cpp
 
 sol:
-	$(CC) $(CFLAGS) $(sol_src) -o sol.out -lm
+	$(CC) $(CFLAGS) $(sol_src) -o sol.out -lm -lstdc++
 
 .PHONY: clean
 clean:

@@ -33,7 +33,7 @@
 #include <stdio.h>
 
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
-#define ZERO(p, n)      memset(p, 0, n);
+#define ZERO(p, n)      memset(p, 0, n)
 
 int find_max(int *m, int n, int *d, int i0, int j0)
 {

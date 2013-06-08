@@ -1,9 +1,8 @@
-- sqlite3
-- mozilla persona auth?
-- templating
+Switch from C to Clojure. Seems I'm beginning to like dynamic typing.
 
 Ideas:
   Calculator.
   Secure password storage.
   Log grep online: +/- lines.
   Image resizer (saving ratio, to most popular formats)
+  

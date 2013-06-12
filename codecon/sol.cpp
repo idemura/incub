@@ -1,7 +1,8 @@
-#include <iostream>
+// #include <iostream>
 #include <algorithm>
 #include <vector>
 #include <utility>
+#include <stdio.h>
 
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
 
@@ -9,96 +10,75 @@ using namespace std;
 
 typedef long long int lli;
 
-int table[10][512];
-
-int knapsack(int n, int *weight, int *profit, int i, int total, int weight_max)
-{
-    if (table[i][weight_max] != 0) {
-        return table[i][weight_max];
-    }
-    int val = 0;
-    if (weight_max < 0) {
-        val = 0;
-    } else if (i == n) {
-        val = total;
-    } else {
-        int p1 = knapsack(n, weight, profit, i + 1,
-            total + profit[i],
-            weight_max - weight[i]);
-        int p2 = knapsack(n, weight, profit, i + 1,
-            total,
-            weight_max);
-        val = max(p1, p2);
-    }
-    table[i][weight_max] = val;
-    return val;
-}
-
-int knapsack_dp(int n, int *weight, int *profit, int weight_max)
-{
-    int i, j = 1, k;
-
-    printf("input weight:\n");
-    for (i=0; i<n; i++) {
-        printf("%2d ", weight[i]);
-    }
-    printf("\n");
-    printf("input profit:\n");
-    for (i=0; i<n; i++) {
-        printf("%2d ", profit[i]);
-    }
-
-    vector<int> ps(weight_max + 1); // Function weight -> max profit.
-    vector<int> ws(weight_max + 1); // Possible weights.
-    ws[0] = 0;
-    for (i = 0; i < n; i++) {
-        int j0 = j;
-        printf("update %d weights with w=%d p=%d\n", j0, weight[i], profit[i]);
-        for (k = 0; k < j0; k++) {
-            int w = ws[k] + weight[i];
-            if (w > weight_max) {
-                continue;
-            }
-            if (ps[w] == 0) {
-                ws[j++] = w;
-            }
-            ps[w] = max(ps[w], ps[k] + profit[i]);
-        }
-    }
-    printf("profits:\n");
-    for (i=0; i<ps.size(); i++) {
-        printf("%2d ", ps[i]);
-    }
-    printf("\n");
-    printf("weights:\n");
-    for (i=0; i<ws.size(); i++) {
-        printf("%2d ", ws[i]);
-    }
-    printf("\n");
-    for (i = ps.size(); i--; ) {
-        if (ps[i])
-            break;
-    }
-    return i < 0? 0: ps[i];
-}
+int bits[32], bl[32];
 
 int main()
 {
 #ifndef ONLINE_JUDGE
     freopen("in", "r", stdin);
 #endif
-    int i, n, weight_max, check;
-    cin >> weight_max >> n;
-    vector<int> weight(n), profit(n);
+    int i, j, n, m, x;
+    scanf("%d%d", &n, &m);
+    // Since all block sizes are 2^n that means every pair of sizes are
+    // divisable so greedy is ok.
     for (i = 0; i < n; i++) {
-        cin >> weight[i];
+        scanf("%d", &x);
+        for (j = 0; x; j++, x >>= 1) {
+            if (x & 1)
+                bits[j]++;
+        }
     }
-    for (i = 0; i < n; i++) {
-        cin >> profit[i];
+    // sort(cs, cs + n);
+    for (i = 0; i < m; i++) {
+        scanf("%d", &x);
+        bl[x]++;
     }
-    cin >> check;
-    // int k = knapsack(n, &weight[0], &profit[0], 0, 0, weight_max);
-    int k = knapsack_dp(n, &weight[0], &profit[0], weight_max);
-    printf("%d - %d\n", k, check);
+    int max_arrays = 0;
+    i = 0;
+    j = 0;
+    for (i = 0; i <= 30; i++) {
+        if (bl[i] == 0) {
+            continue;
+        }
+        j = i;
+        while (bl[i]) {
+            lli per_cl = 1 << (j - i);
+            lli can_alloc = bits[j] * per_cl;
+            if (bl[i] < can_alloc) {
+                max_arrays += bl[i];
+                int e = bl[i] / per_cl;
+                bits[j] -= e;
+                (1 << j) - e * per_cl
+                bl[i] = 0;
+            } else {
+                max_arrays += can_alloc;
+                bl[i] -= can_alloc;
+                j++;
+            }
+        }
+            max_arrays += bl[i];
+        } else {
+            bl[i] -= bits[i];
+            max_arrays += bits[i];
+            for (; j <= 30 && bits[j]; j++);
+
+        }
+
+        // int sz_j = 1 << j;
+        printf("cluster %d, block size %d\n", cs[i], sz_j);
+        if (sz_j > cs[i]) {
+            printf("go next cluster\n");
+            i++;
+            continue;
+        }
+        int fit = min(cs[i] / sz_j, bl[j]);
+        printf("fit %d\n", fit);
+        bl[j] -= fit;
+        cs[i] -= fit * sz_j;
+        printf("new cs[i] %d, new bl[j] %d\n", cs[i], bl[j]);
+        max_arrays += fit;
+        printf("max_arrays %d\n", max_arrays);
+    }
+    printf("%d\n", max_arrays);
     return 0;
 }

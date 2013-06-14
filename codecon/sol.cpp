@@ -10,14 +10,15 @@ using namespace std;
 
 typedef long long int lli;
 
-int bits[32], bl[32];
+int bits[32], b[32];
 
 int main()
 {
 #ifndef ONLINE_JUDGE
     freopen("in", "r", stdin);
 #endif
-    int i, j, n, m, x;
+    const int num_bits = 8;
+    int i, j, k, n, m, x;
     scanf("%d%d", &n, &m);
     // Since all block sizes are 2^n that means every pair of sizes are
     // divisable so greedy is ok.
@@ -28,56 +29,70 @@ int main()
                 bits[j]++;
         }
     }
+    printf("bits:\n");
+    for (i = 0; i <= num_bits; i++) {
+        printf("%d ", bits[i]);
+    }
+    printf("\n");
     // sort(cs, cs + n);
     for (i = 0; i < m; i++) {
         scanf("%d", &x);
-        bl[x]++;
+        b[x]++;
     }
     int max_arrays = 0;
     i = 0;
     j = 0;
-    for (i = 0; i <= 30; i++) {
-        if (bl[i] == 0) {
-            continue;
-        }
+    for (i = 0; i <= num_bits; i++) {
+        printf("alloc %d of size 2^%d==%d\n", b[i], i, 1<<i);
         j = i;
-        while (bl[i]) {
-            lli per_cl = 1 << (j - i);
-            lli can_alloc = bits[j] * per_cl;
-            if (bl[i] < can_alloc) {
-                max_arrays += bl[i];
-                int e = bl[i] / per_cl;
-                bits[j] -= e;
-                (1 << j) - e * per_cl
-                bl[i] = 0;
+        while (b[i] && j <= num_bits) {
+            printf("b[i] = %d, not zero\n", b[i]);
+            printf("j = %d\n", j);
+            lli mem = (lli)bits[j] << j;
+            printf("mem: bits[%d] %d => %lld\n", j, bits[j], mem);
+            lli req = (lli)b[i] << i;
+            printf("required: %lld\n", req);
+            if (mem >= req) {
+                printf("have more memory than required\n");
+                max_arrays += b[i];
+                // printf("  max_arrays %d (delta is b[i] = %d)\n", max_arrays, b[i]);
+                b[i] = 0;
+                mem -= req;
+                printf("  mem without req %lld\n", mem);
+                lli r = mem - ((mem >> j) << j);
+                printf("  remainder %lld\n", r);
+                if (r < 0) {
+                    printf("!!!\n");
+                }
+                bits[j] = mem >> j;
+                printf("  bits[%d] now %d\n", j, bits[j]);
+                for (k = 0; r; k++, r >>= 1) {
+                    if (r & 1)
+                        bits[k]++;
+                }
+                printf("bits:\n");
+                for (k = 0; k <= num_bits; k++) {
+                    printf("%d ", bits[k]);
+                }
+                printf("\n");
             } else {
-                max_arrays += can_alloc;
-                bl[i] -= can_alloc;
+                printf("need more space\n");
+                int fit = mem >> i;
+                printf("  fit %d\n", fit);
+                max_arrays += fit;
+                printf("  max_arrays %d\n", max_arrays);
+                b[i] -= fit;
+                bits[j] = 0;
+                printf("  b[%d] %d\n", i, b[i]);
+                printf("  zero %d-th bit\n", j);
                 j++;
             }
         }
-            max_arrays += bl[i];
+        if (!b[i]) {
+            printf("b[%d] is zero, next big step\n", i);
         } else {
-            bl[i] -= bits[i];
-            max_arrays += bits[i];
-            for (; j <= 30 && bits[j]; j++);
-
+            printf("couldn't find space, can break main cycle?\n");
         }
-
-        // int sz_j = 1 << j;
-        printf("cluster %d, block size %d\n", cs[i], sz_j);
-        if (sz_j > cs[i]) {
-            printf("go next cluster\n");
-            i++;
-            continue;
-        }
-        int fit = min(cs[i] / sz_j, bl[j]);
-        printf("fit %d\n", fit);
-        bl[j] -= fit;
-        cs[i] -= fit * sz_j;
-        printf("new cs[i] %d, new bl[j] %d\n", cs[i], bl[j]);
-        max_arrays += fit;
-        printf("max_arrays %d\n", max_arrays);
     }
     printf("%d\n", max_arrays);
     return 0;

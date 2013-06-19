@@ -76,24 +76,24 @@ int main()
         print_state(n);
 
         for (j = 0; j <= n; j++) {
-            printf("j %d r[j] %d\n", j, st[j].r);
             if (j != 0 && (st[j].r == 0 || st[j].i == i)) {
-                printf("skip\n");
+                // printf("skip\n");
                 continue;
             }
+            printf("j %d r[j] %d\n", j, st[j].r);
             int l = max(ws[i].l, st[j].r + 1);
             int r = max(ws[i].r, st[j].r + 1);
             int len = r - l + 1;
             printf("l %d r %d of len %d\n", l, r, len);
-            int new_cov = j + len;
-            printf("new_cov %d\n", new_cov);
-            lli new_val = st[j].c + ws[i].c;
-            if (st[new_cov].c < 0 || new_val < st[new_cov].c) {
-                printf("update %d:\n", new_cov);
-                st[new_cov].c = new_val;
-                st[new_cov].r = ws[i].r;
-                st[new_cov].i = i;
-                printf("  cost %lld\n", new_val);
+            int cov = j + len;
+            lli val = st[j].c + ws[i].c;
+            printf("cov %d val %lld\n", cov, val);
+            if (st[cov].c < 0 || val < st[cov].c) {
+                printf("update %d:\n", cov);
+                st[cov].c = val;
+                st[cov].r = ws[i].r;
+                st[cov].i = i;
+                printf("  cost %lld\n", val);
                 printf("  r %d\n", ws[i].r);
             }
         }

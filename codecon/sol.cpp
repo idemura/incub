@@ -9,17 +9,20 @@ using namespace std;
 
 typedef long long int lli;
 
-struct job {
+struct worker {
     int l, r, c;
+};
+struct status {
+    int r;
+    lli c;
 };
 
 #define MAXN 300
 
-job js[100000];
-int rb[MAXN+1];
-lli cost[MAXN+1];
+worker ws[100000];
+status st[2][MAXN+1];
 
-bool left_less(const job& j1, const job& j2) {
+bool left_less(const worker& j1, const worker& j2) {
     if (j1.l == j2.l)
         return j1.r < j2.r;
     else
@@ -31,63 +34,75 @@ int main()
 #ifndef ONLINE_JUDGE
     freopen("in", "r", stdin);
 #endif
-    const lli HUGE = 0x7fffffffffffffffll;
     int i, j, k, n, m;
     scanf("%d%d%d", &n, &m, &k);
     for (i = 0; i < m; i++) {
-        scanf("%d%d%d", &js[i].l, &js[i].r, &js[i].c);
+        scanf("%d%d%d", &ws[i].l, &ws[i].r, &ws[i].c);
     }
+    int f = 0;
     for (j = 0; j <= n; j++) {
-        cost[j] = HUGE;
+        st[0][j].c = st[1][j].c = -1;
     }
-    sort(js, js + m, left_less);
+    sort(ws, ws + m, left_less);
     for (i = 0; i < m; i++) {
-        printf("%d-%d cost %d\n", js[i].l, js[i].r, js[i].c);
+        printf("%d-%d cost %d\n", ws[i].l, ws[i].r, ws[i].c);
     }
-    rb[0] = 1;
-    cost[0] = 0;
+    st[0][0].r = st[1][0].r = 1;
+    st[0][0].c = st[1][0].c = 0;
+    printf("m %d\n", m);
     for (i = 0; i < m; i++) {
-        printf("job %d-%d cost %d\n", js[i].l, js[i].r, js[i].c);
+        printf("worker %d-%d cost %d\n", ws[i].l, ws[i].r, ws[i].c);
         for (j = 0; j <= n; j++) {
-            printf("j %d rb[j] %d\n", j, rb[j]);
-            if (rb[j] <= 0) {
+            printf("j %d r[j] %d\n", j, st[f][j].r);
+            if (st[f][j].r <= 0) {
+                st[1-f][j].r = st[f][j].r;
+                st[1-f][j].c = st[f][j].c;
                 printf("skip\n");
                 continue;
             }
-            int cl = max(js[i].l, rb[j]);
-            int cr = max(js[i].r, rb[j]);
-            printf("cl %d\n", cl);
-            printf("cr %d\n", cr);
-            int new_cov = j + cr - cl;
+            int l = max(ws[i].l, st[f][j].r + 1);
+            int r = max(ws[i].r, st[f][j].r + 1);
+            int len = r - l + 1;
+            printf("l %d r %d of len %d\n", l, r, len);
+            int new_cov = j + len;
             printf("new_cov %d\n", new_cov);
-            lli new_val = cost[j] + js[i].c;
-            if (new_val < cost[new_cov]) {
+            lli new_val = st[f][j].c + ws[i].c;
+            if (st[f][new_cov].c < 0 || new_val < st[f][new_cov].c) {
                 printf("update %d:\n", new_cov);
-                cost[new_cov] = new_val;
-                rb[new_cov] = js[i].r;
+                st[1-f][new_cov].c = new_val;
+                st[1-f][new_cov].r = ws[i].r;
                 printf("cost %lld\n", new_val);
-                printf("rb %d\n", js[i].r);
+                printf("r %d\n", ws[i].r);
+
+                printf("costs:\n");
+                for (int q = 0; q <= n; q++) {
+                    printf("%lld ", st[1-f][q].c);
+                }
+                printf("\n");
+
+            } else {
+                st[1-f][j].r = st[f][j].r;
+                st[1-f][j].c = st[f][j].c;
             }
         }
+        printf("old f %d\n", f);
+        f = 1 - f;
+        printf("new f %d\n", f);
         printf("\n");
     }
     printf("finally costs:\n");
     for (i = 0; i <= n; i++) {
-        printf("%lld ", cost[i]);
+        printf("%lld ", st[f][i].c);
     }
     printf("\n");
-    lli min_val = HUGE;
+    lli min_val = -1;
     for (i = k; i <= n; i++) {
-        if (rb[i] > 0) {
-            if (cost[i] < min_val) {
-                min_val = cost[i];
+        if (st[f][i].r > 0) {
+            if (st[f][i].c >= 0 && (min_val < 0 || st[f][i].c < min_val)) {
+                min_val = st[f][i].c;
             }
         }
     }
-    if (min_val != HUGE) {
-        printf("%lld\n", min_val);
-    } else {
-        printf("-1\n");
-    }
+    printf("%lld\n", min_val);
     return 0;
 }

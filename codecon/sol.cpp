@@ -22,7 +22,7 @@ struct status {
 #define MAXN 300
 
 worker ws[100000];
-status st[MAXN+1];
+status st[MAXN+1][MAXN+1];
 
 bool left_less(const worker& j1, const worker& j2)
 {
@@ -59,7 +59,12 @@ int main()
     for (i = 0; i < m; i++) {
         printf("%d-%d cost %d\n", ws[i].l, ws[i].r, ws[i].c);
     }
-    st[0].c = 0;
+    // every 0-length coverage cost 0 regardless of their right bounds.
+    for (i = 0; i <= n; i++) {
+        st[0][i].c = 0;
+    }
+    // it's might be enough to just init this one element?
+    // st[0].c = 0;
     printf("m %d\n", m);
     // the idea is to coverage and right bound (so this is
     // a table with 2 indices).

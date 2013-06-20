@@ -61,6 +61,8 @@ int main()
     }
     st[0].c = 0;
     printf("m %d\n", m);
+    // the idea is to coverage and right bound (so this is
+    // a table with 2 indices).
     for (i = 0; i < m; i++) {
         printf("worker %d-%d cost %d\n", ws[i].l, ws[i].r, ws[i].c);
         print_state(n);

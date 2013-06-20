@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <vector>
 #include <utility>
-#include <cstdio>
+#include <stdio.h>
 
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
 
@@ -32,6 +32,15 @@ bool left_less(const worker& j1, const worker& j2)
         return j1.l < j2.l;
 }
 
+void print_state(int n)
+{
+    printf("status:\n");
+    for (int i = 0; i <= n; i++) {
+        printf("%d/%lld ", st[i].r, st[i].c);
+    }
+    printf("\n");
+}
+
 int main()
 {
 #ifndef ONLINE_JUDGE
@@ -47,32 +56,50 @@ int main()
         st[j].i = -1;
     }
     sort(ws, ws + m, left_less);
-    st[0].c = 0;
     for (i = 0; i < m; i++) {
+        printf("%d-%d cost %d\n", ws[i].l, ws[i].r, ws[i].c);
+    }
+    st[0].c = 0;
+    printf("m %d\n", m);
+    for (i = 0; i < m; i++) {
+        printf("worker %d-%d cost %d\n", ws[i].l, ws[i].r, ws[i].c);
+        print_state(n);
+
         for (j = 0; j <= n; j++) {
             if (j != 0 && (st[j].r == 0 || st[j].i == i)) {
+                // printf("skip\n");
                 continue;
             }
+            printf("j %d r[j] %d\n", j, st[j].r);
             if (ws[i].r <= st[j].r) {
                 continue;
             }
             int l = max(ws[i].l, st[j].r + 1);
             int r = max(ws[i].r, st[j].r + 1);
+            printf("l %d r %d\n", l, r);
             int cov = j + r - l + 1;
             lli val = st[j].c + ws[i].c;
+            printf("cov %d val %lld\n", cov, val);
             if (st[cov].c < 0 || val < st[cov].c) {
+                printf("update %d:\n", cov);
                 st[cov].c = val;
                 st[cov].r = ws[i].r;
                 st[cov].i = i;
+                printf("  cost %lld\n", val);
+                printf("  r %d\n", ws[i].r);
             }
         }
+        print_state(n);
+        printf("\n");
     }
+    printf("finally\n");
+    print_state(n);
     lli min_val = -1;
     for (i = k; i <= n; i++) {
         if (st[i].c >= 0 && (min_val < 0 || st[i].c < min_val)) {
             min_val = st[i].c;
         }
     }
-    printf("%I64d\n", min_val);
+    printf("%lld\n", min_val);
     return 0;
 }

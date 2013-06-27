@@ -7,12 +7,10 @@ saving to disk and logging(journaling). I think it will be tightly coupled with
 my web project. Experiments with LSM tree.
 
 * Web
-SCGI web app in... C. Sounds crazy, but I think it is good. I want to do
-something like calculator, safe password storage and possibly image processor.
+Web programming in Clojure.
 
 * Exp
-Experiments in different languages. Primary in Haskell. I love functional
-programming.
+Experiments in different languages.
 
 * CodeCon
 Code contest problems playground.

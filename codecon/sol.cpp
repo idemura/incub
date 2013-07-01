@@ -1,7 +1,9 @@
 #include <algorithm>
 #include <vector>
 #include <utility>
-#include <cstdio>
+#include <stdio.h>
+#include <stdlib.h>
+#include <memory.h>
 
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
 
@@ -13,8 +15,8 @@ int n, k;
 int vs[30][10];
 int al[30][30];
 int al_n[30];
-int path_l[30];
-int path[30];
+int m[30];
+int mark;
 
 int all_less(int* v1, int* v2)
 {
@@ -25,21 +27,24 @@ int all_less(int* v1, int* v2)
     return 1;
 }
 
-void search(int v)
+void dfs(int v, int *p, int *p_n)
 {
-    int i, ai;
-    for (i = 0; i < al_n[v]; i++) {
-        ai = al[v][i];
-        search();
+    int i, q_n = 0, q[30];
+    *p_n = 0;
+    if (m[v] == mark) {
+        return;
     }
+    m[v] = mark;
     for (i = 0; i < al_n[v]; i++) {
-        ai = al[v][i];
-        if (path_l[ai] < path_l[v]) {
-            path_l[v] = path_l[ai];
-            path[v] = path[ai];
+        dfs(al[v][i], q, &q_n);
+        if (q_n > *p_n) {
+            *p_n = q_n;
+            memcpy(p, q, sizeof q);
         }
     }
-    path_l[v]++;
+    p[*p_n] = v + 1;
+    *p_n += 1;
+    m[v] = 0;
 }
 
 int main()
@@ -48,61 +53,42 @@ int main()
     freopen("in", "r", stdin);
 #endif
     int i, j;
+
     while (scanf("%d%d", &k, &n) == 2) {
+        memset(vs, 0, sizeof vs);
+        memset(al, 0, sizeof al);
+        memset(al_n, 0, sizeof al_n);
+
         for (i = 0; i < k; i++) {
             for (j = 0; j < n; j++) {
                 scanf("%d", vs[i] + j);
             }
             sort(vs[i], vs[i] + n);
         }
-
         for (i = 0; i < k; i++) {
             for (j = 0; j < k; j++) {
-                if (all_less(vs[i], vs[j])) {
+                if (i != j && all_less(vs[j], vs[i])) {
                     al[i][al_n[i]] = j;
                     al_n[i]++;
                 }
             }
         }
 
-        int imax = 0;
-        for (i = 1; i < k; i++) {
-            if (path_l[i] == 0) {
-                search(i);
-            }
-            if (path_l[i] > max_len) {
-                max_len = path_l[i];
+        int p[30], p_n, pmax[30], pmax_n = 0;
+        for (i = 0; i < k; i++) {
+            mark++;
+            dfs(i, p, &p_n);
+            if (p_n > pmax_n) {
+                pmax_n = p_n;
+                memcpy(pmax, p, sizeof p);
             }
         }
-        printf("%d\n", max_len);
-        for (i = 0; i < path_l[i]; i++) {
-            printf("\n");
+
+        printf("%d\n", pmax_n);
+        for (i = 0; i < pmax_n; i++) {
+            printf("%d ", pmax[i]);
         }
+        printf("\n");
     }
     return 0;
 }
-
-/*
-Sample Input
-5 2
-3 7
-8 10
-5 2
-9 11
-21 18
-8 6
-5 2 20 1 30 10
-23 15 7 9 11 3
-40 50 34 24 14 4
-9 10 11 12 13 14
-31 4 18 8 27 17
-44 32 13 19 41 19
-1 2 3 4 5 6
-80 37 47 18 21 9
-
-Sample Output
-5
-3 1 2 4 5
-4
-7 2 5 6
-*/

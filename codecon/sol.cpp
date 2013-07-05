@@ -21,7 +21,7 @@ int nv[30];
 int all_less(int* v1, int* v2)
 {
     for (int i = 0; i < n; i++) {
-        if (v1[i] > v2[i])
+        if (v1[i] < v2[i])
             return 0;
     }
     return 1;
@@ -30,22 +30,27 @@ int all_less(int* v1, int* v2)
 void dfs(int v)
 {
     int i;
+    printf("dfs for %d\n", v);
     if (ml[v]) {
+        printf("return, because already processed\n");
         return;
     }
     if (al_n[v] == 0) {
-        ml[v] = 0;
+        printf("al is empty, ml[%d] = 1\n", v);
+        ml[v] = 1;
     } else {
         int vmax = al[v][0];
         for (i = 0; i < al_n[v]; i++) {
             int vi = al[v][i];
             dfs(vi);
+            printf("... back to %d\n", v);
             if (ml[vi] > ml[vmax]) {
                 vmax = vi;
+                printf("update ml: vmax = %d\n", vmax);
             }
         }
         ml[v] = ml[vmax] + 1;
-        nv[v] = vmax;
+        nv[v] = vmax + 1;
     }
 }
 
@@ -66,6 +71,11 @@ int main()
                 scanf("%d", vs[i] + j);
             }
             sort(vs[i], vs[i] + n);
+            printf("%d: ");
+            for (j = 0; j < n; j++) {
+                printf("%d ", vs[i][j]);
+            }
+            printf("\n");
         }
         for (i = 0; i < k; i++) {
             for (j = 0; j < k; j++) {
@@ -75,10 +85,19 @@ int main()
                 }
             }
         }
+        for (i = 0; i < k; i++) {
+            printf("al %d: ");
+            for (j = 0; j < al_n[i]; j++) {
+                printf("%d ", al[i][j]);
+            }
+            printf("\n");
+        }
 
         int vmax = 0;
         for (i = 0; i < k; i++) {
+            printf("--------\n");
             dfs(i);
+            printf("!! ml[%d] is %d\n", i, ml[i]);
             if (ml[i] > ml[vmax]) {
                 vmax = i;
             }

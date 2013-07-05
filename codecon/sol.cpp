@@ -13,7 +13,7 @@ typedef long long int lli;
 
 int n, k;
 int vs[30][10];
-int al[30][30];
+int al[30][30]; // Adjacency list
 int al_n[30];
 int ml[30];
 int nv[30];
@@ -36,8 +36,8 @@ void dfs(int v)
         return;
     }
     if (al_n[v] == 0) {
-        printf("al is empty, ml[%d] = 1\n", v);
         ml[v] = 1;
+        printf("al #%d is empty: ml %d\n", v, ml[v]);
     } else {
         int vmax = al[v][0];
         for (i = 0; i < al_n[v]; i++) {
@@ -51,6 +51,7 @@ void dfs(int v)
         }
         ml[v] = ml[vmax] + 1;
         nv[v] = vmax + 1;
+        printf("set for #%d: ml %d nv %d (1 based)\n", v, ml[v], nv[v]);
     }
 }
 
@@ -71,7 +72,7 @@ int main()
                 scanf("%d", vs[i] + j);
             }
             sort(vs[i], vs[i] + n);
-            printf("%d: ");
+            printf("%d: ", i);
             for (j = 0; j < n; j++) {
                 printf("%d ", vs[i][j]);
             }
@@ -85,8 +86,9 @@ int main()
                 }
             }
         }
+        printf("\n");
         for (i = 0; i < k; i++) {
-            printf("al %d: ");
+            printf("al %d: ", i);
             for (j = 0; j < al_n[i]; j++) {
                 printf("%d ", al[i][j]);
             }
@@ -104,12 +106,13 @@ int main()
         }
 
         printf("%d\n", ml[vmax]);
+        vmax++;
         do {
             printf("%d ", vmax);
-            vmax = nv[vmax];
+            vmax = nv[vmax - 1];
         } while (vmax);
         printf("\n");
-        break;
+        // break;
     }
     return 0;
 }

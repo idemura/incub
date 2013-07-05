@@ -15,8 +15,8 @@ int n, k;
 int vs[30][10];
 int al[30][30];
 int al_n[30];
-int m[30];
-int mark;
+int ml[30];
+int nv[30];
 
 int all_less(int* v1, int* v2)
 {
@@ -27,24 +27,26 @@ int all_less(int* v1, int* v2)
     return 1;
 }
 
-void dfs(int v, int *p, int *p_n)
+void dfs(int v)
 {
-    int i, q_n = 0, q[30];
-    *p_n = 0;
-    if (m[v] == mark) {
+    int i;
+    if (ml[v]) {
         return;
     }
-    m[v] = mark;
-    for (i = 0; i < al_n[v]; i++) {
-        dfs(al[v][i], q, &q_n);
-        if (q_n > *p_n) {
-            *p_n = q_n;
-            memcpy(p, q, sizeof q);
+    if (al_n[v] == 0) {
+        ml[v] = 0;
+    } else {
+        int vmax = al[v][0];
+        for (i = 0; i < al_n[v]; i++) {
+            int vi = al[v][i];
+            dfs(vi);
+            if (ml[vi] > ml[vmax]) {
+                vmax = vi;
+            }
         }
+        ml[v] = ml[vmax] + 1;
+        nv[v] = vmax;
     }
-    p[*p_n] = v + 1;
-    *p_n += 1;
-    m[v] = 0;
 }
 
 int main()
@@ -55,9 +57,9 @@ int main()
     int i, j;
 
     while (scanf("%d%d", &k, &n) == 2) {
-        memset(vs, 0, sizeof vs);
-        memset(al, 0, sizeof al);
         memset(al_n, 0, sizeof al_n);
+        memset(ml, 0, sizeof ml);
+        memset(nv, 0, sizeof nv);
 
         for (i = 0; i < k; i++) {
             for (j = 0; j < n; j++) {
@@ -74,21 +76,21 @@ int main()
             }
         }
 
-        int p[30], p_n, pmax[30], pmax_n = 0;
+        int vmax = 0;
         for (i = 0; i < k; i++) {
-            mark++;
-            dfs(i, p, &p_n);
-            if (p_n > pmax_n) {
-                pmax_n = p_n;
-                memcpy(pmax, p, sizeof p);
+            dfs(i);
+            if (ml[i] > ml[vmax]) {
+                vmax = i;
             }
         }
 
-        printf("%d\n", pmax_n);
-        for (i = 0; i < pmax_n; i++) {
-            printf("%d ", pmax[i]);
-        }
+        printf("%d\n", ml[vmax]);
+        do {
+            printf("%d ", vmax);
+            vmax = nv[vmax];
+        } while (vmax);
         printf("\n");
+        break;
     }
     return 0;
 }

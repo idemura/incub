@@ -1,3 +1,4 @@
+// See http://uva.onlinejudge.org/external/1/100.html
 #include <algorithm>
 #include <vector>
 #include <utility>

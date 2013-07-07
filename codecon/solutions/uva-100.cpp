@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <vector>
 #include <utility>
-#include <cstdio>
+#include <stdio.h>
 
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
 

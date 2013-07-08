@@ -1,4 +1,4 @@
-(ns con-clj.demi
+(ns con-clj.main
   (:gen-class))
 
 (def squares
@@ -11,11 +11,11 @@
 (def snd (comp first rest))
 
 (defn n-fib [n]
-  (defn gen [i a b]
-    (if (zero? i)
-        ()
-        (cons (+ a b) (gen (dec i) b (+ a b)))))
-  (gen n 0 1))
+  (letfn [(gen [i a b]
+               (if (zero? i)
+                  ()
+                  (cons b (gen (dec i) b (+ a b)))))]
+      (gen n 0 1)))
 
 (defn des [s]
   (let [[a b] s]

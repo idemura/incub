@@ -12,10 +12,10 @@
 
 (defn n-fib [n]
   (letfn [(gen [i a b]
-               (if (zero? i)
-                  ()
-                  (cons b (gen (dec i) b (+ a b)))))]
-      (gen n 0 1)))
+             (if (zero? i)
+                ()
+                (cons b (gen (dec i) b (+ a b)))))]
+    (gen n 0 1)))
 
 (defn des [s]
   (let [[a b] s]

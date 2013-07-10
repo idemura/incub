@@ -46,10 +46,10 @@ lli nth_rec(lli* a, int a_n, int i0, int j0, int ith)
     i = i0; // 'i' is count of items less than 'd'.
     j = j0;
     lli d = a[i];
-    do {
+    for (;;) {
         for (; a[i] < d; i++) {
         }
-        for (; j >= i && a[j] >= d; j--) {
+        for (; j > i && a[j] >= d; j--) {
         }
         // 'i' can't be equal to 'j', because can't be at the same time
         // a[i] >= d(from the first loop) and a[i] < d (from the second
@@ -58,22 +58,24 @@ lli nth_rec(lli* a, int a_n, int i0, int j0, int ith)
             swap(&a[i], &a[j]);
             i++;
             j--;
+        } else {
+            break;
         }
-    } while (i <= j);
+    }
 
     // Here 'i' is count of a[i] such that a[i] < d.
     if (i == i0) {
         if (i == ith) {
             return a[i];
         } else {
-            return nth_rec(a, a_n, i + 1, j0, ith);
+            i++;
         }
+    }
+
+    if (ith < i) {
+        return nth_rec(a, a_n, i0, i - 1, ith);
     } else {
-        if (ith < i) {
-            return nth_rec(a, a_n, i0, i - 1, ith);
-        } else {
-            return nth_rec(a, a_n, i, j0, ith);
-        }
+        return nth_rec(a, a_n, i, j0, ith);
     }
 }
 
@@ -113,9 +115,25 @@ void test2()
     printf("Test 2 OK\n");
 }
 
+void test3()
+{
+    int i;
+    lli a_src[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    lli a[ARRAY_SIZEOF(a_src)];
+    const int a_n = ARRAY_SIZEOF(a);
+
+    for (i = 0; i < a_n; i++) {
+        memcpy(a, a_src, sizeof a_src);
+        assert(nth(a, a_n, i) == i);
+    }
+
+    printf("Test 3 OK\n");
+}
+
 int main()
 {
     test1();
     test2();
+    test3();
     return 0;
 }

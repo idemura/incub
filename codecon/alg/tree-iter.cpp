@@ -59,7 +59,26 @@ void tree_free(node *t)
     delete t;
 }
 
+bool check_tree(node *t)
+{
+    lli min = 0, max = 0;
+    if (t->c[0]) {
+        check_tree(t->c[0], &min, &max);
+        assert(max <= t->key);
+    }
+    if (t->c[1]) {
+        check_tree(t->c[1], &min, &max);
+        assert(min >= t->key);
+    }
+}
+
+void test1()
+{
+    const lli[] = { 5, 2, 4, 3, 1, 7, 9, 8, 6 };
+}
+
 int main()
 {
+    test1();
     return 0;
 }

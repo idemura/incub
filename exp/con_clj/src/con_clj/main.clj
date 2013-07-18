@@ -1,5 +1,6 @@
 (ns con-clj.main
-  (:gen-class))
+  (:gen-class)
+  (:require [clojure.string :refer [join]]))
 
 (def squares
     (map #(* % %) (rest (range))))
@@ -33,4 +34,5 @@
   (println (des '(10 2 3)))
   (println (n-fib 7))
   (println (map (partial * 100) (range 10)))
+  (println (join ", " [1 2 3 4]))
   )

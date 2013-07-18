@@ -12,16 +12,6 @@
 
 typedef long long int lli;
 
-int mini(int a, int b)
-{
-    return a < b ? a : b;
-}
-
-int maxi(int a, int b)
-{
-    return a > b ? a : b;
-}
-
 // Floor logarithm. Undefined for 0.
 int ilog2f(int n)
 {
@@ -39,11 +29,6 @@ int ilog2c(int n)
     for (i = 0; (1 << i) < n; i++) {
     }
     return i;
-}
-
-int madd(int a, int b)
-{
-    return (int)( ((lli)a + (lli)b) % MOD );
 }
 
 int mmul(int a, int b)

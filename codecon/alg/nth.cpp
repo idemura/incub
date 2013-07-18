@@ -97,7 +97,7 @@ void test1()
         assert(nth(a, a_n, i) == i);
     }
 
-    printf("Test 1 OK\n");
+    printf("test1 OK\n");
 }
 
 void test2()
@@ -112,7 +112,7 @@ void test2()
         assert(nth(a, a_n, i) == 5);
     }
 
-    printf("Test 2 OK\n");
+    printf("test2 OK\n");
 }
 
 void test3()
@@ -127,7 +127,7 @@ void test3()
         assert(nth(a, a_n, i) == i);
     }
 
-    printf("Test 3 OK\n");
+    printf("test3 OK\n");
 }
 
 int main()

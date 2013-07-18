@@ -59,22 +59,31 @@ void tree_free(node *t)
     delete t;
 }
 
-bool check_tree(node *t)
+void tree_check(node *t, lli *pmin, lli *pmax)
 {
-    lli min = 0, max = 0;
+    lli r[2][2] = {};
     if (t->c[0]) {
-        check_tree(t->c[0], &min, &max);
-        assert(max <= t->key);
+        tree_check(t->c[0], &r[0][0], &r[0][1]);
+        assert(r[0][1] <= t->key);
     }
     if (t->c[1]) {
-        check_tree(t->c[1], &min, &max);
-        assert(min >= t->key);
+        tree_check(t->c[1], &r[1][0], &r[1][1]);
+        assert(r[1][0] >= t->key);
     }
+    *pmin = t->c[0]? r[0][0]: t->key;
+    *pmax = t->c[1]? r[1][1]: t->key;
 }
 
 void test1()
 {
-    const lli[] = { 5, 2, 4, 3, 1, 7, 9, 8, 6 };
+    lli a[] = { 5, 2, 4, 3, 1, 7, 9, 8, 6 };
+    const int a_n = ARRAY_SIZEOF(a);
+    node* t = tree_make(a, a_n);
+    lli r[2] = {};
+    tree_check(t, &r[0], &r[1]);
+    assert(t->key == a[0]);
+    tree_free(t);
+    printf("test1 OK\n");
 }
 
 int main()

@@ -1,12 +1,10 @@
 (ns con-clj.main
   (:gen-class)
-  (:require [clojure.string :refer [join]]))
-
-(def squares
-    (map #(* % %) (rest (range))))
+  (:require [clojure.string :refer [join]]
+            [clojure.contrib.math :as math]))
 
 (defn sq-sum [n]
-  (reduce + (take n squares)))
+  (reduce + (take n (map #(* % %) (rest (range))))))
 
 (def fst first)
 (def snd (comp first rest))
@@ -22,17 +20,34 @@
   (let [[a b] s]
        (+ a b)))
 
+; Gets a square root of n, if it isn't exact int, returns int truncated down.
+(defn sqrt-int [n]
+  (math/round (- (math/sqrt n) 0.5)))
+
 (defn primes [n]
-  (vec (range n)))
+  (let [mark (fn [i di v]
+               (if (<= i (count v))
+                 (recur (+ i di) di (assoc v (dec i) di))
+                 v))
+        step (fn [i ps v]
+               (if (<= i (count v))
+                 (if (= (v (dec i)) 1)
+                   (recur (inc i) (conj ps i) (mark (* i i) i v))
+                   (recur (inc i) ps v))
+                 ps))]
+    (->> (repeat 1) (take n) vec (step 2 []))))
 
 (defn -main
   [& args]
   ; work around dangerous default behavior in Clojure
   (alter-var-root #'*read-eval* (constantly false))
   (println (sq-sum 4) "should be" (+ 1 4 9 16))
-  (println (take 5 squares))
   (println (des '(10 2 3)))
   (println (n-fib 7))
-  (println (map (partial * 100) (range 10)))
+  (println (map (partial * 5) (range 5)))
   (println (join ", " [1 2 3 4]))
+  (println (sqrt-int 4) (sqrt-int 5))
+  (println "Primes test:")
+  (println (primes 19))
+  (println (quot 3 2) (/ 3 2))
 )

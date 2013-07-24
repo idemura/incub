@@ -37,6 +37,15 @@
                  ps))]
     (->> (repeat 1) (take n) vec (step 2 []))))
 
+; (defn step-do [start step v]
+;   (last (for [i (range start (count v) step)]
+;           (assoc v i (* 10 (v i))))))
+
+(defn step-do [start step v]
+  (reduce (fn [v i] (assoc v i (* 10 (v i))))
+    v
+    (range start (count v) step)))
+
 (defn -main
   [& args]
   ; work around dangerous default behavior in Clojure
@@ -50,4 +59,5 @@
   (println "Primes test:")
   (println (primes 19))
   (println (quot 3 2) (/ 3 2))
+  (println (step-do 2 3 (vec (range 1 15))))
 )

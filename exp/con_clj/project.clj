@@ -6,5 +6,5 @@
   :dependencies
     [[org.clojure/clojure "1.5.1"]
      [org.clojure/clojure-contrib "1.2.0"]]
-  :main con-clj.main
+  :main con-clj.test
   :global-vars {*warn-on-reflection* true})

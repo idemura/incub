@@ -1,4 +1,4 @@
-(ns con-clj.main
+(ns con-clj.test
   (:gen-class)
   (:require [clojure.string :refer [join]]
             [clojure.contrib.math :as math]))

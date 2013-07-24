@@ -9,12 +9,10 @@
 (def fst first)
 (def snd (comp first rest))
 
-(defn n-fib [n]
-  (letfn [(gen [i a b]
-             (if (zero? i)
-                ()
-                (cons b (gen (dec i) b (+ a b)))))]
-    (gen n 0 1)))
+(def fib
+  (letfn [(gen [a b]
+            (cons b (lazy-seq (gen b (+ a b)))))]
+    (gen 0 1)))
 
 (defn des [s]
   (let [[a b] s]
@@ -55,7 +53,7 @@
   (alter-var-root #'*read-eval* (constantly false))
   (println (sq-sum 4) "should be" (+ 1 4 9 16))
   (println (des '(10 2 3)))
-  (println (n-fib 7))
+  (println "Fibonacci numbers:" (take 7 fib))
   (println (map (partial * 5) (range 5)))
   (println (join ", " [1 2 3 4]))
   (println (sqrt-int 4) (sqrt-int 5))

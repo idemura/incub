@@ -4,7 +4,7 @@
             [clojure.contrib.math :as math]))
 
 (defn sq-sum [n]
-  (reduce + (take n (map #(* % %) (rest (range))))))
+  (reduce #(+ % (* %2 %2)) 0 (take n (iterate inc 1))))
 
 (def fst first)
 (def snd (comp first rest))
@@ -46,6 +46,9 @@
     v
     (range start (count v) step)))
 
+(defn clone-coll [c]
+  (into (empty c) c))
+
 (defn -main
   [& args]
   ; work around dangerous default behavior in Clojure
@@ -60,4 +63,6 @@
   (println (primes 19))
   (println (quot 3 2) (/ 3 2))
   (println (step-do 2 3 (vec (range 1 15))))
+  (let [c [1 3 7 10]]
+    (println "Clone of" c "is" (clone-coll c)))
 )

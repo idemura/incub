@@ -49,7 +49,7 @@
 
 (defn -main
   [& args]
-  ; work around dangerous default behavior in Clojure
+  ; Work around dangerous default behavior in Clojure.
   (alter-var-root #'*read-eval* (constantly false))
   (let [n 4]
     (println "Sum of 1 .." n "squares is" (sq-sum 4) "check:" (+ 1 4 9 16)))

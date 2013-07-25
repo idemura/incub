@@ -51,16 +51,16 @@
   [& args]
   ; work around dangerous default behavior in Clojure
   (alter-var-root #'*read-eval* (constantly false))
-  (println (sq-sum 4) "should be" (+ 1 4 9 16))
-  (println (des '(10 2 3)))
-  (println "Fibonacci numbers:" (take 7 fib))
-  (println (map (partial * 5) (range 5)))
+  (let [n 4]
+    (println "Sum of 1 .." n "squares is" (sq-sum 4) "check:" (+ 1 4 9 16)))
+  ; (println (des '(10 2 3)))
+  (println "Fibonacci:" (join " " (take 7 fib)) "...")
+  ; (println (map (partial * 5) (range 5)))
   (println (join ", " [1 2 3 4]))
-  (println (sqrt-int 4) (sqrt-int 5))
-  (println "Primes test:")
-  (println (primes 19))
-  (println (quot 3 2) (/ 3 2))
-  (println (step-do 2 3 (vec (range 1 15))))
+  (println "Trunc down sqrt 4:" (sqrt-int 4) "sqrt 5:" (sqrt-int 5))
+  (println "Primes:" (primes 19))
+  ; (println (quot 3 2) (/ 3 2))
+  (println "Step iterate from:" (step-do 2 3 (vec (range 1 15))))
   (let [c [1 3 7 10]]
     (println "Clone of" c "is" (clone-coll c)))
 )

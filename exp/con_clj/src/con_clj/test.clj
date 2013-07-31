@@ -47,6 +47,11 @@
 (defn clone-coll [c]
   (into (empty c) c))
 
+(defn bottles []
+  (doseq [b (reverse (range 1 10))]
+    (println b "bottles, take one, drink,"))
+  (println "No bottles any more"))
+
 (defn -main
   [& args]
   ; Work around dangerous default behavior in Clojure.
@@ -63,4 +68,5 @@
   (println "Step iterate from:" (step-do 2 3 (vec (range 1 15))))
   (let [c [1 3 7 10]]
     (println "Clone of" c "is" (clone-coll c)))
+  (bottles)
 )

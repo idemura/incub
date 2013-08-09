@@ -49,7 +49,7 @@ int dpf(int k) {
     int i, j;
     int best = 0;
     for (i = 0; i < ix[k].size(); i++) {
-        int d =
+        int d = dpf()
     }
 }
 
@@ -77,6 +77,9 @@ int main()
         }
     }
 
+    for (i = 0; i < ARRAY_SIZEOF(dp); i++) {
+        dp[i] = -1;
+    }
     int sol = dpf(0);
 
     return 0;

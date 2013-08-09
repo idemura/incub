@@ -2,6 +2,7 @@
 #include <vector>
 #include <utility>
 #include <stdio.h>
+#include <string.h>
 #include <math.h>
 
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
@@ -10,29 +11,46 @@
 
 using namespace std;
 
-typedef long long int lli;
+#define MAX 108
 
-struct seg {
-    seg *prev;
-    int l, r
-    int parity;
-};
-
-int N, K;
-seg ss[5000];
-map<int, ss*> lp, rp;
-
-bool left_less(const seg& a, const seg& b)
+char encode(char c)
 {
-    if (a.l == b.l)
-        return a.r < b.r;
-    else
-        return a.l < b.l;
+    switch (c) {
+    case 'i': case 'j':
+        return '1';
+    case 'a': case 'b': case 'c':
+        return '2';
+    case 'd': case 'e': case 'f':
+        return '3';
+    case 'g': case 'h':
+        return '4';
+    case 'k': case 'l':
+        return '5';
+    case 'm': case 'n':
+        return '6';
+    case 'p': case 'r': case 's':
+        return '7';
+    case 't': case 'u': case 'v':
+        return '8';
+    case 'w': case 'x': case 'y':
+        return '9';
+    case 'o': case 'q': case 'z':
+        return '0';
+    default:
+        return 0;
+    }
 }
 
-bool check(int s)
-{
+vector<int> ix[100];
+int wlen[50000];
+int dp[100];
 
+int dpf(int k) {
+    int i, j;
+    int best = 0;
+    for (i = 0; i < ix[k].size(); i++) {
+        int d =
+    }
 }
 
 int main()
@@ -41,22 +59,25 @@ int main()
     freopen("in", "r", stdin);
 #endif
     int i, j;
+    char sample[MAX];
+    int dict_n = 0;
 
-    scanf("%d%d", &N, &K);
-    for (i = 0; i < K; i++) {
-        char buf[16];
-        scanf("%d%d%s", &ss[i].l, &ss[i].r, buf);
-        if (ss[i].l > ss[i].r) {
-            swap(ss[i].l, ss[i].r);
+    scanf("%s%d", sample, &dict_n);
+    for (i = 0; i < dict_n; i++) {
+        char w[60];
+        scanf("%s", w);
+        for (j = 0; w[j]; j++) {
+            w[j] = encode(w[j]);
         }
-        ss[i].i = i;
-        ss[i].parity = buf[0] == 'o';
-        if (!check(i)) {
-            break;
+        char *p = strstr(sample, w);
+        while (p) {
+            j = p - sample + 1;
+            ix[j].push_back(i);
+            p = strstr(sample + j, w);
         }
-        lp[i]
     }
 
-    printf("%d\n", i < K? i: -1);
+    int sol = dpf(0);
+
     return 0;
 }

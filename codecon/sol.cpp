@@ -1,36 +1,11 @@
-/*
-A tree (i.e. a connected graph without cycles) with vertices is given
-(N ≥ 2). Vertices of the tree are numbered by the integers 1,...,N. A Prufer
-code for the tree is built as follows: a leaf (a vertex that is incident to the
-only edge) with a minimal number is taken. Then this vertex and the incident
-edge are removed from the graph, and the number of the vertex that was adjacent
-to the leaf is written down. In the obtained graph once again a leaf with a
-minimal number is taken, removed and this procedure is repeated until the only
-vertex is left. It is clear that the only vertex left is the vertex with the
-number N. The written down set of integers (N−1 numbers, each in a range from 1
-to N) is called a Prufer code of the graph.
-Your task is, given a Prufer code, to reconstruct a tree, i.e. to find out the
-adjacency lists for every vertex in the graph.
-You may assume that 2 ≤ N ≤ 7500
-
-Input
-A set of numbers corresponding to a Prufer code of some tree. The numbers are
-separated with a spaces and/or line breaks.
-
-Output
-Adjacency lists for each vertex. Format: a vertex number, colon, numbers of
-adjacent vertices separated with a space. The vertices inside lists and lists
-itself should be sorted by vertex number in an ascending order (look at sample
-output).
-**/
-
 #include <algorithm>
 #include <vector>
-#include <set>
+#include <map>
 #include <utility>
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
+#include <cassert>
 
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
 #define INF 0x7fffffff
@@ -38,52 +13,95 @@ output).
 
 using namespace std;
 
-#define DIM 7500
+#define DIM 5000
 
-int vs[DIM], vs_n = 0;
-int cs[DIM], cs_n = 0;
-vector<int> al[DIM];
+struct point {
+    int x, c, i, left;
+};
+
+bool sort_pred(const point& p1, const point& p2)
+{
+    if (p1.x == p2.x) {
+        return p1.i < p2.i;
+    } else {
+        return p1.x < p2.x;
+    }
+}
+
+bool ord(int n1, int n2)
+{
+    return n1 > n2;
+}
+
+point ps[2*DIM+2];
+int cs[2*DIM+2];
+int ps_n;
+
+void add(int *k, int l, int r, int c, int i)
+{
+    int j = *k;
+    ps[j].x = l;
+    ps[j].c = c;
+    ps[j].left = 1;
+    ps[j].i = i;
+    j++;
+    ps[j].x = r;
+    ps[j].c = c;
+    ps[j].left = 0;
+    ps[j].i = i;
+    j++;
+    *k = j;
+}
 
 int main()
 {
 #ifndef ONLINE_JUDGE
     freopen("in", "r", stdin);
 #endif
-    set<int> heap;  // Seems set is good enough to be a heap.
-    int v, i, j;
+    int i, j = 0;
 
-    while (scanf("%d", &v) == 1) {
-        vs[vs_n++] = v - 1;
-        if (v > cs_n) {
-            cs_n = v;
+    add(&j, 1, 1000000000, 1, 0);
+    scanf("%d", &ps_n);
+    for (i = 0, j = 0; i < ps_n; i++) {
+        int l, r;
+        char c;
+        scanf("%d%d %c", &l, &r, &c);
+        add(&j, l, r, c == 'w', i+1);
+    }
+    int n = j;
+    sort(ps, ps + n, sort_pred);
+    map<int, int> cmap;
+    for (i = 0; i < n-1; i++) {
+        if (ps[i].left) {
+            cmap[-ps[i].i] = ps[i].c;
+        } else {
+            assert(cmap.find(-ps[i].i) != cmap.end());
+            cmap.erase(cmap.find(-ps[i].i));
+        }
+        cs[i] = cmap.begin()->second;
+    }
+    int s = ps[0].x;
+    int e = s;
+    int s_best = s;
+    int e_best = e;
+    for (i = 0; i < n-1; i++) {
+        if (e == ps[i].x && (cs[i] || ps[i].x == ps[i+1].x)) {
+            e = ps[i+1].x;
+        } else {
+            if (e - s > e_best - s_best) {
+                e_best = e;
+                s_best = s;
+            }
+            s = e = ps[i+1].x;
         }
     }
-    for (i = 0; i < vs_n; i++) {
-        cs[vs[i]]++;
+    if (e - s > e_best - s_best) {
+        e_best = e;
+        s_best = s;
     }
-    for (i = 0; i < cs_n; i++) {
-        if (cs[i] == 0) {
-            heap.insert(i);
-        }
+    if (s_best == e_best) {
+        s_best--;
     }
-    for (i = 0; i < vs_n; i++) {
-        int v = *heap.begin();
-        heap.erase(heap.begin());
-        int w = vs[i];
-        al[v].push_back(w);
-        al[w].push_back(v);
-        cs[w]--;
-        if (cs[w] == 0) {
-            heap.insert(w);
-        }
-    }
-    for (i = 0; i < cs_n; i++) {
-        sort(al[i].begin(), al[i].end());
-        printf("%d:", i + 1);
-        for (j = 0; j < al[i].size(); j++) {
-            printf(" %d", al[i][j] + 1);
-        }
-        printf("\n");
-    }
+    printf("%d %d\n", s_best, e_best);
     return 0;
 }

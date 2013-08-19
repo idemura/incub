@@ -52,6 +52,17 @@
     (println b "bottles, take one, drink,"))
   (println "No bottles any more"))
 
+(def abs-m (comp math/abs -))
+
+(defn queens [c vac st acc]
+  (letfn [(hit [x1 y1 x2 y2] (= (abs-m x2 x1) (abs-m y2 y1)))
+          (check-cell [[x y] st] (some #((hit x y % %1)) st))]
+    ; (println (filter #((let [[x y] %1] (hit c % x y))) vac))
+    (println (check-cell [2 1] [[1 1] [1 4]]))
+  ;   filter vacant
+  ;   map vacant to
+  ))
+
 (defn -main
   [& args]
   ; Work around dangerous default behavior in Clojure.
@@ -69,4 +80,5 @@
   (let [c [1 3 7 10]]
     (println "Clone of" c "is" (clone-coll c)))
   (bottles)
+  (queens 2 (range 1 9) '([1 1]) ())
 )

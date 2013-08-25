@@ -1,29 +1,4 @@
-/*
-A tree (i.e. a connected graph without cycles) with vertices is given
-(N ≥ 2). Vertices of the tree are numbered by the integers 1,...,N. A Prufer
-code for the tree is built as follows: a leaf (a vertex that is incident to the
-only edge) with a minimal number is taken. Then this vertex and the incident
-edge are removed from the graph, and the number of the vertex that was adjacent
-to the leaf is written down. In the obtained graph once again a leaf with a
-minimal number is taken, removed and this procedure is repeated until the only
-vertex is left. It is clear that the only vertex left is the vertex with the
-number N. The written down set of integers (N−1 numbers, each in a range from 1
-to N) is called a Prufer code of the graph.
-Your task is, given a Prufer code, to reconstruct a tree, i.e. to find out the
-adjacency lists for every vertex in the graph.
-You may assume that 2 ≤ N ≤ 7500
-
-Input
-A set of numbers corresponding to a Prufer code of some tree. The numbers are
-separated with a spaces and/or line breaks.
-
-Output
-Adjacency lists for each vertex. Format: a vertex number, colon, numbers of
-adjacent vertices separated with a space. The vertices inside lists and lists
-itself should be sorted by vertex number in an ascending order (look at sample
-output).
-**/
-
+// Prufer code.
 #include <algorithm>
 #include <vector>
 #include <set>

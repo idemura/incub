@@ -52,16 +52,26 @@
     (println b "bottles, take one, drink,"))
   (println "No bottles any more"))
 
+(defn logf [f]
+  (fn [& args]
+    (let [r (apply f args)]
+      (println args "->" r)
+      r)))
+
 (def abs-m (comp math/abs -))
 
-(defn queens [c vac st acc]
-  (letfn [(hit [x1 y1 x2 y2] (= (abs-m x2 x1) (abs-m y2 y1)))
-          (check-cell [[x y] st] (some #((hit x y % %1)) st))]
-    ; (println (filter #((let [[x y] %1] (hit c % x y))) vac))
-    (println (check-cell [2 1] [[1 1] [1 4]]))
-  ;   filter vacant
-  ;   map vacant to
-  ))
+; Can wrap logging in function and/or macro.
+(defn diag [x1 y1 x2 y2]
+  (= (abs-m x2 x1) (abs-m y2 y1)))
+
+(defn queens [c vac st]
+  (if (empty? vac)
+    (if (= c 9) [st] [])
+    (letfn [(free? [[x y] st]
+              (not (some (fn [[a b]] (diag x y a b)) st)))]
+      (mapcat
+        #(queens (inc c) (disj vac %) (conj st [c %]))
+        (set (filter #(free? [c %] st) vac))))))
 
 (defn -main
   [& args]
@@ -80,5 +90,7 @@
   (let [c [1 3 7 10]]
     (println "Clone of" c "is" (clone-coll c)))
   (bottles)
-  (queens 2 (range 1 9) '([1 1]) ())
+  (let [sol (queens 1 (set (range 1 9)) ())]
+    (println sol)
+    (println (count sol) "solutions total."))
 )

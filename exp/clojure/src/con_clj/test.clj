@@ -74,6 +74,16 @@
         #(queens (inc c) (disj vac %) (conj st [c %]))
         (set (filter #(free? [c %] st) vac))))))
 
+(defn seq-to-str [s]
+  (apply str s))
+
+(defn parse-csv [csv]
+  (let [not-comma #(not= % \,)
+        drop-to-comma #(drop-while not-comma %)
+        take-to-comma #(take-while not-comma %)]
+    (map (comp trim seq-to-str take-to-comma)
+         (take-while identity (iterate (comp next drop-to-comma) csv)))))
+
 (defn space? [c]
   (Character/isWhitespace c))
 
@@ -106,5 +116,6 @@
   ; (let [sol (queens 1 (set (range 1 9)) ())]
   ;   (println sol)
   ;   (println (count sol) "solutions total."))
+  ; (println (interpose "|" (parse-csv "1, 2 , 3 ,, end")))
   (println (tokens (seq " 2 + 3")))
 )

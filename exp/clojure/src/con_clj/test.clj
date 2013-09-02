@@ -1,7 +1,8 @@
 (ns con-clj.test
   (:gen-class)
-  (:require [clojure.string :refer [join]]
-            [clojure.contrib.math :as math]))
+  (:require
+    [clojure.string :refer [join trim triml trimr]]
+    [clojure.contrib.math :as math]))
 
 (defn sq-sum [n]
   (reduce #(+ % (* %2 %2)) 0 (take n (iterate inc 1))))
@@ -73,24 +74,37 @@
         #(queens (inc c) (disj vac %) (conj st [c %]))
         (set (filter #(free? [c %] st) vac))))))
 
-(defn -main
-  [& args]
+(defn space? [c]
+  (Character/isWhitespace c))
+
+(defn tokens [expr]
+  (loop [ex expr as []]
+    (let [nsp (drop-while space? ex)
+          fc (first nsp)
+          rs (rest nsp)]
+      (cond
+        (empty? nsp) (conj as {:tok :eof})
+        ; (<= \0 (first nsp) \9) (conj (tokens (rest expr)) {:tok :digit})
+        :else (recur rs (conj as {:tok :sym :val fc}))))))
+
+(defn -main [& args]
   ; Work around dangerous default behavior in Clojure.
   (alter-var-root #'*read-eval* (constantly false))
-  (let [n 4]
-    (println "Sum of 1 .." n "squares is" (sq-sum 4) "check:" (+ 1 4 9 16)))
+  ; (let [n 4]
+  ;   (println "Sum of 1 .." n "squares is" (sq-sum 4) "check:" (+ 1 4 9 16)))
   ; (println (des '(10 2 3)))
-  (println "Fibonacci:" (join " " (take 7 fib)) "...")
+  ; (println "Fibonacci:" (join " " (take 7 fib)) "...")
   ; (println (map (partial * 5) (range 5)))
-  (println (join ", " [1 2 3 4]))
-  (println "Trunc down sqrt 4:" (sqrt-int 4) "sqrt 5:" (sqrt-int 5))
-  (println "Primes:" (primes 19))
+  ; (println (join ", " [1 2 3 4]))
+  ; (println "Trunc down sqrt 4:" (sqrt-int 4) "sqrt 5:" (sqrt-int 5))
+  ; (println "Primes:" (primes 19))
   ; (println (quot 3 2) (/ 3 2))
-  (println "Step iterate from:" (step-do 2 3 (vec (range 1 15))))
-  (let [c [1 3 7 10]]
-    (println "Clone of" c "is" (clone-coll c)))
-  (bottles)
-  (let [sol (queens 1 (set (range 1 9)) ())]
-    (println sol)
-    (println (count sol) "solutions total."))
+  ; (println "Step iterate from:" (step-do 2 3 (vec (range 1 15))))
+  ; (let [c [1 3 7 10]]
+  ;   (println "Clone of" c "is" (clone-coll c)))
+  ; (bottles)
+  ; (let [sol (queens 1 (set (range 1 9)) ())]
+  ;   (println sol)
+  ;   (println (count sol) "solutions total."))
+  (println (tokens (seq " 2 + 3")))
 )

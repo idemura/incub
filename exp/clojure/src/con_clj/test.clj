@@ -86,6 +86,8 @@
 
 (defn space? [c]
   (Character/isWhitespace c))
+(defn digit? [c]
+  ())
 
 (defn tokens [expr]
   (loop [ex expr as []]
@@ -118,4 +120,5 @@
   ;   (println (count sol) "solutions total."))
   ; (println (interpose "|" (parse-csv "1, 2 , 3 ,, end")))
   (println (tokens (seq " 2 + 3")))
+  (println (> 0 (compare \a \c)))
 )

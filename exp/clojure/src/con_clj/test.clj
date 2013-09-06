@@ -94,16 +94,28 @@
 (defn to-int [is]
   (reduce #(+ (* 10 %1) %2) (map #(- (int %) (int \0)) is)))
 
+(defn drop-space [ss]
+  (drop-while space? ex))
+
+(defn tok-eof [s]
+  (if (empty? s)
+    [nil, ]
+    [s, nil]))
+
 (defn tokens [expr]
   (loop [ex expr, ts []]
-    (let [no-space (drop-while space? ex)]
-      (if (empty? no-space)
+    (let [nsp (drop-space ex)]
+      (if (empty? nsp)
         (conj ts {:tok :eof})
-        (let [ch (first no-space), rs (rest no-space)]
-          (cond
-            (digit? ch) (let [[ds rs] (split-with digit? no-space)]
-                          (recur rs (conj ts {:tok :int :val (to-int ds)})))
-            :else (recur rs (conj ts {:tok :sym :val ch}))))))))
+        (apply or (map #(% nsp) [take-int take-sym])))))
+
+      (let [ch (first nsp), rs (rest nsp)]
+        (cond
+          (empty? nsp)
+          (digit? (first nsp))
+            (let [[ds rs] (split-with digit? nsp)]
+              (recur rs (conj ts {:tok :int :val (to-int ds)})))
+          :else (recur (rest nsp) (conj ts {:tok :sym :val (first nsp)})))))))
 
 (defn -main [& args]
   ; Work around dangerous default behavior in Clojure.

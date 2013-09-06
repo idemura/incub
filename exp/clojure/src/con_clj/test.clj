@@ -91,31 +91,27 @@
   (= (Character/getType ^Character c)
      (Character/DECIMAL_DIGIT_NUMBER)))
 
-(defn to-int [is]
-  (reduce #(+ (* 10 %1) %2) (map #(- (int %) (int \0)) is)))
+(defn to-int [ds]
+  (reduce #(+ (* 10 %1) %2) (map #(- (int %) (int \0)) ds)))
 
-(defn drop-space [ss]
-  (drop-while space? ex))
+(defn take-int [s]
+  (when (digit? (first s))
+    (let [[digits rs] (split-with digit? s)]
+      [rs {:token :int :val (to-int digits)}])))
 
-(defn tok-eof [s]
-  (if (empty? s)
-    [nil, ]
-    [s, nil]))
+(defn take-sym [s]
+  [(rest s) {:token :sym :val (first s)}])
+
+(defn or-list [l]
+  (some identity l))
 
 (defn tokens [expr]
   (loop [ex expr, ts []]
-    (let [nsp (drop-space ex)]
+    (let [nsp (drop-while space? ex)]
       (if (empty? nsp)
         (conj ts {:tok :eof})
-        (apply or (map #(% nsp) [take-int take-sym])))))
-
-      (let [ch (first nsp), rs (rest nsp)]
-        (cond
-          (empty? nsp)
-          (digit? (first nsp))
-            (let [[ds rs] (split-with digit? nsp)]
-              (recur rs (conj ts {:tok :int :val (to-int ds)})))
-          :else (recur (rest nsp) (conj ts {:tok :sym :val (first nsp)})))))))
+        (if-let [[rs t] (some identity (map #(% nsp) [take-int take-sym]))]
+          (recur rs (conj ts t)))))))
 
 (defn -main [& args]
   ; Work around dangerous default behavior in Clojure.

@@ -85,19 +85,25 @@
          (take-while identity (iterate (comp next drop-to-comma) csv)))))
 
 (defn space? [c]
-  (Character/isWhitespace c))
+ (Character/isWhitespace c))
+
 (defn digit? [c]
-  ())
+  (= (Character/getType ^Character c)
+     (Character/DECIMAL_DIGIT_NUMBER)))
+
+(defn to-int [is]
+  (reduce #(+ (* 10 %1) %2) (map #(- (int %) (int \0)) is)))
 
 (defn tokens [expr]
-  (loop [ex expr as []]
-    (let [nsp (drop-while space? ex)
-          fc (first nsp)
-          rs (rest nsp)]
-      (cond
-        (empty? nsp) (conj as {:tok :eof})
-        ; (<= \0 (first nsp) \9) (conj (tokens (rest expr)) {:tok :digit})
-        :else (recur rs (conj as {:tok :sym :val fc}))))))
+  (loop [ex expr, ts []]
+    (let [no-space (drop-while space? ex)]
+      (if (empty? no-space)
+        (conj ts {:tok :eof})
+        (let [ch (first no-space), rs (rest no-space)]
+          (cond
+            (digit? ch) (let [[ds rs] (split-with digit? no-space)]
+                          (recur rs (conj ts {:tok :int :val (to-int ds)})))
+            :else (recur rs (conj ts {:tok :sym :val ch}))))))))
 
 (defn -main [& args]
   ; Work around dangerous default behavior in Clojure.
@@ -119,6 +125,6 @@
   ;   (println sol)
   ;   (println (count sol) "solutions total."))
   ; (println (interpose "|" (parse-csv "1, 2 , 3 ,, end")))
-  (println (tokens (seq " 2 + 3")))
-  (println (> 0 (compare \a \c)))
+  ; (println (> 0 (compare \a \c)))
+  (println (tokens (seq " 20 + 32 ")))
 )

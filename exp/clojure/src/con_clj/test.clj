@@ -89,7 +89,7 @@
   (throw (new Exception (apply str s))))
 
 (defn space? [^Character c]
- (Character/isWhitespace c))
+  (Character/isWhitespace c))
 
 (defn digit? [^Character c]
   (= (Character/getType c)
@@ -109,6 +109,8 @@
     \- [(rest s) {:minus -}]
     \* [(rest s) {:star *}]
     \/ [(rest s) {:slash /}]
+    \( [(rest s) {:lbrace true}]
+    \) [(rest s) {:rbrace true}]
     nil))
 
 (defn tokens [expr]
@@ -124,10 +126,18 @@
 (declare parse-expr parse-mult parse-prim)
 
 (defn parse-prim [ts]
-  (let [[{i :int} & ts-tail] ts]
-    (if i
-      [(fn [_] i) ts-tail]
-      (throw (new Exception "Integer expected")))))
+  (let [[t & ts-tail] ts]
+    (cond
+      (:int t)
+        [(fn [_] (:int t)) ts-tail]
+      (:lbrace t)
+        (let [[lfn [t & ts-tail]] (parse-expr ts-tail)]
+          (if (:rbrace t)
+            [lfn ts-tail]
+            (throw-ex "Right brace expected")))
+      :else
+        ;; TODO: Better diagnostic for right brace.
+        (throw-ex "Integer or brace expression expected"))))
 
 (defn parse-mult [ts]
   (loop [[lfn l-tail] (parse-prim ts)]
@@ -141,14 +151,13 @@
     (if-let [op (let [t (first l-tail)] (or (:plus t) (:minus t)))]
       (let [[rfn r-tail] (parse-mult (rest l-tail))]
         (recur [#(op (lfn %) (rfn %)) r-tail]))
-      (let [[{v :eof}] l-tail]
-        (if v
-          [lfn nil]
-          (throw (new Exception "Binary op or EOF expected")))))))
+      [lfn l-tail])))
 
 (defn parse [ts]
-  (let [[res _] (parse-expr (seq ts))]
-    res))
+  (let [[res [{v :eof}]] (parse-expr (seq ts))]
+    (if v
+      res
+      (throw-ex "Binary op or EOF expected"))))
 
 (defn -main [& args]
   ; Work around dangerous default behavior in Clojure.
@@ -172,10 +181,10 @@
   ; (println (interpose "|" (parse-csv "1, 2 , 3 ,, end")))
   ; (println (> 0 (compare \a \c)))
 
-  (let [expr " 12 / 2 * 3 + 1 "]
+  (let [expr " 12 / 2 * (1 + 1) + 2 * (6 - 1) "]
     (try
       (let [f (parse (tokens (seq expr)))]
         (println (trim expr) ":=" (f {})))
-      (catch Exception e
-        (println "Exception:" (str e)))))
+     (catch Exception e
+       (println "Exception:" (str e)))))
 )

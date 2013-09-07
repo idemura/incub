@@ -84,11 +84,11 @@
     (map (comp trim seq-to-str take-to-comma)
          (take-while identity (iterate (comp next drop-to-comma) csv)))))
 
-(defn space? [c]
+(defn space? [^Character c]
  (Character/isWhitespace c))
 
-(defn digit? [c]
-  (= (Character/getType ^Character c)
+(defn digit? [^Character c]
+  (= (Character/getType c)
      (Character/DECIMAL_DIGIT_NUMBER)))
 
 (defn to-int [ds]
@@ -97,21 +97,68 @@
 (defn take-int [s]
   (when (digit? (first s))
     (let [[digits rs] (split-with digit? s)]
-      [rs {:token :int :val (to-int digits)}])))
+      [rs {:int (to-int digits)}])))
 
 (defn take-sym [s]
-  [(rest s) {:token :sym :val (first s)}])
+  (case (first s)
+    \+ [(rest s) {:plus +}]
+    \- [(rest s) {:minus -}]
+    \* [(rest s) {:star *}]
+    \/ [(rest s) {:slash /}]
+    nil))
 
-(defn or-list [l]
-  (some identity l))
+(defn take-error [msg]
+  [nil {:error msg}])
 
+;; Takes a sequence of chars and return a sequence of tokens,
+;; or just single {:error <message>}
 (defn tokens [expr]
   (loop [ex expr, ts []]
     (let [nsp (drop-while space? ex)]
       (if (empty? nsp)
-        (conj ts {:tok :eof})
-        (if-let [[rs t] (some identity (map #(% nsp) [take-int take-sym]))]
-          (recur rs (conj ts t)))))))
+        (conj ts {:eof true})
+        (if-let [[rs t] (or (take-int nsp)
+                            (take-sym nsp)
+                            (take-error (str "Invalid symbol " (first nsp))))]
+          (if (:error t)
+            t
+            (recur rs (conj ts t))))))))
+
+(defn tokens-error [{m :error}]
+  m)
+
+(declare parse-expr parse-mult parse-prim)
+
+(defn parse-prim [ts]
+  (println "prim" ts)
+  (let [[{i :int} & ts-tail] ts]
+    (println "i" i "and tail is" ts-tail)
+    (if i
+      [(fn [] i) ts-tail]
+      (throw (new Exception "Integer expected")))))
+
+(defn parse-mult [ts]
+  (let [[lh tsl] (parse-prim ts)
+        [tl & tail-l] tsl]
+    (if-let [op (or (:star tl) (:slash tl))]
+      (let [[rh tsr] (parse-prim tail-l)]
+         (println "hello" tsr)
+         [(fn [] (op (lh) (rh))) tsr])
+      ; Else go step up to parse.
+      [lh tsl])))
+
+(defn parse-expr [ts]
+  (let [[lh tsl] (parse-mult ts)
+        [tl & tail-l] tsl]
+    (if-let [op (or (:plus tl) (:minus tl))]
+      (let [[rh tsr] (parse-expr tail-l)]
+         [(fn [] (op (lh) (rh))) tsr])
+      (if (:eof tl)
+        [lh nil]
+        (throw (new Exception "Binary op or EOF expected"))))))
+
+(defn parse [ts]
+  (parse-expr (seq ts)))
 
 (defn -main [& args]
   ; Work around dangerous default behavior in Clojure.
@@ -134,5 +181,12 @@
   ;   (println (count sol) "solutions total."))
   ; (println (interpose "|" (parse-csv "1, 2 , 3 ,, end")))
   ; (println (> 0 (compare \a \c)))
-  (println (tokens (seq " 20 + 32 ")))
+  (let [ts (tokens (seq " 5 + 7 "))]
+    (if-let [m (tokens-error ts)]
+      (println "Error:" m)
+      (try
+        (let [[f _] (parse ts), val (f)]
+          (println "Result:" val))
+        (catch Exception e
+          (println "Exception:" (str e))))))
 )

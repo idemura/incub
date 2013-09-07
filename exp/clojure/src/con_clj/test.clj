@@ -84,6 +84,10 @@
     (map (comp trim seq-to-str take-to-comma)
          (take-while identity (iterate (comp next drop-to-comma) csv)))))
 
+;; Better to have a macro.
+(defn throw-ex [& s]
+  (throw (new Exception (apply str s))))
+
 (defn space? [^Character c]
  (Character/isWhitespace c))
 
@@ -107,58 +111,44 @@
     \/ [(rest s) {:slash /}]
     nil))
 
-(defn take-error [msg]
-  [nil {:error msg}])
-
-;; Takes a sequence of chars and return a sequence of tokens,
-;; or just single {:error <message>}
 (defn tokens [expr]
   (loop [ex expr, ts []]
     (let [nsp (drop-while space? ex)]
       (if (empty? nsp)
         (conj ts {:eof true})
-        (if-let [[rs t] (or (take-int nsp)
-                            (take-sym nsp)
-                            (take-error (str "Invalid symbol " (first nsp))))]
-          (if (:error t)
-            t
-            (recur rs (conj ts t))))))))
-
-(defn tokens-error [{m :error}]
-  m)
+        (let [[rs t] (or (take-int nsp)
+                         (take-sym nsp)
+                         (throw-ex "Invalid symbol " (first nsp)))]
+            (recur rs (conj ts t)))))))
 
 (declare parse-expr parse-mult parse-prim)
 
 (defn parse-prim [ts]
-  (println "prim" ts)
   (let [[{i :int} & ts-tail] ts]
-    (println "i" i "and tail is" ts-tail)
     (if i
-      [(fn [] i) ts-tail]
+      [(fn [_] i) ts-tail]
       (throw (new Exception "Integer expected")))))
 
 (defn parse-mult [ts]
-  (let [[lh tsl] (parse-prim ts)
-        [tl & tail-l] tsl]
-    (if-let [op (or (:star tl) (:slash tl))]
-      (let [[rh tsr] (parse-prim tail-l)]
-         (println "hello" tsr)
-         [(fn [] (op (lh) (rh))) tsr])
-      ; Else go step up to parse.
-      [lh tsl])))
+  (loop [[lfn l-tail] (parse-prim ts)]
+    (if-let [op (let [t (first l-tail)] (or (:star t) (:slash t)))]
+      (let [[rfn r-tail] (parse-prim (rest l-tail))]
+        (recur [#(op (lfn %) (rfn %)) r-tail]))
+      [lfn l-tail])))
 
 (defn parse-expr [ts]
-  (let [[lh tsl] (parse-mult ts)
-        [tl & tail-l] tsl]
-    (if-let [op (or (:plus tl) (:minus tl))]
-      (let [[rh tsr] (parse-expr tail-l)]
-         [(fn [] (op (lh) (rh))) tsr])
-      (if (:eof tl)
-        [lh nil]
-        (throw (new Exception "Binary op or EOF expected"))))))
+  (loop [[lfn l-tail] (parse-mult ts)]
+    (if-let [op (let [t (first l-tail)] (or (:plus t) (:minus t)))]
+      (let [[rfn r-tail] (parse-mult (rest l-tail))]
+        (recur [#(op (lfn %) (rfn %)) r-tail]))
+      (let [[{v :eof}] l-tail]
+        (if v
+          [lfn nil]
+          (throw (new Exception "Binary op or EOF expected")))))))
 
 (defn parse [ts]
-  (parse-expr (seq ts)))
+  (let [[res _] (parse-expr (seq ts))]
+    res))
 
 (defn -main [& args]
   ; Work around dangerous default behavior in Clojure.
@@ -181,12 +171,11 @@
   ;   (println (count sol) "solutions total."))
   ; (println (interpose "|" (parse-csv "1, 2 , 3 ,, end")))
   ; (println (> 0 (compare \a \c)))
-  (let [ts (tokens (seq " 5 + 7 "))]
-    (if-let [m (tokens-error ts)]
-      (println "Error:" m)
-      (try
-        (let [[f _] (parse ts), val (f)]
-          (println "Result:" val))
-        (catch Exception e
-          (println "Exception:" (str e))))))
+
+  (let [expr " 12 / 2 * 3 + 1 "]
+    (try
+      (let [f (parse (tokens (seq expr)))]
+        (println (trim expr) ":=" (f {})))
+      (catch Exception e
+        (println "Exception:" (str e)))))
 )

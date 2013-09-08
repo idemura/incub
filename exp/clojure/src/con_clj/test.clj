@@ -95,13 +95,10 @@
   (= (Character/getType c)
      (Character/DECIMAL_DIGIT_NUMBER)))
 
-(defn to-int [ds]
-  (reduce #(+ (* 10 %1) %2) (map #(- (int %) (int \0)) ds)))
-
 (defn take-int [s]
   (when (digit? (first s))
     (let [[digits rs] (split-with digit? s)]
-      [rs {:int (to-int digits)}])))
+      [rs {:int (Integer/parseInt (apply str digits) 10)}])))
 
 (defn take-sym [s]
   (case (first s)
@@ -185,6 +182,6 @@
     (try
       (let [f (parse (tokens (seq expr)))]
         (println (trim expr) ":=" (f {})))
-     (catch Exception e
-       (println "Exception:" (str e)))))
+      (catch Exception e
+        (println "Exception:" (str e)))))
 )

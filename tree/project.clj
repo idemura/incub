@@ -9,7 +9,7 @@
     [org.clojure/clojure "1.5.1"]
     [org.clojure/clojure-contrib "1.2.0"]]
   :main tree.main
-  :global-vars { #_(*warn-on-reflection* true) }
+  :global-vars {#_(*warn-on-reflection* true)}
   :profiles {
     :opt {
       :debug false

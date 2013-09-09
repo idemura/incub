@@ -21,7 +21,7 @@
 
 (defn walk [dirs ^File file st]
   (println (render-line st file))
-  (if-let [child (sort-by #(.getName %) (dirs (.getPath file)))]
+  (if-let [child (sort-by (fn [^File f] (.getName f)) (dirs (.getPath file)))]
     (let [n (count child)
           pred (fn [new-file i]
                  (walk dirs new-file

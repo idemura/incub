@@ -1,7 +1,6 @@
 (ns tree.main
   (:gen-class)
-  (:require
-    [clojure.java.io])
+  (:require [clojure.java.io])
   (:import java.io.File))
 
 (def ^:const H_LINE "\u2500")

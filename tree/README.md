@@ -1,4 +1,4 @@
-# Tree
+## Tree
 Tree utility in Clojure. Renders file tree in the terminal.
 
 Usage:
@@ -17,10 +17,9 @@ Sample rendering:
 └─ target
    ├─ classes
    └─ stale
-      └─ extract-native.dependencies
+      └─ dependencies
 ```
 
 ## License
 
-Copyright © 2013 Igor Demura
-Distributed under the Eclipse Public License.
+Copyright © 2013 Igor Demura. Distributed under the Eclipse Public License.

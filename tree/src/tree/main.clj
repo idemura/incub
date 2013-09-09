@@ -39,7 +39,7 @@
 (def ^:const HELP_STRING
   "Pretty print of directory structure.
 Usage:
-    tree <start directory> [regex file filter]
+    tree <directory> [regex file filter]
   ")
 
 ;; TODO: Use transients.

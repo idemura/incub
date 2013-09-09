@@ -51,9 +51,8 @@ Usage:
           start (clojure.java.io/file start-dir-name)
           files (filter-files regex (file-seq start))
           assoc-file (fn [m ^File f]  ;; m is map String->File
-                       (let [p (.getParent f)]
-                         (if p
-                           (assoc m p (conj (m p []) f))
-                           m)))
+                       (if-let [p (.getParent f)]
+                         (assoc m p (conj (m p []) f))
+                         m))
           dirs (reduce assoc-file {} files)]
       (walk dirs start []))))

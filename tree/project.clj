@@ -1,5 +1,5 @@
 (defproject tree "0.1.0"
-  :description "Tree console utility in Clojure"
+  :description "Tree utility in Clojure"
   :url "http://github.com/idemura/incub"
   :license {
     :name "Eclipse Public License",

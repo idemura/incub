@@ -28,17 +28,33 @@
       (dorun (map pred child (iterate inc 1)))
     nil)))
 
+(defn filter-files [regex files]
+  (if regex
+    (let [re (re-pattern regex)
+          pr (fn [^File f] (or (.isDirectory f) (re-find re (.getName f))))]
+      (filter pr files))
+    files))
+
+(def ^:const MAN_STRING
+  "Pretty print of directory structure.
+Usage:
+    tree <start directory> [regex for file]
+  ")
+
 ;; TODO: Use transients.
 (defn -main
   [& args]
   ;; Work around dangerous default behaviour in Clojure.
   (alter-var-root #'*read-eval* (constantly false))
-  (let [start-path (clojure.java.io/file (if (empty? args) "." (first args)))
-        files (doall (file-seq start-path))
-        assoc-file (fn [m ^File f]  ;; m is map, f is java.io.File
-                     (let [p (.getParent f)]
-                       (if p
-                         (assoc m p (conj (m p []) f))
-                         m)))
-        dirs (reduce assoc-file {} files)]
-    (walk dirs start-path [])))
+  (if (empty? args)
+    (println MAN_STRING)
+    (let [[dir regex] args
+          start (clojure.java.io/file (if dir dir "."))
+          files (filter-files regex (file-seq start))
+          assoc-file (fn [m ^File f]  ;; m is map, f is java.io.File
+                       (let [p (.getParent f)]
+                         (if p
+                           (assoc m p (conj (m p []) f))
+                           m)))
+          dirs (reduce assoc-file {} files)]
+      (walk dirs start []))))

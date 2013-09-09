@@ -1,5 +1,5 @@
 (defproject con_clj "0.1.0"
-  :description "Experiment project to learn the Clojure language"
+  :description "Tree console utility in Clojure"
   :url "http://github.com/idemura/incub"
   :license {
     :name "Eclipse Public License",
@@ -8,5 +8,9 @@
   :dependencies [
     [org.clojure/clojure "1.5.1"]
     [org.clojure/clojure-contrib "1.2.0"]]
-  :main con-clj.test
-  :global-vars {*warn-on-reflection* true})
+  :main tree.main
+  :global-vars { #_(*warn-on-reflection* true) }
+  :profiles {
+    :opt {
+      :debug false
+      :javac-options ["-target" "1.6" "-source" "1.6" "-g:none"]}})

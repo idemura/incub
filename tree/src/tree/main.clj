@@ -4,6 +4,7 @@
     [clojure.java.io])
   (:import java.io.File))
 
+(def ^:const H_LINE "\u2500")
 (def ^:const V_LINE "\u2502")
 (def ^:const BRANCH "\u251c")
 (def ^:const LAST_BRANCH "\u2514")
@@ -16,11 +17,11 @@
                     {:n BRANCH :e LAST_BRANCH}
                     {:n V_LINE :e " "}) %1)
              st (iterate inc 1)))
-         "\u2500 " (.getName file))))
+         H_LINE " " (.getName file))))
 
 (defn walk [dirs ^File file st]
   (println (render-line st file))
-  (if-let [child (dirs (.getPath file))]
+  (if-let [child (sort-by #(.getName %) (dirs (.getPath file)))]
     (let [n (count child)
           pred (fn [new-file i]
                  (walk dirs new-file
@@ -35,10 +36,10 @@
       (filter pr files))
     files))
 
-(def ^:const MAN_STRING
+(def ^:const HELP_STRING
   "Pretty print of directory structure.
 Usage:
-    tree <start directory> [regex for file]
+    tree <start directory> [regex file filter]
   ")
 
 ;; TODO: Use transients.
@@ -47,9 +48,9 @@ Usage:
   ;; Work around dangerous default behaviour in Clojure.
   (alter-var-root #'*read-eval* (constantly false))
   (if (empty? args)
-    (println MAN_STRING)
-    (let [[dir regex] args
-          start (clojure.java.io/file (if dir dir "."))
+    (println HELP_STRING)
+    (let [[start-dir-name regex] args
+          start (clojure.java.io/file start-dir-name)
           files (filter-files regex (file-seq start))
           assoc-file (fn [m ^File f]  ;; m is map, f is java.io.File
                        (let [p (.getParent f)]

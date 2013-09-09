@@ -20,6 +20,16 @@ Sample rendering:
       └─ dependencies
 ```
 
+## Build and install
+
+Assuming your target directory for binaries is `~/bin`, you can build and
+install uberjar with commands:
+```
+lein with-profile opt uberjar
+cp target/opt+uberjar/tree-0.1.0-standalone.jar ~/bin
+cp tree ~/bin
+```
+
 ## License
 
 Copyright © 2013 Igor Demura. Distributed under the Eclipse Public License.

@@ -1,0 +1,2 @@
+#!/bin/sh
+java -client -jar tree-0.1.0.jar $*

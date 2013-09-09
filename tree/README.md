@@ -1,5 +1,5 @@
 # Tree
-Tree utility in Clojure.
+Tree utility in Clojure. Renders file tree in the terminal.
 
 Base
 ## License

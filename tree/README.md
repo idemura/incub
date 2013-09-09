@@ -6,6 +6,7 @@ Usage:
 
 Sample rendering:
 ```
+user@machine:tree$ tree .
 .
 ├─ .gitignore
 ├─ .lein-repl-history

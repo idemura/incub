@@ -43,8 +43,7 @@ Usage:
   ")
 
 ;; TODO: Use transients.
-(defn -main
-  [& args]
+(defn -main [& args]
   ;; Work around dangerous default behaviour in Clojure.
   (alter-var-root #'*read-eval* (constantly false))
   (if (empty? args)
@@ -52,7 +51,7 @@ Usage:
     (let [[start-dir-name regex] args
           start (clojure.java.io/file start-dir-name)
           files (filter-files regex (file-seq start))
-          assoc-file (fn [m ^File f]  ;; m is map, f is java.io.File
+          assoc-file (fn [m ^File f]  ;; m is map String->File
                        (let [p (.getParent f)]
                          (if p
                            (assoc m p (conj (m p []) f))

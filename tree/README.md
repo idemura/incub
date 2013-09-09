@@ -1,4 +1,4 @@
-## Tree
+## Overview
 Tree utility in Clojure. Renders a file tree in the terminal.
 
 Usage:

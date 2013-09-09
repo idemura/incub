@@ -1,5 +1,5 @@
 ## Tree
-Tree utility in Clojure. Renders file tree in the terminal.
+Tree utility in Clojure. Renders a file tree in the terminal.
 
 Usage:
 ```tree <directory> [file filter regex]```

@@ -36,7 +36,7 @@
     files))
 
 (def ^:const HELP_STRING
-  "Pretty print of directory structure.
+  "Pretty print of a directory's file tree.
 Usage:
     tree <directory> [regex file filter]
   ")

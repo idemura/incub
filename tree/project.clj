@@ -9,6 +9,7 @@
     [org.clojure/clojure "1.5.1"]]
   :main tree.main
   :global-vars {#_(*warn-on-reflection* true)}
+  :jvm-opts ["-Dfile.encoding=utf-8"]
   :profiles {
     :opt {
       :debug false

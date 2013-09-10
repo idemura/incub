@@ -42,13 +42,12 @@ Usage:
   ")
 
 ;; TODO: Use transients.
-(defn -main [& args]
+(defn -main [& [start-dir-name regex]]
   ;; Work around dangerous default behaviour in Clojure.
   (alter-var-root #'*read-eval* (constantly false))
-  (if (empty? args)
+  (if (nil? start-dir-name)
     (println HELP_STRING)
-    (let [[start-dir-name regex] args
-          start (clojure.java.io/file start-dir-name)
+    (let [start (clojure.java.io/file start-dir-name)
           files (filter-files regex (file-seq start))
           assoc-file (fn [m ^File f]  ;; m is map String->File
                        (if-let [p (.getParent f)]

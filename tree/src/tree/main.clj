@@ -43,6 +43,7 @@ Usage:
   ")
 
 ;; TODO: Use transients.
+;; TODO: Walk -> Tree -> List of Strings.
 (defn -main [& [start-dir-name regex]]
   ;; Work around dangerous default behaviour in Clojure.
   (alter-var-root #'*read-eval* (constantly false))

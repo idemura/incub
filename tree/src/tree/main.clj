@@ -1,6 +1,7 @@
 (ns tree.main
   (:gen-class)
-  (:require [clojure.java.io])
+  (:require [clojure.java.io]
+            [clojure.string :refer [join]])
   (:import java.io.File))
 
 (def ^:const H_LINE "\u2500")
@@ -11,11 +12,11 @@
 (defn render-line [st ^File file]
   (if (empty? st)
     (.getName file)
-    (str (reduce #(str %1 "  " %2)
-           (map #((if (= %2 (count st))
-                    {:n BRANCH :e LAST_BRANCH}
-                    {:n V_LINE :e " "}) %1)
-             st (iterate inc 1)))
+    (str (join "  "
+               (map #((if (= %2 (count st))
+                        {:n BRANCH :e LAST_BRANCH}
+                        {:n V_LINE :e " "}) %1)
+                    st (rest (range))))
          H_LINE " " (.getName file))))
 
 (defn walk [dirs ^File file st]
@@ -25,8 +26,8 @@
           pred (fn [new-file i]
                  (walk dirs new-file
                        (conj st (if (= i n) :e :n))))]
-      (dorun (map pred child (iterate inc 1)))
-    nil)))
+      (dorun (map pred child (rest (range)))))
+    nil))
 
 (defn filter-files [regex files]
   (if regex

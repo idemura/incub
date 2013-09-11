@@ -1,4 +1,5 @@
 (ns tree.main
+  (:gen-class)
   (:require [clojure.java.io]
             [clojure.string :refer [join]])
   (:import java.io.File))

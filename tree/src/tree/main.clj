@@ -1,5 +1,4 @@
 (ns tree.main
-  (:gen-class)
   (:require [clojure.java.io]
             [clojure.string :refer [join]])
   (:import java.io.File))
@@ -39,8 +38,8 @@
 (def ^:const HELP_STRING
   "Pretty print of a directory's file tree.
 Usage:
-    tree <directory> [regex file filter]
-  ")
+  tree <directory> [regex file filter]
+")
 
 ;; TODO: Use transients.
 ;; TODO: Walk -> Tree -> List of Strings.

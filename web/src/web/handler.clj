@@ -1,12 +1,14 @@
 (ns web.handler
-  (:use compojure.core)
-  (:require [compojure.handler :as handler]
-            [compojure.route :as route]))
+  (:require
+    [compojure.core :refer :all]
+    [compojure.handler]
+    [compojure.route :as route]))
 
 (defroutes app-routes
-  (GET "/" [] "Hello World")
+  (GET "/" [] "<p>Hello <b>World</b></p>")
+  (GET "/ping/:what" [what] (str "<h1>Ping '" what "'</h1>"))
   (route/resources "/")
   (route/not-found "Not Found"))
 
 (def app
-  (handler/site app-routes))
+  (compojure.handler/site app-routes))

@@ -56,4 +56,5 @@ Usage:
                          (assoc m p (conj (m p []) f))
                          m))
           dirs (reduce assoc-file {} files)]
-      (walk dirs start []))))
+      (walk dirs start [])))
+  (flush))

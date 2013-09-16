@@ -7,7 +7,8 @@
   :min-lein-version "2.0.0"
   :dependencies [
     [org.clojure/clojure "1.5.1"]
-    [compojure "1.1.5"]]
+    [compojure "1.1.5"]
+    [enlive "1.1.1"]]
   :plugins [[lein-ring "0.8.5"]]
   :ring {:handler web.handler/app}
   :global-vars {#_(*warn-on-reflection* true)}

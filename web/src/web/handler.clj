@@ -2,7 +2,8 @@
   (:require
     [compojure.core :refer :all]
     [compojure.handler]
-    [compojure.route :as route]))
+    [compojure.route :as route]
+    [net.cgrand.enlive-html :as html]))
 
 (defroutes app-routes
   (GET "/" [] "<p>Hello <b>World</b></p>")

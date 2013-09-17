@@ -156,6 +156,10 @@
       res
       (throw-ex "Binary op or EOF expected"))))
 
+; My variant of `get-in`. Neat function, I'd say.
+(defn get-deep [path cont]
+  (reduce #(%2 %1) cont path))
+
 (defn -main [& args]
   ; Work around dangerous default behavior in Clojure.
   (alter-var-root #'*read-eval* (constantly false))
@@ -178,10 +182,12 @@
   ; (println (interpose "|" (parse-csv "1, 2 , 3 ,, end")))
   ; (println (> 0 (compare \a \c)))
 
-  (let [expr " 12 / 2 * (1 + 1) + 2 * (6 - 1) "]
-    (try
-      (let [f (parse (tokens (seq expr)))]
-        (println (trim expr) ":=" (f {})))
-      (catch Exception e
-        (println "Exception:" (str e)))))
+  ; (let [expr " 12 / 2 * (1 + 1) + 2 * (6 - 1) "]
+  ;   (try
+  ;     (let [f (parse (tokens (seq expr)))]
+  ;       (println (trim expr) ":=" (f {})))
+  ;     (catch Exception e
+  ;       (println "Exception:" (str e)))))
+
+  ; (println (get-deep [:a :b :r] {:a {:b {:c 10} :d 20} :e 30}))
 )

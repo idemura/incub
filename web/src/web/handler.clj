@@ -5,10 +5,10 @@
     [compojure.route :as route]
     [net.cgrand.enlive-html :as html]))
 
-(html/set-ns-parser! html/xml-parser)
-
-(html/deftemplate view-index "templates/index.html"
-  [])
+(html/deftemplate view-index
+  {:parser html/xml-parser} "templates/index.html"
+  []
+  [:a#LoginWithGoogle] (html/set-attr :href "hello"))
 
 (defn handle-index
   [request]

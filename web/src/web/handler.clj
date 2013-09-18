@@ -7,12 +7,18 @@
 
 (html/set-ns-parser! html/xml-parser)
 
-(html/deftemplate index "templates/index.html"
+(html/deftemplate view-index "templates/index.html"
   [])
 
+(defn handle-index
+  [request]
+  ; (println request)
+  {:headers {"idemura-custom", "value"}
+   :body    (apply str (view-index))})
+
 (defroutes app-routes
-  (GET "/" [] (index))
-  (GET "/ping/:what" [what] (str "<h1>Ping '" what "'</h1>"))
+  (GET "/" [] handle-index)
+  (GET "/ping/:what" [what] (str "<h1>Ping " what "</h1>"))
   (route/resources "/")
   (route/not-found "Not Found"))
 

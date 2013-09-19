@@ -24,13 +24,13 @@
   (println (request :request-method))
   "Zzzzzzzzz")
 
-(defn url-encode-query
+(defn ^String url-encode-query
   [params]
-  (letfn [(encode [[k v]]
+  (letfn [(encode [[^String k ^String v]]
             (str (name k) "=" (-> v URLEncoder/encode (.replace "+" "%20"))))]
-    (->> params (map encode) (interpose "&") join str)))
+    (->> params (map encode) (interpose "&") join)))
 
-(defn url-encode
+(defn ^String url-encode
   [host params]
   (if (empty? params)
     host

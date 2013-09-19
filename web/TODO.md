@@ -1,3 +1,4 @@
 ### TODO list.
 
-* asdfasdf
+* Login with Google OAuth 2.
+* 

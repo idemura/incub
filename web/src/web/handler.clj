@@ -6,28 +6,24 @@
     [compojure.route :as route]
     [net.cgrand.enlive-html :as html])
   (:import
-    [java.net URLEncoder]))
+    [java.net URLEncoder]
+    [clojure.lang IPersistentVector IPersistentMap]))
 
-(html/deftemplate view-index
-  {:parser html/xml-parser} "templates/index.html"
-  []
-  [:a#LoginWithGoogle] (html/set-attr :href "hello"))
+(defprotocol IUrlEncodable
+  (^String url-encode-value [v]))
 
-(defn handle-index
-  [request]
-  ; (println request)
-  {:headers {"idemura-custom", "value"}
-   :body    (apply str (view-index))})
-
-(defn handle-oauth2-callback
-  [request]
-  (println (request :request-method))
-  "Zzzzzzzzz")
+(extend-protocol IUrlEncodable
+  String
+  (^String url-encode-value [v]
+    (-> v URLEncoder/encode (.replace "+" "%20")))
+  IPersistentVector
+  (^String url-encode-value [v]
+    (->> v (map url-encode-value) (join "+"))))
 
 (defn ^String url-encode-query
   [params]
-  (letfn [(encode [[^String k ^String v]]
-            (str (name k) "=" (-> v URLEncoder/encode (.replace "+" "%20"))))]
+  (letfn [(encode [[k v]]
+            (str (name k) "=" (url-encode-value v)))]
     (->> params (map encode) (interpose "&") join)))
 
 (defn ^String url-encode
@@ -38,10 +34,34 @@
 
 (def ^:const CLIENT_ID "484563975237.apps.googleusercontent.com")
 (def ^:const CLIENT_SECRET "XyjfDwvcQUA8xYO9n9iW0iW2")
+(def ^:const CLIENT_SCOPES
+  ["https://www.googleapis.com/auth/userinfo.email"
+   "https://www.googleapis.com/auth/userinfo.profile"])
+
 (def oauth2-uri (url-encode
                   "https://accounts.google.com/o/oauth2/auth"
-                  {:redirect_uri "localhost:3000/oauth2callback"
-                   :client_id CLIENT_ID}))
+                  {:response_type "code"
+                   :access_type "online"
+                   :redirect_uri "http://localhost:3000/oauth2callback"
+                   :client_id CLIENT_ID
+                   :scope CLIENT_SCOPES}))
+
+(html/deftemplate view-index
+  {:parser html/xml-parser} "templates/index.html"
+  []
+  [:a#LoginWithGoogle] (html/set-attr :href oauth2-uri))
+
+(defn handle-index
+  [request]
+  ; (println request)
+  {:headers {"idemura-custom", "value"}
+   :body    (do (println oauth2-uri)
+                (apply str (view-index)))})
+
+(defn handle-oauth2-callback
+  [request]
+  (println (request :request-method))
+  "Zzzzzzzzz")
 
 (defroutes app-routes
   (GET "/" [] handle-index)

@@ -1,36 +1,13 @@
 (ns web.handler
+  (:use web.generic)
   (:require
-    [clojure.string :refer [join]]
     [compojure.core :refer :all]
     [compojure.handler]
     [compojure.route :as route]
     [net.cgrand.enlive-html :as html])
   (:import
-    [java.net URLEncoder]
-    [clojure.lang IPersistentVector IPersistentMap]))
-
-(defprotocol IUrlEncodable
-  (^String url-encode-value [v]))
-
-(extend-protocol IUrlEncodable
-  String
-  (^String url-encode-value [v]
-    (-> v URLEncoder/encode (.replace "+" "%20")))
-  IPersistentVector
-  (^String url-encode-value [v]
-    (->> v (map url-encode-value) (join "+"))))
-
-(defn ^String url-encode-query
-  [params]
-  (letfn [(encode [[k v]]
-            (str (name k) "=" (url-encode-value v)))]
-    (->> params (map encode) (interpose "&") join)))
-
-(defn ^String url-encode
-  [host params]
-  (if (empty? params)
-    host
-    (str host "?" (url-encode-query params))))
+    [java.net HttpURLConnection URL]
+    [clojure.lang IPersistentMap IPersistentVector]))
 
 (def ^:const CLIENT_ID "484563975237.apps.googleusercontent.com")
 (def ^:const CLIENT_SECRET "XyjfDwvcQUA8xYO9n9iW0iW2")
@@ -39,11 +16,11 @@
    "https://www.googleapis.com/auth/userinfo.profile"])
 (def ^:const ERROR_GAUTH "Error authenticating with Google.")
 
-(def oauth2-uri (url-encode
+(def oauth2-uri (url-encode-request
                   "https://accounts.google.com/o/oauth2/auth"
                   {:response_type "code"
                    :access_type "online"
-                   :redirect_uri "http://localhost:3000/oauth2callback"
+                   :redirect_uri "http://localhost:3000/oauth2/code"
                    :client_id CLIENT_ID
                    :scope CLIENT_SCOPES}))
 
@@ -64,11 +41,40 @@
    :body    (do (println oauth2-uri)
                 (apply str (view-index)))})
 
+(defmacro catch-all
+  ([forms]
+    `(catch Exception ~@forms)))
+
+(defn- write-output
+  [^HttpURLConnection conn ^String data]
+  (try
+    (let [st (.getOutputStream conn)]
+      (try
+        (.write st (.getBytes form))
+        conn
+      (finally
+        (.close st))))
+    (catch-all conn)))
+
 (defn- exchange-for-token
   [code]
-  (str code))
+  (let [form (url-encode {:code code
+                          :client_id CLIENT_ID
+                          :client_secret CLIENT_SECRET
+                          :redirect_uri "http://localhost:3000/oauth2/token"
+                          :grant_type "authorization_code"})
+        addr "https://accounts.google.com/o/oauth2/token"
+        conn (doto
+               (.openConnection (URL. addr))
+               (.setDoOutput true)  ;; Triggers POST.
+               (.setRequestProperty "Content-Type" "application/x-www-form-urlencoded; charset=utf-8")
+               (.setRequestProperty "Content-Length" (count form)))
+        ]
+    (write-output conn)
+    (let [is (.getInputStream conn)]
+      )))
 
-(defn handle-oauth2-callback
+(defn handle-oauth2-code
   [request]
   (let [params (request :query-params)
         param-code (params "code")]
@@ -80,7 +86,7 @@
   (GET "/" [] handle-index)
   (GET "/ping/:what" [what] (str "<h1>Ping " what "</h1>"))
   ;; This name is registered in Google API console.
-  (ANY "/oauth2callback" [] handle-oauth2-callback)
+  (ANY "/oauth2callback" [] handle-oauth2-code)
   (route/resources "/")
   (route/not-found "Not Found"))
 

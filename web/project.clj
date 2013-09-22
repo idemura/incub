@@ -11,7 +11,7 @@
     [enlive "1.1.1"]]
   :plugins [[lein-ring "0.8.5"]]
   :ring {:handler web.handler/app}
-  :global-vars {#_(*warn-on-reflection* true)}
+  :global-vars {*warn-on-reflection* true}
   :profiles {
     :dev {
       :dependencies [[ring-mock "0.1.5"]]}

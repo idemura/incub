@@ -163,6 +163,33 @@
 ; (defn get-deep [path cont]
 ;   (reduce #(%1 %2) cont path))
 
+(defn solve-sorted [n pairs]
+  (println "solve:" n pairs (apply + pairs))
+  (if (= n 2)
+    (let [v (vec pairs)
+          s (/ (apply + pairs) 2)]
+      [(- s (v 0)) (- s (v 1)) (- s (v 2))])
+    (let [n-1 (dec n)
+          sum (/ (apply + pairs) n)
+          first_sum (apply + (take n pairs))
+          _ (println "sum" sum "sum_first" (apply + (take n pairs)) "sum_item" (- first_sum sum))
+          m (/ (- first_sum sum) n-1)]
+      (conj (solve-sorted n-1 (drop n pairs)) m))))
+
+(defn solve [n pairs]
+  (->> (sort pairs) (solve-sorted (dec n)) reverse))
+
+(defn create-and-solve
+  [n]
+  (let [ns (repeatedly n #(rand-int 10))
+        tails (->> ns (iterate rest) (take-while #(> (count %) 1)))
+        sumf (fn [x] #(+ x %))
+        pairs (mapcat #(->> (rest %) (map (sumf (first %)))) tails)]
+    (println ns)
+    (println tails)
+    (println pairs)
+    (println (solve n pairs))))
+
 (defn -main [& args]
   ; Work around dangerous default behavior in Clojure.
   (alter-var-root #'*read-eval* (constantly false))
@@ -192,4 +219,5 @@
   ;       (println (trim expr) ":=" (f {})))
   ;     (catch Exception e
   ;       (println "Exception:" (str e)))))
+  ; (create-and-solve 5)
 )

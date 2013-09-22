@@ -37,6 +37,7 @@
 (def ^:const CLIENT_SCOPES
   ["https://www.googleapis.com/auth/userinfo.email"
    "https://www.googleapis.com/auth/userinfo.profile"])
+(def ^:const ERROR_GAUTH "Error authenticating with Google.")
 
 (def oauth2-uri (url-encode
                   "https://accounts.google.com/o/oauth2/auth"
@@ -49,7 +50,12 @@
 (html/deftemplate view-index
   {:parser html/xml-parser} "templates/index.html"
   []
-  [:a#LoginWithGoogle] (html/set-attr :href oauth2-uri))
+  [:#GoogleOauth2Login] (html/set-attr :href oauth2-uri))
+
+(html/deftemplate view-error
+  {:parser html/xml-parser} "templates/error.html"
+  [msg]
+  [:#ErrorMessage] (html/content msg))
 
 (defn handle-index
   [request]
@@ -58,14 +64,22 @@
    :body    (do (println oauth2-uri)
                 (apply str (view-index)))})
 
+(defn- exchange-for-token
+  [code]
+  (str code))
+
 (defn handle-oauth2-callback
   [request]
-  (println (request :request-method))
-  "Zzzzzzzzz")
+  (let [params (request :query-params)
+        param-code (params "code")]
+    (if param-code
+      (exchange-for-token param-code)
+      (view-error ERROR_GAUTH))))
 
 (defroutes app-routes
   (GET "/" [] handle-index)
   (GET "/ping/:what" [what] (str "<h1>Ping " what "</h1>"))
+  ;; This name is registered in Google API console.
   (ANY "/oauth2callback" [] handle-oauth2-callback)
   (route/resources "/")
   (route/not-found "Not Found"))

@@ -6,8 +6,8 @@
     [compojure.route :as route]
     [net.cgrand.enlive-html :as html])
   (:import
-    [java.net HttpURLConnection URL]
-    [clojure.lang IPersistentMap IPersistentVector]))
+    [clojure.lang IPersistentMap IPersistentVector]
+    [java.net HttpURLConnection URL]))
 
 (def ^:const CLIENT_ID "484563975237.apps.googleusercontent.com")
 (def ^:const CLIENT_SECRET "XyjfDwvcQUA8xYO9n9iW0iW2")
@@ -36,57 +36,57 @@
 
 (defn handle-index
   [request]
-  ; (println request)
   {:headers {"idemura-custom", "value"}
-   :body    (do (println oauth2-uri)
-                (apply str (view-index)))})
-
-(defmacro catch-all
-  ([forms]
-    `(catch Exception ~@forms)))
-
-(defn- write-output
-  [^HttpURLConnection conn ^String data]
-  (try
-    (let [st (.getOutputStream conn)]
-      (try
-        (.write st (.getBytes form))
-        conn
-      (finally
-        (.close st))))
-    (catch-all conn)))
+   :body    (apply str (view-index))})
 
 (defn- exchange-for-token
   [code]
-  (let [form (url-encode {:code code
-                          :client_id CLIENT_ID
-                          :client_secret CLIENT_SECRET
-                          :redirect_uri "http://localhost:3000/oauth2/token"
-                          :grant_type "authorization_code"})
+  (let [form (url-encode
+               {:code code
+                :client_id CLIENT_ID
+                :client_secret CLIENT_SECRET
+                :redirect_uri "http://localhost:3000/oauth2/code"
+                :grant_type "authorization_code"})
         addr "https://accounts.google.com/o/oauth2/token"
-        conn (doto
-               (.openConnection (URL. addr))
-               (.setDoOutput true)  ;; Triggers POST.
-               (.setRequestProperty "Content-Type" "application/x-www-form-urlencoded; charset=utf-8")
-               (.setRequestProperty "Content-Length" (count form)))
-        ]
-    (write-output conn)
-    (let [is (.getInputStream conn)]
-      )))
+        conn (let [^HttpURLConnection conn (.openConnection (URL. addr))]
+               (doto conn
+                 (.setDoOutput true)
+                 (.setRequestProperty "Content-Type" MIME_FORM_URLENCODED)
+                 (.setRequestProperty "Content-Length" (str (count form)))))]
+    (try
+      (with-open [os (.getOutputStream conn)]
+        (.write os (.getBytes form)))
+      (let [code (.getResponseCode conn)]
+        {:code code
+         :data (slurp (if (= code 200)
+                        (.getInputStream conn)
+                        (.getErrorStream conn)))})
+      (catch Exception e
+        {:code 400
+         :data (.getMessage e)}))))
 
 (defn handle-oauth2-code
   [request]
   (let [params (request :query-params)
         param-code (params "code")]
     (if param-code
-      (exchange-for-token param-code)
+      (let [{code :code data :data} (exchange-for-token param-code)]
+        (if (= code 200)
+          (view-error (str "success " data))
+          (view-error (str "failure " code " :: " data))))
       (view-error ERROR_GAUTH))))
+
+(defn handle-echo
+  [request]
+  (println request)
+  "ECHO")
 
 (defroutes app-routes
   (GET "/" [] handle-index)
   (GET "/ping/:what" [what] (str "<h1>Ping " what "</h1>"))
-  ;; This name is registered in Google API console.
-  (ANY "/oauth2callback" [] handle-oauth2-code)
+  ;; This path is registered in the Google API console.
+  (GET "/oauth2/code" [] handle-oauth2-code)
+  (ANY "/echo" [] handle-echo)
   (route/resources "/")
   (route/not-found "Not Found"))
 

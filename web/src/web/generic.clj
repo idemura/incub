@@ -5,22 +5,24 @@
     [java.net URLEncoder]
     [clojure.lang IPersistentMap IPersistentVector]))
 
+(def ^:const MIME_FORM_URLENCODED
+    "application/x-www-form-urlencoded; charset=utf-8")
+
 (defprotocol IUrlEncodable
-  (^String url-encode-value [v]))
+  (^String url-encode [v]))
 
 (extend-protocol IUrlEncodable
   String
-  (url-encode-value [v]
+  (url-encode [v]
     (-> v URLEncoder/encode (.replace "+" "%20")))
   IPersistentVector
-  (url-encode-value [v]
-    (->> v (map url-encode-value) (str/join "+"))))
-
-(defn ^String url-encode
-  [params]
-  (letfn [(encode [[k v]]
-            (str (name k) "=" (url-encode-value v)))]
-    (->> params (map encode) (interpose "&") str/join)))
+  (url-encode [v]
+    (->> v (map url-encode) (str/join "+")))
+  IPersistentMap
+  (url-encode [v]
+    (letfn [(encode [[k v]]
+              (str (name k) "=" (url-encode v)))]
+      (->> v (map encode) (interpose "&") str/join))))
 
 (defn ^String url-encode-request
   [host params]

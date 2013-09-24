@@ -65,6 +65,10 @@
         {:code 400
          :data (.getMessage e)}))))
 
+;; https://www.googleapis.com/oauth2/v2/userinfo?alt=json
+(defn get-userinfo []
+  nil)
+
 (defn handle-oauth2-code
   [request]
   (let [params (request :query-params)

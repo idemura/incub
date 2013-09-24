@@ -1,6 +1,8 @@
 ### TODO list.
 
+* JSON parser.
 * Get user info: email, birth date, sex and etc.
+* Sessions, server side storage.
 * Add user to the database. Ask for nickname for new ones?
 * Blog: just add/edit new entries with some markup. MD?
   Collective blog like habr with free hubs and just + for article?

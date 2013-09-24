@@ -1,6 +1,5 @@
 ### TODO list.
 
-* JSON parser.
 * Get server's options. In particular, host. Get rid of hardcoded
   localhost:3000.
 * Get user info: email, birth date, sex and etc.
@@ -20,3 +19,4 @@ Done:
 * Get code from OAuth 2.0 response and exchange for refresh and access tokens.
 * Enlive: do not escape & in href attribure. Works and intended. & should be
   escaped.
+* JSON parser.

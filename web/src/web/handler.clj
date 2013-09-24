@@ -59,7 +59,7 @@
 (defn- access-granted [cred]
   (view-error (cred "access_token")))
 
-(defn handle-oauth2-code
+(defn handle-oauth2
   [request]
   (let [params (request :query-params)
         param-code (params "code")]
@@ -79,7 +79,7 @@
   (GET "/" [] handle-index)
   (GET "/ping/:what" [what] (str "<h1>Ping " what "</h1>"))
   ;; This path is registered in the Google API console.
-  (GET "/oauth2" [] handle-oauth2-code)
+  (GET "/oauth2" [] handle-oauth2)
   (ANY "/echo" [] handle-echo)
   (route/resources "/")
   (route/not-found "Not Found"))

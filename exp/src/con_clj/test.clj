@@ -2,6 +2,7 @@
   (:gen-class)
   (:require
     [clojure.string :refer [join trim triml trimr]]
+    [clojure.data.json :as json]
     [clojure.contrib.math :as math]))
 
 (defn sq-sum [n]
@@ -220,4 +221,5 @@
   ;     (catch Exception e
   ;       (println "Exception:" (str e)))))
   ; (create-and-solve 5)
+  (println (json/write-str {"a" 10 "b" 20}))
 )

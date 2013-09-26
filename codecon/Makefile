@@ -8,10 +8,10 @@ else
 endif
 DISABLE_WARNINGS = -Wno-unused-function -Wno-unused-result
 STD ?= c++0x
-CFLAGS = -Wall -std=$(STD) -march=native $(DISABLE_WARNINGS) -DDEBUG
+CFLAGS = -Wall -std=$(STD) -march=native $(DISABLE_WARNINGS)
 cfg ?= debug
 ifeq ($(cfg), debug)
-	CFLAGS += -O0 -g
+	CFLAGS += -O0 -g -DDEBUG
 else
 	CFLAGS += -O2 -flto -ffast-math -DNDEBUG
 endif

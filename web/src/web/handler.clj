@@ -55,9 +55,13 @@
         {:code 400
          :data (json/write-str {"error" (.getMessage e)})}))))
 
-;; https://www.googleapis.com/oauth2/v2/userinfo?alt=json
 (defn- access-granted [cred]
-  (view-error (cred "access_token")))
+  (let [url "https://www.googleapis.com/oauth2/v2/userinfo"
+        params {:alt "json" :access_token (cred "access_token")}]
+    (try
+      (->> (url-encode-request url params) slurp json/read-str view-error)
+      (catch Exception e
+        (view-error "Can't reach authentication server.")))))
 
 (defn handle-oauth2
   [request]

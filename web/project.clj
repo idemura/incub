@@ -10,9 +10,13 @@
     [org.clojure/clojure-contrib "1.2.0"]
     [org.clojure/data.json "0.2.3"]
     [compojure "1.1.5"]
-    [enlive "1.1.1"]]
+    [enlive "1.1.1"]
+    [korma "0.3.0-RC5"]
+    [com.h2database/h2 "1.3.170"]]
   :plugins [[lein-ring "0.8.5"]]
-  :ring {:handler web.handler/app}
+  :ring {
+    :handler web.handler/handler
+    :init web.handler/startup}
   :global-vars {*warn-on-reflection* true}
   :profiles {
     :dev {

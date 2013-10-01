@@ -2,7 +2,6 @@
 
 * Get server's options. In particular, host. Get rid of hardcoded
   localhost:3000.
-* Get user info: email, birth date, sex and etc.
 * Sessions, server side storage.
 * Add user to the database. Ask for nickname for new ones?
 * Blog: just add/edit new entries with some markup. MD?
@@ -20,3 +19,4 @@ Done:
 * Enlive: do not escape & in href attribure. Works and intended. & should be
   escaped.
 * JSON parser.
+* Get user info: email, birth date, sex and etc.

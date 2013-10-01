@@ -6,7 +6,6 @@
     [compojure.handler]
     [compojure.route :as route])
   (:import
-    [clojure.lang IPersistentMap IPersistentVector]
     [java.net HttpURLConnection URL]))
 
 (def ^:const CLIENT_ID "484563975237.apps.googleusercontent.com")
@@ -15,21 +14,23 @@
   ["https://www.googleapis.com/auth/userinfo.email"
    "https://www.googleapis.com/auth/userinfo.profile"])
 (def ^:const ERROR_GAUTH "Error authenticating with Google.")
+(def ^:const ERROR_FETCH_USERINFO "Error fetching user info.")
 
-(def oauth2_uri (url-encode-request
-                  "https://accounts.google.com/o/oauth2/auth"
-                  {:response_type "code"
-                   :access_type "online"
-                   :redirect_uri "http://localhost:3000/oauth2"
-                   :client_id CLIENT_ID
-                   :scope CLIENT_SCOPES}))
+(def ^:private oauth2_uri
+  (url-encode-request
+    "https://accounts.google.com/o/oauth2/auth"
+    {:response_type "code"
+     :access_type "online"
+     :redirect_uri "http://localhost:3000/oauth2"
+     :client_id CLIENT_ID
+     :scope CLIENT_SCOPES}))
 
 (defn handle-index
   [request]
   {:headers {"idemura-custom", "value"}
    :body    (apply str (view-index oauth2_uri))})
 
-(defn- exchange-for-token
+(defn ^:private exchange-for-token
   [code]
   (let [form (url-encode
                {:code code
@@ -55,13 +56,14 @@
         {:code 400
          :data (json/write-str {"error" (.getMessage e)})}))))
 
-(defn- access-granted [cred]
+(defn ^:private access-granted
+  [cred]
   (let [url "https://www.googleapis.com/oauth2/v2/userinfo"
         params {:alt "json" :access_token (cred "access_token")}]
     (try
       (->> (url-encode-request url params) slurp json/read-str view-error)
       (catch Exception e
-        (view-error "Can't reach authentication server.")))))
+        (view-error ERROR_FETCH_USERINFO)))))
 
 (defn handle-oauth2
   [request]
@@ -79,7 +81,7 @@
   [request]
   (str request))
 
-(defroutes app-routes
+(defroutes my-routes
   (GET "/" [] handle-index)
   (GET "/ping/:what" [what] (str "<h1>Ping " what "</h1>"))
   ;; This path is registered in the Google API console.
@@ -88,5 +90,10 @@
   (route/resources "/")
   (route/not-found "Not Found"))
 
-(def app
-  (compojure.handler/site app-routes))
+;; Called before handlers begin their work.
+(defn startup
+  []
+  nil) ;; Placeholder
+
+(def handler
+  (compojure.handler/site my-routes))

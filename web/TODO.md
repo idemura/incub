@@ -1,16 +1,9 @@
 ### TODO list.
 
-* Get server's options. In particular, host. Get rid of hardcoded
-  localhost:3000.
-* Sessions, server side storage.
+* Get server's options: host, port. Get rid of hardcoded localhost:3000.
+* Sessions, memory storage.
+* Connect to H2 database and create tables.
 * Add user to the database. Ask for nickname for new ones?
-* Blog: just add/edit new entries with some markup. MD?
-  Collective blog like habr with free hubs and just + for article?
-  Comment not on the top, but on the side.
-  Ability to add paragraphs in the post with naming of the author?
-* Upload photos from Android?
-* Diff tool?
-* Log analyzer.
 
 Done:
 
@@ -20,3 +13,14 @@ Done:
   escaped.
 * JSON parser.
 * Get user info: email, birth date, sex and etc.
+
+### Ideas
+* Blog: just add/edit new entries with some markup. MD?
+  Collective blog like habr with free hubs and just + for article?
+  Comment not on the top, but on the side.
+  Ability to add paragraphs in the post with naming of the author?
+* Upload photos from Android?
+* Code review.
+* Community blog.
+* Diff tool.
+* Log analyzer.

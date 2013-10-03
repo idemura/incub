@@ -9,7 +9,7 @@ Done:
 
 * Login with Google OAuth 2.
 * Get code from OAuth 2.0 response and exchange for refresh and access tokens.
-* Enlive: do not escape & in href attribure. Works and intended. & should be
+* Enlive: do not escape & in href attribute. Works and intended. & should be
   escaped.
 * JSON parser.
 * Get user info: email, birth date, sex and etc.
@@ -21,6 +21,8 @@ Done:
   Ability to add paragraphs in the post with naming of the author?
 * Upload photos from Android?
 * Code review.
+* Diff tool as IntelliJ TeamCity.
 * Community blog.
-* Diff tool.
 * Log analyzer.
+* Cheat sheet! Generate, edit, save as pdf.
+* I'm a... Ask me about...

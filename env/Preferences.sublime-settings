@@ -5,7 +5,7 @@
 	"auto_complete_selector": "source - comment",
 	"auto_complete_with_fields": false,
 	"auto_indent": true,
-	"auto_match_enabled": false,
+	"auto_match_enabled": true,
 	"binary_file_patterns":
 	[
 		"*.jpg",

@@ -1,5 +1,5 @@
 (ns web.handler
-  (:use web.generic web.view)
+  (:use web.data web.generic web.view)
   (:require
     [clojure.data.json :as json]
     [compojure.core :refer :all]
@@ -56,26 +56,34 @@
         {:code 400
          :data (json/write-str {"error" (.getMessage e)})}))))
 
+;; IN: access_token: String
+;; OUT: {String String} or nil.
+(defn ^:private get-userinfo
+  [access_token]
+  (let [url "https://www.googleapis.com/oauth2/v2/userinfo"
+        params {:alt "json" :access_token "access_token"}]
+    (->> (url-encode-request url params) slurp json/read-str)))
+
 (defn ^:private access-granted
   [cred]
-  (let [url "https://www.googleapis.com/oauth2/v2/userinfo"
-        params {:alt "json" :access_token (cred "access_token")}]
-    (try
-      (->> (url-encode-request url params) slurp json/read-str view-error)
-      (catch Exception e
-        (view-error ERROR_FETCH_USERINFO)))))
+  (try
+    (let [userinfo (cred "access_token")]
+      (save-user userinfo)
+      (view-error (str "It's OK, Houston " (userinfo "name"))))
+  (catch Exception e
+    (view-error ERROR_FETCH_USERINFO))))
 
 (defn handle-oauth2
   [request]
   (let [params (request :query-params)
-        param-code (params "code")]
-    (if param-code
-      (let [{code :code data :data} (exchange-for-token param-code)]
-        (if (= code 200)
-          (access-granted (json/read-str data))
-          (view-error (str "Error: HTTP code " code " :: "
-                           ((json/read-str data) "error")))))
-      (view-error ERROR_GAUTH))))
+        oauth2-code (params "code")
+        {code :code data :data} (exchange-for-token oauth2-code)]
+    (if data
+      (access-granted (json/read-str data))
+      (view-error (if code
+                    (str "Error: HTTP code " code ": "
+                         ((json/read-str data) "error"))
+                    (view-error ERROR_GAUTH))))))
 
 (defn handle-echo
   [request]
@@ -93,7 +101,7 @@
 ;; Called before handlers begin their work.
 (defn startup
   []
-  nil) ;; Placeholder
+  (init-db)) ;; Placeholder
 
 (def handler
   (compojure.handler/site my-routes))

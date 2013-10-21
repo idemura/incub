@@ -7,16 +7,16 @@
   :min-lein-version "2.0.0"
   :dependencies [
     [org.clojure/clojure "1.5.1"]
-    [org.clojure/clojure-contrib "1.2.0"]
     [org.clojure/data.json "0.2.3"]
     [compojure "1.1.5"]
+    [korma "0.3.0-RC6"]
     [enlive "1.1.1"]
-    [korma "0.3.0-RC5"]
     [com.h2database/h2 "1.3.170"]]
   :plugins [[lein-ring "0.8.5"]]
   :ring {
     :handler web.handler/handler
     :init web.handler/startup}
+  :main web.sandbox
   :global-vars {*warn-on-reflection* true}
   :profiles {
     :dev {

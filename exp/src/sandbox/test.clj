@@ -1,4 +1,4 @@
-(ns con-clj.test
+(ns sandbox.test
   (:gen-class)
   (:require
     [clojure.string :refer [join trim triml trimr]]
@@ -191,6 +191,15 @@
     (println pairs)
     (println (solve n pairs))))
 
+(defn gen-trees
+  [n]
+  (letfn [(mix [lt rt]
+            (for [l lt r rt]
+              (str "(" l " " r ")")))]
+    (if (zero? n)
+      "nil"
+      (map mix (map #([(gen-trees %) (gen-trees (- n 1 %))]) (range n))))))
+
 (defn -main [& args]
   ; Work around dangerous default behavior in Clojure.
   (alter-var-root #'*read-eval* (constantly false))
@@ -221,5 +230,6 @@
   ;     (catch Exception e
   ;       (println "Exception:" (str e)))))
   ; (create-and-solve 5)
-  (println (json/write-str {"a" 10 "b" 20}))
+  ; (println (json/write-str {"a" 10 "b" 20}))
+  (gen-trees 0)
 )

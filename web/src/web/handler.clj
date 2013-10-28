@@ -32,8 +32,8 @@
 
 (defn ^:private exchange-for-token
   [code]
-  (let [form (url-encode
-               {:code code
+  (let [form (url-encode {
+                :code code
                 :client_id CLIENT_ID
                 :client_secret CLIENT_SECRET
                 :redirect_uri "http://localhost:3000/oauth2"
@@ -66,12 +66,9 @@
 
 (defn ^:private access-granted
   [cred]
-  (try
-    (let [userinfo (cred "access_token")]
-      (save-user userinfo)
-      (view-error (str "It's OK, Houston " (userinfo "name"))))
-  (catch Exception e
-    (view-error ERROR_FETCH_USERINFO))))
+  (let [userinfo (cred "access_token")]
+    (save-user userinfo)
+    (view-error (str "It's OK, Houston " (userinfo "name")))))
 
 (defn handle-oauth2
   [request]
@@ -92,7 +89,7 @@
 (defroutes my-routes
   (GET "/" [] handle-index)
   (GET "/ping/:what" [what] (str "<h1>Ping " what "</h1>"))
-  ;; This path is registered in the Google API console.
+  ; This path is registered in the Google API console.
   (GET "/oauth2" [] handle-oauth2)
   (ANY "/echo" [] handle-echo)
   (route/resources "/")
@@ -101,7 +98,7 @@
 ;; Called before handlers begin their work.
 (defn startup
   []
-  (init-db)) ;; Placeholder
+  (configure-db))
 
 (def handler
   (compojure.handler/site my-routes))

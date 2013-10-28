@@ -1,18 +1,19 @@
-(ns web.test
+(ns web.sandbox
   (:gen-class)
-  (:use web.data web.generic web.view))
+  (:use web.data web.generic))
 
-(defn main
+;; For easier REPL access.
+(defn clj-main
   [& args]
-  ; (init-db)
+  (configure-db)
   (save-user 
-    {:email "igor.demura@gmail.com"
-     :gender MALE
-     :name "Igor Demura"
-     :given_name "Igor"
-     :birthday "1985-08-09"
-     :locale "en"}))
+    {:email "neil182@mail.ru"
+     :gender "male"
+     :name "Leo Novikov"
+     :given_name "Leo"
+     :birthday "1985-05-01"
+     :locale "ru"}))
 
-(defn -entry_main 
+(defn -main 
   [& args]
-  (main args))
+  (clj-main args))

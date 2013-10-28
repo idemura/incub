@@ -11,7 +11,12 @@
     [compojure "1.1.5"]
     [korma "0.3.0-RC6"]
     [enlive "1.1.1"]
-    [com.h2database/h2 "1.3.170"]]
+    [com.h2database/h2 "1.3.170"]
+    [log4j "1.2.15" :exclusions [
+        javax.mail/mail
+        javax.jms/jms
+        com.sun.jdmk/jmxtools
+        com.sun.jmx/jmxri]]]
   :plugins [[lein-ring "0.8.5"]]
   :ring {
     :handler web.handler/handler

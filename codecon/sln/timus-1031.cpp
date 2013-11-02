@@ -9,7 +9,8 @@
 
 using namespace std;
 
-void read3Ints(int *is) {
+void read3Ints(int *is)
+{
   scanf("%d%d%d", is, is+1, is+2);
 }
 

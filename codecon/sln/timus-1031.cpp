@@ -38,6 +38,9 @@ int update(int p, int start, int l, int c)
 
 int main()
 {
+#ifndef ONLINE_JUDGE
+    freopen("in", "r", stdin);
+#endif
   int i, j;
 
   read3Ints(ls);

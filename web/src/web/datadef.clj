@@ -4,7 +4,7 @@
     [clojure.java.jdbc.sql :as sql]
     [clojure.java.jdbc.ddl :as ddl])))
 
-(def ^:private db-spec {
+(def ^:private db_spec {
   :classname "org.h2.Driver"
   :subprotocol "h2"
   :subname "tcp://localhost:9092/~/local"
@@ -13,8 +13,8 @@
 
 (defn init-db
   []
-  (with-open [^java.sql.Connection con (jdbc/get-connection db-spec)]
-    (jdbc/db-transaction [db (jdbc/add-connection db-spec con)]
+  (with-open [db_conn (jdbc/get-connection db_spec)]
+    (jdbc/db-transaction [db (jdbc/add-connection db_spec db_conn]
       ;; Create a table with indices.
       (jdbc/db-do-commands db true
         (ddl/create-table :accounts

@@ -28,9 +28,9 @@
 (defn handle-index
   [request]
   {:headers {"idemura-custom", "value"}
-   :body    (apply str (view-index oauth2_uri))})
+   :body (apply str (view-index oauth2_uri))})
 
-(defn ^:private exchange-for-token
+(defn- exchange-for-token
   [code]
   (let [form (url-encode {
                 :code code
@@ -56,19 +56,21 @@
         {:code 400
          :data (json/write-str {"error" (.getMessage e)})}))))
 
-;; IN: access_token: String
-;; OUT: {String String} or nil.
-(defn ^:private get-userinfo
+;; IN access_token: String
+;; OUT (Map String String) or nil.
+(defn- get-userinfo
   [access_token]
   (let [url "https://www.googleapis.com/oauth2/v2/userinfo"
-        params {:alt "json" :access_token "access_token"}]
-    (->> (url-encode-request url params) slurp json/read-str)))
+        params {:alt "json" :access_token access_token}]
+    (->> (url-encode-request url params) slurp json/read-str
+         (map-map keyword))))
 
-(defn ^:private access-granted
-  [cred]
-  (let [userinfo (cred "access_token")]
-    (save-user userinfo)
-    (view-error (str "It's OK, Houston " (userinfo "name")))))
+;; IN auth: (Map String String)
+(defn- access-granted
+  [auth]
+  (let [user (get-userinfo (auth "access_token"))]
+    (save-user user)
+    (view-error (str (:name user) " is logged in."))))
 
 (defn handle-oauth2
   [request]

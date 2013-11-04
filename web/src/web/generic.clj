@@ -29,3 +29,16 @@
   (if (empty? params)
     host
     (str host "?" (url-encode params))))
+
+;; Applies `f` to map `m` keys and returns new map.
+(defn map-map
+  [f m]
+  (into {} (map (fn [[k v]] [(f k) v]) m)))
+
+(defn map-filter
+  [f m]
+  (into {} (filter (fn [[k _]] (f k)) m)))
+
+(defn map-reduce
+  [f v m]
+  (reduce f v (vals m)))

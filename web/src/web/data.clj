@@ -1,4 +1,5 @@
 (ns web.data
+  (:use web.generic)
   (:require
     [korma.config]
     [korma.db]
@@ -9,21 +10,41 @@
                 :user "sa"
                 :password ""}))
 
-(ql/defentity users
-  (ql/table :accounts))
+(ql/defentity accounts (ql/table :accounts))
+(def ^:private account_fields
+  #{:email :gender :name :given_name :birthday :picture :local})
 
 (defn configure-db
   []
   (korma.config/set-delimiters ""))
 
-;; IN users: {} of columns to insert.
-;; OUT: nil
+(defn ^:private lower
+  [m]
+  (letfn [(lc [^String s] (.toLowerCase s))]
+    (map-map #(-> % name lc keyword) m)))
+
+;; OUT (List (Map Keyword String)): list of found emails. Length 0 or 1.
+(defn- accounts-find-email
+  [email]
+  (map lower (ql/select accounts (ql/where {:email email}))))
+
+(defn- accounts-insert
+  [values]
+  (let [vs (map-filter account_fields values)]
+    (ql/insert accounts (ql/values vs))))
+
+(defn- accounts-update
+  [values id]
+  (let [vs (map-filter account_fields values)]
+    (ql/update accounts (ql/set-fields vs) (ql/where {:id id}))))
+
+;; IN user (Map Keyword String): of columns to insert.
+;; OUT nil
 (defn save-user
   [user]
+  (configure-db)
   (korma.db/transaction
-    ; (prn (ql/select (ql/fields :email) (ql/where {:email (:email user)})))
-    (prn (:email user))
-    (prn (ql/select (ql/where {:email (:email user)})))
-    ; (ql/insert users (ql/values user)))
-  ))
-
+    (let [us (accounts-find-email (:email user))]
+      (if (= (count us) 0)
+        (accounts-insert user)
+        (accounts-update user (-> us first :id))))))

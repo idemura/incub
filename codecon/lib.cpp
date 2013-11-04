@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <math.h>
 
-#define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
-#define ZERO(p, n)      memset(p, 0, n)
+#define ARRAY_SIZEOF(a)     (sizeof(a) / sizeof(a[0]))
+#define ARRAY_ZERO(p, n)    memset(p, 0, (n) * sizeof(*(p)))
 
 /* MOD is prime */
 #define MOD 1000000007
@@ -154,32 +154,36 @@ void inv_list(int *inv, int mod)
     }
 }
 
+
 // Pascal triangle for [0 .. n]. Memory should be freed by `pascal_free`.
-int **pascal(int n)
+int *pascal(int n)
 {
-    int **pas = malloc((n + 1) * sizeof *pas);
-    pas[0] = malloc((2 + n) * (n + 1) / 2 * sizeof **pas);
-    int l = 0;
-    pas[l][0] = 1;
-    int i, j;
+    int *pas = new int[(2 + n) * (n + 1) / 2];
+    int i, j, in = 0, out = 0;
+    pas[out++] = 1;
     for (i = 1; i <= n; ++i) {
-        pas[l + 1] = pas[l] + i;
-        pas[l + 1][0] = 1;
+        int next_in = out;
+        pas[out++] = 1;
         for (j = 1; j < i; ++j) {
-            pas[l + 1][j] = pas[l][j - 1] + pas[l][j];
+            pas[out++] = pas[in] + pas[in + 1];
+            in++;
         }
-        pas[l + 1][j] = 1;
-        l++;
+        pas[out++] = 1;
+        in = next_in;
     }
     return pas;
 }
 
-void pascal_free(int **pas)
+// Pascal coefficients for degree d, d >= 0.
+void pascal_get(int d, int *i0, int *i1)
 {
-    if (pas) {
-        free(pas[0]);
-        free(pas);
-    }
+    *i0 = (d + 1) * d / 2;
+    *i1 = (d + 1) + *i0;
+}
+
+void pascal_free(int *pas)
+{
+    delete[] pas;
 }
 
 /* Takes `list` with size `list_n` as a buffer (no assumptions on values in it)
@@ -194,7 +198,7 @@ void pascal_free(int **pas)
 */
 int sieve(int *list, int list_n)
 {
-    ZERO(list, list_n * sizeof *list);
+    ARRAY_ZERO(list, list_n);
     int i, j, w = 0;
     int sqrt_n = (int)sqrt(list_n);
     for (i = 0; i <= sqrt_n; ++i) {
@@ -244,7 +248,7 @@ int sqrti(int n)
     return p;
 }
 
-int main(void)
+int main()
 {
     return 0;
 }

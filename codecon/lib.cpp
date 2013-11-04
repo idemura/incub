@@ -7,7 +7,7 @@
 #define ARRAY_SIZEOF(a)     (sizeof(a) / sizeof(a[0]))
 #define ARRAY_ZERO(p, n)    memset(p, 0, (n) * sizeof(*(p)))
 
-/* MOD is prime */
+// MOD is prime
 #define MOD 1000000007
 
 typedef long long int lli;

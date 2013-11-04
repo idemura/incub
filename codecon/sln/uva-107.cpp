@@ -9,25 +9,6 @@
 
 using namespace std;
 
-typedef long long int lli;
-
-int gcd(int a, int b)
-{
-    int t;
-
-    if (a > b) {
-        t = a;
-        a = b;
-        b = t;
-    }
-    while (b != 0) {
-        t = b;
-        b = a % b;
-        a = t;
-    }
-    return a;
-}
-
 int findPowerOf2(int n)
 {
     int p = 0;

@@ -1,4 +1,4 @@
-(ns sandbox.test
+(ns exp.test
   (:gen-class)
   (:require
     [clojure.string :refer [join trim triml trimr]]
@@ -191,25 +191,34 @@
     (println pairs)
     (println (solve n pairs))))
 
-(defn gen-trees
-  [n]
-  (letfn [(mix [lt rt]
-            (for [l lt r rt]
-              (str "(" l " " r ")")))]
-    (if (zero? n)
-      "nil"
-      (map mix (map #([(gen-trees %) (gen-trees (- n 1 %))]) (range n))))))
+(defn find-rep
+  [xs]
+  (loop [sq xs, index {}, i 0]
+    (let [[x & tail_x] sq,
+          ix (index x)]
+      (if ix
+        [ix i]
+        (recur tail_x (assoc index x i) (inc i))))))
+
+(defn sub-seq
+  [sq f l]
+  (->> sq (take l) (drop f)))
+
+(defn ratio-dec
+  [x y]
+  (let [rems (iterate #(rem (* 10 %) y) x)
+        digits (map #(quot (* 10 %) y) rems)
+        [f l] (find-rep rems)]
+    (str "0."
+         (apply str (sub-seq digits 0 f))
+         "("
+         (apply str (sub-seq digits f l))
+         ")")))
 
 (defn -main [& args]
   ; Work around dangerous default behavior in Clojure.
   (alter-var-root #'*read-eval* (constantly false))
-  ; (let [n 4]
-  ;   (println "Sum of 1 .." n "squares is" (sq-sum 4) "check:" (+ 1 4 9 16)))
-  ; (println (des '(10 2 3)))
   ; (println "Fibonacci:" (join " " (take 7 fib)) "...")
-  ; (println (map (partial * 5) (range 5)))
-  ; (println (join ", " [1 2 3 4]))
-  ; (println "Trunc down sqrt 4:" (sqrt-int 4) "sqrt 5:" (sqrt-int 5))
   ; (println "Primes:" (primes 19))
   ; (println (quot 3 2) (/ 3 2))
   ; (println "Step iterate from:" (step-do 2 3 (vec (range 1 15))))
@@ -231,5 +240,4 @@
   ;       (println "Exception:" (str e)))))
   ; (create-and-solve 5)
   ; (println (json/write-str {"a" 10 "b" 20}))
-  (gen-trees 0)
 )

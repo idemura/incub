@@ -215,6 +215,16 @@
          (apply str (sub-seq digits f l))
          ")")))
 
+(defn get-cycle
+  [xs]
+  (loop [[x & xs_rest] xs, indices {}, i 0]
+    (prn "x" x "and" xs_rest)
+    (if (nil? x)
+      [0 i]
+      (if-let [x_index (indices x)]
+        [x_index i]
+        (recur xs_rest (assoc indices x i) (inc i))))))
+
 (defn -main [& args]
   ; Work around dangerous default behavior in Clojure.
   (alter-var-root #'*read-eval* (constantly false))

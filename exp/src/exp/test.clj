@@ -119,7 +119,7 @@
         (let [[rs t] (or (take-int nsp)
                          (take-sym nsp)
                          (throw-ex "Invalid symbol " (first nsp)))]
-            (recur rs (conj ts t)))))))
+          (recur rs (conj ts t)))))))
 
 (declare parse-expr parse-mult parse-prim)
 

@@ -191,14 +191,14 @@
     (println pairs)
     (println (solve n pairs))))
 
-(defn find-rep
+(defn get-cycle
   [xs]
-  (loop [sq xs, index {}, i 0]
-    (let [[x & tail_x] sq,
-          ix (index x)]
-      (if ix
-        [ix i]
-        (recur tail_x (assoc index x i) (inc i))))))
+  (loop [[x & xs_rest] xs, indices {}, i 0]
+    (if (nil? x)
+      [0 i]
+      (if-let [x_index (indices x)]
+        [x_index i]
+        (recur xs_rest (assoc indices x i) (inc i))))))
 
 (defn sub-seq
   [sq f l]
@@ -208,22 +208,12 @@
   [x y]
   (let [rems (iterate #(rem (* 10 %) y) x)
         digits (map #(quot (* 10 %) y) rems)
-        [f l] (find-rep rems)]
+        [f l] (get-cycle rems)]
     (str "0."
          (apply str (sub-seq digits 0 f))
          "("
          (apply str (sub-seq digits f l))
          ")")))
-
-(defn get-cycle
-  [xs]
-  (loop [[x & xs_rest] xs, indices {}, i 0]
-    (prn "x" x "and" xs_rest)
-    (if (nil? x)
-      [0 i]
-      (if-let [x_index (indices x)]
-        [x_index i]
-        (recur xs_rest (assoc indices x i) (inc i))))))
 
 (defn -main [& args]
   ; Work around dangerous default behavior in Clojure.

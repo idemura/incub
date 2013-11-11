@@ -4,7 +4,8 @@
     [clojure.data.json :as json]
     [compojure.core :refer :all]
     [compojure.handler]
-    [compojure.route :as route])
+    [compojure.route :as route]
+    [ring.middleware.session :as session])
   (:import
     [java.net HttpURLConnection URL]))
 
@@ -84,16 +85,20 @@
                          ((json/read-str data) "error"))
                     (view-error ERROR_GAUTH))))))
 
-(defn handle-echo
+(defn handle-command
   [request]
-  (str request))
+  (prn request)
+  "handle-command")
 
 (defroutes my-routes
-  (GET "/" [] handle-index)
-  (GET "/ping/:what" [what] (str "<h1>Ping " what "</h1>"))
+  (session/wrap-session
+    (routes
+      (GET "/" [] handle-index)
+      (POST "/command" [] handle-command)))
+  (GET "/echo/:what" [what]
+    #(str "<div>" % "</div>\n" "<h1>" what "</h1>"))
   ; This path is registered in the Google API console.
   (GET "/oauth2" [] handle-oauth2)
-  (ANY "/echo" [] handle-echo)
   (route/resources "/")
   (route/not-found "Not Found"))
 

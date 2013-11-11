@@ -2,8 +2,6 @@
 
 * Get server's options: host, port. Get rid of hardcoded localhost:3000.
 * Sessions, memory storage.
-* Connect to H2 database and create tables.
-* Add user to the database. Ask for nickname for new ones?
 
 Done:
 
@@ -13,6 +11,8 @@ Done:
   escaped.
 * JSON parser.
 * Get user info: email, birth date, sex and etc.
+* Connect to H2 database and create tables.
+* Add user to the database. Ask for nickname for new ones?
 
 ### Ideas
 * Blog: just add/edit new entries with some markup. MD?
@@ -26,3 +26,6 @@ Done:
 * Log analyzer.
 * Cheat sheet! Generate, edit, save as pdf.
 * I'm a... Ask me about...
+* Dating with 3 slots for peers.
+* Something like ideone.com, connected to github, with comments on code.
+* First, write a blog.

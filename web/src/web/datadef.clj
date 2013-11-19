@@ -15,7 +15,7 @@
   []
   (with-open [db_conn (jdbc/get-connection db_spec)]
     (jdbc/db-transaction [db (jdbc/add-connection db_spec db_conn]
-      ;; Create a table with indices.
+      ; Create a table with indices.
       (jdbc/db-do-commands db true
         (ddl/create-table :accounts
           [:id "INTEGER" "PRIMARY KEY" "AUTO_INCREMENT"]

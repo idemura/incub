@@ -173,7 +173,8 @@
     (let [n-1 (dec n)
           sum (/ (apply + pairs) n)
           first_sum (apply + (take n pairs))
-          _ (println "sum" sum "sum_first" (apply + (take n pairs)) "sum_item" (- first_sum sum))
+          _ (println "sum" sum "sum_first" (apply + (take n pairs))
+                     "sum_item" (- first_sum sum))
           m (/ (- first_sum sum) n-1)]
       (conj (solve-sorted n-1 (drop n pairs)) m))))
 

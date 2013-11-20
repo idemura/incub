@@ -28,8 +28,8 @@
 
 (defn handle-index
   [request]
-  {:headers {"idemura-custom", "value"}
-   :body (apply str (view-index oauth2_uri))})
+  (prn (:session request))
+  (view-index oauth2_uri))
 
 (defn- exchange-for-token
   [code]
@@ -68,10 +68,11 @@
 
 ;; IN auth: (Map String String)
 (defn- access-granted
-  [auth]
+  [session auth]
   (let [user (get-userinfo (auth "access_token"))]
     (save-user user)
-    (view-error (str (:name user) " is logged in."))))
+    {:session (assoc session :email (:email user))
+     :body (view-error (str (:name user) " is logged in."))}))
 
 (defn handle-oauth2
   [request]
@@ -79,7 +80,7 @@
         oauth2-code (params "code")
         {code :code data :data} (exchange-for-token oauth2-code)]
     (if data
-      (access-granted (json/read-str data))
+      (access-granted (:session request) (json/read-str data))
       (view-error (if code
                     (str "Error: HTTP code " code ": "
                          ((json/read-str data) "error"))

@@ -91,13 +91,17 @@
   (prn request)
   "handle-command")
 
+(defn handle-echo
+  [{session :session params :params :as request}]
+  {:body (str "<div>" request "</div>\n" "<h1>" (params :what) "</h1>")
+   :session (assoc session :key "value")})
+
 (defroutes my-routes
   (session/wrap-session
     (routes
       (GET "/" [] handle-index)
+      (GET "/echo/:what" [] handle-echo)
       (POST "/command" [] handle-command)))
-  (GET "/echo/:what" [what]
-    #(str "<div>" % "</div>\n" "<h1>" what "</h1>"))
   ; This path is registered in the Google API console.
   (GET "/oauth2" [] handle-oauth2)
   (route/resources "/")

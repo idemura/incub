@@ -28,17 +28,18 @@
 
 (defn handle-index
   [request]
-  (prn (:session request))
-  (view-index oauth2_uri))
+  (let [email (-> request :session :email)
+        [account] (accounts-find-email email)]
+    {:body (view-index oauth2_uri account)}))
 
 (defn- exchange-for-token
   [code]
   (let [form (url-encode {
-                :code code
-                :client_id CLIENT_ID
-                :client_secret CLIENT_SECRET
-                :redirect_uri "http://localhost:3000/oauth2"
-                :grant_type "authorization_code"})
+               :code code
+               :client_id CLIENT_ID
+               :client_secret CLIENT_SECRET
+               :redirect_uri "http://localhost:3000/oauth2"
+               :grant_type "authorization_code"})
         addr "https://accounts.google.com/o/oauth2/token"
         conn (let [^HttpURLConnection conn (.openConnection (URL. addr))]
                (doto conn
@@ -101,9 +102,9 @@
     (routes
       (GET "/" [] handle-index)
       (GET "/echo/:what" [] handle-echo)
+      (GET "/oauth2" [] handle-oauth2)
       (POST "/command" [] handle-command)))
   ; This path is registered in the Google API console.
-  (GET "/oauth2" [] handle-oauth2)
   (route/resources "/")
   (route/not-found "Not Found"))
 

@@ -1,14 +1,23 @@
 (ns web.view
   (:use web.generic)
   (:require
-    [net.cgrand.enlive-html :as html]))
+    [net.cgrand.enlive-html :refer :all]))
 
-(html/deftemplate view-index
-  {:parser html/xml-parser} "templates/index.html"
-  [auth_uri]
-  [:#GoogleOauth2Login] (html/set-attr :href auth_uri))
+(defsnippet logged-in
+  {:parser xml-parser} "templates/index.html"
+  [:#Auth]
+  [])
 
-(html/deftemplate view-error
-  {:parser html/xml-parser} "templates/error.html"
+(deftemplate view-index
+  {:parser xml-parser} "templates/index.html"
+  [auth_uri account]
+  [:#GoogleOauth2Login] (set-attr :href auth_uri)
+  [:div#LoggedIn] #(let [tr (if account
+                              (content (:email account))
+                              (constantly nil))]
+                      (tr %)))
+
+(deftemplate view-error
+  {:parser xml-parser} "templates/error.html"
   [msg]
-  [:#ErrorMessage] (html/content msg))
+  [:#ErrorMessage] (content msg))

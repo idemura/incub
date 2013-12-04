@@ -24,9 +24,16 @@
     (map-map #(-> % name lc keyword) m)))
 
 ;; OUT (List (Map Keyword String)): list of found emails. Length 0 or 1.
-(defn- accounts-find-email
+(defn- find-email
   [email]
-  (map lower (ql/select accounts (ql/where {:email email}))))
+  (if email
+    (map lower (ql/select accounts (ql/where {:email email})))
+    nil))
+
+(defn accounts-find-email
+  [email]
+  (korma.db/transaction
+    (find-email email)))
 
 (defn- accounts-insert
   [values]
@@ -44,7 +51,7 @@
   [user]
   (configure-db)
   (korma.db/transaction
-    (let [us (accounts-find-email (:email user))]
+    (let [us (find-email (:email user))]
       (if (= (count us) 0)
         (accounts-insert user)
         (accounts-update user (-> us first :id))))))

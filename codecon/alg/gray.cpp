@@ -2,6 +2,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <limits.h>
 #include <stdio.h>
 
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
@@ -42,9 +43,19 @@ string binary(int n, int width)
 
 // It's important that type is unsigned, because it relies on the fact that
 // after shift right, 0 appears in MSB.
-uint gray(uint n)
+// Details at http://e-maxx.ru/algo/gray_code.
+uint encode_gray(uint n)
 {
   return n ^ (n >> 1);
+}
+
+uint decode_gray(uint g)
+{
+  uint n = 0;
+  for (; g; g >>= 1) {
+    n ^= g;
+  }
+  return n;
 }
 
 int main()
@@ -53,8 +64,10 @@ int main()
   vector<int> gs;
   gray_list(n, &gs);
   for (int i = 0; i < gs.size(); i++) {
-    printf("%s -> %s / %s\n", binary(i, n).c_str(),
-           binary(gs[i], n).c_str(), binary(gray(i), n).c_str());
+    int g = encode_gray(i);
+    printf("%s -> %s / %s - %s\n", binary(i, n).c_str(),
+           binary(gs[i], n).c_str(),
+           binary(g, n).c_str(), binary(decode_gray(g), n).c_str());
   }
   return 0;
 }

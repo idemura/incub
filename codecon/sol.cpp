@@ -15,12 +15,16 @@ struct Interval {
 };
 
 struct Node {
-  float int_a, int_b;
+  Interval i;
   Node *l, *r;
   vector<Interval> ints;
 
-  Node(float int_a, float int_b)
-      : int_a(int_a), int_b(int_b), l(NULL), r(NULL) {
+  Node(float a, float b)
+      : i(a, b), l(NULL), r(NULL) {
+  }
+
+  bool contains(const Interval& in) const {
+    return i.a < in.a && in.b < i.b;
   }
 };
 
@@ -43,7 +47,44 @@ Node* createTree() {
   return root;
 }
 
+void insert(Node *node, const Interval& in) {
+  if (node->l && node->l->contains(in)) {
+    insert(node->l, in);
+    return;
+  }
+  if (node->r && node->r->contains(in)) {
+    insert(node->r, in);
+    return;
+  }
+  if (node->ints.size() > 0) {
+    printf("in node %d %d intersects with:\n", in.a, in.b);
+    for (size_t i = 0, n = node->ints.size(); i < n; i++) {
+      printf("  %d %d\n", node->ints[i].a, node->ints[i].b);
+    }
+  }
+  node->ints.push_back(in);
+}
+
+bool intervalIntersect(const Interval& i1, const Interval& i2) {
+  return !(i1.b < i2.a || i1.a > i2.b);
+}
+
 void testIntervals(const std::vector<Interval>& ints) {
+  for (size_t i = 1, n = ints.size(); i < n; i++) {
+    for (size_t j = 0; j < i; j++) {
+      if (intervalIntersect(ints[i], ints[j])) {
+        printf("%d %d / %d %d\n", ints[i].a, ints[i].b, ints[j].a, ints[j].b);
+      }
+    }
+  }
+
+  printf("--------\n");
+
+  Node *root = createTree();
+  for (size_t i = 0, n = ints.size(); i < n; i++) {
+    insert(ints[i], root);
+  }
+
 
 }
 

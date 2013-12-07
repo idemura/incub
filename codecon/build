@@ -1,0 +1,26 @@
+#!/bin/sh
+if [ ! $1 ]
+then
+  echo "Usage:
+  build <C++11 source file name>"
+  exit -1
+fi
+
+if [ $(uname) = "Darwin" ]
+then
+  cc=clang++
+else
+  cc=g++
+fi
+
+src=$1
+src_ne=${src%.*}  # Extension trimmed.
+output=$src_ne.out
+
+rm -rf $output "$src_ne.o" "$src_ne.out.dSYM"
+
+dbg="-O0 -g -DDEBUG"
+opt="-O2 -flto -ffast-math -DNDEBUG"
+mode=$dbg
+warnings="-Wall -Wno-unused-function -Wno-unused-result"
+$cc -std=c++0x -march=native $mode $warnings $src -o $output -lm -lstdc++

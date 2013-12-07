@@ -9,7 +9,9 @@
 
 using namespace std;
 
-void gray(int n, vector<int>* v_in)
+typedef unsigned int uint;
+
+void gray_list(int n, vector<int>* v_in)
 {
   vector<int>& v = *v_in;
   int pn = 1 << n;
@@ -24,7 +26,7 @@ void gray(int n, vector<int>* v_in)
   }
 }
 
-string binary_int(int n, int width)
+string binary(int n, int width)
 {
   string s;
   while (n) {
@@ -38,13 +40,21 @@ string binary_int(int n, int width)
   return s;
 }
 
+// It's important that type is unsigned, because it relies on the fact that
+// after shift right, 0 appears in MSB.
+uint gray(uint n)
+{
+  return n ^ (n >> 1);
+}
+
 int main()
 {
   int n = 3;
   vector<int> gs;
-  gray(n, &gs);
+  gray_list(n, &gs);
   for (int i = 0; i < gs.size(); i++) {
-    printf("%s\n", binary_int(gs[i], n).c_str());
+    printf("%s -> %s / %s\n", binary(i, n).c_str(),
+           binary(gs[i], n).c_str(), binary(gray(i), n).c_str());
   }
   return 0;
 }

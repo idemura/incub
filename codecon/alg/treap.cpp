@@ -36,7 +36,7 @@ Node* merge(Node *L, Node *R)
   return root;
 }
 
-Node* merge_rec(Node *L, Node *R)
+Node* mergeRec(Node *L, Node *R)
 {
   if (!L) {
     return R;
@@ -69,7 +69,7 @@ void split(Node *T, int k0, Node **L, Node **R, bool strict = false)
   *L = *R = nullptr;
 }
 
-void split_rec(Node *T, int k0, Node **L, Node **R)
+void splitRec(Node *T, int k0, Node **L, Node **R)
 {
   if (!T) {
     *L = *R = nullptr;

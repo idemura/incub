@@ -89,7 +89,6 @@ void split_rec(Node *T, int k0, Node **L, Node **R)
 void deleteTreap(Node *T)
 {
   if (T) {
-    printf("deleting %d\n", T->k);
     deleteTreap(T->l);
     deleteTreap(T->r);
     delete T;

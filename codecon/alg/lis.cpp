@@ -21,7 +21,7 @@ int lis(const vector<int> &as, vector<int> *lis_out)
 {
     vector<int> top;
     for (int i = 0; i < as.size(); i++) {
-        // `prn_n` maintained sorted all the time. `top[k]` is the minimal tail
+        // `top` maintained sorted all the time. `top[k]` is the minimal tail
         // element of increasing sequence of length `k`. The invariant is
         // maintained for [0, i) subsequence of `as`. Can prove that it's
         // optimal. On every step, we find the item such that:

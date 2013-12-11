@@ -35,7 +35,8 @@ int generate(int max_value)
   return count;
 }
 
-int main() {
+int main()
+{
 #ifndef ONLINE_JUDGE
   freopen("in", "r", stdin);
 #endif

@@ -92,12 +92,12 @@ function isPrime(a) {
 //   log(primes(16));
 // }());
 
-function binarySearch(a, x, upper) {
+function binarySearch(a, x) {
   var i = 0, j = a.length;
   while (i < j) {
     var m = Math.floor((i + j) / 2);
     // For upper bound x <= a[m].
-    if (x < a[m] || (!upper && x == a[m])) {
+    if (x <= a[m]) {
       j = m;
     } else {
       i = m + 1;
@@ -108,13 +108,10 @@ function binarySearch(a, x, upper) {
 
 // (function() {
 //   function check(x) {
-//     var i = binarySearch(a, x, upper);
-//     var ln = i - 1 >= 0 ? a[i - 1] : '';
-//     var rn = i + 1 < a.length ? a[i + 1] : '';
-//     log('x=' + x + ' @' + i + ' value=' + a[i] + ' l=' + ln + ' r=' + rn);
+//     var i = binarySearch(a, x);
+//     log('x=' + x + ' @' + i + ' ' + a.slice(i - 1, i + 2));
 //   }
 //
-//   var upper = true;
 //   var a = [1, 4, 6, 8, 8, 10, 11];
 //   check(0);
 //   check(5);
@@ -123,36 +120,41 @@ function binarySearch(a, x, upper) {
 //   check(10);
 // }());
 
-function isIntersect(a, b, segms) {
-  var ai = binarySearch(segms, a);
-  if (ai == a.length) {
-    return false;
-  }
-  if (ai % 2 === 1) {
-    return true;
-  }
-  var bi = binarySearch(segms, b);
-  return bi - ai > 0;
+// `a` is [[x]]
+function project(a) {
+  return a.map(function (x) { return x[0]; });
 }
 
-// (function() {
-//   function check(a, b, expected) {
-//     var intersect = isIntersect(a, b, segms);
-//     log('[' + a + ', ' + b + '] is ' + intersect);
-//     if (intersect != expected) {
-//       log('EXPECTED: ' + expected);
-//     }
-//   }
-//
-//   var segms = [3, 5, 10, 13, 16, 18];
-//   check(1, 2, false);
-//   check(1, 3, false);
-//   check(1, 4, true);
-//   check(4, 6, true);
-//   check(6, 8, false);
-//   check(4, 12, true);
-//   check(9, 14, true);
-//   check(15, 18, true);
-//   check(17, 19, true);
-//   check(15, 19, true);
-// }());
+function isIntersect(s, segms) {
+  var i = binarySearch(project(segms), s[0]);
+  if (i == segms.length) {
+    return s[0] < segms[segms.length - 1][1];
+  }
+  if (i > 0 && s[0] < segms[i - 1][1]) {
+    return true;
+  }
+  return s[1] > segms[i][0];
+}
+
+(function() {
+  function check(s, expected) {
+    var intersect = isIntersect(s, segms);
+    log('[' + s[0] + ', ' + s[1] + '] is ' + intersect);
+    if (intersect != expected) {
+      log('EXPECTED: ' + expected);
+    }
+  }
+
+  var segms = [[3, 5], [10, 13], [16, 18]];
+  check([1, 2], false);
+  check([1, 3], false);
+  check([1, 4], true);
+  check([4, 6], true);
+  check([6, 8], false);
+  check([4, 12], true);
+  check([9, 14], true);
+  check([15, 18], true);
+  check([17, 19], true);
+  check([15, 19], true);
+  check([19, 20], false);
+}());

@@ -2,6 +2,10 @@ function log() {
   console.log.apply(null, arguments);
 }
 
+function range(a, i, j) {
+  a.slice(Math.max(0, i), Math.min(j, a.length));
+}
+
 function gcd(a, b) {
   var t;
   if (a < b) {
@@ -127,34 +131,91 @@ function project(a) {
 
 function isIntersect(s, segms) {
   var i = binarySearch(project(segms), s[0]);
-  if (i == segms.length) {
-    return s[0] < segms[segms.length - 1][1];
-  }
-  if (i > 0 && s[0] < segms[i - 1][1]) {
-    return true;
-  }
-  return s[1] > segms[i][0];
+  return (i > 0 && s[0] < segms[i - 1][1]) ||
+         (i < segms.length && s[1] > segms[i][0]);
 }
 
-(function() {
-  function check(s, expected) {
-    var intersect = isIntersect(s, segms);
-    log('[' + s[0] + ', ' + s[1] + '] is ' + intersect);
-    if (intersect != expected) {
-      log('EXPECTED: ' + expected);
-    }
-  }
+// (function() {
+//   function check(s, expected) {
+//     var intersect = isIntersect(s, segms);
+//     log('[' + s[0] + ', ' + s[1] + '] is ' + intersect);
+//     if (intersect != expected) {
+//       log('EXPECTED: ' + expected);
+//     }
+//   }
+//
+//   var segms = [[3, 5], [10, 13], [16, 18]];
+//   check([1, 2], false);
+//   check([1, 3], false);
+//   check([1, 4], true);
+//   check([4, 6], true);
+//   check([6, 8], false);
+//   check([4, 12], true);
+//   check([9, 14], true);
+//   check([15, 18], true);
+//   check([17, 19], true);
+//   check([15, 19], true);
+//   check([19, 20], false);
+// }());
 
-  var segms = [[3, 5], [10, 13], [16, 18]];
-  check([1, 2], false);
-  check([1, 3], false);
-  check([1, 4], true);
-  check([4, 6], true);
-  check([6, 8], false);
-  check([4, 12], true);
-  check([9, 14], true);
-  check([15, 18], true);
-  check([17, 19], true);
-  check([15, 19], true);
-  check([19, 20], false);
-}());
+// (~k + 1) is the same as -k and value is least bin that is != 0.
+function BIT(n) {
+  var a = [];
+  a[n] = undefined;
+  for (var i = 0; i <= n; i++) {
+    a[i] = 0;
+  }
+  this.a = a;
+  this.length = n;
+}
+
+BIT.prototype.update = function(i, d) {
+  while (i < this.a.length) {
+    this.a[i] += d;
+    i += i & -i;
+  }
+};
+
+BIT.prototype.sum = function(i) {
+  var sum = 0;
+  while (i) {
+    sum += this.a[i];
+    i -= i & -i;
+  }
+  return sum;
+};
+
+// Although better method exists, this is OK. Handles border case.
+BIT.prototype.get = function(i) {
+  var si = this.sum(i);
+  if (i > 1) {
+    si -= this.sum(i - 1);
+  }
+  return si;
+};
+
+BIT.prototype.toArray = function() {
+  var a = [];
+  for (var i = 1, l = this.a.length; i < l; i++) {
+    a[i - 1] = this.sum(i);
+  }
+  return a;
+};
+
+// (function() {
+//   var bit = new BIT(10);
+//   bit.update(4, 3);
+//   log(bit.toArray());
+//   bit.update(5, 1);
+//   log(bit.toArray());
+//   bit.update(7, 1);
+//   log(bit.toArray());
+//   bit.update(1, 2);
+//   log(bit.toArray());
+//   log(bit.get(1));
+//   log(bit.get(2));
+//   log(bit.get(4));
+//   log(bit.get(5));
+//   log(bit.get(6));
+//   log(bit.get(7));
+// }());

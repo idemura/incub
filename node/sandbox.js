@@ -227,8 +227,7 @@ function calc(expr) {
       return i == expr.length;
     }
     function isDigit() {
-      var cc = expr.charCodeAt(i);
-      return 47 < cc && cc < 58;
+      return '0123456789'.indexOf(expr[i]) >= 0;
     }
     function token() {
       while (!isEof() && expr[i] == ' ') {

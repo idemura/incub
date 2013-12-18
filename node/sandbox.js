@@ -241,7 +241,7 @@ function calc(expr) {
           pos: pos
         }
       }
-      var symbols = '+-*/()';
+      var symbols = '+-*/%^()';
       var k = symbols.indexOf(expr[i]);
       if (k >= 0) {
         i++;
@@ -315,6 +315,12 @@ function calc(expr) {
           case '/':
             r = a / b;
             break;
+          case '%':
+            r = a % b;
+            break;
+          case '^':
+            r = Math.pow(a, b);
+            break;
         }
         numbers.push({tokType: 'number', pos: -1, value: r});
       }
@@ -323,21 +329,27 @@ function calc(expr) {
       switch (op) {
         case '+': case '-':
           return 10;
-        case '*': case '/':
+        case '*': case '/': case '%':
           return 20;
+        case '^':
+          return 30;
       }
+    }
+    function left(op) {
+      return '+-*/'.indexOf(op) >= 0;
     }
     function opEnd() {
       var t = tok();
       switch (t.tokType) {
-        case '+':
-        case '-':
-        case '*':
-        case '/':
-          if (!ops.length ||
-              prio(ops[ops.length-1].tokType) >= prio(t.tokType)) {
-            // Left-associative handler with (>=).
-            calcStack();
+        case '+': case '-':
+        case '*': case '/': case '%':
+        case '^':
+          if (ops.length) {
+            var p0 = prio(ops[ops.length-1].tokType);
+            var pt = prio(t.tokType);
+            if (p0 > pt || (p0 == pt && left(pt))) {
+              calcStack();
+            }
           }
           ops.push(t);
           break;
@@ -440,4 +452,7 @@ function calc(expr) {
   check("(1 + 3) + 2", 6);
 
   check("(1 + 2) * (5 - 3)", 6);
+  check("(1 + 2) ^ 2", 9);
+
+  check("2 ^ 3 ^ 2", 512);
 }());

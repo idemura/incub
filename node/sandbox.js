@@ -238,7 +238,7 @@ function calc(expr) {
         return {
           tokType: 'eof',
           pos: pos
-        }
+        };
       }
       var symbols = '+-*/%^()';
       var k = symbols.indexOf(expr[i]);

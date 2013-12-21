@@ -1,4 +1,4 @@
-function log() {
+function print() {
   console.log.apply(null, arguments);
 }
 
@@ -23,8 +23,8 @@ function gcd(a, b) {
 }
 
 // (function() {
-//   log('GCD', gcd(12, 8));
-//   log('GCD', gcd(15, 14));
+//   print('GCD', gcd(12, 8));
+//   print('GCD', gcd(15, 14));
 // }());
 
 var gray = {
@@ -52,7 +52,7 @@ function binStr(n, width) {
 //   var WIDTH = 3;
 //   for (var i = 0; i < 8; i++) {
 //    var g = gray.encode(i);
-//    log(binStr(i, WIDTH), binStr(g, WIDTH), 'decode:',
+//    print(binStr(i, WIDTH), binStr(g, WIDTH), 'decode:',
 //        binStr(gray.decode(g), WIDTH));
 //   }
 // }());
@@ -90,10 +90,10 @@ function isPrime(a) {
 }
 
 // (function() {
-//   log(isPrime(12));
-//   log(isPrime(23));
-//   log(isPrime(982451653));  // This is prime.
-//   log(primes(16));
+//   print(isPrime(12));
+//   print(isPrime(23));
+//   print(isPrime(982451653));  // This is prime.
+//   print(primes(16));
 // }());
 
 function binarySearch(a, x) {
@@ -113,7 +113,7 @@ function binarySearch(a, x) {
 // (function() {
 //   function check(x) {
 //     var i = binarySearch(a, x);
-//     log('x=' + x + ' @' + i + ' ' + a.slice(i - 1, i + 2));
+//     print('x=' + x + ' @' + i + ' ' + a.slice(i - 1, i + 2));
 //   }
 //
 //   var a = [1, 4, 6, 8, 8, 10, 11];
@@ -138,9 +138,9 @@ function isIntersect(s, segms) {
 // (function() {
 //   function check(s, expected) {
 //     var intersect = isIntersect(s, segms);
-//     log('[' + s[0] + ', ' + s[1] + '] is ' + intersect);
+//     print('[' + s[0] + ', ' + s[1] + '] is ' + intersect);
 //     if (intersect != expected) {
-//       log('EXPECTED: ' + expected);
+//       print('EXPECTED: ' + expected);
 //     }
 //   }
 //
@@ -205,19 +205,19 @@ BIT.prototype.toArray = function() {
 // (function() {
 //   var bit = new BIT(10);
 //   bit.update(4, 3);
-//   log(bit.toArray());
+//   print(bit.toArray());
 //   bit.update(5, 1);
-//   log(bit.toArray());
+//   print(bit.toArray());
 //   bit.update(7, 1);
-//   log(bit.toArray());
+//   print(bit.toArray());
 //   bit.update(1, 2);
-//   log(bit.toArray());
-//   log(bit.get(1));
-//   log(bit.get(2));
-//   log(bit.get(4));
-//   log(bit.get(5));
-//   log(bit.get(6));
-//   log(bit.get(7));
+//   print(bit.toArray());
+//   print(bit.get(1));
+//   print(bit.get(2));
+//   print(bit.get(4));
+//   print(bit.get(5));
+//   print(bit.get(6));
+//   print(bit.get(7));
 // }());
 
 function calc(expr) {
@@ -418,40 +418,133 @@ function calc(expr) {
   }
 }
 
-(function () {
-  function charMarker(n) {
-    for (var s = ''; n > 0; n--, s += ' ') {
+// (function() {
+//   function charMarker(n) {
+//     for (var s = ''; n > 0; n--, s += ' ') {
+//     }
+//     return s + '^';
+//   }
+//   function check(expr, expected) {
+//     var res = calc(expr);
+//     if (res.value === undefined) {
+//       print(expr);
+//       print(charMarker(res.pos));
+//       print('Error @' + (res.pos + 1) + ': ' + res.error);
+//     } else {
+//       print(expr + ' = ' + res.value);
+//       if (res.value != expected) {
+//         print('EXPECTED: ' + expected);
+//       }
+//     }
+//   }
+//
+//   check("9", 9);
+//   check("2 + 3", 5);
+//   check("2 + 3 - 1", 4);
+//   check("1 + 3 * 2", 7);
+//   check("3 * 2 - 1", 5);
+//   check("4 * 3 / 2", 6);
+//   check("2 * (1 + 3)", 8);
+//   check("(1 + 3) * 2", 8);
+//   check("2 + (1 + 3)", 6);
+//   check("(1 + 3) + 2", 6);
+//   check("(1 + 2) * (5 - 3)", 6);
+//   check("(1 + 2) ^ 2", 9);
+//   check("2 ^ 3 ^ 2", 512);
+// }());
+
+function getMissing(as) {
+  for (var i = 0, n = as.length; i < n; i++) {
+    while (-1 < as[i] && as[i] < n && as[i] != i) {
+      var t = as[i];
+      as[i] = as[t];
+      as[t] = t;
     }
-    return s + '^';
   }
-  function check(expr, expected) {
-    var res = calc(expr);
-    if (res.value === undefined) {
-      log(expr);
-      log(charMarker(res.pos));
-      log('Error @' + (res.pos + 1) + ': ' + res.error);
-    } else {
-      log(expr + ' = ' + res.value);
-      if (res.value != expected) {
-        log('EXPECTED: ' + expected);
-      }
+
+  var ms = [];
+  for (var i = 0, n = as.length; i < n; i++) {
+    if (as[i] != i) {
+      ms.push(i);
     }
   }
+  return ms;
+}
 
-  check("9", 9);
-  check("2 + 3", 5);
-  check("2 + 3 - 1", 4);
-  check("1 + 3 * 2", 7);
-  check("3 * 2 - 1", 5);
-  check("4 * 3 / 2", 6);
+function getMissingRange(as, n) {
+  while (as.length < n) {
+    as.push(-1);
+  }
+  return getMissing(as);
+}
 
-  check("2 * (1 + 3)", 8);
-  check("(1 + 3) * 2", 8);
-  check("2 + (1 + 3)", 6);
-  check("(1 + 3) + 2", 6);
+// (function() {
+//   function check(as, n) {
+//     print(as);
+//     var ms = n? getMissingRange(as, n): getMissing(as);
+//     print("  Missing:", ms);
+//   }
+//   check([0, -1, 2]);
+//   check([2, -1, 0]);
+//   check([4, -1, 3, -1, 0, 5]);
+//   // Same as above, but instead -1's we know the range.
+//   check([4, 3, 0, 5], 6);
+// }());
 
-  check("(1 + 2) * (5 - 3)", 6);
-  check("(1 + 2) ^ 2", 9);
+function TreeNode(data, l, r) {
+  this.l = null;
+  this.r = null;
+  this.data = data;
+}
+function TreeLeaf(data) {
+  TreeNode.call(this, data, null, null);
+}
 
-  check("2 ^ 3 ^ 2", 512);
-}());
+function serializeTree(t, d) {
+  if (t) {
+    return Array.prototype.concat.call(serializeTree(t.l, d + 1),
+                                       [{ node: t, level: d}],
+                                       serializeTree(t.r, d + 1));
+  } else {
+    return [];
+  }
+}
+
+function rmqCommonAncestor(st, a, b) {
+  function find(d) {
+    for (var i = 0; i < st.length; i++) {
+      if (st[i].node.data === d)
+        return i;
+    }
+    print('oh no!');
+  }
+
+  var i = find(a), last = find(b) + 1, imin = i;
+  // Stupid linear RMQ to check my guess.
+  for (i++; i < last; i++) {
+    if (st[i].level < st[imin].level)
+      imin = i;
+  }
+  return st[imin].node;
+}
+
+// (function() {
+//   function check(a, b) {
+//     var mca = rmqCommonAncestor(st, a, b);
+//     print('[' + a + ', ' + b + '] mca is', mca.data);
+//   }
+//
+//   var t = new TreeLeaf(10);
+//   t.l = new TreeLeaf(5);
+//   t.l.l = new TreeLeaf(3);
+//   t.l.r = new TreeLeaf(7);
+//   t.r = new TreeLeaf(15);
+//   t.r.l = new TreeLeaf(13);
+//   t.r.r = new TreeLeaf(17);
+//
+//   var st = serializeTree(t, 0);
+//   check(3, 7);
+//   check(3, 5);
+//   check(3, 13);
+//   check(3, 15);
+// }());

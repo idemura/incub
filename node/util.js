@@ -1,6 +1,6 @@
 var path = require('path');
 
-module.exports.println = function() {
+module.exports.print = function() {
   console.log.apply(null, arguments);
 }
 

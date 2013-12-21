@@ -1,19 +1,30 @@
 var EventEmitter = require('events').EventEmitter;
+var express = require('express');
 var fs = require('fs');
 var http = require('http');
-var mustache = require('mustache');
 var path = require('path');
-var sqlite = require('sqlite3');
 var util = require('./util');
+var sqlite3 = require('sqlite3');
 
 var config = {
-  sqliteDB: 'db.sqlite',
-  hostName: '127.0.0.1',
+  sqliteDB: 'db.sqlite3',
+  hostName: 'localhost',
   port: 4000
 };
 
 var emitter = new EventEmitter();
-var templates = {};
+var db, templates;
+
+function openDb(name, callback) {
+  return new sqlite3.Database(name, function(err) {
+    if (err) {
+      print('Failed to open DB: ' + name);
+      process.exit(-1);
+    } else {
+      callback();
+    }
+  });
+}
 
 function readTemplates(dir, callback) {
   var count = 0, tpl = {};
@@ -37,10 +48,6 @@ function readTemplates(dir, callback) {
     files.forEach(read);
   });
 };
-
-function render(tpl, view) {
-  return mustache.render(tpl, view);
-}
 
 // db: Database
 // table: Map
@@ -66,8 +73,7 @@ function dbCreateTable(db, table) {
 
 // name: String
 // #ret: Void
-function createDb(name) {
-  var db = new sqlite.Database(name);
+function createTables() {
   db.serialize(function () {
     dbCreateTable(db, {
         name: 'accounts',
@@ -91,26 +97,24 @@ function createDb(name) {
 }
 
 function serve() {
-  http.createServer(function (req, res) {
-    res.writeHead(200, {'Content-Type': 'text/html'});
-    res.end(render(templates.main, {title: 'Main', name: 'Igor'}));
-  }).listen(config.port, config.hostName);
+  var app = express();
+  app.get('/', function (req, res) {
+    res.setHeader('Content-Type', 'text/html');
+    res.send(util.render(templates.main, {title: 'Main', name: 'Igor'}))
+  });
+  app.listen(config.port, config.hostName);
+
   var fullUrl = 'http://' + config.hostName + ':' + config.port + '/';
   util.print('Server is running at ' + fullUrl);
 }
 
-function start() {
-  function ready(tpl) {
-    templates = tpl;
-    serve();
-  }
-  readTemplates('templates', ready);
-}
+db = openDb(config.sqliteDB,
+  function() {
+    if (process.argv.indexOf('--create-tables') >= 0)
+      createTables();
 
-process.argv.forEach(function(arg, i, a) {
-  if (arg === '--create-db') {
-    createDb(config.sqliteDB);
-  }
-});
-
-start();
+    readTemplates('templates', function(tpl) {
+      templates = tpl;
+      serve();
+    });
+  });

@@ -22,7 +22,7 @@ function getHostUrl(path) {
 function openDb(name, callback) {
   return new sqlite3.cached.Database(name, function(err) {
     if (err) {
-      dlib.die('DB error: ' + JSON.stringigy(err));
+      dlib.die('DB error: ' + JSON.stringify(err));
     } else {
       callback();
     }

@@ -1,2 +1,4 @@
-- Use express (paths, sessions)
-- Google auth
+- Crypt cookies
+- Serve object (app)
+- Extract schema and refactor SQL
+- AJAX, jQuery

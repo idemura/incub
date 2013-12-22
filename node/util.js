@@ -1,24 +1,92 @@
-var mustache = require('mustache');
-var sqlite3 = require('sqlite3');
+'use strict';
 
-var HOME = process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
+var http = require('http');
+var https = require('https');
+var log = require('./log');
+var querystr = require('querystring');
+var url = require('url');
 
-module.exports.print = function() {
-  console.log.apply(null, arguments);
-}
+(function(mmap) {
+  var HOME = process.env.HOME || process.env.HOMEPATH ||
+             process.env.USERPROFILE;
 
-module.exports.render = function(tpl, view) {
-  return mustache.render(tpl, view);
-}
+  function repeat(x, n) {
+    var xs = [];
+    while (n--) {
+      xs[n] = x;
+    }
+    return xs;
+  }
 
-module.exports.openDb = function(name, callback) {
-  return new sqlite3.Database(name,
-    function(err) {
-      if (err) {
-        print('Failed to open DB: ' + name);
-        process.exit(-1);
-      } else {
-        callback();
-      }
+  function die(msg) {
+    log.error('FATAL ERROR. Process is exiting:');
+    log.error(msg);
+    process.exit(1);
+  }
+
+  function urlEncode(obj) {
+    var acc = [];
+    for (var k in obj) {
+      var v = obj[k];
+      if (v instanceof Array)
+        var str = v.map(querystr.escape).join('+');
+      else
+        var str = querystr.escape(v);
+      acc.push(k + '=' + str);
+    }
+    return acc.join('&');
+  }
+
+  function request(address, options, callback) {
+    var fields = url.parse(address);
+    options.hostname = fields.hostname;
+    options.path = fields.path;
+
+    var chunks = [];
+    var module = fields.protocol === 'https:'? https: http;
+    var req = module.request(options, function(res) {
+      res.on('data', function(chunk) {
+        chunks.push(chunk);
+      });
+      res.on('end', function() {
+        var size = 0;
+        for (var i = 0; i < chunks.length; i++) {
+          size += chunks[i].length;
+        }
+        var buffer = new Buffer(size);
+        var offset = 0;
+        for (var i = 0; i < chunks.length; i++) {
+          chunks[i].copy(buffer, offset);
+          offset += chunks[i].length;
+        }
+        callback(null, buffer);
+      });
     });
-}
+    if (options.data) {
+      req.write(options.data);
+    }
+    req.end();
+    req.on('error', function(err) {
+      callback(err, null);
+    });
+  }
+
+  function postForm(address, form, callback) {
+    var data = urlEncode(form);
+    var options = {
+      method: 'POST',
+      data: data,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': data.length
+      }
+    };
+    request(address, options, callback);
+  }
+
+  mmap.die = die;
+  mmap.postForm = postForm;
+  mmap.repeat = repeat;
+  mmap.request = request;
+  mmap.urlEncode = urlEncode;
+}(module.exports));

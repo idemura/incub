@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{{title}}</title>
+</head>
+<body>
+<div id="header">
+{{#account}}
+Hello {{account.email}}! <a href="/signoff">Sign off</a>.
+{{/account}}
+{{^account}}
+Welcome! <a href="{{&gAuthUrl}}">Login</a> with Google.
+{{/account}}
+</div>
+</body>
+</html>

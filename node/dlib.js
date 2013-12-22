@@ -3,8 +3,9 @@
 var http = require('http');
 var https = require('https');
 var log = require('./log');
-var querystr = require('querystring');
+var qstr = require('querystring');
 var url = require('url');
+var util = require('util');
 
 (function(mmap) {
   var HOME = process.env.HOME || process.env.HOMEPATH ||
@@ -29,9 +30,9 @@ var url = require('url');
     for (var k in obj) {
       var v = obj[k];
       if (v instanceof Array)
-        var str = v.map(querystr.escape).join('+');
+        var str = v.map(qstr.escape).join('+');
       else
-        var str = querystr.escape(v);
+        var str = qstr.escape(v);
       acc.push(k + '=' + str);
     }
     return acc.join('&');

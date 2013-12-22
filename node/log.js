@@ -1,12 +1,14 @@
 'use strict';
 
+var util = require('util');
+
 (function(mmap) {
   function print() {
-    console.log.apply(null, arguments);
+    util.log.apply(null, arguments);
   }
 
   function error() {
-    console.error.apply(null, arguments);
+    util.error.apply(null, arguments);
   }
 
   mmap.error = error;

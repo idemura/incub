@@ -1,13 +1,14 @@
 'use strict';
 
 var config = require('./config');
+var dlib = require('./dlib');
 var EventEmitter = require('events').EventEmitter;
 var express = require('express');
 var fs = require('fs');
 var log = require('./log');
 var path = require('path');
 var sqlite3 = require('sqlite3');
-var util = require('./util');
+var util = require('util');
 var view = require('./view');
 
 var emitter = new EventEmitter();
@@ -21,7 +22,7 @@ function getHostUrl(path) {
 function openDb(name, callback) {
   return new sqlite3.cached.Database(name, function(err) {
     if (err) {
-      util.die('DB error: ' + JSON.stringigy(err));
+      dlib.die('DB error: ' + JSON.stringigy(err));
     } else {
       callback();
     }
@@ -107,7 +108,7 @@ function gAuthUrl() {
     client_id: config.gauth.clientID,
     scope: config.gauth.scopes
   };
-  return config.gauth.authURL + '?' + util.urlEncode(param);
+  return config.gauth.authURL + '?' + dlib.urlEncode(param);
 }
 
 function gAuthExchangeCode(code, callback) {
@@ -118,7 +119,7 @@ function gAuthExchangeCode(code, callback) {
     redirect_uri: getHostUrl('/gauth'),
     grant_type: 'authorization_code'
   };
-  util.postForm(config.gauth.tokenURL, form, function(err, body) {
+  dlib.postForm(config.gauth.tokenURL, form, function(err, body) {
     if (err) {
       log.error('Net (gAuthExchangeCode):', err);
       callback(err, null);
@@ -142,7 +143,7 @@ function updateAccount(ui, callback) {
              updateDone);
     } else {
       var fields = ['email', 'gplus_id', 'name', 'given_name', 'picture', 'gender', 'locale'];
-      var ph = util.repeat('?', fields.length).join(',');  // Placeholders
+      var ph = dlib.repeat('?', fields.length).join(',');  // Placeholders
       db.run('INSERT INTO Accounts (' + fields.join(',') + ') VALUES (' + ph + ')',
              [ui.email, ui.id, ui.name, ui.given_name, ui.picture, ui.gender, ui.locale],
              updateDone);
@@ -165,8 +166,8 @@ function gUserInfo(token, callback) {
     alt: 'json',
     access_token: token
   };
-  var addr = config.gauth.userInfoURL + '?' + util.urlEncode(param);
-  util.request(addr, {}, function(err, body) {
+  var addr = config.gauth.userInfoURL + '?' + dlib.urlEncode(param);
+  dlib.request(addr, {}, function(err, body) {
     if (err) {
       log.error('Net (gUserInfo):', err);
       callback(null);

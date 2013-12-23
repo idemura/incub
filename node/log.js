@@ -2,15 +2,18 @@
 
 var util = require('util');
 
-(function(mmap) {
-  function print() {
-    util.log.apply(null, arguments);
-  }
+function error() {
+  util.error.apply(null, arguments);
+}
 
-  function error() {
-    util.error.apply(null, arguments);
-  }
+function print() {
+  util.log.apply(null, arguments);
+}
 
-  mmap.error = error;
-  mmap.print = print;
-}(module.exports));
+function trace() {
+  console.log.apply(null, arguments);
+}
+
+exports.error = error;
+exports.print = print;
+exports.trace = trace;

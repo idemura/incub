@@ -1,3 +1,5 @@
+'use strict';
+
 function print() {
   console.log.apply(null, arguments);
 }
@@ -550,3 +552,22 @@ function rmqCommonAncestor(st, a, b) {
 //   check(3, 13);
 //   check(3, 15);
 // }());
+
+
+function GAuth(config) {
+  this.config = config;
+  this.yo = f1.bind(this);
+  return this;
+}
+
+function f1() {
+  print(this);
+  print('f1');
+}
+GAuth.prototype.authURL = function() {
+  return "adadfa";
+};
+
+var q = new GAuth(10);
+print(q.authURL());
+

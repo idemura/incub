@@ -1,5 +1,6 @@
 {
   "name": "hello",
+  "main": "main.js",
   "description": "Sandbox Node.js app",
   "version": "0.0.1",
   "private": true,

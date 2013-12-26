@@ -43,12 +43,14 @@ function getHostUrl(path) {
 }
 
 function openDB(callback) {
-  var db = new sqlite3.Database(config.sqliteDB);
-  db.on('error', function() {
-    dlib.die('DB error.', err);
-  });
-  db.on('open', function() {
-    callback(db);
+  var db = new sqlite3.Database(config.sqliteDB, function(err) {
+    if (err) {
+      // Do not die in page handler.
+      dlib.die('DB error.', err);
+    } else {
+      callback(db);
+      db.close();
+    }
   });
 }
 
@@ -102,79 +104,106 @@ function dbCreateTable(db, table) {
 // name: String
 // #ret: Void
 function createTables() {
-  db.serialize(function () {
-    dbCreateTable(db, {
-      name: 'Accounts',
-      columns: {
-        rowid: 'INTEGER PRIMARY KEY AUTOINCREMENT',
-        email: 'VARCHAR(95)',
-        gplus_id: 'VARCHAR(35)',
-        name: 'VARCHAR(95)',
-        given_name: 'VARCHAR(95)',
-        picture: 'VARCHAR(255)',
-        gender: 'VARCHAR(15)',
-        locale: 'VARCHAR(15)'
-      },
-      indices: [
-        { column: 'email', unique: true },
-        { column: 'gplus_id', unique: true },
-        { column: 'name' },
-      ]
+  openDB(function(db) {
+    db.serialize(function() {
+      dbCreateTable(db, {
+        name: 'Accounts',
+        columns: {
+          rowid: 'INTEGER PRIMARY KEY AUTOINCREMENT',
+          email: 'VARCHAR(95)',
+          gplus_id: 'VARCHAR(35)',
+          name: 'VARCHAR(95)',
+          given_name: 'VARCHAR(95)',
+          picture: 'VARCHAR(255)',
+          gender: 'VARCHAR(15)',
+          locale: 'VARCHAR(15)'
+        },
+        indices: [
+          { column: 'email', unique: true },
+          { column: 'gplus_id', unique: true },
+          { column: 'name' },
+        ]
+      });
+      dbCreateTable(db, {
+        name: 'Sessions',
+        columns: {
+          rowid: 'INTEGER PRIMARY KEY AUTOINCREMENT',
+          account_id: 'INTEGER REFERENCES Accounts(rowid)',
+          session_id: 'VARCHAR(24)',
+          create_time: 'INTEGER',
+          access_time: 'INTEGER'
+        },
+        indices: [
+          { column: 'account_id' },
+          { column: 'session_id', unique: true },
+          { column: 'create_time' },
+          { column: 'access_time' },
+        ]
+      });
     });
-    dbCreateTable(db, {
-      name: 'Sessions',
-      columns: {
-        rowid: 'INTEGER PRIMARY KEY AUTOINCREMENT',
-        account_id: 'INTEGER REFERENCES Accounts(rowid)',
-        session_id: 'VARCHAR(24)',
-        create_time: 'INTEGER',
-        access_time: 'INTEGER'
-      },
-      indices: [
-        { column: 'account_id' },
-        { column: 'session_id', unique: true },
-        { column: 'create_time' },
-        { column: 'access_time' },
-      ]
-    });
-    db.close();
+    log.print('DB created.');
   });
-  log.print('DB created.');
+}
+
+function accountsInsertSql(fields) {
+  return 'INSERT INTO Accounts (' + fields.join(',') + ') VALUES' +
+    ' (' + dlib.repeat('?', fields.length).join(',') + ');';
+}
+
+function accountsUpdateSql(fields) {
+  function em(s) {
+    return s + '=?';
+  }
+  return 'UPDATE Accounts SET ' + fields.map(em).join(',') + ' WHERE rowid=?;';
+}
+
+function project(obj, fields) {
+  return fields.map(function(f) {
+    return obj[f];
+  });
 }
 
 function updateAccount(db, u, callback) {
   var user = {email: u.email};
-  function update(err, row) {
-    if (err) {
-      updateDone(err);
-      return;
-    }
+  function update(row) {
     if (row) {
-      db.run('UPDATE Accounts SET name=?, given_name=?, picture=?, gender=?, locale=? WHERE rowid=?;',
-             [u.name, u.given_name, u.picture, u.gender, u.locale, row.rowid],
-             updateDone);
+      var fields = ['name', 'given_name', 'picture', 'gender', 'locale'];
+      var p = project(u, fields);
+      p.push(row.rowid);
+      db.run(accountsUpdateSql(fields), p, updateCB);
     } else {
-      var fields = ['email', 'gplus_id', 'name', 'given_name', 'picture', 'gender', 'locale'];
-      var ph = dlib.repeat('?', fields.length).join(',');  // Placeholders
-      db.run('INSERT INTO Accounts (' + fields.join(',') + ') VALUES (' + ph + ');',
-             [u.email, u.id, u.name, u.given_name, u.picture, u.gender, u.locale],
-             updateDone);
+      var fields = ['gplus_id', 'email',
+                    'name', 'given_name', 'picture', 'gender', 'locale'];
+      var p = project(u, fields);
+      p[0] = u.id;
+      db.run(accountsInsertSql(fields), p, updateCB);
     }
-  }
-  function updateDone(err) {
-    if (!err) {
-      user.id = this.lastID;
-    }
-    callback(user);
   }
 
-  db.serialize(function() {
-    db.get('SELECT rowid FROM Accounts WHERE email=?;', [u.email],
-           function(err, row) {
-      db.serialize(function() {
-        update(err, row);
+  function updateCB(err) {
+    if (err) {
+      log.error('DB SQL error:', err);
+      db.run('ROLLBACK;');
+    } else {
+      db.run('COMMIT;');
+      callback(user);
+    }
+  }
+
+  db.run('BEGIN;', function(err) {
+    if (err) {
+      log.error('DB SQL error:', err);
+    } else {
+      db.get('SELECT rowid FROM Accounts WHERE email=?;', [u.email],
+             function(err, row) {
+        if (err) {
+          log.error('DB SQL error:', err);
+          db.run('ROLLBACK;');
+        } else {
+          update(row);
+        }
       });
-    });
+    }
   });
 }
 

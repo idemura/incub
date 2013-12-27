@@ -1,3 +1,5 @@
+'use strict';
+
 var lib = require('./lib');
 var log = require('./log');
 var view = require('./view');

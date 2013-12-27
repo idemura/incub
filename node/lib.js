@@ -9,6 +9,27 @@ var util = require('util');
 
 var HOME = process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
 
+function assign(name, val) {
+  var old = this[name];
+  this[name] = val;
+  return old;
+}
+
+function equals(lh, rh) {
+  if (lh instanceof Array && rh instanceof Array) {
+    if (lh.length != rh.length) {
+      return false;
+    }
+    for (var i = 0, n = lh.length; i < n; i++) {
+      if (lh[i] !== rh[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+  return lh === rh;
+}
+
 function repeat(x, n) {
   var xs = [];
   while (n--) {
@@ -91,7 +112,9 @@ function postForm(address, form, callback) {
   request(address, options, callback);
 }
 
+exports.assign = assign;
 exports.die = die;
+exports.equals = equals;
 exports.postForm = postForm;
 exports.repeat = repeat;
 exports.repeatStr = repeatStr;

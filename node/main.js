@@ -3,8 +3,9 @@
 var auth = require('./auth');
 var config = require('./config');
 var crypto = require('crypto');
-var dlib = require('./dlib');
+var lib = require('./lib');
 var express = require('express');
+var handler = require('./handler');
 var log = require('./log');
 var sqlite3 = require('sqlite3');
 var util = require('util');
@@ -15,25 +16,89 @@ var templates;
 config.gauth.redirectURL = getHostUrl('/gauth');
 var gauth = new auth.GAuth(config.gauth, gAuthCB);
 
-function withSession(callback) {
-  var sid = crypto.randomBytes(16).toString('base64');
-  var cookie_sid = req.cookies.sid;
-  // res.cookie('name', 'tobi');
-  if (cookie_sid) {
-    db.get('SELECT * FROM Sessions WHERE session_id=?;', [cookie_sid],
-           function(err, row) {
-             if (err)
-               throw err;
-             if (row) {
-               // copy values?
-             } else {
-               create();
-             }
-             log.print('found row', row);
-             return row;
-           });
-    // select session. if not selected (error or gc-ed by time),
-    // create new.
+function Context() {
+  this.finish = Context.prototype.finish;
+  this.templates = templates;
+  return this;
+}
+
+Context.prototype.finish = function() {
+}
+
+Context.prototype.openDB = function(callback) {
+  var self = this;
+  self.db = new sqlite3.Database(config.sqliteDB, function(err) {
+    if (err) {
+      throw err;
+    } else {
+      var oldFinish = self.finish;
+      self.finish = function() {
+        self.db.close();
+        self.db = null;
+        oldFinish.call(self);
+      }
+      callback(self);
+    }
+  });
+}
+
+Context.prototype.openSession = function(callback) {
+  var self = this;
+
+  function invoke(s) {
+    self.res.cookie('sid', s.session_id);
+    var fields = ['account_id'];
+    var oldValues = project(s, fields);
+    self.session = s;
+    var oldFinish = self.finish;
+    self.finish = function() {
+      var newValues = project(self.session, fields);
+      if (!lib.equals(oldValues, newValues)) {
+        newValues.push(self.session.rowid);
+        self.db.run(updateSql('Sessions', fields, 'rowid=?'), newValues);
+      }
+      oldFinish();
+    };
+    callback(self);
+  }
+
+  function create() {
+    var sid = crypto.randomBytes(16).toString('base64');
+    var fields = ['session_id', 'create_time'];
+    self.db.run(insertSql('Sessions', fields), [sid, now],
+      function(err) {
+        if (err) {
+          throw err;
+        }
+        var s = {
+          rowid: this.lastID,
+          session_id: sid,
+          create_time: now,
+          access_time: now
+        };
+        invoke(s);
+      });
+  }
+
+  function update(row) {
+    row.access_time = now;
+    invoke(row);
+  }
+
+  var now = Date.now();
+  var sid = self.req.cookies.sid;
+  if (sid) {
+    self.db.get('SELECT * FROM Sessions WHERE session_id=?;', [sid],
+      function(err, row) {
+        if (err) {
+          throw err;
+        }
+        if (row) {
+          update(row);
+        } else {
+          create();
+        }
+      });
   } else {
     create();
   }
@@ -44,39 +109,138 @@ function getHostUrl(path) {
   return path? fullHost + path: fullHost;
 }
 
-function openDB(callback) {
-  var db = new sqlite3.Database(config.sqliteDB, function(err) {
-    if (err) {
-      throw err;
-    } else {
-      callback(db);
-      db.close();
-    }
-  });
-}
-
-// fn: function(req, res)
+// fn: function(ctx, req, res)
 function handle(fn) {
   return function(req, res) {
+    var ctx = new Context();
     try {
-      openDB(function(db) {
-        var context = {
-          db: db,
-          res: res,
-          req: req
-        };
-        fn.call(context, req, res);
+      ctx.openDB(function(ctx) {
+        ctx.req = req;
+        ctx.res = res;
+        ctx.openSession(function(ctx) {
+          fn(ctx, req, res);
+        });
       });
     } catch (e) {
       log.error('Exception:', e);
       res.send(500);
+      ctx.finish();
     }
   };
 }
 
-// db: Database
-// table: Map
-// #ret: Void
+function insertSql(table, fields) {
+  return 'INSERT INTO ' + table + ' (' + fields.join(',') + ') VALUES' +
+    ' (' + lib.repeat('?', fields.length).join(',') + ');';
+}
+
+function updateSql(table, fields, where) {
+  function em(s) {
+    return s + '=?';
+  }
+  var stmt = 'UPDATE ' + table + ' SET ' + fields.map(em).join(',');
+  if (stmt) {
+    stmt += ' WHERE ' + where;
+  }
+  stmt += ';';
+  return stmt;
+}
+
+function project(obj, fields) {
+  return fields.map(function(f) {
+    return obj[f];
+  });
+}
+
+function updateAccount(db, u, callback) {
+  var user = {email: u.email};
+  function update(row) {
+    if (row) {
+      user.rowid = row.rowid;
+      var fields = ['name', 'given_name', 'picture', 'gender', 'locale'];
+      var p = project(u, fields);
+      p.push(row.rowid);
+      db.run(updateSql('Accounts', fields, 'rowid=?'), p, updateCB);
+    } else {
+      var fields = ['gplus_id', 'email',
+                    'name', 'given_name', 'picture', 'gender', 'locale'];
+      var p = project(u, fields);
+      p[0] = u.id;
+      db.run(insertSql('Accounts', fields), p, function(err) {
+        if (!err) {
+          user.rowid = this.lastID;
+        }
+        updateCB(err);
+      });
+    }
+  }
+
+  function updateCB(err) {
+    if (err) {
+      db.run('ROLLBACK;');
+      throw err;
+    } else {
+      // Race condition here without callback?
+      db.run('COMMIT;', function(err) {
+        callback(user);
+      });
+    }
+  }
+
+  db.run('BEGIN;', function(err) {
+    if (err) {
+      log.error('DB SQL error:', err);
+    } else {
+      db.get('SELECT rowid FROM Accounts WHERE email=?;', [u.email],
+             function(err, row) {
+        if (err) {
+          db.run('ROLLBACK;');
+          throw err;
+        } else {
+          update(row);
+        }
+      });
+    }
+  });
+}
+
+function gAuthCB(guser, req, res) {
+  function render(ctx) {
+    ctx.res.redirect('/');
+    ctx.finish();
+  }
+
+  var fn = handle(function(ctx, req, res) {
+    if (guser) {
+      updateAccount(ctx.db, guser, function(acc) {
+        if (acc) {
+          ctx.session.account_id = acc.rowid;
+        }
+        render(ctx);
+      });
+    } else {
+      log.error('Google Auth FAILED.');
+      render(ctx);
+    }
+  });
+  fn(req, res);
+}
+
+function serve() {
+  var app = express();
+  app.use(express.cookieParser());
+
+  app.get('/', handle(function(ctx, req, res) {
+    ctx.gauth = gauth;
+    handler.main(ctx, req, res);
+  }));
+  app.get('/gauth', gauth.authResponseHandler());
+  app.get('/signoff', handle(handler.signOff));
+
+  app.listen(config.port, config.hostName);
+  log.print('Server is running at ' + getHostUrl());
+}
+
 function dbCreateTable(db, table) {
   var column_def = [];
   for (var k in table.columns) {
@@ -98,10 +262,10 @@ function dbCreateTable(db, table) {
   }
 }
 
-// name: String
-// #ret: Void
 function createTables() {
-  openDB(function(db) {
+  var ctx = new Context();
+  ctx.openDB(function(ctx) {
+    var db = ctx.db;
     db.serialize(function() {
       dbCreateTable(db, {
         name: 'Accounts',
@@ -143,123 +307,13 @@ function createTables() {
   });
 }
 
-function accountsInsertSql(fields) {
-  return 'INSERT INTO Accounts (' + fields.join(',') + ') VALUES' +
-    ' (' + dlib.repeat('?', fields.length).join(',') + ');';
-}
-
-function accountsUpdateSql(fields) {
-  function em(s) {
-    return s + '=?';
-  }
-  return 'UPDATE Accounts SET ' + fields.map(em).join(',') + ' WHERE rowid=?;';
-}
-
-function project(obj, fields) {
-  return fields.map(function(f) {
-    return obj[f];
-  });
-}
-
-function updateAccount(db, u, callback) {
-  var user = {email: u.email};
-  function update(row) {
-    if (row) {
-      var fields = ['name', 'given_name', 'picture', 'gender', 'locale'];
-      var p = project(u, fields);
-      p.push(row.rowid);
-      db.run(accountsUpdateSql(fields), p, updateCB);
-    } else {
-      var fields = ['gplus_id', 'email',
-                    'name', 'given_name', 'picture', 'gender', 'locale'];
-      var p = project(u, fields);
-      p[0] = u.id;
-      db.run(accountsInsertSql(fields), p, updateCB);
-    }
-  }
-
-  function updateCB(err) {
-    if (err) {
-      log.error('DB SQL error:', err);
-      db.run('ROLLBACK;');
-    } else {
-      db.run('COMMIT;');
-      callback(user);
-    }
-  }
-
-  db.run('BEGIN;', function(err) {
-    if (err) {
-      log.error('DB SQL error:', err);
-    } else {
-      db.get('SELECT rowid FROM Accounts WHERE email=?;', [u.email],
-             function(err, row) {
-        if (err) {
-          log.error('DB SQL error:', err);
-          db.run('ROLLBACK;');
-        } else {
-          update(row);
-        }
-      });
-    }
-  });
-}
-
-function gAuthCB(user, req, res) {
-  openDB(function(db) {
-    if (user) {
-      updateAccount(db, user, function(user) {
-        if (user) {
-          req.session.email = user.email;
-        }
-        res.redirect('/');
-      });
-    } else {
-      log.error('Google Auth FAILED.');
-      res.redirect('/');
-    }
-  });
-}
-
-var route = {
-  'index': function(req, res) {
-    var data = {title: 'Igor\'s Main', account: null};
-    if (req.session.email) {
-      data.account = {
-        email: req.session.email
-      };
-    }
-    res.setHeader('Content-Type', 'text/html');
-    data.gAuthUrl = gauth.authURL();
-    res.send(view.render(templates.index, data));
-  },
-
-  'signOff': function(req, res) {
-    // TODO: Ajax
-    req.session.email = null;
-    res.redirect('/');
-  }
-};
-
-function serve() {
-  var app = express();
-  app.use(express.cookieParser());
-
-  app.get('/', handle(route.index));
-  app.get('/gauth', gauth.authResponseHandler());
-  app.get('/signoff', route.signOff);
-
-  app.listen(config.port, config.hostName);
-  log.print('Server is running at ' + getHostUrl());
-}
-
 if (process.argv.indexOf('--create-tables') >= 0) {
   createTables();
 }
 
 view.readTemplates('templates', function(err, tpl) {
   if (err) {
-    dlib.die('Templates error.', JSON.stringify(err));
+    lib.die('Templates error.', JSON.stringify(err));
   }
   templates = tpl;
   serve();

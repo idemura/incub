@@ -1,5 +1,7 @@
-- Sessions
-- Serve object (app). Metadata.
-- DB connection cache
-- Extract schema and refactor SQL
-- AJAX, jQuery
+1. AJAX, jQuery (for sign in/off).
+1. Timestamp in log.
+
+2. DB connection cache.
+
+?  Extract schema and refactor SQL.
+?  Serve object (app). Metadata.

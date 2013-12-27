@@ -282,7 +282,7 @@ function createTables() {
         indices: [
           { column: 'email', unique: true },
           { column: 'gplus_id', unique: true },
-          { column: 'name' },
+          { column: 'name' }
         ]
       });
       dbCreateTable(db, {
@@ -299,7 +299,7 @@ function createTables() {
           // Should be unique, but collisions have tiny probability.
           { column: 'session_id' },
           { column: 'create_time' },
-          { column: 'access_time' },
+          { column: 'access_time' }
         ]
       });
     });

@@ -1,4 +1,5 @@
-- Crypt cookies
-- Serve object (app)
+- Sessions
+- Serve object (app). Metadata.
+- DB connection cache
 - Extract schema and refactor SQL
 - AJAX, jQuery

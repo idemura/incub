@@ -2,6 +2,7 @@
 
 var auth = require('./auth');
 var config = require('./config');
+var crypto = require('crypto');
 var dlib = require('./dlib');
 var express = require('express');
 var log = require('./log');
@@ -14,27 +15,28 @@ var templates;
 config.gauth.redirectURL = getHostUrl('/gauth');
 var gauth = new auth.GAuth(config.gauth, gAuthCB);
 
-function Sessions(db) {
-  this.db = db;
-}
-
-Sessions.prototype.getSession = function(cookieSession) {
-  var now = new Date();
-  // db.serialize(function() {
-  //   if (cookieSession.sid) {
-  //     db.get('SELECT * FROM Sessions WHERE session_id=?;', [cookieSession.sid],
-  //            function(err, row) {
-  //              if (err)
-  //                throw err;
-  //              log.print('found row', row);
-  //              return row;
-  //            });
-  //     // select session. if not selected (error or gc-ed by time),
-  //     // create new.
-  //   } else {
-  //     // create new.
-  //   }
-  // });
+function withSession(callback) {
+  var sid = crypto.randomBytes(16).toString('base64');
+  var cookie_sid = req.cookies.sid;
+  // res.cookie('name', 'tobi');
+  if (cookie_sid) {
+    db.get('SELECT * FROM Sessions WHERE session_id=?;', [cookie_sid],
+           function(err, row) {
+             if (err)
+               throw err;
+             if (row) {
+               // copy values?
+             } else {
+               create();
+             }
+             log.print('found row', row);
+             return row;
+           });
+    // select session. if not selected (error or gc-ed by time),
+    // create new.
+  } else {
+    create();
+  }
 }
 
 function getHostUrl(path) {
@@ -45,8 +47,7 @@ function getHostUrl(path) {
 function openDB(callback) {
   var db = new sqlite3.Database(config.sqliteDB, function(err) {
     if (err) {
-      // Do not die in page handler.
-      dlib.die('DB error.', err);
+      throw err;
     } else {
       callback(db);
       db.close();
@@ -54,27 +55,23 @@ function openDB(callback) {
   });
 }
 
-function Handler(fn) {
-  this.fn = fn;
-  return this;
-}
-
-Handler.prototype.handle = function(req, res) {
-  var self = this;
-  openDB(function(db) {
-    self.db = db;
-    self.req = req;
-    self.res = res;
-    self.fn.call(self, req, res);
-  });
-}
-
 // fn: function(req, res)
 function handle(fn) {
-  var h = new Handler(fn);
   return function(req, res) {
-    h.handle(req, res);
-  }
+    try {
+      openDB(function(db) {
+        var context = {
+          db: db,
+          res: res,
+          req: req
+        };
+        fn.call(context, req, res);
+      });
+    } catch (e) {
+      log.error('Exception:', e);
+      res.send(500);
+    }
+  };
 }
 
 // db: Database
@@ -128,14 +125,15 @@ function createTables() {
         name: 'Sessions',
         columns: {
           rowid: 'INTEGER PRIMARY KEY AUTOINCREMENT',
+          session_id: 'VARCHAR(35)',
           account_id: 'INTEGER REFERENCES Accounts(rowid)',
-          session_id: 'VARCHAR(24)',
           create_time: 'INTEGER',
           access_time: 'INTEGER'
         },
         indices: [
           { column: 'account_id' },
-          { column: 'session_id', unique: true },
+          // Should be unique, but collisions have tiny probability.
+          { column: 'session_id' },
           { column: 'create_time' },
           { column: 'access_time' },
         ]
@@ -224,7 +222,7 @@ function gAuthCB(user, req, res) {
 }
 
 var route = {
-  index: function(req, res) {
+  'index': function(req, res) {
     var data = {title: 'Igor\'s Main', account: null};
     if (req.session.email) {
       data.account = {
@@ -236,7 +234,7 @@ var route = {
     res.send(view.render(templates.index, data));
   },
 
-  signOff: function(req, res) {
+  'signOff': function(req, res) {
     // TODO: Ajax
     req.session.email = null;
     res.redirect('/');
@@ -245,8 +243,7 @@ var route = {
 
 function serve() {
   var app = express();
-  app.use(express.cookieParser('VQPskCSFqMc7rXg4'));
-  app.use(express.cookieSession());
+  app.use(express.cookieParser());
 
   app.get('/', handle(route.index));
   app.get('/gauth', gauth.authResponseHandler());

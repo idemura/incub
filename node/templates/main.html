@@ -6,12 +6,13 @@
 </head>
 <body>
 <div id="header">
-{{#account}}
 Hello {{account.email}}! <a href="/signoff">Sign off</a>.
-{{/account}}
-{{^account}}
-Welcome! <a href="{{&gauthURL}}">Login</a> with Google.
-{{/account}}
+</div>
+<div id="newPost">
+  <form method="POST" action="/create">
+    <input type="text" name="text"/>
+    <input type="submit"/>
+  </form>
 </div>
 </body>
 </html>

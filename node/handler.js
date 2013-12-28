@@ -47,5 +47,12 @@ function signOff(ctx, req, res) {
   ctx.finish();
 }
 
+function create(ctx, req, res) {
+  log.trace(req.body);
+  res.redirect('/');
+  ctx.finish();
+}
+
+exports.create = create;
 exports.main = main;
 exports.signOff = signOff;

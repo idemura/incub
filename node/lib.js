@@ -112,11 +112,37 @@ function postForm(address, form, callback) {
   request(address, options, callback);
 }
 
+function insertSql(table, fields) {
+  return 'INSERT INTO ' + table + ' (' + fields.join(',') + ') VALUES' +
+    ' (' + lib.repeat('?', fields.length).join(',') + ');';
+}
+
+function updateSql(table, fields, where) {
+  function em(s) {
+    return s + '=?';
+  }
+  var stmt = 'UPDATE ' + table + ' SET ' + fields.map(em).join(',');
+  if (stmt) {
+    stmt += ' WHERE ' + where;
+  }
+  stmt += ';';
+  return stmt;
+}
+
+function project(obj, fields) {
+  return fields.map(function(f) {
+    return obj[f];
+  });
+}
+
 exports.assign = assign;
 exports.die = die;
 exports.equals = equals;
+exports.insertSql = insertSql;
 exports.postForm = postForm;
+exports.project = project;
 exports.repeat = repeat;
 exports.repeatStr = repeatStr;
 exports.request = request;
+exports.updateSql = updateSql;
 exports.urlEncode = urlEncode;

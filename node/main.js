@@ -55,7 +55,7 @@ Context.prototype.openSession = function(callback) {
       var newValues = project(self.session, fields);
       if (!lib.equals(oldValues, newValues)) {
         newValues.push(self.session.rowid);
-        self.db.run(updateSql('Sessions', fields, 'rowid=?'), newValues);
+        self.db.run(lib.updateSql('Sessions', fields, 'rowid=?'), newValues);
       }
       oldFinish();
     };
@@ -65,7 +65,7 @@ Context.prototype.openSession = function(callback) {
   function create() {
     var sid = crypto.randomBytes(16).toString('base64');
     var fields = ['session_id', 'create_time'];
-    self.db.run(insertSql('Sessions', fields), [sid, now],
+    self.db.run(lib.insertSql('Sessions', fields), [sid, now],
       function(err) {
         if (err) {
           throw err;
@@ -129,29 +129,6 @@ function handle(fn) {
   };
 }
 
-function insertSql(table, fields) {
-  return 'INSERT INTO ' + table + ' (' + fields.join(',') + ') VALUES' +
-    ' (' + lib.repeat('?', fields.length).join(',') + ');';
-}
-
-function updateSql(table, fields, where) {
-  function em(s) {
-    return s + '=?';
-  }
-  var stmt = 'UPDATE ' + table + ' SET ' + fields.map(em).join(',');
-  if (stmt) {
-    stmt += ' WHERE ' + where;
-  }
-  stmt += ';';
-  return stmt;
-}
-
-function project(obj, fields) {
-  return fields.map(function(f) {
-    return obj[f];
-  });
-}
-
 function updateAccount(db, u, callback) {
   var user = {email: u.email};
   function update(row) {
@@ -160,13 +137,13 @@ function updateAccount(db, u, callback) {
       var fields = ['name', 'given_name', 'picture', 'gender', 'locale'];
       var p = project(u, fields);
       p.push(row.rowid);
-      db.run(updateSql('Accounts', fields, 'rowid=?'), p, updateCB);
+      db.run(lib.updateSql('Accounts', fields, 'rowid=?'), p, updateCB);
     } else {
       var fields = ['gplus_id', 'email',
                     'name', 'given_name', 'picture', 'gender', 'locale'];
       var p = project(u, fields);
       p[0] = u.id;
-      db.run(insertSql('Accounts', fields), p, function(err) {
+      db.run(lib.insertSql('Accounts', fields), p, function(err) {
         if (!err) {
           user.rowid = this.lastID;
         }
@@ -229,6 +206,8 @@ function gAuthCB(guser, req, res) {
 function serve() {
   var app = express();
   app.use(express.cookieParser());
+  app.use(express.json());
+  app.use(express.urlencoded());
 
   app.get('/', handle(function(ctx, req, res) {
     ctx.gauth = gauth;
@@ -236,6 +215,7 @@ function serve() {
   }));
   app.get('/gauth', gauth.authResponseHandler());
   app.get('/signoff', handle(handler.signOff));
+  app.post('/create', handle(handler.create));
 
   app.listen(config.port, config.hostName);
   log.print('Server is running at ' + getHostUrl());
@@ -277,7 +257,8 @@ function createTables() {
           given_name: 'TEXT',
           picture: 'TEXT',
           gender: 'TEXT',
-          locale: 'TEXT'
+          locale: 'TEXT',
+          meta: 'TEXT'
         },
         indices: [
           { column: 'email', unique: true },
@@ -292,7 +273,8 @@ function createTables() {
           session_id: 'TEXT',
           account_id: 'INTEGER REFERENCES Accounts(rowid)',
           create_time: 'INTEGER',
-          access_time: 'INTEGER'
+          access_time: 'INTEGER',
+          meta: 'TEXT'
         },
         indices: [
           { column: 'account_id' },
@@ -308,11 +290,14 @@ function createTables() {
           rowid: 'INTEGER PRIMARY KEY AUTOINCREMENT',
           account_id: 'INTEGER REFERENCES Accounts(rowid)',
           create_time: 'INTEGER',
-          text: 'TEXT'
+          modify_time: 'INTEGER',
+          text: 'TEXT',
+          meta: 'TEXT'
         },
         indices: [
           { column: 'account_id' },
           { column: 'create_time' },
+          { column: 'modify_time' }
         ]
       });
     });

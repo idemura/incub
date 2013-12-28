@@ -271,13 +271,13 @@ function createTables() {
         name: 'Accounts',
         columns: {
           rowid: 'INTEGER PRIMARY KEY AUTOINCREMENT',
-          email: 'VARCHAR(95)',
-          gplus_id: 'VARCHAR(35)',
-          name: 'VARCHAR(95)',
-          given_name: 'VARCHAR(95)',
-          picture: 'VARCHAR(255)',
-          gender: 'VARCHAR(15)',
-          locale: 'VARCHAR(15)'
+          email: 'TEXT',
+          gplus_id: 'TEXT',
+          name: 'TEXT',
+          given_name: 'TEXT',
+          picture: 'TEXT',
+          gender: 'TEXT',
+          locale: 'TEXT'
         },
         indices: [
           { column: 'email', unique: true },
@@ -289,7 +289,7 @@ function createTables() {
         name: 'Sessions',
         columns: {
           rowid: 'INTEGER PRIMARY KEY AUTOINCREMENT',
-          session_id: 'VARCHAR(35)',
+          session_id: 'TEXT',
           account_id: 'INTEGER REFERENCES Accounts(rowid)',
           create_time: 'INTEGER',
           access_time: 'INTEGER'
@@ -300,6 +300,19 @@ function createTables() {
           { column: 'session_id' },
           { column: 'create_time' },
           { column: 'access_time' }
+        ]
+      });
+      dbCreateTable(db, {
+        name: 'Posts',
+        columns: {
+          rowid: 'INTEGER PRIMARY KEY AUTOINCREMENT',
+          account_id: 'INTEGER REFERENCES Accounts(rowid)',
+          create_time: 'INTEGER',
+          text: 'TEXT'
+        },
+        indices: [
+          { column: 'account_id' },
+          { column: 'create_time' },
         ]
       });
     });

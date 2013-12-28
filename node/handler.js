@@ -17,24 +17,27 @@ function getAccount(db, rowid, callback) {
 }
 
 function main(ctx, req, res) {
-  function render(ctx) {
-    ctx.res.send(view.render(ctx.templates.main, data));
+  function renderNoAuth() {
+    data.gauthURL = ctx.gauth.authURL();
+    ctx.res.send(view.render(ctx.templates.main_noauth, data));
     ctx.finish();
   }
 
   var data = {
     title: 'Igor\'s Main',
-    gauthURL: ctx.gauth.authURL()
   };
   if (ctx.session.account_id) {
     getAccount(ctx.db, ctx.session.account_id, function(account) {
       if (account) {
         data.account = {email: account.email};
+        ctx.res.send(view.render(ctx.templates.main, data));
+        ctx.finish();
+      } else {
+        renderNoAuth();
       }
-      render(ctx);
     });
   } else {
-    render(ctx);
+    renderNoAuth();
   }
 }
 

@@ -2,6 +2,6 @@
 1. Timestamp in log.
 
 2. DB connection cache.
-
+   Actually, move to single connection back. Use PRAGMA sync=OFF.
 ?  Extract schema and refactor SQL.
 ?  Serve object (app). Metadata.

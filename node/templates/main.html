@@ -14,5 +14,11 @@ Hello {{account.email}}! <a href="/signoff">Sign off</a>.
     <input type="submit"/>
   </form>
 </div>
+<h3>My feed:</h3>
+<div>
+{{#posts}}
+<p>{{text}}</p>
+{{/posts}}
+</div>
 </body>
 </html>

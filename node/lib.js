@@ -7,8 +7,6 @@ var qstr = require('querystring');
 var url = require('url');
 var util = require('util');
 
-var HOME = process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
-
 function assign(name, val) {
   var old = this[name];
   this[name] = val;

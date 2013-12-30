@@ -15,6 +15,17 @@ function getAccount(db, rowid, callback) {
   });
 }
 
+function getPostsOf(db, account_id, callback) {
+  db.query('SELECT * FROM Posts WHERE account_id=? ORDER BY modify_time DESC;',
+           [account_id], function(err, dbres) {
+    if (err) {
+      throw err;
+    } else {
+      callback(dbres.rows);
+    }
+  });
+}
+
 function main(ctx, req, res) {
   function renderNoAuth() {
     data.gauthURL = ctx.gauth.authURL();
@@ -29,8 +40,14 @@ function main(ctx, req, res) {
     getAccount(ctx.db, ctx.session.account_id, function(account) {
       if (account) {
         data.account = {email: account.email};
-        ctx.res.send(view.render(ctx.templates.main, data));
-        ctx.finish();
+        data.posts = [];
+        getPostsOf(ctx.db, account.rowid, function(rows) {
+          data.posts = rows.map(function(r) {
+            return {text: r.text};
+          });
+          ctx.res.send(view.render(ctx.templates.main, data));
+          ctx.finish();
+        });
       } else {
         renderNoAuth();
       }

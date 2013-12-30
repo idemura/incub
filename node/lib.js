@@ -60,6 +60,20 @@ function typeOf(value) {
     return t;
 }
 
+function keys(object) {
+  var ks = [];
+  for (var k in object) {
+    ks.push(k);
+  }
+  return ks;
+}
+
+function values(object, keys) {
+  return keys.map(function(k) {
+    return object[k];
+  });
+}
+
 function urlEncode(obj) {
   var acc = [];
   for (var k in obj) {
@@ -120,27 +134,21 @@ function postForm(address, form, callback) {
   request(address, options, callback);
 }
 
-function insertSql(table, fields) {
+function insertSql(table, keys) {
   return util.format('INSERT INTO %s (%s) VALUES (%s) RETURNING rowid;',
-    table, fields.join(','), repeat('?', fields.length).join(','));
+    table, keys.join(','), repeat('?', keys.length).join(','));
 }
 
-function updateSql(table, fields, where) {
+function updateSql(table, keys, where) {
   function em(s) {
     return s + '=?';
   }
-  var stmt = 'UPDATE ' + table + ' SET ' + fields.map(em).join(',');
+  var stmt = 'UPDATE ' + table + ' SET ' + keys.map(em).join(',');
   if (stmt) {
     stmt += ' WHERE ' + where;
   }
   stmt += ';';
   return stmt;
-}
-
-function project(obj, fields) {
-  return fields.map(function(f) {
-    return obj[f];
-  });
 }
 
 function getCmdLineArg(name, def) {
@@ -159,12 +167,13 @@ function getCmdLineArg(name, def) {
 exports.assign = assign;
 exports.equals = equals;
 exports.insertSql = insertSql;
+exports.keys = keys;
 exports.getCmdLineArg = getCmdLineArg;
 exports.postForm = postForm;
-exports.project = project;
 exports.repeat = repeat;
 exports.repeatStr = repeatStr;
 exports.request = request;
 exports.typeOf = typeOf;
 exports.updateSql = updateSql;
 exports.urlEncode = urlEncode;
+exports.values = values;

@@ -32,12 +32,12 @@ DB.prototype.query = function(stmt, params, callback) {
   }
   stmt = stmtIndexParams;
 
-  this.client.query(stmt, params, function(err, rows) {
+  this.client.query(stmt, params, function(err, dbres) {
     if (err) {
       log.error('PG error in: ' + stmt, err);
     }
     if (callback) {
-      callback(err, rows);
+      callback(err, dbres);
     }
   });
 }

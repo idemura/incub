@@ -5,13 +5,12 @@ var log = require('./log');
 var view = require('./view');
 
 function getAccount(db, rowid, callback) {
-  var fields = ['email', 'name', 'given_name', 'picture', 'gender', 'locale'];
-  db.query('SELECT ' + fields.join(',') + ' FROM Accounts WHERE rowid=?;',
-           [rowid], function(err, res) {
+  db.query('SELECT * FROM Accounts WHERE rowid=?;', [rowid],
+           function(err, dbres) {
     if (err) {
       throw err;
     } else {
-      callback(res.rows[0]);
+      callback(dbres.rows[0]);
     }
   });
 }
@@ -47,9 +46,48 @@ function signOff(ctx, req, res) {
   ctx.finish();
 }
 
+function withAuth(ctx, callback, callbackUnauthorized) {
+  callbackUnauthorized = callbackUnauthorized || function() {
+    res.redirect('/');
+    ctx.finish();
+  };
+  if (ctx.session.account_id) {
+    getAccount(ctx.db, ctx.session.account_id, function(account) {
+      if (account) {
+        callback(account);
+      } else {
+        callbackUnauthorized();
+      }
+    });
+  } else {
+    callbackUnauthorized();
+  }
+}
+
 function create(ctx, req, res) {
-  res.redirect('/');
-  ctx.finish();
+  withAuth(ctx, function(account) {
+    var text = req.body.text;
+    if (text && 0 < text.length && text.length < 256) {
+      var now = Date.now();
+      var post = {
+        account_id: account.rowid,
+        create_time: now,
+        modify_time: now,
+        text: text
+      };
+      var keys = lib.keys(post);
+      var values = lib.values(post, keys);
+      ctx.db.query(lib.insertSql('Posts', keys), values, function(err, dbres) {
+        if (err) {
+          throw err;
+        }
+        res.redirect('/');
+        ctx.finish();
+      });
+    } else {
+      ctx.finish();
+    }
+  });
 }
 
 exports.create = create;

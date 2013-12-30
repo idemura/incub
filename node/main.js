@@ -45,14 +45,14 @@ Context.prototype.openSession = function(callback) {
 
   function invoke(s) {
     self.res.cookie('sid', s.session_id);
-    var fields = ['account_id'];
-    var oldValues = lib.project(s, fields);
+    var keys = ['account_id'];
+    var oldValues = lib.values(s, keys);
     self.session = s;
     self.addFinalizer(function() {
-      var newValues = lib.project(self.session, fields);
+      var newValues = lib.values(self.session, keys);
       if (!lib.equals(oldValues, newValues)) {
         newValues.push(self.session.rowid);
-        self.db.query(lib.updateSql('Sessions', fields, 'rowid=?'), newValues);
+        self.db.query(lib.updateSql('Sessions', keys, 'rowid=?'), newValues);
       }
     });
     callback(self);
@@ -60,14 +60,14 @@ Context.prototype.openSession = function(callback) {
 
   function create() {
     var sid = crypto.randomBytes(16).toString('base64');
-    var fields = ['session_id', 'create_time'];
-    self.db.query(lib.insertSql('Sessions', fields), [sid, now],
-      function(err, res) {
+    var keys = ['session_id', 'create_time'];
+    self.db.query(lib.insertSql('Sessions', keys), [sid, now],
+      function(err, dbres) {
         if (err) {
           throw err;
         }
         var s = {
-          rowid: res.rows[0].rowid,
+          rowid: dbres.rows[0].rowid,
           session_id: sid,
           create_time: now,
           access_time: now
@@ -85,12 +85,12 @@ Context.prototype.openSession = function(callback) {
   var sid = self.req.cookies.sid;
   if (sid) {
     self.db.query('SELECT * FROM Sessions WHERE session_id=?;', [sid],
-      function(err, res) {
+      function(err, dbres) {
         if (err) {
           throw err;
         }
-        if (res.rows.length > 0) {
-          update(res.rows[0]);
+        if (dbres.rows.length > 0) {
+          update(dbres.rows[0]);
         } else {
           create();
         }
@@ -130,18 +130,18 @@ function updateAccount(db, u, callback) {
   function update(row) {
     if (row) {
       user.rowid = row.rowid;
-      var fields = ['name', 'given_name', 'picture', 'gender', 'locale'];
-      var p = lib.project(u, fields);
+      var keys = ['name', 'given_name', 'picture', 'gender', 'locale'];
+      var p = lib.values(u, keys);
       p.push(row.rowid);
-      db.query(lib.updateSql('Accounts', fields, 'rowid=?'), p, updateCB);
+      db.query(lib.updateSql('Accounts', keys, 'rowid=?'), p, updateCB);
     } else {
-      var fields = ['gplus_id', 'email',
+      var keys = ['gplus_id', 'email',
                     'name', 'given_name', 'picture', 'gender', 'locale'];
-      var p = lib.project(u, fields);
+      var p = lib.values(u, keys);
       p[0] = u.id;
-      db.query(lib.insertSql('Accounts', fields), p, function(err, res) {
+      db.query(lib.insertSql('Accounts', keys), p, function(err, dbres) {
         if (!err) {
-          user.rowid = res.rows[0].rowid;
+          user.rowid = dbres.rows[0].rowid;
         }
         updateCB(err);
       });
@@ -165,12 +165,12 @@ function updateAccount(db, u, callback) {
       log.error('DB SQL error:', err);
     } else {
       db.query('SELECT rowid FROM Accounts WHERE email=?;', [u.email],
-               function(err, res) {
+               function(err, dbres) {
         if (err) {
           db.query('ROLLBACK;');
           throw err;
         } else {
-          update(res.rows[0]);
+          update(dbres.rows[0]);
         }
       });
     }

@@ -109,19 +109,13 @@ function getHostUrl(path) {
 function handle(fn) {
   return function(req, res) {
     var ctx = new Context();
-    try {
-      ctx.openDB(function(ctx) {
-        ctx.req = req;
-        ctx.res = res;
-        ctx.openSession(function(ctx) {
-          fn(ctx, req, res);
-        });
+    ctx.openDB(function(ctx) {
+      ctx.req = req;
+      ctx.res = res;
+      ctx.openSession(function(ctx) {
+        fn(ctx, req, res);
       });
-    } catch (e) {
-      log.error('Exception:', e);
-      res.send(500);
-      ctx.finish();
-    }
+    });
   };
 }
 
@@ -136,7 +130,7 @@ function updateAccount(db, u, callback) {
       db.query(lib.updateSql('Accounts', keys, 'rowid=?'), p, updateCB);
     } else {
       var keys = ['gplus_id', 'email',
-                    'name', 'given_name', 'picture', 'gender', 'locale'];
+                  'name', 'given_name', 'picture', 'gender', 'locale'];
       var p = lib.values(u, keys);
       p[0] = u.id;
       db.query(lib.insertSql('Accounts', keys), p, function(err, dbres) {

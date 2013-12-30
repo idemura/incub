@@ -65,7 +65,7 @@ function signOff(ctx, req, res) {
 
 function withAuth(ctx, callback, callbackUnauthorized) {
   callbackUnauthorized = callbackUnauthorized || function() {
-    res.redirect('/');
+    res.send(401);
     ctx.finish();
   };
   if (ctx.session.account_id) {

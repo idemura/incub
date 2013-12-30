@@ -6,12 +6,12 @@ var view = require('./view');
 
 function getAccount(db, rowid, callback) {
   var fields = ['email', 'name', 'given_name', 'picture', 'gender', 'locale'];
-  db.get('SELECT ' + fields.join(',') + ' FROM Accounts WHERE rowid=?;',
-         [rowid], function(err, row) {
+  db.query('SELECT ' + fields.join(',') + ' FROM Accounts WHERE rowid=?;',
+           [rowid], function(err, res) {
     if (err) {
       throw err;
     } else {
-      callback(row);
+      callback(res.rows[0]);
     }
   });
 }
@@ -48,7 +48,6 @@ function signOff(ctx, req, res) {
 }
 
 function create(ctx, req, res) {
-  log.trace(req.body);
   res.redirect('/');
   ctx.finish();
 }

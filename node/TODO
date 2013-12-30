@@ -1,7 +1,6 @@
 1. AJAX, jQuery (for sign in/off).
 1. Timestamp in log.
+1. Error: instead of throw, return 500. Memory leak?
 
-2. DB connection cache.
-   Actually, move to single connection back. Use PRAGMA sync=OFF.
 ?  Extract schema and refactor SQL.
 ?  Serve object (app). Metadata.

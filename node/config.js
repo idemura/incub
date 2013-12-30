@@ -1,14 +1,26 @@
 'use strict';
 
-module.exports = {
-  sqliteDB: 'db.sqlite3',
-  hostName: 'localhost',
-  port: 4000,
+var fs = require('fs');
+var lib = require('./lib');
+var log = require('./log');
 
-  gauth: {
-    clientID: '484563975237.apps.googleusercontent.com',
-    clientSecret: 'XyjfDwvcQUA8xYO9n9iW0iW2',
-    scopes: ['https://www.googleapis.com/auth/userinfo.email',
-             'https://www.googleapis.com/auth/userinfo.profile']
+var cfg = {
+  read: function(callback) {
+    fs.readFile(lib.getCmdLineArg('--config', 'config.json'),
+                {encoding: 'utf8'}, function(err, data) {
+      if (err) {
+        callback(err);
+      } else {
+        var cfgFileOpts = JSON.parse(data);
+        for (var k in cfgFileOpts) {
+          if (k !== 'read') {
+            cfg[k] = cfgFileOpts[k];
+          }
+        }
+        callback(null);
+      }
+    });
   }
 };
+
+module.exports = exports = cfg;

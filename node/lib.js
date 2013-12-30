@@ -46,10 +46,18 @@ function repeatStr(s, n) {
   return s;
 }
 
-function die(msg) {
-  log.error('FATAL ERROR. Process is exiting:');
-  log.error(msg);
-  process.exit(1);
+function typeOf(value) {
+    var t = typeof value;
+    if (t === 'object') {
+        if (value) {
+            if (value instanceof Array) {
+                t = 'array';
+            }
+        } else {
+            t = 'null';
+        }
+    }
+    return t;
 }
 
 function urlEncode(obj) {
@@ -113,8 +121,8 @@ function postForm(address, form, callback) {
 }
 
 function insertSql(table, fields) {
-  return 'INSERT INTO ' + table + ' (' + fields.join(',') + ') VALUES' +
-    ' (' + lib.repeat('?', fields.length).join(',') + ');';
+  return util.format('INSERT INTO %s (%s) VALUES (%s) RETURNING rowid;',
+    table, fields.join(','), repeat('?', fields.length).join(','));
 }
 
 function updateSql(table, fields, where) {
@@ -135,14 +143,28 @@ function project(obj, fields) {
   });
 }
 
+function getCmdLineArg(name, def) {
+  var argv = process.argv, val;
+  for (var i = 1; i < argv.length; i++) {
+    if (argv[i] === name) {
+      val = argv[i + 1];
+    }
+  }
+  if (val)
+    return val;
+  else
+    return def;
+}
+
 exports.assign = assign;
-exports.die = die;
 exports.equals = equals;
 exports.insertSql = insertSql;
+exports.getCmdLineArg = getCmdLineArg;
 exports.postForm = postForm;
 exports.project = project;
 exports.repeat = repeat;
 exports.repeatStr = repeatStr;
 exports.request = request;
+exports.typeOf = typeOf;
 exports.updateSql = updateSql;
 exports.urlEncode = urlEncode;

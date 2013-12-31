@@ -26,22 +26,39 @@ Hello {{account.email}}! <a href="/signoff">Sign off</a>.
 </div>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script type="text/javascript">
-  $.ajaxSetup ({
-    cache: false
-  });
-
-  var formSel = '#postForm';
-  $(formSel).submit(function() {
+  function postForm() {
     $.ajax({
+      cache: false,
       url: '/create',
       type: 'post',
-      data: $(formSel).serialize(),
+      data: $('#postForm').serialize(),
       success: function(data) {
         $('#postForm textarea').val('');
         console.log(data);
       }
     });
     return false;
+  }
+
+  var feedLast = {{feedLast}};
+  function checkFeedUpdates() {
+    $.ajax({
+      cache: false,
+      url: '/feedlast',
+      type: 'get',
+      data: {since: feedLast},
+      success: function(data) {
+        // if (data.count !== 0) {
+        //   enable refresh link!!!
+        // }
+        //console.log(data);
+      }
+    });
+  }
+
+  $(document).ready(function() {
+    $('#postForm').submit(postForm);
+    setInterval(checkFeedUpdates, 3000);
   });
 </script>
 </body>

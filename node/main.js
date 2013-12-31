@@ -16,6 +16,7 @@ function Context() {
   this.finalizers = [];
   this.session = {};
   this.sessionMetaModified = 0;
+  this.view = {};
   return this;
 }
 
@@ -125,20 +126,27 @@ Context.prototype.getSessionMeta = function(k, def) {
   return this.session.meta[k] || def;
 }
 
-Context.prototype.render = function(tpl, data) {
+Context.prototype.renderHTML = function(tpl) {
   var res = this.res;
   switch (path.extname(tpl)) {
-    case '.json':
-      res.set('Content-Type', 'application/json');
-      break;
     case '.html':
       res.set('Content-Type', 'text/html');
+      break;
+    case '.json':
+      res.set('Content-Type', 'application/json');
       break;
     default:
       res.set('Content-Type', 'text/plain');
   }
-  var rendered = view.render(tpl, data);
+  var rendered = view.render(tpl, this.view);
   res.send(rendered? rendered: 500);
+}
+
+Context.prototype.renderJSON = function(data) {
+  var res = this.res;
+  res.set('Content-Type', 'application/json');
+  log.trace('send JSON', JSON.stringify(data));
+  res.send(JSON.stringify(data));
 }
 
 function getHostUrl(path) {
@@ -244,6 +252,7 @@ function serve() {
   app.get('/', handle(handler.main));
   app.get('/gauth', gauth.authResponseHandler());
   app.get('/signoff', handle(handler.signOff));
+  app.get('/feedlast', handle(handler.feedLast));
   app.post('/create', handle(handler.create));
 
   app.listen(config.port, config.hostName);

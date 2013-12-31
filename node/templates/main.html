@@ -3,14 +3,18 @@
 <head>
   <meta charset="utf-8">
   <title>{{title}}</title>
+  <style type="text/css">
+    img#userPicture { -webkit-filter: invert(100%); width: 96px; height: 96px;}
+  </style>
 </head>
 <body>
 <div id="header">
+<img src="{{&account.picture}}" alt="User picture" id="userPicture"/>
 Hello {{account.email}}! <a href="/signoff">Sign off</a>.
 </div>
 <div id="newPost">
-  <form method="POST" action="/create">
-    <input type="text" name="text"/>
+  <form method="post" action="javascript: return false;" id="postForm">
+    <textarea name="text" cols="40" rows="5"></textarea>
     <input type="submit"/>
   </form>
 </div>
@@ -20,5 +24,25 @@ Hello {{account.email}}! <a href="/signoff">Sign off</a>.
 <p>{{text}}</p>
 {{/posts}}
 </div>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script type="text/javascript">
+  $.ajaxSetup ({
+    cache: false
+  });
+
+  var formSel = '#postForm';
+  $(formSel).submit(function() {
+    $.ajax({
+      url: '/create',
+      type: 'post',
+      data: $(formSel).serialize(),
+      success: function(data) {
+        $('#postForm textarea').val('');
+        console.log(data);
+      }
+    });
+    return false;
+  });
+</script>
 </body>
 </html>

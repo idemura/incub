@@ -59,11 +59,12 @@ function typeOf(value) {
 }
 
 function keys(object) {
-  var ks = [];
-  for (var k in object) {
-    ks.push(k);
-  }
-  return ks;
+  return Object.keys(object);
+  // var ks = [];
+  // for (var k in object) {
+  //   ks.push(k);
+  // }
+  // return ks;
 }
 
 function values(object, keys) {

@@ -8,46 +8,60 @@ function getAccount(db, rowid, callback) {
   db.query('SELECT * FROM Accounts WHERE rowid=?;', [rowid],
            function(err, dbres) {
     if (err) {
-      throw err;
+      log.fatal(err);
     } else {
       callback(dbres.rows[0]);
     }
   });
 }
 
-function getPostsOf(db, account_id, callback) {
-  db.query('SELECT * FROM Posts WHERE account_id=? ORDER BY modify_time DESC;',
-           [account_id], function(err, dbres) {
+function getPostsOf(db, account_id, begin, callback) {
+  db.query('SELECT * FROM Posts WHERE account_id=? AND rowid>? ' +
+           'ORDER BY modify_time DESC LIMIT 80;',
+           [account_id, begin], function(err, dbres) {
     if (err) {
-      throw err;
+      log.fatal(err);
     } else {
       callback(dbres.rows);
     }
   });
 }
 
+function mainAuthorized(ctx, req, res, account) {
+  var data = {
+    title: 'Igor\'s Main',
+    account: account,
+    posts: []
+  };
+  getPostsOf(ctx.db, account.rowid, 0, function(rows) {
+    data.posts = rows;
+    var maxRowID = 0;
+    rows.forEach(function(r) {
+      if (r.rowid > maxRowID) {
+        maxRowID = r.rowid;
+      }
+    })
+    ctx.setSessionMeta('lastFeedRow', maxRowID);
+    ctx.render('main.html', data);
+    ctx.finish();
+  });
+}
+
 function main(ctx, req, res) {
   function renderNoAuth() {
-    data.gauthURL = ctx.gauth.authURL();
-    ctx.res.send(view.render(ctx.templates.main_noauth, data));
+    var data = {
+      title: 'Igor\'s Main',
+      gauthURL: ctx.gauth.authURL()
+    };
+    ctx.render('main_noauth.html', data);
     ctx.finish();
   }
 
-  var data = {
-    title: 'Igor\'s Main',
-  };
-  if (ctx.session.account_id) {
-    getAccount(ctx.db, ctx.session.account_id, function(account) {
+  var authAccountID = ctx.session.account_id;
+  if (authAccountID) {
+    getAccount(ctx.db, authAccountID, function(account) {
       if (account) {
-        data.account = {email: account.email};
-        data.posts = [];
-        getPostsOf(ctx.db, account.rowid, function(rows) {
-          data.posts = rows.map(function(r) {
-            return {text: r.text};
-          });
-          ctx.res.send(view.render(ctx.templates.main, data));
-          ctx.finish();
-        });
+        mainAuthorized(ctx, req, res, account);
       } else {
         renderNoAuth();
       }
@@ -68,8 +82,9 @@ function withAuth(ctx, callback, callbackUnauthorized) {
     res.send(401);
     ctx.finish();
   };
-  if (ctx.session.account_id) {
-    getAccount(ctx.db, ctx.session.account_id, function(account) {
+  var authAccountID = ctx.session.account_id;
+  if (authAccountID) {
+    getAccount(ctx.db, authAccountID, function(account) {
       if (account) {
         callback(account);
       } else {
@@ -83,9 +98,9 @@ function withAuth(ctx, callback, callbackUnauthorized) {
 
 function create(ctx, req, res) {
   withAuth(ctx, function(account) {
-    var text = req.body.text;
-    if (text && 0 < text.length && text.length < 256) {
-      var now = Date.now();
+    var now = Date.now(), text = req.body.text;
+    var sinceLastPost = now - ctx.getSessionMeta('lastPostTime', 0);
+    if (text && 0 < text.length && text.length < 256 && sinceLastPost > 3000) {
       var post = {
         account_id: account.rowid,
         create_time: now,
@@ -96,9 +111,10 @@ function create(ctx, req, res) {
       var values = lib.values(post, keys);
       ctx.db.query(lib.insertSql('Posts', keys), values, function(err, dbres) {
         if (err) {
-          throw err;
+          log.fatal(err);
         }
-        res.redirect('/');
+        ctx.setSessionMeta('lastPostTime', now);
+        res.send('<p>OK</p>');  // DUMMY.
         ctx.finish();
       });
     } else {

@@ -11,6 +11,7 @@ function DB(address) {
 
 DB.prototype.finish = function() {
   this.clientFinish();
+  this.client.removeListener('error', this.dbErrorListener);
 };
 
 DB.prototype.query = function(stmt, params, callback) {
@@ -52,9 +53,10 @@ function connect(address, callback) {
     if (err) {
       callback(err, null);
     }
-    client.on('error', function(err) {
+    self.dbErrorListener = function(err) {
       log.error('DB error', err);
-    });
+    };
+    client.on('error', self.dbErrorListener);
     self.client = client;
     self.clientFinish = finish;
     callback(null, self);

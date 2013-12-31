@@ -1,6 +1,7 @@
-1. AJAX, jQuery (for sign in/off).
 1. Timestamp in log.
 1. Error: instead of throw, return 500. Memory leak?
+1. Privileges.
+1. Dynamic feed.
 
 ?  Extract schema and refactor SQL.
 ?  Serve object (app). Metadata.

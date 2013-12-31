@@ -8,12 +8,14 @@ var lib = require('./lib');
 var express = require('express');
 var handler = require('./handler');
 var log = require('./log');
+var path = require('path');
 var util = require('util');
 var view = require('./view');
 
 function Context() {
   this.finalizers = [];
-  this.templates = templates;
+  this.session = {};
+  this.sessionMetaModified = 0;
   return this;
 }
 
@@ -32,30 +34,41 @@ Context.prototype.openDB = function(callback) {
   var self = this;
   db.connect(config.db_url, function(err, db) {
     if (err) {
-      throw err;
+      log.fatal(err);
+      return;
     }
     self.db = db;
     self.addFinalizer(db.finish.bind(db));
-    callback(self);
+    callback();
+  });
+}
+
+Context.prototype.saveSession = function(session, saveMeta) {
+  var keys = ['account_id', 'create_time', 'access_time'];
+  var values = lib.values(session, keys);
+  if (saveMeta) {
+    keys.push('meta');
+    values.push(JSON.stringify(session.meta));
+  }
+  values.push(session.rowid);
+  this.db.query(lib.updateSql('Sessions', keys, 'rowid=?'), values,
+                function(err, dbres) {
+    if (err) {
+      log.fatal(err);
+    }
   });
 }
 
 Context.prototype.openSession = function(callback) {
   var self = this;
 
-  function invoke(s) {
-    self.res.cookie('sid', s.session_id);
-    var keys = ['account_id'];
-    var oldValues = lib.values(s, keys);
-    self.session = s;
+  function invoke(session) {
+    self.res.cookie('sid', session.session_id);
+    self.session = session;
     self.addFinalizer(function() {
-      var newValues = lib.values(self.session, keys);
-      if (!lib.equals(oldValues, newValues)) {
-        newValues.push(self.session.rowid);
-        self.db.query(lib.updateSql('Sessions', keys, 'rowid=?'), newValues);
-      }
+      self.saveSession(self.session, self.sessionMetaModified > 0);
     });
-    callback(self);
+    callback();
   }
 
   function create() {
@@ -64,7 +77,8 @@ Context.prototype.openSession = function(callback) {
     self.db.query(lib.insertSql('Sessions', keys), [sid, now],
       function(err, dbres) {
         if (err) {
-          throw err;
+          log.fatal(err);
+          return;
         }
         var s = {
           rowid: dbres.rows[0].rowid,
@@ -78,6 +92,7 @@ Context.prototype.openSession = function(callback) {
 
   function update(row) {
     row.access_time = now;
+    row.meta = row.meta? JSON.parse(row.meta): {};
     invoke(row);
   }
 
@@ -87,7 +102,8 @@ Context.prototype.openSession = function(callback) {
     self.db.query('SELECT * FROM Sessions WHERE session_id=?;', [sid],
       function(err, dbres) {
         if (err) {
-          throw err;
+          log.fatal(err);
+          return;
         }
         if (dbres.rows.length > 0) {
           update(dbres.rows[0]);
@@ -100,6 +116,31 @@ Context.prototype.openSession = function(callback) {
   }
 }
 
+Context.prototype.setSessionMeta = function(k, v) {
+  this.session.meta[k] = v;
+  this.sessionMetaModified++;
+}
+
+Context.prototype.getSessionMeta = function(k, def) {
+  return this.session.meta[k] || def;
+}
+
+Context.prototype.render = function(tpl, data) {
+  var res = this.res;
+  switch (path.extname(tpl)) {
+    case '.json':
+      res.set('Content-Type', 'application/json');
+      break;
+    case '.html':
+      res.set('Content-Type', 'text/html');
+      break;
+    default:
+      res.set('Content-Type', 'text/plain');
+  }
+  var rendered = view.render(tpl, data);
+  res.send(rendered? rendered: 500);
+}
+
 function getHostUrl(path) {
   var fullHost = 'http://' + config.hostName + ':' + config.port;
   return path? fullHost + path: fullHost;
@@ -109,10 +150,11 @@ function getHostUrl(path) {
 function handle(fn) {
   return function(req, res) {
     var ctx = new Context();
-    ctx.openDB(function(ctx) {
+    ctx.openDB(function() {
+      ctx.gauth = gauth;
       ctx.req = req;
       ctx.res = res;
-      ctx.openSession(function(ctx) {
+      ctx.openSession(function() {
         fn(ctx, req, res);
       });
     });
@@ -145,7 +187,7 @@ function updateAccount(db, u, callback) {
   function updateCB(err) {
     if (err) {
       db.query('ROLLBACK;');
-      throw err;
+      log.fatal(err);
     } else {
       // Race condition here without callback?
       db.query('COMMIT;', function(err) {
@@ -162,7 +204,7 @@ function updateAccount(db, u, callback) {
                function(err, dbres) {
         if (err) {
           db.query('ROLLBACK;');
-          throw err;
+          log.fatal(err);
         } else {
           update(dbres.rows[0]);
         }
@@ -199,10 +241,7 @@ function serve() {
   app.use(express.json());
   app.use(express.urlencoded());
 
-  app.get('/', handle(function(ctx, req, res) {
-    ctx.gauth = gauth;
-    handler.main(ctx, req, res);
-  }));
+  app.get('/', handle(handler.main));
   app.get('/gauth', gauth.authResponseHandler());
   app.get('/signoff', handle(handler.signOff));
   app.post('/create', handle(handler.create));
@@ -235,7 +274,7 @@ function dbCreateTable(db, table) {
 function createTables() {
   db.connect(config.db_url, function(err, db) {
     if (err) {
-      log.error('DB error:', err);
+      log.fatal('DB error:', err);
       return;
     }
     dbCreateTable(db, {
@@ -301,23 +340,22 @@ function createTables() {
   });
 }
 
-var templates, gauth;
+var gauth;
 config.read(function(err) {
-  config.gauth.redirectURL = getHostUrl('/gauth');
-  gauth = new auth.GAuth(config.gauth, gAuthCB);
   if (err) {
-    log.error('Config error:', err);
+    log.die('Config error:', err);
     return;
   }
+  config.gauth.redirectURL = getHostUrl('/gauth');
+  gauth = new auth.GAuth(config.gauth, gAuthCB);
 
   if (process.argv.indexOf('--create-tables') >= 0) {
     createTables();
   } else {
-    view.readTemplates('templates', function(err, tpl) {
+    view.readTemplates('templates', function(err) {
       if (err) {
         log.die('Templates error:', err);
       }
-      templates = tpl;
       serve();
     });
   }

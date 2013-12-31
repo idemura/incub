@@ -2,6 +2,8 @@
 
 var util = require('util');
 
+var fatalHandler;
+
 function die(object) {
   error('FATAL ERROR. Process is exiting.');
   error(object);
@@ -10,6 +12,17 @@ function die(object) {
 
 function error() {
   util.error.apply(null, arguments);
+}
+
+function fatal() {
+  util.error.apply(null, arguments);
+  if (fatalHandler) {
+    fatalHandler();
+  }
+}
+
+function onFatal(h) {
+  fatalHandler = h;
 }
 
 function print() {
@@ -22,5 +35,7 @@ function trace() {
 
 exports.die = die;
 exports.error = error;
+exports.fatal = fatal;
 exports.print = print;
+exports.onFatal = onFatal;
 exports.trace = trace;

@@ -8,10 +8,9 @@ function getAccount(db, rowid, callback) {
   db.query('SELECT * FROM Accounts WHERE rowid=?;', [rowid],
            function(err, dbres) {
     if (err) {
-      log.fatal(err);
-    } else {
-      callback(dbres.rows[0]);
+      return log.fatal(err);
     }
+    callback(dbres.rows[0]);
   });
 }
 
@@ -21,10 +20,9 @@ function getPostsOf(db, account_id, since, limit, callback) {
            'ORDER BY modify_time DESC LIMIT ' + limit + ';',
            [account_id, since], function(err, dbres) {
     if (err) {
-      log.fatal(err);
-    } else {
-      callback(dbres.rows);
+      return log.fatal(err);
     }
+    callback(dbres.rows);
   });
 }
 
@@ -96,9 +94,11 @@ function create(ctx, req, res) {
       ctx.db.query(lib.insertSql('Posts', keys), values, function(err, dbres) {
         if (err) {
           log.fatal(err);
+          res.send(500);
+        } else {
+          ctx.setSessionMeta('lastPostTime', now);
+          res.send('<p>OK</p>');  // DUMMY.
         }
-        ctx.setSessionMeta('lastPostTime', now);
-        res.send('<p>OK</p>');  // DUMMY.
         ctx.finish();
       });
     } else {

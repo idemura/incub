@@ -38,6 +38,7 @@ Hello {{account.email}}! <a href="/signoff">Sign off</a>.
       data: $('#postForm').serialize(),
       success: function(data) {
         $('#postForm textarea').val('');
+        pollFeed(1000);
       }
     });
     return false;
@@ -75,8 +76,12 @@ Hello {{account.email}}! <a href="/signoff">Sign off</a>.
   }
 
   var pollTimerID;
-  function pollFeed() {
-    pollTimerID = setTimeout(checkFeedUpdates, 5000);
+  function pollFeed(t) {
+    if (!t) {
+      t = 5000;
+    }
+    clearTimeout(pollTimerID);
+    pollTimerID = setTimeout(checkFeedUpdates, t);
   }
 
   $(document).ready(function() {

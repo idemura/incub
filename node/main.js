@@ -35,8 +35,7 @@ Context.prototype.openDB = function(callback) {
   var self = this;
   db.connect(config.db_url, function(err, db) {
     if (err) {
-      log.fatal(err);
-      return;
+      return log.fatal(err);
     }
     self.db = db;
     self.addFinalizer(db.finish.bind(db));
@@ -55,7 +54,7 @@ Context.prototype.saveSession = function(session, saveMeta) {
   this.db.query(lib.updateSql('Sessions', keys, 'rowid=?'), values,
                 function(err, dbres) {
     if (err) {
-      log.fatal(err);
+      return log.fatal(err);
     }
   });
 }
@@ -78,8 +77,7 @@ Context.prototype.openSession = function(callback) {
     self.db.query(lib.insertSql('Sessions', keys), [sid, now],
       function(err, dbres) {
         if (err) {
-          log.fatal(err);
-          return;
+          return log.fatal(err);
         }
         var s = {
           rowid: dbres.rows[0].rowid,
@@ -103,8 +101,7 @@ Context.prototype.openSession = function(callback) {
     self.db.query('SELECT * FROM Sessions WHERE session_id=?;', [sid],
       function(err, dbres) {
         if (err) {
-          log.fatal(err);
-          return;
+          return log.fatal(err);
         }
         if (dbres.rows.length > 0) {
           update(dbres.rows[0]);
@@ -158,7 +155,6 @@ function handle(fn) {
   return function(req, res) {
     var ctx = new Context();
     ctx.openDB(function() {
-      ctx.gauth = gauth;
       ctx.req = req;
       ctx.res = res;
       ctx.openSession(function() {
@@ -178,7 +174,9 @@ function updateAccount(db, u, callback) {
       p.push(row.rowid);
       db.query(lib.updateSql('Accounts', keys, 'rowid=?'), p, updateCB);
     } else {
-      var keys = ['gplus_id', 'email',
+      var groupName = u.email === 'igor.demura@gmail.com'? 'admin': 'user';
+      u.pgroup = Context.prototype.groups[groupName].rowid;
+      var keys = ['gplus_id', 'pgroup', 'email',
                   'name', 'given_name', 'picture', 'gender', 'locale'];
       var p = lib.values(u, keys);
       p[0] = u.id;
@@ -242,6 +240,20 @@ function gAuthCB(guser, req, res) {
   fn(req, res);
 }
 
+function readGroups(callback) {
+  db.connect(config.db_url, function(err, db) {
+    if (err) {
+      return log.fatal(err);
+    }
+    db.query('SELECT * FROM Groups;', [], function(err, dbres) {
+      if (err) {
+        return log.fatal(err);
+      }
+      callback(dbres.rows);
+    });
+  });
+}
+
 function serve() {
   var app = express();
   app.use(express.cookieParser());
@@ -249,7 +261,7 @@ function serve() {
   app.use(express.urlencoded());
 
   app.get('/', handle(handler.main));
-  app.get('/gauth', gauth.authResponseHandler());
+  app.get('/gauth', Context.prototype.gauth.authResponseHandler());
   app.get('/signoff', handle(handler.signOff));
   app.get('/feedtime', handle(handler.feedTime));
   app.get('/feed', handle(handler.feed));
@@ -259,113 +271,34 @@ function serve() {
   log.print('Server is running at ' + getHostUrl());
 }
 
-function dbCreateTable(db, table) {
-  var column_def = [];
-  for (var k in table.columns) {
-    column_def.push(k + ' ' + table.columns[k]);
-  }
-  var stmt = util.format('CREATE TABLE %s (%s);', table.name,
-                         column_def.join(', '));
-  db.query(stmt);
-
-  if (table.indices) {
-    for (var i = 0, n = table.indices.length; i < n; i++) {
-      var c = table.indices[i];
-      var name = c.name? c.name: table.name + '_by_' + c.column;
-      var stmt = util.format('CREATE %s INDEX %s ON %s (%s);',
-                             c.unique? 'UNIQUE': '', name, table.name,
-                             c.column);
-      db.query(stmt);
-    }
-  }
-}
-
-function createTables() {
-  db.connect(config.db_url, function(err, db) {
-    if (err) {
-      log.fatal('DB error:', err);
-      return;
-    }
-    dbCreateTable(db, {
-      name: 'Accounts',
-      columns: {
-        rowid: 'SERIAL UNIQUE',
-        email: 'TEXT',
-        gplus_id: 'TEXT',
-        name: 'TEXT',
-        given_name: 'TEXT',
-        picture: 'TEXT',
-        gender: 'TEXT',
-        locale: 'TEXT',
-      },
-      indices: [
-        // { column: 'rowid', unique: true },
-        { column: 'email', unique: true },
-        { column: 'gplus_id', unique: true },
-        { column: 'name' }
-      ]
-    });
-    dbCreateTable(db, {
-      name: 'Sessions',
-      columns: {
-        rowid: 'SERIAL UNIQUE',
-        session_id: 'TEXT',
-        account_id: 'INTEGER REFERENCES Accounts(rowid)',
-        create_time: 'BIGINT',
-        access_time: 'BIGINT',
-        meta: 'TEXT'
-      },
-      indices: [
-        // { column: 'rowid', unique: true },
-        { column: 'account_id' },
-        // Should be unique, but collisions have tiny probability.
-        { column: 'session_id' },
-        { column: 'create_time' },
-        { column: 'access_time' }
-      ]
-    });
-    dbCreateTable(db, {
-      name: 'Posts',
-      columns: {
-        rowid: 'SERIAL UNIQUE',
-        account_id: 'INTEGER REFERENCES Accounts(rowid)',
-        create_time: 'BIGINT',
-        modify_time: 'BIGINT',
-        text: 'TEXT',
-        meta: 'TEXT'
-      },
-      indices: [
-        // { column: 'rowid', unique: true },
-        { column: 'account_id' },
-        { column: 'create_time' },
-        { column: 'modify_time' }
-      ]
-    });
-    db.on('drain', function() {
-      db.finish();
-      log.print('DB created.');
-      process.exit();
-    });
-  });
-}
-
-var gauth;
 config.read(function(err) {
   if (err) {
     log.die('Config error:', err);
     return;
   }
   config.gauth.redirectURL = getHostUrl('/gauth');
-  gauth = new auth.GAuth(config.gauth, gAuthCB);
+  Context.prototype.gauth = new auth.GAuth(config.gauth, gAuthCB);
 
   if (process.argv.indexOf('--create-tables') >= 0) {
-    createTables();
+    db.createSchema(function() {
+      log.print('DB created.');
+    });
   } else {
-    view.readTemplates('templates', function(err) {
-      if (err) {
-        log.die('Templates error:', err);
+    readGroups(function(groups) {
+      var groupsMap = {};
+      // Since group names are unique, insert into a map.
+      for (var i = 0; i < groups.length; i++) {
+        groups[i].privileges = JSON.parse(groups[i].privileges);
+        groupsMap[groups[i].name] = groups[i];
       }
-      serve();
+      Context.prototype.groups = groupsMap;
+
+      view.readTemplates('templates', function(err) {
+        if (err) {
+          log.die('Templates error:', err);
+        }
+        serve();
+      });
     });
   }
 });

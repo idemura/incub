@@ -63,4 +63,126 @@ function connect(address, callback) {
   });
 }
 
+function createTable(db, table) {
+  var column_def = [];
+  for (var k in table.columns) {
+    column_def.push(k + ' ' + table.columns[k]);
+  }
+  var stmt = util.format('CREATE TABLE %s (%s);', table.name,
+                         column_def.join(', '));
+  db.query(stmt);
+
+  if (table.indices) {
+    for (var i = 0, n = table.indices.length; i < n; i++) {
+      var c = table.indices[i];
+      var name = c.name? c.name: table.name + '_by_' + c.column;
+      var stmt = util.format('CREATE %s INDEX %s ON %s (%s);',
+                             c.unique? 'UNIQUE': '', name, table.name,
+                             c.column);
+      db.query(stmt);
+    }
+  }
+}
+
+function createSchema(callback) {
+  function defaultErrorHandler(err, dbres) {
+    if (err) {
+      return log.fatal('DB error:', err);
+    }
+  }
+
+  db.connect(config.db_url, function(err, db) {
+    if (err) {
+      return log.fatal('DB error:', err);
+    }
+    createTable(db, {
+      name: 'Groups',
+      columns: {
+        rowid: 'SERIAL UNIQUE',
+        name: 'TEXT',
+        privileges: 'TEXT'
+      },
+      indices: [
+        // { column: 'rowid', unique: true },
+        { column: 'name', unique: true }
+      ]
+    });
+    (function() {
+      var groups = [
+        {name: 'admin', privileges: {admin: true}},
+        {name: 'guest', privileges: {admin: false}},
+        {name: 'user',  privileges: {admin: false}}];
+      for (var i = 0; i < groups.length; i++) {
+        var g = groups[i];
+        g.privileges = JSON.stringify(g.privileges);
+        var keys = lib.keys(g);
+        db.query(lib.insertSql('Groups', keys), lib.values(g, keys),
+                 defaultErrorHandler);
+      }
+    }());
+    createTable(db, {
+      name: 'Accounts',
+      columns: {
+        rowid: 'SERIAL UNIQUE',
+        email: 'TEXT',
+        gplus_id: 'TEXT',
+        name: 'TEXT',
+        given_name: 'TEXT',
+        picture: 'TEXT',
+        gender: 'TEXT',
+        locale: 'TEXT',
+        pgroup: 'INTEGER REFERENCES Groups(rowid)'
+      },
+      indices: [
+        // { column: 'rowid', unique: true },
+        { column: 'email', unique: true },
+        { column: 'gplus_id', unique: true },
+        { column: 'name' }
+      ]
+    });
+    createTable(db, {
+      name: 'Sessions',
+      columns: {
+        rowid: 'SERIAL UNIQUE',
+        session_id: 'TEXT',
+        account_id: 'INTEGER REFERENCES Accounts(rowid)',
+        create_time: 'BIGINT',
+        access_time: 'BIGINT',
+        meta: 'TEXT'
+      },
+      indices: [
+        // { column: 'rowid', unique: true },
+        { column: 'account_id' },
+        // Should be unique, but collisions have tiny probability.
+        { column: 'session_id' },
+        { column: 'create_time' },
+        { column: 'access_time' }
+      ]
+    });
+    createTable(db, {
+      name: 'Posts',
+      columns: {
+        rowid: 'SERIAL UNIQUE',
+        account_id: 'INTEGER REFERENCES Accounts(rowid)',
+        create_time: 'BIGINT',
+        modify_time: 'BIGINT',
+        text: 'TEXT',
+        meta: 'TEXT'
+      },
+      indices: [
+        // { column: 'rowid', unique: true },
+        { column: 'account_id' },
+        { column: 'create_time' },
+        { column: 'modify_time' }
+      ]
+    });
+    db.on('drain', function() {
+      db.finish();
+      callback();
+    });
+  });
+}
+
 exports.connect = connect;
+exports.createSchema = createSchema;
+exports.createTable = createTable;

@@ -1,8 +1,8 @@
-1. Timestamp in log.
-1. Error: instead of throw, return 500. Memory leak?
-1. Privileges.
-1. Dynamic feed.
+* Error: instead of throw, return 500. Memory leak?
+* Session expiration.
 
-?  Overview error hadling!
-?  Extract schema and refactor SQL.
-?  Serve object (app). Metadata.
+- Timestamp in log.
+
+? Overview error hadling!
+? Extract schema and refactor SQL.
+? Serve object (app). Metadata.

@@ -126,7 +126,7 @@ Context.prototype.getSessionMeta = function(k, def) {
   return this.session.meta[k] || def;
 }
 
-Context.prototype.renderHTML = function(tpl) {
+Context.prototype.responseHTML = function(tpl) {
   var res = this.res;
   switch (path.extname(tpl)) {
     case '.html':
@@ -142,10 +142,9 @@ Context.prototype.renderHTML = function(tpl) {
   res.send(rendered? rendered: 500);
 }
 
-Context.prototype.renderJSON = function(data) {
+Context.prototype.responseJSON = function(data) {
   var res = this.res;
   res.set('Content-Type', 'application/json');
-  log.trace('send JSON', JSON.stringify(data));
   res.send(JSON.stringify(data));
 }
 
@@ -252,7 +251,8 @@ function serve() {
   app.get('/', handle(handler.main));
   app.get('/gauth', gauth.authResponseHandler());
   app.get('/signoff', handle(handler.signOff));
-  app.get('/feedlast', handle(handler.feedLast));
+  app.get('/feedtime', handle(handler.feedTime));
+  app.get('/feed', handle(handler.feed));
   app.post('/create', handle(handler.create));
 
   app.listen(config.port, config.hostName);

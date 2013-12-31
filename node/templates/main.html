@@ -19,13 +19,17 @@ Hello {{account.email}}! <a href="/signoff">Sign off</a>.
   </form>
 </div>
 <h3>My feed:</h3>
-<div>
-{{#posts}}
+<div id="loadFeedDiv" style="display: none;">
+  New posts available. <a id="loadFeed" href="#">Refresh</a>.
+</div>
+<div id="feed">
+{{#feed}}
 <p>{{text}}</p>
-{{/posts}}
+{{/feed}}
 </div>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script type="text/javascript">
+(function() {
   function postForm() {
     $.ajax({
       cache: false,
@@ -34,32 +38,53 @@ Hello {{account.email}}! <a href="/signoff">Sign off</a>.
       data: $('#postForm').serialize(),
       success: function(data) {
         $('#postForm textarea').val('');
-        console.log(data);
       }
     });
     return false;
   }
 
-  var feedLast = {{feedLast}};
+  var feedTime = {{feedTime}};
   function checkFeedUpdates() {
     $.ajax({
       cache: false,
-      url: '/feedlast',
+      url: '/feedtime',
       type: 'get',
-      data: {since: feedLast},
+      data: {since: feedTime},
       success: function(data) {
-        // if (data.count !== 0) {
-        //   enable refresh link!!!
-        // }
-        //console.log(data);
+        if (data.count !== 0) {
+          $('#loadFeedDiv').show(400);
+        } else {
+          pollFeed();
+        }
+      }
+    });
+  }
+  function loadFeed() {
+    $.ajax({
+      cache: false,
+      url: '/feed',
+      type: 'get',
+      data: {since: feedTime},
+      success: function(data) {
+        $('#feed').prepend(data.html);
+        feedTime = data.feedTime;
+        $('#loadFeedDiv').hide(400);
+        pollFeed();
       }
     });
   }
 
+  var pollTimerID;
+  function pollFeed() {
+    pollTimerID = setTimeout(checkFeedUpdates, 5000);
+  }
+
   $(document).ready(function() {
     $('#postForm').submit(postForm);
-    setInterval(checkFeedUpdates, 3000);
+    pollFeed();
+    $('#loadFeed').click(loadFeed);
   });
+}());
 </script>
 </body>
 </html>

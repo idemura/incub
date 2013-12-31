@@ -15,6 +15,7 @@ function getAccount(db, rowid, callback) {
   });
 }
 
+var FEED_MAX = 80;
 function getPostsOf(db, account_id, since, limit, callback) {
   db.query('SELECT * FROM Posts WHERE account_id=? AND modify_time>? ' +
            'ORDER BY modify_time DESC LIMIT ' + limit + ';',
@@ -27,18 +28,17 @@ function getPostsOf(db, account_id, since, limit, callback) {
   });
 }
 
-function getFeedLast(feed) {
+function getFeedTime(feed) {
   return (feed[0] && feed[0].modify_time) || 0;
 }
 
 function mainAuthorized(ctx) {
   ctx.view.account = ctx.account;
-  ctx.view.posts = [];
-  getPostsOf(ctx.db, ctx.account.rowid, 0, 80, function(rows) {
-    ctx.view.posts = rows;
-    ctx.view.feedLast = getFeedLast(rows);
-    log.trace('feed last', ctx.view.feedLast);
-    ctx.renderHTML('main.html');
+  ctx.view.feed = [];
+  getPostsOf(ctx.db, ctx.account.rowid, 0, FEED_MAX, function(rows) {
+    ctx.view.feed = rows;
+    ctx.view.feedTime = getFeedTime(rows);
+    ctx.responseHTML('main.html');
     ctx.finish();
   });
 }
@@ -47,7 +47,7 @@ function main(ctx, req, res) {
   ctx.view.title = 'Igor\'s Main';
   withAuth(ctx, mainAuthorized, function(ctx) {
     ctx.view.gauthURL = ctx.gauth.authURL();
-    ctx.renderHTML('main_noauth.html');
+    ctx.responseHTML('main_noauth.html');
     ctx.finish();
   });
 }
@@ -107,15 +107,13 @@ function create(ctx, req, res) {
   });
 }
 
-function feedLast(ctx, req, res) {
+function feedTime(ctx, req, res) {
   withAuth(ctx, function() {
     // TODO: Anti DDOS.
-    log.trace('query: ', req.query);
     var since = req.query.since || 0;
-    log.trace('since: ', since);
     getPostsOf(ctx.db, ctx.account.rowid, since, 1, function(rows) {
-      ctx.renderJSON({
-        feedLast: getFeedLast(rows),
+      ctx.responseJSON({
+        feedTime: getFeedTime(rows),
         count: rows.length
       });
       ctx.finish();
@@ -123,7 +121,23 @@ function feedLast(ctx, req, res) {
   });
 }
 
+function feed(ctx, req, res) {
+  withAuth(ctx, function() {
+    // TODO: Anti DDOS.
+    var since = req.query.since || 0;
+    getPostsOf(ctx.db, ctx.account.rowid, since, FEED_MAX, function(rows) {
+      ctx.view.feed = rows;
+      ctx.responseJSON({
+        feedTime: getFeedTime(rows),
+        html: view.render('feed.html', ctx.view)
+      });
+      ctx.finish();
+    });
+  });
+}
+
 exports.create = create;
-exports.feedLast = feedLast;
+exports.feed = feed;
+exports.feedTime = feedTime;
 exports.main = main;
 exports.signOff = signOff;

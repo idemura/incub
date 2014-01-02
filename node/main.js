@@ -16,7 +16,7 @@ function Context() {
   this.finalizers = [];
   this.session = {};
   this.sessionMetaModified = 0;
-  this.view = {};
+  this.view = {title: 'Igor\'s playground'};
   return this;
 }
 
@@ -259,6 +259,7 @@ function serve() {
   app.use(express.cookieParser());
   app.use(express.json());
   app.use(express.urlencoded());
+  app.use('/static', express.static('./static'));
 
   app.get('/', handle(handler.main));
   app.get('/gauth', Context.prototype.gauth.authResponseHandler());

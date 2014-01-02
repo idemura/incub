@@ -4,12 +4,13 @@
   <meta charset="utf-8">
   <title>{{title}}</title>
   <style type="text/css">
-    img#userPicture { -webkit-filter: invert(100%); width: 96px; height: 96px;}
+    img.userpic { width: 96px; height: 96px;}
   </style>
 </head>
 <body>
 <div id="header">
-<img src="{{&account.picture}}" alt="User picture" id="userPicture"/>
+<img src="{{&account.picture}}" alt="User picture" id="userPicture" class="userpic" style="-webkit-filter: invert(100%);"/>
+<img src="/static/default-userpic.png" alt="Default userpic" class="userpic"/>
 Hello {{account.email}}! <a href="/signoff">Sign off</a>.
 </div>
 <div id="newPost">

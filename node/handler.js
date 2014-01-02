@@ -42,7 +42,6 @@ function mainAuthorized(ctx) {
 }
 
 function main(ctx, req, res) {
-  ctx.view.title = 'Igor\'s Main';
   withAuth(ctx, mainAuthorized, function(ctx) {
     ctx.view.gauthURL = ctx.gauth.authURL();
     ctx.responseHTML('main_noauth.html');

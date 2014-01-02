@@ -1,7 +1,5 @@
 'use strict';
 
-var util = require('util');
-
 var fatalHandler;
 
 function die(object) {
@@ -11,11 +9,11 @@ function die(object) {
 }
 
 function error() {
-  util.error.apply(null, arguments);
+  console.error.apply(null, arguments);
 }
 
 function fatal() {
-  util.error.apply(null, arguments);
+  console.error.apply(null, arguments);
   if (fatalHandler) {
     fatalHandler();
   }

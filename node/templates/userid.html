@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{{title}}</title>
+  <style type="text/css">
+    img.userpic { width: 96px; height: 96px;}
+  </style>
+</head>
+<body>
+<div id="header">
+<img src="{{&account.picture}}" alt="User picture" id="userPicture" class="userpic" style="-webkit-filter: invert(100%);"/>
+Hello {{account.email}}! Select your user id (login).
+</div>
+<div>
+  <form method="post" action="javascript: return false;" id="useridForm">
+    <input type="text" name="userid"></textarea>
+    <input type="submit"/>
+  </form>
+</div>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script type="text/javascript">
+(function() {
+  function postForm() {
+    $.ajax({
+      cache: false,
+      url: '/create',
+      type: 'post',
+      data: $('#useridForm').serialize(),
+      success: function(data) {
+        // $('#postForm textarea').val('');
+        // select all/focis if nameis not allowed.
+        // go to index page if it is.
+        // do not log user in until name is set.
+      }
+    });
+    return false;
+  }
+
+  $(document).ready(function() {
+    $('#useridForm').submit(postForm);
+    pollFeed();
+    $('#loadFeed').click(loadFeed);
+  });
+}());
+</script>
+</body>
+</html>

@@ -176,6 +176,17 @@ function createSchema(callback) {
         { column: 'modify_time' }
       ]
     });
+    createTable(db, {
+      name: 'Follows',
+      columns: {
+        follower: 'INTEGER REFERENCES Accounts(rowid)',
+        who: 'INTEGER REFERENCES Accounts(rowid)',
+      },
+      indices: [
+        { column: 'follower' },
+        { column: 'who' }
+      ]
+    });
     db.on('drain', function() {
       db.finish();
       callback();

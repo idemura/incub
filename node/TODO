@@ -1,5 +1,9 @@
 * Error: instead of throw, return 500. Memory leak?
 * Session expiration.
+* Search people, tags.
+* Search suggestions.
+* Login (with dynamic test).
+* Feed on main page.
 
 - Timestamp in log.
 

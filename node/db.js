@@ -124,7 +124,7 @@ function createSchema(address, callback) {
       name: 'Accounts',
       columns: {
         rowid: 'SERIAL UNIQUE',
-        login: 'TEXT',
+        userid: 'TEXT',
         email: 'TEXT',
         gplus_id: 'TEXT',
         name: 'TEXT',
@@ -136,7 +136,7 @@ function createSchema(address, callback) {
       },
       indices: [
         // { column: 'rowid', unique: true },
-        { column: 'login', unique: true },
+        { column: 'userid', unique: true },
         { column: 'email', unique: true },
         { column: 'gplus_id', unique: true },
         { column: 'name' }

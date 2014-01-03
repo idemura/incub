@@ -11,7 +11,7 @@
 <div id="header">
 <img src="{{&account.picture}}" alt="User picture" id="userPicture" class="userpic" style="-webkit-filter: invert(100%);"/>
 <img src="/static/default-userpic.png" alt="Default userpic" class="userpic"/>
-Hello {{account.email}} ({{account.login}}, {{account.given_name}})! <a href="/logout">Logout</a>.
+Hello {{account.email}} ({{account.userid}}, {{account.given_name}})! <a href="/logout">Logout</a>.
 </div>
 <div id="newPost">
   <form method="post" action="javascript: return false;" id="postForm">
@@ -54,7 +54,7 @@ Hello {{account.email}} ({{account.login}}, {{account.given_name}})! <a href="/l
       data: {since: feedTime},
       success: function(data) {
         if (data.count !== 0) {
-          $('#loadFeedDiv').show(400);
+          $('#loadFeedDiv').show();
         } else {
           pollFeed();
         }
@@ -70,7 +70,7 @@ Hello {{account.email}} ({{account.login}}, {{account.given_name}})! <a href="/l
       success: function(data) {
         $('#feed').prepend(data.html);
         feedTime = data.feedTime;
-        $('#loadFeedDiv').hide(400);
+        $('#loadFeedDiv').hide();
         pollFeed();
       }
     });

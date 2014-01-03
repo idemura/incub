@@ -69,7 +69,7 @@ function logout(ctx) {
 
 function withAuth(ctx, callback, callbackUnauthorized) {
   getAccount(ctx, function(account) {
-    if (account && account.login) {
+    if (account && account.userid !== null) {
       ctx.account = account;
       callback(ctx);
     } else {
@@ -113,7 +113,7 @@ function create(ctx) {
 
 function userID(ctx) {
   getAccount(ctx, function(account) {
-    if (account && account.login === null) {
+    if (account && account.userid === null) {
       ctx.view.account = ctx.account = account;
       ctx.responseHTML('userid.html');
     } else {
@@ -124,7 +124,7 @@ function userID(ctx) {
 }
 
 function createUserID(ctx) {
-  function setLogin(userid, account_id, callback) {
+  function setUserID(userid, account_id, callback) {
     var ERRFMT_LONG = '%s is too long (max 24).';
     var ERRFMT_SHORT = '%s is too short (min 3).';
     var ERRFMT_CHARS = 'User should contain alpha, digit, - or _: %s';
@@ -147,17 +147,17 @@ function createUserID(ctx) {
         ctx.db.query('ROLLBACK;');
         return ctx.finish(500);
       }
-      ctx.db.query('SELECT login FROM Accounts WHERE rowid=?',
+      ctx.db.query('SELECT userid FROM Accounts WHERE rowid=?',
                    [account_id], function(err, dbres) {
         if (err) {
           ctx.db.query('ROLLBACK;');
           return ctx.finish(500);
         }
-        if (dbres.rows[0] && dbres.rows[0].login) {
+        if (dbres.rows[0] && dbres.rows[0].userid) {
           ctx.db.query('ROLLBACK;');
           return callback({userid: userid, format: ERRFMT_RENAME});
         }
-        ctx.db.query('SELECT rowid FROM Accounts WHERE login=?', [userid],
+        ctx.db.query('SELECT rowid FROM Accounts WHERE userid=?', [userid],
                      function(err, dbres) {
           if (err) {
             ctx.db.query('ROLLBACK;');
@@ -166,7 +166,7 @@ function createUserID(ctx) {
           if (dbres.rows[0]) {
             return callback({userid: userid, format: ERRFMT_EXISTS});
           }
-          ctx.db.query(lib.updateSql('Accounts', ['login'], 'rowid=?'),
+          ctx.db.query(lib.updateSql('Accounts', ['userid'], 'rowid=?'),
                        [userid, account_id], function(err, dbres) {
             if (err) {
               ctx.db.query('ROLLBACK;');
@@ -183,7 +183,7 @@ function createUserID(ctx) {
   if (!ctx.session.account_id) {
     return ctx.finish(401);
   }
-  setLogin(ctx.req.body.userid, ctx.session.account_id, function(err) {
+  setUserID(ctx.req.body.userid, ctx.session.account_id, function(err) {
     if (err) {
       ctx.responseJSON({ok: false,
                         useridError: util.format(err.format, err.userid)});

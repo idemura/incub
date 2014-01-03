@@ -172,7 +172,7 @@ function gAccount(db, user, callback) {
       // Update Google's user with our specific data.
       user.rowid = row.rowid;
       user.pgroup = row.pgroup;
-      user.login = row.login;
+      user.userid = row.userid;
       var keys = ['name', 'given_name', 'picture', 'gender', 'locale'];
       var p = lib.values(user, keys);
       p.push(row.rowid);
@@ -182,7 +182,7 @@ function gAccount(db, user, callback) {
     } else {
       var groupName = user.email === 'igor.demura@gmail.com'? 'admin': 'user';
       user.pgroup = Context.prototype.groups[groupName].rowid;
-      user.login = null;
+      user.userid = null;
       var keys = ['gplus_id', 'pgroup', 'email',
                   'name', 'given_name', 'picture', 'gender', 'locale'];
       var p = lib.values(user, keys);
@@ -220,7 +220,7 @@ function gAccount(db, user, callback) {
       user.gplus_id = user.id;
       // Delete is bad on V8. Just null it instead.
       user.id = null;
-      db.query('SELECT rowid, pgroup, login FROM Accounts WHERE email=?;',
+      db.query('SELECT rowid, pgroup, userid FROM Accounts WHERE email=?;',
                [user.email], selectCB);
     }
   });
@@ -233,7 +233,7 @@ function gAuthCB(guser, req, res) {
         if (account) {
           ctx.account = account;
           ctx.session.account_id = account.rowid;
-          if (account.login) {
+          if (account.userid) {
             ctx.res.redirect('/');
           } else {
             ctx.res.redirect('/userid');

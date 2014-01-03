@@ -557,7 +557,6 @@ function rmqCommonAncestor(st, a, b) {
 function GAuth(config) {
   this.config = config;
   this.yo = f1.bind(this);
-  return this;
 }
 
 function f1() {

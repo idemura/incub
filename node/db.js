@@ -3,10 +3,10 @@
 var lib = require('./lib');
 var log = require('./log');
 var pg = require('pg');
+var util = require('util');
 
 function DB(address) {
   this.address = address;
-  return this;
 }
 
 DB.prototype.finish = function() {
@@ -35,7 +35,7 @@ DB.prototype.query = function(stmt, params, callback) {
 
   this.client.query(stmt, params, function(err, dbres) {
     if (err) {
-      log.error('PG error in: ' + stmt, err);
+      log.error('DB error in: ' + stmt, err);
     }
     if (callback) {
       callback(err, dbres);
@@ -84,16 +84,16 @@ function createTable(db, table) {
   }
 }
 
-function createSchema(callback) {
+function createSchema(address, callback) {
   function defaultErrorHandler(err, dbres) {
     if (err) {
-      return log.fatal('DB error:', err);
+      return log.fatal(err);
     }
   }
 
-  db.connect(config.db_url, function(err, db) {
+  connect(address, function(err, db) {
     if (err) {
-      return log.fatal('DB error:', err);
+      return log.fatal(err);
     }
     createTable(db, {
       name: 'Groups',
@@ -124,6 +124,7 @@ function createSchema(callback) {
       name: 'Accounts',
       columns: {
         rowid: 'SERIAL UNIQUE',
+        login: 'TEXT',
         email: 'TEXT',
         gplus_id: 'TEXT',
         name: 'TEXT',
@@ -135,6 +136,7 @@ function createSchema(callback) {
       },
       indices: [
         // { column: 'rowid', unique: true },
+        { column: 'login', unique: true },
         { column: 'email', unique: true },
         { column: 'gplus_id', unique: true },
         { column: 'name' }

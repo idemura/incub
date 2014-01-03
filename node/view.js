@@ -35,7 +35,7 @@ function render(tpl, view) {
     return mustache.render(t, view);
   } else {
     log.error('ERROR rendering ' + tpl);
-    return null;
+    return;
   }
 }
 

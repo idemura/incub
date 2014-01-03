@@ -10,13 +10,14 @@
 <body>
 <div id="header">
 <img src="{{&account.picture}}" alt="User picture" id="userPicture" class="userpic" style="-webkit-filter: invert(100%);"/>
-Hello {{account.email}}! Select your user id (login).
+Hello {{account.email}}! Select your userid (login):
 </div>
 <div>
   <form method="post" action="javascript: return false;" id="useridForm">
-    <input type="text" name="userid"></textarea>
+    <input type="text" name="userid" autocomplete="off" autofocus="autofocus" id="userid"/>
     <input type="submit"/>
   </form>
+  <div id="useridError" style="display:none;"></div>
 </div>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script type="text/javascript">
@@ -24,14 +25,17 @@ Hello {{account.email}}! Select your user id (login).
   function postForm() {
     $.ajax({
       cache: false,
-      url: '/create',
+      url: '/createuserid',
       type: 'post',
       data: $('#useridForm').serialize(),
       success: function(data) {
-        // $('#postForm textarea').val('');
-        // select all/focis if nameis not allowed.
-        // go to index page if it is.
-        // do not log user in until name is set.
+        if (data.ok) {
+          window.location.replace("/");
+        } else {
+          $("#useridError").text(data.useridError);
+          $("#useridError").show();
+          $("#userid").focus();
+        }
       }
     });
     return false;
@@ -39,8 +43,6 @@ Hello {{account.email}}! Select your user id (login).
 
   $(document).ready(function() {
     $('#useridForm').submit(postForm);
-    pollFeed();
-    $('#loadFeed').click(loadFeed);
   });
 }());
 </script>

@@ -11,7 +11,7 @@
 <div id="header">
 <img src="{{&account.picture}}" alt="User picture" id="userPicture" class="userpic" style="-webkit-filter: invert(100%);"/>
 <img src="/static/default-userpic.png" alt="Default userpic" class="userpic"/>
-Hello {{account.email}}! <a href="/signoff">Sign off</a>.
+Hello {{account.email}} ({{account.login}}, {{account.given_name}})! <a href="/logout">Logout</a>.
 </div>
 <div id="newPost">
   <form method="post" action="javascript: return false;" id="postForm">

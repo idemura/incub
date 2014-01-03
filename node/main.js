@@ -12,19 +12,23 @@ var path = require('path');
 var util = require('util');
 var view = require('./view');
 
-function Context() {
+function Context(req, res) {
+  this.req = req;
+  this.res = res;
   this.finalizers = [];
   this.session = {};
   this.sessionMetaModified = 0;
   this.view = {title: 'Igor\'s playground'};
-  return this;
 }
 
 Context.prototype.addFinalizer = function(fin) {
   this.finalizers.push(fin);
 }
 
-Context.prototype.finish = function() {
+Context.prototype.finish = function(code) {
+  if (code) {
+    this.res.send(code);
+  }
   var finalizers = this.finalizers;
   for (var i = finalizers.length; i-- > 0; ) {
     finalizers[i]();
@@ -150,94 +154,104 @@ function getHostUrl(path) {
   return path? fullHost + path: fullHost;
 }
 
-// fn: function(ctx, req, res)
+// fn: function(ctx)
 function handle(fn) {
   return function(req, res) {
-    var ctx = new Context();
+    var ctx = new Context(req, res);
     ctx.openDB(function() {
-      ctx.req = req;
-      ctx.res = res;
       ctx.openSession(function() {
-        fn(ctx, req, res);
+        fn(ctx);
       });
     });
   };
 }
 
-function updateAccount(db, u, callback) {
-  var user = {email: u.email};
-  function update(row) {
+function gAccount(db, user, callback) {
+  function update(row, callback) {
     if (row) {
+      // Update Google's user with our specific data.
       user.rowid = row.rowid;
+      user.pgroup = row.pgroup;
+      user.login = row.login;
       var keys = ['name', 'given_name', 'picture', 'gender', 'locale'];
-      var p = lib.values(u, keys);
+      var p = lib.values(user, keys);
       p.push(row.rowid);
-      db.query(lib.updateSql('Accounts', keys, 'rowid=?'), p, updateCB);
+      db.query(lib.updateSql('Accounts', keys, 'rowid=?'), p, function(err)  {
+        callback(err, user);
+      });
     } else {
-      var groupName = u.email === 'igor.demura@gmail.com'? 'admin': 'user';
-      u.pgroup = Context.prototype.groups[groupName].rowid;
+      var groupName = user.email === 'igor.demura@gmail.com'? 'admin': 'user';
+      user.pgroup = Context.prototype.groups[groupName].rowid;
+      user.login = null;
       var keys = ['gplus_id', 'pgroup', 'email',
                   'name', 'given_name', 'picture', 'gender', 'locale'];
-      var p = lib.values(u, keys);
-      p[0] = u.id;
+      var p = lib.values(user, keys);
       db.query(lib.insertSql('Accounts', keys), p, function(err, dbres) {
         if (!err) {
           user.rowid = dbres.rows[0].rowid;
         }
-        updateCB(err);
+        callback(err, user);
       });
     }
   }
 
-  function updateCB(err) {
+  function selectCB(err, dbres) {
     if (err) {
-      db.query('ROLLBACK;');
       log.fatal(err);
+      db.query('ROLLBACK;');
     } else {
-      // Race condition here without callback?
-      db.query('COMMIT;', function(err) {
-        callback(user);
+      update(dbres.rows[0], function(err, user) {
+        if (err) {
+          db.query('ROLLBACK;');
+          log.fatal(err);
+        } else {
+          db.query('COMMIT;', function(err) {
+            callback(err? null: user);
+          });
+        }
       });
     }
   }
 
   db.query('BEGIN;', function(err) {
     if (err) {
-      log.error('DB SQL error:', err);
+      log.error('DB error', err);
     } else {
-      db.query('SELECT rowid FROM Accounts WHERE email=?;', [u.email],
-               function(err, dbres) {
-        if (err) {
-          db.query('ROLLBACK;');
-          log.fatal(err);
-        } else {
-          update(dbres.rows[0]);
-        }
-      });
+      user.gplus_id = user.id;
+      // Delete is bad on V8. Just null it instead.
+      user.id = null;
+      db.query('SELECT rowid, pgroup, login FROM Accounts WHERE email=?;',
+               [user.email], selectCB);
     }
   });
 }
 
 function gAuthCB(guser, req, res) {
-  function render(ctx) {
-    ctx.res.redirect('/');
-    ctx.finish();
-  }
-
-  var fn = handle(function(ctx, req, res) {
+  function action(ctx) {
     if (guser) {
-      updateAccount(ctx.db, guser, function(acc) {
-        if (acc) {
-          ctx.session.account_id = acc.rowid;
+      gAccount(ctx.db, guser, function(account) {
+        if (account) {
+          ctx.account = account;
+          ctx.session.account_id = account.rowid;
+          if (account.login) {
+            ctx.res.redirect('/');
+          } else {
+            ctx.res.redirect('/userid');
+          }
+        } else {
+          // Error logged, redirect to the main page.
+          ctx.res.redirect('/');
         }
-        render(ctx);
+        ctx.finish();
       });
     } else {
-      log.error('Google Auth FAILED.');
-      render(ctx);
+      log.error('Google auth FAILED.');
+      ctx.res.redirect('/');
+      ctx.finish();
     }
-  });
-  fn(req, res);
+  }
+
+  handle(action)(req, res);
 }
 
 function readGroups(callback) {
@@ -263,10 +277,12 @@ function serve() {
 
   app.get('/', handle(handler.main));
   app.get('/gauth', Context.prototype.gauth.authResponseHandler());
-  app.get('/signoff', handle(handler.signOff));
+  app.get('/userid', handle(handler.userID));
+  app.get('/logout', handle(handler.logout));
   app.get('/feedtime', handle(handler.feedTime));
   app.get('/feed', handle(handler.feed));
   app.post('/create', handle(handler.create));
+  app.post('/createuserid', handle(handler.createUserID));
 
   app.listen(config.port, config.hostName);
   log.print('Server is running at ' + getHostUrl());
@@ -281,7 +297,7 @@ config.read(function(err) {
   Context.prototype.gauth = new auth.GAuth(config.gauth, gAuthCB);
 
   if (process.argv.indexOf('--create-tables') >= 0) {
-    db.createSchema(function() {
+    db.createSchema(config.db_url, function() {
       log.print('DB created.');
     });
   } else {

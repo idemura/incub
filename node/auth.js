@@ -6,7 +6,6 @@ var log = require('./log');
 function GAuth(config, callback) {
   this.config = config;
   this.callback = callback;
-  return this;
 }
 
 GAuth.prototype.authURL = function() {

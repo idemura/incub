@@ -553,20 +553,67 @@ function rmqCommonAncestor(st, a, b) {
 //   check(3, 15);
 // }());
 
+function quickSort(a) {
+  function sortRange(i0, j0) {
+    var i = i0, j = j0;
+    if (j - i <= 1) {
+      return;
+    }
+    var piv = a[(i + j) >>> 1];
+    j--;  // Point to the last item in the array.
+    do {
+      while (i < j && a[i] < piv) {
+        i++;
+      }
+      while (i < j && a[j] > piv) {
+        j--;
+      }
+      var t = a[i];
+      a[i] = a[j];
+      a[j] = t;
+      i++;  // Do not decrement j! i==j should be classified too.
+    } while (i < j);
+    if (i == i0) {
+      sortRange(i0 + 1, j0);
+    } else if (i == j0) {
+      sortRange(i0, j0 - 1);
+    } else {
+      sortRange(i0, i);
+      sortRange(i, j0);
+    }
+  }
 
-function GAuth(config) {
-  this.config = config;
-  this.yo = f1.bind(this);
+  sortRange(0, a.length);
 }
 
-function f1() {
-  print(this);
-  print('f1');
-}
-GAuth.prototype.authURL = function() {
-  return "adadfa";
-};
+(function() {
+  function check(sortf, a) {
+    sortf(a);
+    var ok = true;
+    for (var i = 1; i < a.length; i++) {
+      if (a[i-1] > a[i]) {
+        print('At ' + i + ': ' + a[i-1] + ' > ' + a[i]);
+        ok = false;
+      }
+    }
+    if (!ok) {
+      print('Test FAILED!');
+    }
+  }
 
-var q = new GAuth(10);
-print(q.authURL());
-
+  check(quickSort, []);
+  check(quickSort, [1]);
+  check(quickSort, [1, 2]);
+  check(quickSort, [2, 1]);
+  check(quickSort, [1, 3, 2, 4]);
+  check(quickSort, [4, 3, 2, 1]);
+  check(quickSort, [1, 2, 3, 4]);
+  check(quickSort, [4, 2, 3, 1]);
+  check(quickSort, [4, 2, 3, 1, 5]);
+  check(quickSort, [4, 2, 5, 1, 3]);
+  check(quickSort, [4, 2, 1, 5, 3]);
+  check(quickSort, [4, 2, 5, 1, 3]);
+  check(quickSort, [4, 2, 5, 2, 3]);
+  check(quickSort, [4, 2, 5, 2, 2]);
+  check(quickSort, [2, 2, 2, 2, 2]);
+}());

@@ -168,8 +168,9 @@ function createSchema(address, callback) {
         account_id: 'INTEGER REFERENCES Accounts(rowid)',
         create_time: 'BIGINT',
         modify_time: 'BIGINT',
-        text: 'TEXT',
-        meta: 'TEXT'
+        link: 'TEXT',
+        tags: 'TEXT',
+        text: 'TEXT'
       },
       indices: [
         // { column: 'rowid', unique: true },

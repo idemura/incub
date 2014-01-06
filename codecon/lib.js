@@ -711,3 +711,41 @@ function comb(as, k0, callback) {
 // comb([1, 2, 3, 4], 3, function(set) {
 //   print(set);
 // });
+
+// RMQ with spare table.
+function RMQ_ST(as) {
+  var st = [];
+  st[0] = as.slice();  // Shallow copy.
+  for (var l = 1, i = 0; l <= as.length; l *= 2, i++) {
+    for (var j = 0; j + l < as.length; j++) {
+      st[i + 1][j] = st[i][j] + st[i][j + l];
+    }
+  }
+  this.st = st;
+}
+
+RMQ_ST.prototype.RMQ = function(i, j) {
+
+};
+
+(function() {
+  function check(as, rs) {
+    var st = new RMQ_ST(as);
+    for (var i = 0; i < rs.length; i++) {
+      var t = rs[i];
+      var m = st.RMQ(t[0], t[1]);
+      // Check with min.
+      var mc = 9999;
+      for (var j = t[0]; j < t[1]; j++) {
+        if (as[j] < mc) {
+          mc = as[j];
+        }
+      }
+      if (m != mc) {
+        print('In range ' + t[0] + '-' + t[1] + ' min is ' + mc +
+              ', but ST ' + m);
+      }
+    }
+  }
+  check([2, 1, 4, 3, 6, 5], [[0, 3]]);
+}());

@@ -9,30 +9,25 @@
 
 using namespace std;
 
-#define DIM 3
+typedef long long int lli;
 
-int generate(int max_value)
+int x, y, k, b, ps_n, c;
+lli ps[40];
+
+void comb(int i, int k1, lli sum)
 {
-  int c = DIM - 1, count = 0;
-  int v[DIM] = {};
-  while (true) {
-    printf("%d %d %d\n", v[0], v[1], v[2]);
-    count++;
-    if (v[c] >= max_value) {
-      do {
-        v[c] = 0;
-        c--;
-      } while (c >= 0 && v[c] >= max_value);
-      if (c < 0) {
-        break;
-      }
-      v[c]++;
-      c = DIM - 1;
-    } else {
-      v[c]++;
-    }
+  if (sum > y) {
+    return;
   }
-  return count;
+  if (k1 == 0) {
+    if (x <= sum && sum <= y) {
+      c++;
+    }
+    return;
+  }
+  for (int j = i; j + k1 <= ps_n; j++) {
+    comb(j + 1, k1 - 1, sum + ps[j]);
+  }
 }
 
 int main()
@@ -40,7 +35,14 @@ int main()
 #ifndef ONLINE_JUDGE
   freopen("in", "r", stdin);
 #endif
-  int n = generate(3);
-  printf("Count %d\n", n);
+  int i;
+  lli p;
+  scanf("%d%d%d%d", &x, &y, &k, &b);
+  for (i = 0, p = 1; p <= y; i++, p *= b) {
+    ps[i] = p;
+  }
+  ps_n = i;
+  comb(0, k, 0);
+  printf("%d\n", c);
   return 0;
 }

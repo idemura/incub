@@ -1,5 +1,18 @@
 'use strict';
 
+module.exports.Scanner = Scanner;
+module.exports.input = input;
+module.exports.print = print;
+module.exports.gcd = gcd;
+module.exports.gray = gray;
+module.exports.binaryString = binaryString;
+module.exports.sieve = sieve;
+module.exports.isPrime = isPrime;
+module.exports.binarySearch = binarySearch;
+module.exports.BIT = BIT;
+module.exports.comb = comb;
+module.exports.unique = unique;
+
 function print() {
   console.log.apply(null, arguments);
 }
@@ -25,13 +38,13 @@ Scanner.prototype.eof = function() {
   return this.p == this.splits.length;
 }
 
-function input(callback) {
+function input(file, callback) {
   var fs = require('fs');
-  fs.readFile('in', {encoding: 'utf8'}, function(err, data) {
+  fs.readFile(file, {encoding: 'utf8'}, function(err, data) {
     if (err) {
       process.exit(1);
     }
-    // split on spaces, save that vector. have methods get int, string.
+    // Split on spaces, save that vector. have methods get int, string.
     callback(new Scanner(data));
   });
 }
@@ -74,7 +87,7 @@ function binaryString(n, width) {
 }
 
 // Eratosphenes sieve.
-function primes(n) {
+function sieve(n) {
   var a = new Array(n + 1);
   var p = 2, pMax = Math.floor(Math.sqrt(n));
   for (; p <= pMax; p++) {

@@ -159,12 +159,12 @@ function binarySearch(a, x) {
 // }());
 
 // `a` is [[x]]
-function project(a) {
+function keys(a) {
   return a.map(function (x) { return x[0]; });
 }
 
 function isIntersect(s, segms) {
-  var i = binarySearch(project(segms), s[0]);
+  var i = binarySearch(keys(segms), s[0]);
   return (i > 0 && s[0] < segms[i - 1][1]) ||
          (i < segms.length && s[1] > segms[i][0]);
 }
@@ -552,7 +552,7 @@ function rmqCommonAncestor(st, a, b) {
       if (st[i].node.data === d)
         return i;
     }
-    print('oh no!');
+    print('WRONG!');
   }
 
   var i = find(a), last = find(b) + 1, imin = i;

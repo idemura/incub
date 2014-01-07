@@ -12,16 +12,20 @@ using namespace std;
 
 int digits[24], digits_n;
 
-int rec(int s, int n, int i)
+int rec(int s, int i)
 {
   if (i == digits_n) {
-    s += n;
     return s % 2 == 0 || s % 3 == 0 || s % 5 == 0 || s % 7 == 0;
   } else {
-    int d = digits[i];
-    return rec(s + n,  d, i + 1) +
-           rec(s + n, -d, i + 1) +
-           rec(s, n * 10 + (n < 0? -d: d), i + 1);
+    int n = 0, c = 0;
+    for (int j = i; j < digits_n; j++) {
+      n = 10 * n + digits[j];
+      c += rec(s + n, j + 1);
+      if (i > 0) {
+        c += rec(s - n, j + 1);
+      }
+    }
+    return c;
   }
 }
 
@@ -35,7 +39,7 @@ int main(int argc, char **argv)
         digits[i] = s[i] - '0';
       }
       digits_n = strlen(s);
-      printf("%d\n", rec(0, digits[0], 1));
+      printf("%d\n", rec(0, 0));
     }
     fclose(f);
   }

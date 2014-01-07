@@ -32,23 +32,39 @@ function input(file, callback) {
   });
 }
 
-function ugly(n) {
-  return n % 2 === 0 || n % 3 === 0 || n % 5 === 0 || n % 7 === 0;
-}
+// function iter(digits) {
+//   var l = digits.length;
+//   function rec(s, i) {
+//     var c, d, j;
+//     if (i === l) {
+//       return s % 2 === 0 || s % 3 === 0 || s % 5 === 0 || s % 7 === 0? 1: 0;
+//     } else {
+//       d = 0;
+//       c = 0;
+//       for (j = i; j < l; j++) {
+//         d = 10 * d + digits[j];
+//         c += rec(s + d, j + 1) + rec(s - d, j + 1);
+//       }
+//       return c;
+//     }
+//   }
+//   return rec(0, 0) / 2;
+// }
 
 function iter(digits) {
+  var l = digits.length;
   function rec(s, n, i) {
     var d;
-    if (i === digits.length) {
-      return ugly(s + n)? 1: 0;
+    if (i === l) {
+      s += n;
+      return s % 2 === 0 || s % 3 === 0 || s % 5 === 0 || s % 7 === 0? 1: 0;
     } else {
       d = digits[i];
-      return rec(s + n,  d, i + 1) +
-             rec(s + n, -d, i + 1) +
-             rec(s, n * 10 + (n < 0? -d: d), i + 1);
+      return rec(s + n, d, i + 1) +
+             rec(s - n, d, i + 1) +
+             rec(s, n * 10 + d, i + 1);
     }
   }
-
   return rec(0, digits[0], 1);
 }
 

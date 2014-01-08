@@ -12,20 +12,33 @@ using namespace std;
 
 int digits[24], digits_n;
 
-int rec(int s, int i)
+// int rec(int s, int i)
+// {
+//   if (i == digits_n) {
+//     return s % 2 == 0 || s % 3 == 0 || s % 5 == 0 || s % 7 == 0;
+//   } else {
+//     int n = 0, c = 0;
+//     for (int j = i; j < digits_n; j++) {
+//       n = 10 * n + digits[j];
+//       c += rec(s + n, j + 1);
+//       if (i > 0) {
+//         c += rec(s - n, j + 1);
+//       }
+//     }
+//     return c;
+//   }
+// }
+
+int rec(int s, int n, int i)
 {
   if (i == digits_n) {
+    s += n;
     return s % 2 == 0 || s % 3 == 0 || s % 5 == 0 || s % 7 == 0;
   } else {
-    int n = 0, c = 0;
-    for (int j = i; j < digits_n; j++) {
-      n = 10 * n + digits[j];
-      c += rec(s + n, j + 1);
-      if (i > 0) {
-        c += rec(s - n, j + 1);
-      }
-    }
-    return c;
+    int d = digits[i];
+    return rec(s + n, d, i + 1) +
+           rec(s - n, d, i + 1) +
+           rec(s, n * 10 + d, i + 1);
   }
 }
 
@@ -39,7 +52,8 @@ int main(int argc, char **argv)
         digits[i] = s[i] - '0';
       }
       digits_n = strlen(s);
-      printf("%d\n", rec(0, 0));
+      // printf("%d\n", rec(0, 0));
+      printf("%d\n", rec(0, digits[0], 1));
     }
     fclose(f);
   }

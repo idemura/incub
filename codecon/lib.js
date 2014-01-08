@@ -207,3 +207,60 @@ function unique(as) {
   }
   return us;
 }
+
+function Heap(cmp) {
+  this.h = [];
+  this.cmp = cmp? cmp: function(a, b) { return a < b; };
+}
+
+Heap.prototype.build = function(as) {
+  var i, p, t, h = as.slice();
+  for (i = h.length; --i; ) {
+    p = (i - 1) >>> 1;
+    if (!this.cmp(h[p], h[i])) {
+      t = h[i];
+      h[i] = h[p];
+      h[p] = t;
+    }
+  }
+  this.h = h;
+}
+
+Heap.prototype.insert = function(x) {
+  var i, p, t, h = this.h;
+  h.push(x);
+  i = h.length - 1;
+  p = (i - 1) >>> 1;
+  while (!this.cmp(h[p], h[i])) {
+    t = h[i];
+    h[i] = h[p];
+    h[p] = t;
+    i = p;
+    p = (i - 1) >>> 1;
+  }
+}
+
+Heap.prototyp.remove = function() {
+  var h = this.h, v, i, j, minIndex, t;
+  v = h[0];
+  h[0] = h.pop();
+  for (i = 0; i < h.length; ) {
+    minIndex = i;
+    j = 2 * i + 1;
+    if (j < h.length && this.cmp(h[j], h[minIndex])) {
+      minIndex = j;
+    }
+    j = 2 * i + 2;
+    if (j < h.length && this.cmp(h[j], h[minIndex])) {
+      minIndex = j;
+    }
+    if (minIndex === i) {
+      break;
+    }
+    t = h[i];
+    h[i] = h[minIndex];
+    h[minIndex] = t;
+    i = minIndex;
+  }
+  return v;
+}

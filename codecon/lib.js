@@ -19,24 +19,24 @@ function print() {
 }
 
 function Scanner(text) {
-  this.splits = text.split(/\s+/);
-  this.p = 0;
+  this._splits = text.split(/\s+/);
+  this._p = 0;
 }
 
 Scanner.prototype.getInt = function() {
-  if (this.p < this.splits.length) {
-    return parseInt(this.splits[this.p++], 10);
+  if (this._p < this._splits.length) {
+    return parseInt(this._splits[this._p++], 10);
   }
 }
 
 Scanner.prototype.getStr = function() {
-  if (this.p < this.splits.length) {
-    return this.splits[this.p++];
+  if (this._p < this._splits.length) {
+    return this._splits[this._p++];
   }
 }
 
 Scanner.prototype.eof = function() {
-  return this.p == this.splits.length;
+  return this._p == this._splits.length;
 }
 
 function input(file, callback) {
@@ -141,14 +141,14 @@ function BIT(n) {
   for (var i = 0; i <= n; i++) {
     a[i] = 0;
   }
-  this.a = a;
-  this.length = n;
+  this._a = a;
+  this._length = n;
 }
 
 BIT.prototype = {
   update: function(i, d) {
-    while (i < this.a.length) {
-      this.a[i] += d;
+    while (i < this._a.length) {
+      this._a[i] += d;
       i += i & -i;
     }
   },
@@ -156,7 +156,7 @@ BIT.prototype = {
   sum: function(i) {
     var sum = 0;
     while (i) {
-      sum += this.a[i];
+      sum += this._a[i];
       i -= i & -i;
     }
     return sum;
@@ -173,7 +173,7 @@ BIT.prototype = {
 
   toArray: function() {
     var a = [];
-    for (var i = 1, l = this.a.length; i < l; i++) {
+    for (var i = 1, l = this._a.length; i < l; i++) {
       a[i - 1] = this.sum(i);
     }
     return a;
@@ -210,8 +210,8 @@ function unique(as) {
 }
 
 function Heap(cmp) {
-  this.h = [];
-  this.cmp = cmp? cmp: function(a, b) { return a < b; };
+  this._h = [];
+  this._cmp = cmp? cmp: function(a, b) { return a < b; };
 }
 
 function parentIndex(i) {
@@ -219,18 +219,18 @@ function parentIndex(i) {
 }
 
 Heap.prototype.size = function() {
-  return this.h.length;
+  return this._h.length;
 }
 
 Heap.prototype.heapify = function(i) {
-  var j, imin = i, h = this.h, t;
+  var j, imin = i, h = this._h, t;
   while (1) {
     j = 2 * i + 1;
-    if (j < h.length && h[j] < h[imin]) {
+    if (j < h.length && this._cmp(h[j], h[imin])) {
       imin = j;
     }
     j = 2 * i + 2;
-    if (j < h.length && h[j] < h[imin]) {
+    if (j < h.length && this._cmp(h[j], h[imin])) {
       imin = j;
     }
     if (i != imin) {
@@ -245,10 +245,10 @@ Heap.prototype.heapify = function(i) {
 }
 
 Heap.prototype.check = function() {
-  var i, p, h = this.h;
+  var i, p, h = this._h;
   for (i = 1; i < h.length; i++) {
     p = parentIndex(i);
-    if (!this.cmp(h[p], h[i])) {
+    if (!this._cmp(h[p], h[i])) {
       console.log(h);
       console.log('Heap corrupted: ' + h[p] + ' and ' + h[i]);
     }
@@ -257,7 +257,7 @@ Heap.prototype.check = function() {
 
 Heap.prototype.build = function(as) {
   var i, j, imin, h;
-  h = this.h = as.slice();
+  h = this._h = as.slice();
   if (h.length > 1) {
     for (i = parentIndex(h.length - 1); i >= 0; i--) {
       this.heapify(i);
@@ -266,12 +266,12 @@ Heap.prototype.build = function(as) {
 }
 
 Heap.prototype.insert = function(x) {
-  var i, p, t, h = this.h;
+  var i, p, t, h = this._h;
   h.push(x);
   i = h.length - 1;
   for (; i > 0; i = p) {
     p = parentIndex(i);
-    if (!this.cmp(h[p], h[i])) {
+    if (!this._cmp(h[p], h[i])) {
       t = h[i];
       h[i] = h[p];
       h[p] = t;
@@ -282,7 +282,7 @@ Heap.prototype.insert = function(x) {
 }
 
 Heap.prototype.remove = function() {
-  var h = this.h, v;
+  var h = this._h, v;
   v = h[0];
   h[0] = h.pop();
   this.heapify(0);

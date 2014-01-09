@@ -35,5 +35,16 @@ function input(file, callback) {
 }
 
 input(process.argv[2], function(sc) {
+  function check(heap) {
+    heap.check();
+  }
 
+  var h = new lib.Heap();
+  h.build([5, 6, 3, 2, 4, 1]);
+  check(h);
+  h.insert(5.5);
+  check(h);
+  h.insert(0);
+  check(h);
+  console.log(h.remove());
 });

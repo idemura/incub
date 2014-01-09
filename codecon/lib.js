@@ -50,6 +50,10 @@ function input(file, callback) {
   });
 }
 
+function defaultKeyFn(key) {
+  return key? key: function(x) { return x; };
+}
+
 function gcd(a, b) {
   var t;
   if (a < b) {
@@ -198,9 +202,9 @@ function comb(as, k0, callback) {
   rec(0, k0);
 }
 
-function unique(as) {
+function unique(as, cmp) {
   var us = [];
-  as.sort();  // OK to sort lexicographically.
+  as.sort(cmp);  // OK to sort lexicographically.
   for (var i = 1; i < as.length; i++) {
     if (as[i - 1] != as[i]) {
       us.push(as[i]);
@@ -209,9 +213,9 @@ function unique(as) {
   return us;
 }
 
-function Heap(cmp) {
+function Heap(keyFn) {
+  this._keyFn = defaultKeyFn(keyFn);
   this._h = [];
-  this._cmp = cmp? cmp: function(a, b) { return a < b; };
 }
 
 function parentIndex(i) {
@@ -223,14 +227,14 @@ Heap.prototype.size = function() {
 }
 
 Heap.prototype.heapify = function(i) {
-  var j, imin = i, h = this._h, t;
+  var keyFn = this._keyFn, h = this._h, j, imin = i, t;
   while (1) {
     j = 2 * i + 1;
-    if (j < h.length && this._cmp(h[j], h[imin])) {
+    if (j < h.length && keyFn(h[j]) < keyFn(h[imin])) {
       imin = j;
     }
     j = 2 * i + 2;
-    if (j < h.length && this._cmp(h[j], h[imin])) {
+    if (j < h.length && keyFn(h[j]) < keyFn(h[imin])) {
       imin = j;
     }
     if (i != imin) {
@@ -245,10 +249,10 @@ Heap.prototype.heapify = function(i) {
 }
 
 Heap.prototype.check = function() {
-  var i, p, h = this._h;
+  var keyFn = this._keyFn, h = this._h, i, p;
   for (i = 1; i < h.length; i++) {
     p = parentIndex(i);
-    if (!this._cmp(h[p], h[i])) {
+    if (keyFn(h[i]) > keyFn(h[p])) {
       console.log(h);
       console.log('Heap corrupted: ' + h[p] + ' and ' + h[i]);
     }
@@ -266,12 +270,12 @@ Heap.prototype.build = function(as) {
 }
 
 Heap.prototype.insert = function(x) {
-  var i, p, t, h = this._h;
+  var keyFn = this._keyFn, h = this._h, i, p, t;
   h.push(x);
   i = h.length - 1;
   for (; i > 0; i = p) {
     p = parentIndex(i);
-    if (!this._cmp(h[p], h[i])) {
+    if (keyFn(h[i]) > keyFn(h[p])) {
       t = h[i];
       h[i] = h[p];
       h[p] = t;
@@ -287,4 +291,101 @@ Heap.prototype.remove = function() {
   h[0] = h.pop();
   this.heapify(0);
   return v;
+}
+
+// Assumes unique keys in the collection.
+function Treap(keyFn) {
+  this._keyFn = defaultKeyFn(keyFn);
+  this._root = null;
+}
+
+Treap.prototype.Node = function(x) {
+  this.x = x;
+  this.l = this.r = null;
+  this.p = Math.random();
+}
+
+Treap.prototype.split = function(n, x) {
+  var keyFn = this.keyFn;
+  return (function rec() {
+    var res;
+    if (!n) {
+      return {l: null, r: null};
+    }
+    if (keyFn(x) < keyFn(r.x)) {
+      res = rec(n.l, x);
+      n.l = res.r;
+      return {res.l, n};
+    } else {
+      res = rec(n.r, x);
+      n.r = res.l;
+      return {n, res.r};
+    }
+  }(n, x));
+}
+
+Treap.prototype.merge = function(a, b) {
+  var keyFn = this.keyFn;
+  return (function rec(a, b) {
+    if (!a) {
+      return b;
+    }
+    if (!b) {
+      return a;
+    }
+    if (a.p < b.p) {
+      a.r = rec(a.r, b);
+      return a;
+    } else {
+      b.l = rec(a, b.l);
+      return b;
+    }
+  }(a, b));
+}
+
+Treap.prototype.root = function() {
+  return this._root;
+}
+
+Treap.prototype.find = function(x) {
+  var keyFn = this.keyFn, n = this._root, xKey, nKey;
+  xKey = keyFn(x);
+  while (n) {
+    nKey = keyFn(n.x);
+    if (xKey < nKey) {
+      n = n.l;
+    } else if (xKey > nKey) {
+      n = n.r;
+    } else {
+      break;
+    }
+  }
+  return n;
+}
+
+Treap.prototype.insert = function(x) {
+  var split, n;
+  split = this.split(this._root, x);
+  n = new this.Node(x);
+  this._root = this.merge(this.merge(split.l, n), split.r);
+}
+
+Treap.prototype.remove = function(n) {
+  var split, p;
+  if (!n) {
+    return n;
+  }
+  split = this.split(n.x);
+  // Remove the very left on the right split part.
+  p = split.r;
+  if (p.l) {
+    while (p.l.l) {
+      p = p.l;
+    }
+    p.l = p.l.r;
+  } else {
+    p = p.r;
+  }
+  split.r = p;
+  this._root = merge(split.l, split.r);
 }

@@ -34,22 +34,5 @@ function input(file, callback) {
   });
 }
 
-// input(process.argv[2], function(sc) {
-// });
-
-var Heap = lib.Heap;
-
-Heap.prototype.check = function() {
-  var i, p, h = this.h;
-  for (i = 1; i < h.length; i++) {
-    p = (i - 1) >>> 1;
-    if (!this.cmp(h[p], h[i])) {
-      console.log('Parent ' + h[p] + ' is greater than ' + a[i]);
-      console.log('  Heap ' + h);
-    }
-  }
-}
-
-var h = new Heap();
-h.build([6, 4, 3, 1, 0, 5, 2, 8, 7]);
-h.check();
+input(process.argv[2], function(sc) {
+});

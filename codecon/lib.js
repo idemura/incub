@@ -214,7 +214,7 @@ function Heap(cmp) {
   this.cmp = cmp? cmp: function(a, b) { return a < b; };
 }
 
-function parent(i) {
+function parentIndex(i) {
   return (i - 1) >>> 1;
 }
 
@@ -244,11 +244,22 @@ Heap.prototype.heapify = function(i) {
   }
 }
 
+Heap.prototype.check = function() {
+  var i, p, h = this.h;
+  for (i = 1; i < h.length; i++) {
+    p = parentIndex(i);
+    if (!this.cmp(h[p], h[i])) {
+      console.log(h);
+      console.log('Heap corrupted: ' + h[p] + ' and ' + h[i]);
+    }
+  }
+}
+
 Heap.prototype.build = function(as) {
   var i, j, imin, h;
   h = this.h = as.slice();
   if (h.length > 1) {
-    for (i = parent(h.length - 1); i >= 0; i--) {
+    for (i = parentIndex(h.length - 1); i >= 0; i--) {
       this.heapify(i);
     }
   }
@@ -258,13 +269,15 @@ Heap.prototype.insert = function(x) {
   var i, p, t, h = this.h;
   h.push(x);
   i = h.length - 1;
-  p = (i - 1) >>> 1;
-  while (!this.cmp(h[p], h[i])) {
-    t = h[i];
-    h[i] = h[p];
-    h[p] = t;
-    i = p;
-    p = (i - 1) >>> 1;
+  for (; i > 0; i = p) {
+    p = parentIndex(i);
+    if (!this.cmp(h[p], h[i])) {
+      t = h[i];
+      h[i] = h[p];
+      h[p] = t;
+    } else {
+      break;
+    }
   }
 }
 

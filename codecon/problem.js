@@ -35,4 +35,5 @@ function input(file, callback) {
 }
 
 input(process.argv[2], function(sc) {
+
 });

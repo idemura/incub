@@ -224,7 +224,7 @@ function parentIndex(i) {
 
 Heap.prototype.size = function() {
   return this._h.length;
-}
+};
 
 Heap.prototype.heapify = function(i) {
   var keyFn = this._keyFn, h = this._h, j, imin = i, t;
@@ -246,7 +246,7 @@ Heap.prototype.heapify = function(i) {
       break;
     }
   }
-}
+};
 
 Heap.prototype.check = function() {
   var keyFn = this._keyFn, h = this._h, i, p;
@@ -257,7 +257,7 @@ Heap.prototype.check = function() {
       console.log('Heap corrupted: ' + h[p] + ' and ' + h[i]);
     }
   }
-}
+};
 
 Heap.prototype.build = function(as) {
   var i, j, imin, h;
@@ -267,7 +267,7 @@ Heap.prototype.build = function(as) {
       this.heapify(i);
     }
   }
-}
+};
 
 Heap.prototype.insert = function(x) {
   var keyFn = this._keyFn, h = this._h, i, p, t;
@@ -283,7 +283,7 @@ Heap.prototype.insert = function(x) {
       break;
     }
   }
-}
+};
 
 Heap.prototype.remove = function() {
   var h = this._h, v;
@@ -291,7 +291,7 @@ Heap.prototype.remove = function() {
   h[0] = h.pop();
   this.heapify(0);
   return v;
-}
+};
 
 // Assumes unique keys in the collection.
 function Treap(keyFn) {
@@ -299,11 +299,48 @@ function Treap(keyFn) {
   this._root = null;
 }
 
-Treap.prototype.Node = function(x) {
+function TreapNode(x) {
   this.x = x;
   this.l = this.r = null;
   this.p = Math.random();
 }
+
+Treap.prototype.check = function() {
+  var keyFn = this.keyFn;
+
+  function isHeap(n) {
+    function checkPrio(pn, n) {
+      if (n && n.p > pn.p) {
+        console.log('Heap corrupted: ' + pn.p + ' should be <= ' + n.p);
+        return false;
+      }
+      return true;
+    }
+
+    if (!n) {
+      return true;
+    }
+    if (checkPrio(n, n.l) && checkPrio(n, n.r)) {
+      return isHeap(n.l) && isHeap(n.r);
+    } else {
+      return false;
+    }
+  }
+
+  function isTree(n, min, max) {
+    if (!n) {
+      return
+    }
+    if (min && (keyFn(n.x) <= keyFn(min)) ||
+        max && (keyFn(max) <= keyFn(n.x))) {
+      console.log('Tree corrupted: ' + n.x + ' not in ' + min + '-' + max);
+      return false;
+    }
+    return isTree(n.k)
+  }
+
+  return isHeap(this._root) && isTree(this._root, null, null);
+};
 
 Treap.prototype.split = function(n, x) {
   var keyFn = this.keyFn;
@@ -322,7 +359,7 @@ Treap.prototype.split = function(n, x) {
       return {n, res.r};
     }
   }(n, x));
-}
+};
 
 Treap.prototype.merge = function(a, b) {
   var keyFn = this.keyFn;
@@ -341,11 +378,11 @@ Treap.prototype.merge = function(a, b) {
       return b;
     }
   }(a, b));
-}
+};
 
 Treap.prototype.root = function() {
   return this._root;
-}
+};
 
 Treap.prototype.find = function(x) {
   var keyFn = this.keyFn, n = this._root, xKey, nKey;
@@ -361,14 +398,14 @@ Treap.prototype.find = function(x) {
     }
   }
   return n;
-}
+};
 
 Treap.prototype.insert = function(x) {
   var split, n;
   split = this.split(this._root, x);
   n = new this.Node(x);
   this._root = this.merge(this.merge(split.l, n), split.r);
-}
+};
 
 Treap.prototype.remove = function(n) {
   var split, p;
@@ -382,10 +419,12 @@ Treap.prototype.remove = function(n) {
     while (p.l.l) {
       p = p.l;
     }
+    console.assert(keyFn(p.l.x) === keyFn(n.x));
     p.l = p.l.r;
   } else {
+    console.assert(keyFn(p.x) === keyFn(n.x));
     p = p.r;
   }
   split.r = p;
   this._root = merge(split.l, split.r);
-}
+};

@@ -14,6 +14,7 @@ using namespace std;
 int N;
 int M[108][108];
 
+// Kadane's algo.
 int maxSum(int *as, int as_n, int *i0, int *i1)
 {
   int i, sum = 0, max_sum = -INF, sum_begin = 0;

@@ -65,7 +65,8 @@ int minv(int a)
     return mpow(a, MOD - 2);
 }
 
-int gcd(int a, int b) {
+int gcd(int a, int b)
+{
     while (b != 0) {
         int t = a % b;
         a = b;

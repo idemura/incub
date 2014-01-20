@@ -9,58 +9,142 @@
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
 #define INF 0x7fffffff
 
-using namespace std;
+struct Name {
+  std::string s;
+  int length, vowels;
 
-int N;
-int M[108][108];
+  Name()
+    : length(), vowels() {
+  }
+};
 
-// Kadane's algo.
-int maxSum(int *as, int as_n, int *i0, int *i1)
+double **M;
+int Mn;
+
+bool isVowel(int c)
 {
-  int i, sum = 0, max_sum = -INF, sum_begin = 0;
-  for (i = 0; i < as_n; i++) {
-    sum += as[i];
-    if (sum > max_sum) {
-      max_sum = sum;
-      *i0 = sum_begin;
-      *i1 = i + 1;
+  return strchr("aeiouAEIOU", (char)c) != NULL;
+}
+
+bool isAlpha(int c) {
+  return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z');
+}
+
+int gcd(int a, int b)
+{
+    while (b != 0) {
+        int t = a % b;
+        a = b;
+        b = t;
     }
-    if (sum < 0) {
-      sum = 0;
-      sum_begin = i + 1;
+    return a;
+}
+
+double value(const Name &cons, const Name &prod)
+{
+  double v;
+  if (prod.length & 1) {
+    v = cons.length - cons.vowels;
+  } else {
+    v = cons.vowels * 1.5;
+  }
+  if (gcd(cons.length, prod.length) > 1) {
+    v *= 1.5;
+  }
+  return v;
+}
+
+double permute()
+{
+  printf("Mn %d\n");
+  std::vector<int> idx(Mn);
+  for (int i = 0; i < Mn; i++) {
+    idx[i] = i;
+  }
+  double max_v = -1;
+  do {
+    double v = 0;
+    for (int i = 0; i < Mn; i++) {
+      v += M[i][idx[i]];
+    }
+    printf("%.2lf\n", v);
+    if (v > max_v) {
+      max_v = v;
+    }
+  } while (std::next_permutation(idx.begin(), idx.end()));
+  printf("return %.2lf\n", max_v);
+  return max_v;
+}
+
+void readNames(FILE *f, int sep, std::vector<Name> *out)
+{
+  int chr = 0;
+  Name nm;
+  while (!feof(f) && (chr = fgetc(f)) != sep) {
+    if (chr == ',') {
+      out->push_back(nm);
+      nm.s.clear();
+      nm.length = nm.vowels = 0;
+    } else {
+      nm.s.push_back(chr);
+      if (isAlpha(chr)) {
+        nm.length++;
+        if (isVowel(chr)) {
+          nm.vowels++;
+        }
+      }
     }
   }
-  return max_sum;
+  if (nm.length) {
+    out->push_back(nm);
+  }
+}
+
+double getMaxValue(FILE *f)
+{
+  std::vector<Name> cs, ps;
+  readNames(f, ';', &cs);
+  readNames(f, '\n', &ps);
+  if (cs.size() != ps.size() || cs.empty()) {
+    printf("whooops! %d %d\n", cs.size(), ps.size());
+    return -1;
+  }
+
+  Mn = cs.size();
+  M = new double*[Mn];
+  M[0] = new double[Mn * Mn];
+  for (int i = 1; i < Mn; i++) {
+    M[i] = M[0] + i * Mn;
+  }
+  for (int i = 0; i < Mn; i++) {
+    printf("Consumer %s\n", cs[i].s.c_str());
+    for (int j = 0; j < Mn; j++) {
+      M[i][j] = value(cs[i], ps[j]);
+      printf("  Prod %s = %.2lf\n", ps[j].s.c_str(), M[i][j]);
+    }
+  }
+
+  double max_v = permute();
+
+  delete[] M[0];
+  delete[] M;
+
+  return max_v;
 }
 
 int main(int argc, char **argv)
 {
-#ifndef ONLINE_JUDGE
-  freopen("in", "r", stdin);
-#endif
-  int i, j, k, i0, i1;
-  scanf("%d", &N);
-  for (i = 0; i < N; i++) {
-    for (j = 0; j < N; j++) {
-      scanf("%d", &M[i][j]);
-    }
-  }
-  int sum, max_sum = -INF;
-  for (i = 0; i < N; i++) {
-    for (j = i + 1; j < N; j++) {
-      sum = maxSum(M[i], N, &i0, &i1);
-      if (sum > max_sum) {
-        max_sum = sum;
-      }
-      for (k = 0; k < N; k++) {
-        M[i][k] += M[j][k];
+  const char *in_name = argv[1];
+  FILE *f = fopen(in_name, "rt");
+  if (f) {
+    while (!feof(f)) {
+      double max_v = getMaxValue(f);
+      // if (max_v > 0) {
+      {
+        printf("%.2lf\n", max_v);
       }
     }
-    sum = maxSum(M[i], N, &i0, &i1);
-    if (sum > max_sum) {
-      max_sum = sum;
-    }
+    fclose(f);
   }
-  printf("%d\n", max_sum);
   return 0;
 }

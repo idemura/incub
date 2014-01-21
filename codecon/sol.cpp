@@ -2,6 +2,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -9,142 +10,125 @@
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
 #define INF 0x7fffffff
 
-struct Name {
-  std::string s;
-  int length, vowels;
+typedef long long int lli;
 
-  Name()
-    : length(), vowels() {
-  }
+struct Interval {
+  int a, b;
 };
 
-double **M;
-int Mn;
+struct Point {
+  int x;
+  lli max_count;
+  lli var;
 
-bool isVowel(int c)
+  Point(): x(), max_count(), var() {}
+};
+
+Interval ints[100005];
+int N;
+
+bool cmpIntervalentB(const Interval &lh, const Interval &rh)
 {
-  return strchr("aeiouAEIOU", (char)c) != NULL;
+  return lh.b == rh.b? lh.a < rh.a: lh.b < rh.b;
 }
 
-bool isAlpha(int c) {
-  return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z');
+bool pointXLessThanValue(const Point &lh, int x)
+{
+  return lh.x < x;
 }
 
-int gcd(int a, int b)
+void printPoints(const std::vector<Point> &pts)
 {
-    while (b != 0) {
-        int t = a % b;
-        a = b;
-        b = t;
-    }
-    return a;
+  printf("points:\n");
+  for (int i = 0; i < pts.size(); i++) {
+    Point p = pts[i];
+    printf("  x=%d max_count=%lld var=%lld\n", p.x, p.max_count, p.var);
+  }
 }
 
-double value(const Name &cons, const Name &prod)
+void getMaxCount(int x, const std::vector<Point> &pts, lli *max_count, lli *var)
 {
-  double v;
-  if (prod.length & 1) {
-    v = cons.length - cons.vowels;
+  printf("getMaxCount x=%d\n", x);
+  printPoints(pts);
+
+  if (pts.empty() || x <= pts[0].x) {
+    printf("pts are empty or x <= first x\n");
+    *max_count = 0;
+    *var = 1;
   } else {
-    v = cons.vowels * 1.5;
-  }
-  if (gcd(cons.length, prod.length) > 1) {
-    v *= 1.5;
-  }
-  return v;
-}
-
-double permute()
-{
-  printf("Mn %d\n");
-  std::vector<int> idx(Mn);
-  for (int i = 0; i < Mn; i++) {
-    idx[i] = i;
-  }
-  double max_v = -1;
-  do {
-    double v = 0;
-    for (int i = 0; i < Mn; i++) {
-      v += M[i][idx[i]];
+    std::vector<Point>::const_iterator lb =
+        std::lower_bound(pts.begin(), pts.end(), x, pointXLessThanValue);
+    assert(lb != pts.begin());
+    printf("found lower bound\n");
+    // We checked `x <= pts[0].x`, so `lb != pts.begin()`.
+    if (lb == pts.end() || lb->x != x) {
+      lb--;
+      printf("  ...one step back\n");
     }
-    printf("%.2lf\n", v);
-    if (v > max_v) {
-      max_v = v;
-    }
-  } while (std::next_permutation(idx.begin(), idx.end()));
-  printf("return %.2lf\n", max_v);
-  return max_v;
-}
-
-void readNames(FILE *f, int sep, std::vector<Name> *out)
-{
-  int chr = 0;
-  Name nm;
-  while (!feof(f) && (chr = fgetc(f)) != sep) {
-    if (chr == ',') {
-      out->push_back(nm);
-      nm.s.clear();
-      nm.length = nm.vowels = 0;
-    } else {
-      nm.s.push_back(chr);
-      if (isAlpha(chr)) {
-        nm.length++;
-        if (isVowel(chr)) {
-          nm.vowels++;
-        }
-      }
-    }
+    // After this `lb != pts.end()`.
+    assert(lb != pts.end());
+    printf("lb->x=%d\n", lb->x);
+    *max_count = lb->max_count;
+    *var = lb->var;
   }
-  if (nm.length) {
-    out->push_back(nm);
-  }
-}
-
-double getMaxValue(FILE *f)
-{
-  std::vector<Name> cs, ps;
-  readNames(f, ';', &cs);
-  readNames(f, '\n', &ps);
-  if (cs.size() != ps.size() || cs.empty()) {
-    printf("whooops! %d %d\n", cs.size(), ps.size());
-    return -1;
-  }
-
-  Mn = cs.size();
-  M = new double*[Mn];
-  M[0] = new double[Mn * Mn];
-  for (int i = 1; i < Mn; i++) {
-    M[i] = M[0] + i * Mn;
-  }
-  for (int i = 0; i < Mn; i++) {
-    printf("Consumer %s\n", cs[i].s.c_str());
-    for (int j = 0; j < Mn; j++) {
-      M[i][j] = value(cs[i], ps[j]);
-      printf("  Prod %s = %.2lf\n", ps[j].s.c_str(), M[i][j]);
-    }
-  }
-
-  double max_v = permute();
-
-  delete[] M[0];
-  delete[] M;
-
-  return max_v;
 }
 
 int main(int argc, char **argv)
 {
-  const char *in_name = argv[1];
-  FILE *f = fopen(in_name, "rt");
-  if (f) {
-    while (!feof(f)) {
-      double max_v = getMaxValue(f);
-      // if (max_v > 0) {
-      {
-        printf("%.2lf\n", max_v);
-      }
-    }
-    fclose(f);
+#ifndef ONLINE_JUDGE
+    freopen("in", "r", stdin);
+#endif
+  scanf("%d", &N);
+  for (int i = 0; i < N; i++) {
+    scanf("%d%d", &ints[i].a, &ints[i].b);
   }
+  // Sort by right border of an interval.
+  std::sort(ints, ints + N, cmpIntervalentB);
+  printf("sorted:\n");
+  for (int i = 0; i < N; i++) {
+    printf("  a=%d b=%d\n", ints[i].a, ints[i].b);
+  }
+
+  // For every Intervalent, find such that it's right is less or equal of i-th
+  // Intervalent's left point. They don't intersect.
+  std::vector<Point> pts;
+  for (int i = 0; i < N; i++) {
+    printf("\n");
+    printf("step %d\n", i);
+    lli max_count, var;
+    getMaxCount(ints[i].a, pts, &max_count, &var);
+    printf("max_count=%lld var=%lld\n", max_count, var);
+    max_count += 1;
+    printf("max_count inc\n");
+    if (pts.empty() || pts[pts.size() - 1].x < ints[i].b) {
+      Point p;
+      p.x = ints[i].b;
+      p.max_count = max_count;
+      p.var = var;
+      printf("adding new point:\n");
+      printf("  x=%d\n", p.x);
+      printf("  max_count=%lld\n", p.max_count);
+      printf("  var=%lld\n", p.var);
+      pts.push_back(p);
+    } else {
+      // So, the last point x is equal to the ints[i].b.
+      Point &last = pts[pts.size() - 1];
+      printf("last point:\n");
+      printf("  x=%d\n", last.x);
+      printf("  max_count=%lld\n", last.max_count);
+      printf("  var=%lld\n", last.var);
+      if (last.max_count < max_count) {
+        printf("last.max_count is less than max_count=%lld var=%lld set new.\n",
+               max_count, var);
+        last.max_count = max_count;
+        last.var = var;
+      } else if (last.max_count == max_count) {
+        last.var += var;
+        printf("same max_count, var=%lld added, now %lld\n", var, last.var);
+      }
+      printf("end else.\n");
+    }
+  }
+  printf("%lld\n", pts[pts.size() - 1].var);
   return 0;
 }

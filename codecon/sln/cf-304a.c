@@ -8,7 +8,8 @@
 
 typedef long long int lli;
 
-int gcd(int a, int b) {
+int gcd(int a, int b)
+{
     while (b != 0) {
         int t = a % b;
         a = b;

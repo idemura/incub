@@ -1,5 +1,6 @@
 *.o
 *.out
-*.out.dSYM
+*.dSYM
 in
 out
+sol

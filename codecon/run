@@ -1,0 +1,13 @@
+#!/bin/sh
+if [ ! $1 ]; then
+  echo "Usage:
+  run <C++11 source file name>"
+  exit -1
+fi
+
+src=$1
+./build ${src}
+if [ $? -eq 0 ]; then
+  output=${src%.*}  # Extension trimmed.
+  cat in | ./${output}
+fi

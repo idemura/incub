@@ -1,18 +1,20 @@
-#include <assert.h>
+#include <algorithm>
+#include <map>
+#include <vector>
+#include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-#include <math.h>
 
-#define ARRAY_SIZEOF(a)     (sizeof(a) / sizeof(a[0]))
-#define ARRAY_ZERO(p, n)    memset(p, 0, (n) * sizeof(*(p)))
-
-// MOD is prime
-#define MOD 1000000007
+#define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
+#define INF 0x7fffffff
 
 typedef long long int lli;
 
-// Floor logarithm. Undefined for 0.
+// MOD is prime
+const int MOD = 1000000007;
+
+// Logarithm 2: n >= 2 ^ ilog2f(n). Undefined for 0.
 int ilog2f(int n)
 {
     int i;
@@ -22,7 +24,7 @@ int ilog2f(int n)
     return i;
 }
 
-// Ceiling logarithm. Undefined for 0.
+// Logarithm 2: n <= 2 ^ ilog2f(n). Undefined for 0.
 int ilog2c(int n)
 {
     int i;
@@ -113,34 +115,35 @@ int egcd_rec(int a, int b, int *xa, int *xb)
     return gcd;
 }
 
-int is_prime(int n)
+bool is_prime(int n)
 {
-    if (n <= 2) {
-        return 1;
+    if (n <= 5) {
+        return n != 4;
     }
-    int f = 2;
+    if (n % 2 == 0 || n % 3 == 0) {
+        return false;
+    }
+    int f = 5;  // Factor.
+    int c = 2;
     div_t qr = div(n, f);
     while (qr.rem != 0 && qr.quot > f) {
-        f++;
+        f += c = 6 - c;
         qr = div(n, f);
     }
     return qr.rem != 0;
 }
 
-/* Revert by modulo with 2 ways:
-    1) ext_euclid(x, MOD, &gcd, &inv, 0);
-    2) inv = mpow(x, MOD - 2), by Euler theorem, phi(MOD) = MOD - 1
-*/
+// Revert by modulo with 2 ways:
+//  1) ext_euclid(x, MOD, &gcd, &inv, 0);
+//  2) inv = mpow(x, MOD - 2), by Euler theorem, phi(MOD) = MOD - 1
 
-/* Inverts all numbers in [0..mod-1] where mod is prime. Result saved in `inv`
-   which is at least `mod` long.
-*/
+// Inverts all numbers in [0..mod) where `mod` is prime into `inv` (should be
+// at least `mod` long).
 void inv_list(int *inv, int mod)
 {
-    int i;
     inv[0] = 0;
     inv[1] = 1;
-    for (i = 2; i < mod; i++) {
+    for (int i = 2; i < mod; i++) {
         // Let consider mod (which is prime) and mod % i. Extended Euclid on
         // them gives:
         //  mod * k1 + (mod % i) * k2 = 1
@@ -155,11 +158,10 @@ void inv_list(int *inv, int mod)
     }
 }
 
-
 // Pascal triangle for [0 .. n]. Memory should be freed by `pascal_free`.
 int *pascal(int n)
 {
-    int *pas = new int[(2 + n) * (n + 1) / 2];
+    int *pas = new int[(2 + n) * (n + 1) / 2]();
     int i, j, in = 0, out = 0;
     pas[out++] = 1;
     for (i = 1; i <= n; ++i) {
@@ -187,44 +189,28 @@ void pascal_free(int *pas)
     delete[] pas;
 }
 
-/* Takes `list` with size `list_n` as a buffer (no assumptions on values in it)
-   and runs Eratosthenes sieve on it. Returns count of primes in list, which
-   stored in 0..list_n in the list. Max prime can be found is `list_n + 1`.
-
-   Example of usage:
-
-    int primes[12];
-    int primes_n = sieve(primes, ARRAY_SIZEOF(primes));
-    // So, max prime found is 13.
-*/
-int sieve(int *list, int list_n)
+void sieve(int n, std::vector<int> *primes)
 {
-    ARRAY_ZERO(list, list_n);
-    int i, j, w = 0;
-    int sqrt_n = (int)sqrt(list_n);
-    for (i = 0; i <= sqrt_n; ++i) {
-        if (!list[i]) {
-            int prime = i + 2;
-            /* The first index to go, -2 for index shift (don't 0 and 1 take
-               into account).
-               Start from square of prime p. Let's assume the opposite: there
-               is some composite m = p * j, m < p * p, hence j < p.  Therefore,
-               this j should have some prime divisor p' <= j < p and hence,
-               m should be rejected in the process for j.
-            */
-            int first = prime * prime - 2;
-            for (j = first; j < list_n; j += prime) {
-                list[j] = 1;
-            }
-        }
+  char *seq = new char[n + 1]();
+  // +1 for case of precise square of large magnitude. Don't sure if it's
+  // actually needed.
+  int sqrtn = (int)sqrt(n + 1);
+  int i;
+  for (i = 2; i <= sqrtn; i++) {
+    if (seq[i]) {
+      continue;
     }
-    // Copy primes to the beginning.
-    for (i = 0; i < list_n; i++) {
-        if (!list[i]) {
-            list[w++] = i + 2;
-        }
+    for (int j = i * i; j <= n; j += i) {
+      seq[j] = 1;
     }
-    return w;
+    primes->push_back(i);
+  }
+  for (; i <= n; i++) {
+    if (!seq[i]) {
+      primes->push_back(i);
+    }
+  }
+  delete[] seq;
 }
 
 // Function computing the floor of the square root, by Dijkstra

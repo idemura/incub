@@ -159,7 +159,7 @@ void invList(int *inv, int mod)
   }
 }
 
-// Pascal triangle for [0..n]. Memory should be freed by `pascal_free`.
+// Pascal triangle for [0..n]. Memory should be freed by `pascalFree`.
 int** pascal(int n)
 {
   int **pas = new int*[n + 1]();

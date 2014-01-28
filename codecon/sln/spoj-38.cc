@@ -13,20 +13,6 @@
 
 typedef long long int lli;
 
-int factorialTrailingZeroesNum(int n)
-{
-  int nz = 0;
-  int p5 = 5;
-  int max_p5 = INF / 5;
-  for (; p5 <= n; p5 *= 5) {
-    nz += n / p5;
-    if (p5 >= max_p5) {
-      break;
-    }
-  }
-  return nz;
-}
-
 char m[1004][1004];
 int mr, mc;
 

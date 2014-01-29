@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <map>
+#include <string>
 #include <vector>
 #include <utility>
 #include <math.h>
@@ -12,8 +13,10 @@
 #define INF 0x7fffffff
 
 typedef long long int lli;
+typedef std::vector<std::string> route_vec;
 
 int lcs_mem[84][84];
+
 int lcs(char *a, char *b)
 {
   memset(lcs_mem, 0, sizeof lcs_mem);
@@ -32,74 +35,53 @@ int lcs(char *a, char *b)
 }
 
 char a[84], b[84], buf[84];
-int cs;
+std::vector<route_vec> rm;
+int rm_ix[84][84];
 
-void printLCS()
+route_vec* newRouteV(int i, int j)
 {
-  int an = strlen(a);
-  int bn = strlen(b);
-  for (int i = 0; i <= an; i++) {
-    for (int j = 0; j <= bn; j++) {
-      printf("%3d", lcs_mem[i][j]);
-    }
-    printf("\n");
-  }
+  rm_ix[i][j] = rm.size();
+  rm.push_back(route_vec());
+  return &rm.back();
 }
 
-void routeRec(int i, int j, int iout)
+int routeRec(int i, int j, int iout)
 {
-  printf("In %d %d: %c %c\n", i, j, a[i-1], b[j-1]);
-  printf("%2d %2d\n", lcs_mem[i-1][j-1], lcs_mem[i-1][j]);
-  printf("%2d %2d\n", lcs_mem[i][j-1], lcs_mem[i][j]);
-  if (lcs_mem[i][j] < 0) {
-    // Already looked into it.
-    printf("return as visited\n");
-    printf("------ END\n");
-    return;
+  if (rm_ix[i][j]) {
+    return rm_ix[i][j];
   }
+
   if (!lcs_mem[i][j]) {
-    buf[iout] = 0;
-    cs++;
-    printf("print result\n");
-    printf("%s\n", buf);
-    printf("------ END\n");
-    return;
+    return 0;
   }
   int lcs_ij = lcs_mem[i][j];
-  lcs_mem[i][j] = -1;
   if (a[i - 1] == b[j - 1]) {
-    printf("ai == bj\n");
-    buf[iout] = a[i - 1];
-    routeRec(i - 1, j - 1, iout + 1);
+    int rvi = routeRec(i - 1, j - 1, iout + 1);
+    route_vec &rv = rm[rvi];
+    route_vec *new_rv = newRouteV(i, j);
+    for (int i = 0; i < rv.size(); i++) {
+      new_rv->push_back(rv[i] + a[i - 1]);
+    }
   } else {
-    int branches = 0;
-    int t = 0;
-    // Neighbors 2D indices.
-    int neighbor[][2] = {{i - 1, j}, {i, j - 1}};
     if (lcs_mem[i - 1][j] == lcs_mem[i][j - 1]) {
-      printf("neighbors are equal. chars: %c %c\n", a[i - 1], b[j - 1]);
-      assert(i >= 1 && j >= 1);
-      t = b[j - 1] < a[i - 1];
-    }
-    printf("t=%d, so: %d %d, %d %d\n", t, neighbor[t][0], neighbor[t][1],
-           neighbor[1-t][0], neighbor[1-t][1]);
-    int *ix = neighbor[t];
-    if (lcs_mem[ix[0]][ix[1]] == lcs_ij) {
-      printf("check branch 1\n");
-      routeRec(ix[0], ix[1], iout);
-      branches++;
-    }
-    ix = neighbor[1 - t];
-    if (lcs_mem[ix[0]][ix[1]] == lcs_ij) {
-      printf("check branch 2\n");
-      routeRec(ix[0], ix[1], iout);
-      branches++;
-    }
-    if (branches > 1) {
-      printf("branches %d\n", branches);
+      int rmi1 = routeRec(i - 1, j, iout);
+      int rmi2 = routeRec(i, j - 1, iout);
+      route_vec *new_rv = newRouteV(i, j);
+      new_rv->insert(new_rv->end(), rm[rmi1].begin(), rm[rmi1].end());
+      new_rv->insert(new_rv->end(), rm[rmi2].begin(), rm[rmi2].end());
+    } else {
+      int rmi = 0;
+      if (lcs_mem[i - 1][j] == lcs_ij) {
+        rmi = routeRec(i - 1, j, iout);
+      }
+      if (lcs_mem[i][j - 1] == lcs_ij) {
+        rmi = routeRec(i, j - 1, iout);
+      }
+      assert(rmi != 0);
+      rm_ix[i][j] = rmi;
     }
   }
-  printf("------ END\n");
+  return lcs_mem[i][j];
 }
 
 void revert(char *b, char *e)
@@ -113,12 +95,18 @@ void routes()
 {
   int an = strlen(a);
   int bn = strlen(b);
-  revert(a, a + an - 1);
-  revert(b, b + bn - 1);
+  // revert(a, a + an - 1);
+  // revert(b, b + bn - 1);
   lcs(a, b);
-  printLCS();
-  printf("lcs len %d\n", lcs_mem[an][bn]);
+  memset(rm_ix, 0, sizeof rm_ix);
+  rm.push_back(route_vec());
   routeRec(an, bn, 0);
+  route_vec rv = rm[rm_ix[an][bn]];
+  std::sort(rv.begin(), rv.end());
+  rv.erase(std::unique(rv.begin(), rv.end()), rv.end());
+  for (int i = 0; i < rv.size(); i++) {
+    printf("%s\n", rv[i].c_str());
+  }
 }
 
 int main(int argc, char **argv)
@@ -130,9 +118,7 @@ int main(int argc, char **argv)
   scanf("%d", &t);
   while (t-- > 0) {
     scanf("%s%s", a, b);
-    printf("%s\n%s\n", a, b);
     routes();
-    printf("%d\n", cs);
   }
   return 0;
 }

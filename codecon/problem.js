@@ -2,7 +2,7 @@
 
 function parens(n) {
   var parMem = [[''], ['()']];
-  var i, j, i1, j1;
+  var i, j;
 
   function combine(p1, p2, r) {
     var i1, n1 = p1.length, i2, n2 = p2.length;

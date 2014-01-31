@@ -1,3 +1,0 @@
-#!/bin/sh
-java -client -Dfile.encoding=utf-8 \
-     -jar $(dirname $0)/tree-0.1.0-standalone.jar $*

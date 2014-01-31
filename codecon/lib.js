@@ -149,39 +149,37 @@ function BIT(n) {
   this._length = n;
 }
 
-BIT.prototype = {
-  update: function(i, d) {
-    while (i < this._a.length) {
-      this._a[i] += d;
-      i += i & -i;
-    }
-  },
-
-  sum: function(i) {
-    var sum = 0;
-    while (i) {
-      sum += this._a[i];
-      i -= i & -i;
-    }
-    return sum;
-  },
-
-  // Although better method exists, this is OK. Handles border case.
-  get: function(i) {
-    var si = this.sum(i);
-    if (i > 1) {
-      si -= this.sum(i - 1);
-    }
-    return si;
-  },
-
-  toArray: function() {
-    var a = [];
-    for (var i = 1, l = this._a.length; i < l; i++) {
-      a[i - 1] = this.sum(i);
-    }
-    return a;
+BIT.prototype.update = function(i, d) {
+  while (i < this._a.length) {
+    this._a[i] += d;
+    i += i & -i;
   }
+};
+
+BIT.prototype.sum = function(i) {
+  var sum = 0;
+  while (i) {
+    sum += this._a[i];
+    i -= i & -i;
+  }
+  return sum;
+};
+
+// Although better method exists, this is OK. Handles border case.
+BIT.prototype.get = function(i) {
+  var si = this.sum(i);
+  if (i > 1) {
+    si -= this.sum(i - 1);
+  }
+  return si;
+};
+
+BIT.prototype.toArray = function() {
+  var a = [];
+  for (var i = 1, l = this._a.length; i < l; i++) {
+    a[i - 1] = this.sum(i);
+  }
+  return a;
 };
 
 // Generates combinations by `k` of array `as` and calls `callback` on every.

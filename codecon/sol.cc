@@ -12,108 +12,197 @@
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
 #define INF 0x7fffffff
 
+const int DIM = 92;
+const int HASH_MOD = 7789;
+
 typedef long long int lli;
-typedef std::vector<std::string> route_vec;
 
-int lcs_mem[84][84];
+// This string has manual memory control to have cheap copy.
+struct String {
+  static std::vector<char*> str_mem;
 
-int lcs(char *a, char *b)
+  char *s;
+  int length;
+  int hash;
+
+  String(): s(new char[DIM]), length(), hash()
+  {
+    str_mem.push_back(s);
+  }
+
+  void append(char c)
+  {
+    s[length++] = c;
+    s[length] = 0;
+    hash = ((hash << 8) + c) % HASH_MOD;
+  }
+
+  void freeMem()
+  {
+    delete[] s;
+    s = NULL;
+    length = 0;
+  }
+
+  static void freeAllMem()
+  {
+    for (int i = 0; i < str_mem.size(); i++) {
+      delete[] str_mem[i];
+    }
+    str_mem.clear();
+  }
+
+  int hashCompareTo(const String &str) const
+  {
+    if (hash == str.hash) {
+      return strcmp(s, str.s);
+    } else {
+      return hash - str.hash;
+    }
+  }
+
+  bool operator<(const String &str) const
+  {
+    return strcmp(s, str.s) < 0;
+  }
+};
+
+std::vector<char*> String::str_mem;
+
+struct LcsRoute {
+  std::vector<String> rs;
+  int length;
+
+  LcsRoute(): length() {}
+
+  void clear()
+  {
+    length = 0;
+    rs.clear();
+  }
+
+  void merge(const LcsRoute &v1, const LcsRoute &v2)
+  {
+    printf("in merge %d %d\n", v1.length, v2.length);
+    length = std::max(v1.length, v2.length);
+    if (v1.length == v2.length) {
+      printf("  equal lcs length\n");
+      int i = 0, j = 0;
+      for (; i < v1.rs.size() && j < v2.rs.size();) {
+        int order = v1.rs[i].hashCompareTo(v2.rs[j]);
+        if (order <= 0) {
+          printf("  merged: %s\n", v1.rs[i].s);
+          rs.push_back(v1.rs[i]);
+          i++;
+          if (order == 0) {
+            j++;
+          }
+        } else {
+          printf("  merged: %s\n", v2.rs[i].s);
+          rs.push_back(v2.rs[j]);
+          j++;
+        }
+      }
+      for (; i < v1.rs.size(); i++) {
+        printf("  merged: %s\n", v1.rs[i].s);
+        rs.push_back(v1.rs[i]);
+      }
+      for (; j < v2.rs.size(); j++) {
+        printf("  merged: %s\n", v2.rs[i].s);
+        rs.push_back(v2.rs[j]);
+      }
+    } else {
+      // We could avoid copying, but 1000 possibly is not that big.
+      if (v1.length == length) {
+        printf("  take v1 %d\n", v1.length);
+        rs = v1.rs;
+      } else {
+        printf("  take v2 %d\n", v2.length);
+        rs = v2.rs;
+      }
+    }
+
+    printf("after merge: %d\n", length);
+    for (int i = 0; i < rs.size(); i++) {
+      printf("  %s\n", rs[i].s);
+    }
+  }
+
+  void append(const LcsRoute &lr, char c)
+  {
+    length = lr.length + 1;
+    rs = lr.rs;  // Copy, but seems to be necessary.
+    if (rs.size() == 0) {
+      String s;
+      s.append(c);
+      rs.push_back(s);
+      printf("new string: %s\n", s.s);
+    } else {
+      printf("append %c:\n", c);
+      for (int i = 0; i < rs.size(); i++) {
+        printf("  append to %s\n", rs[i].s);
+        // assert(rs[i].length == length);
+        rs[i].append(c);
+      }
+    }
+
+    printf("after append: %d\n", length);
+    for (int i = 0; i < rs.size(); i++) {
+      printf("  %s\n", rs[i].s);
+    }
+  }
+
+  void sort()
+  {
+    std::sort(rs.begin(), rs.end());
+    // rs.erase(std::unique(rs.begin(), rs.end()), rs.end());
+  }
+};
+
+// Two rows of LCS matrix.
+LcsRoute lcs(char *a, char *b)
 {
-  memset(lcs_mem, 0, sizeof lcs_mem);
+  LcsRoute rv[2][DIM];
   int an = strlen(a);
   int bn = strlen(b);
+  int f = 0;
   for (int i = 1; i <= an; i++) {
+    printf("-------- %d\n", i);
     for (int j = 1; j <= bn; j++) {
+      rv[1 - f][j].clear();
       if (a[i - 1] == b[j - 1]) {
-        lcs_mem[i][j] = lcs_mem[i - 1][j - 1] + 1;
+        printf("append %d\n", j);
+        if (i == 3 && j == 2) {
+        }
+        rv[1 - f][j].append(rv[f][j - 1], a[i - 1]);
       } else {
-        lcs_mem[i][j] = std::max(lcs_mem[i - 1][j], lcs_mem[i][j - 1]);
+        printf("merge %d\n", j);
+        rv[1 - f][j].merge(rv[1 - f][j - 1], rv[f][j]);
       }
     }
+    f = 1 - f;
   }
-  return lcs_mem[an][bn];
+  rv[f][bn].sort();
+  return rv[f][bn];
 }
 
-char a[84], b[84], buf[84];
-std::vector<route_vec> rm;
-int rm_ix[84][84];
-
-route_vec* newRouteV(int i, int j)
-{
-  rm_ix[i][j] = rm.size();
-  rm.push_back(route_vec());
-  return &rm.back();
-}
-
-int routeRec(int i, int j, int iout)
-{
-  if (rm_ix[i][j]) {
-    return rm_ix[i][j];
-  }
-
-  if (!lcs_mem[i][j]) {
-    return 0;
-  }
-  int lcs_ij = lcs_mem[i][j];
-  if (a[i - 1] == b[j - 1]) {
-    int rvi = routeRec(i - 1, j - 1, iout + 1);
-    route_vec &rv = rm[rvi];
-    route_vec *new_rv = newRouteV(i, j);
-    for (int i = 0; i < rv.size(); i++) {
-      new_rv->push_back(rv[i] + a[i - 1]);
-    }
-  } else {
-    if (lcs_mem[i - 1][j] == lcs_mem[i][j - 1]) {
-      int rmi1 = routeRec(i - 1, j, iout);
-      int rmi2 = routeRec(i, j - 1, iout);
-      route_vec *new_rv = newRouteV(i, j);
-      new_rv->insert(new_rv->end(), rm[rmi1].begin(), rm[rmi1].end());
-      new_rv->insert(new_rv->end(), rm[rmi2].begin(), rm[rmi2].end());
-    } else {
-      int rmi = 0;
-      if (lcs_mem[i - 1][j] == lcs_ij) {
-        rmi = routeRec(i - 1, j, iout);
-      }
-      if (lcs_mem[i][j - 1] == lcs_ij) {
-        rmi = routeRec(i, j - 1, iout);
-      }
-      assert(rmi != 0);
-      rm_ix[i][j] = rmi;
-    }
-  }
-  return lcs_mem[i][j];
-}
-
-void revert(char *b, char *e)
-{
-  for (; b < e; b++, e--) {
-    std::swap(*b, *e);
-  }
-}
+char a[84], b[84];
 
 void routes()
 {
-  int an = strlen(a);
-  int bn = strlen(b);
-  // revert(a, a + an - 1);
-  // revert(b, b + bn - 1);
-  lcs(a, b);
-  memset(rm_ix, 0, sizeof rm_ix);
-  rm.push_back(route_vec());
-  routeRec(an, bn, 0);
-  route_vec rv = rm[rm_ix[an][bn]];
-  std::sort(rv.begin(), rv.end());
-  rv.erase(std::unique(rv.begin(), rv.end()), rv.end());
-  for (int i = 0; i < rv.size(); i++) {
-    printf("%s\n", rv[i].c_str());
+  const LcsRoute &lr = lcs(a, b);
+  // printf("%d\n", r.length);
+  for (int i = 0; i < lr.rs.size(); i++) {
+    printf("%s\n", lr.rs[i].s);
   }
+  String::freeAllMem();
 }
 
 int main(int argc, char **argv)
 {
-// #ifndef ONLINE_JUDGE
-//   freopen("in", "r", stdin);
-// #endif
+#ifndef ONLINE_JUDGE
+  freopen("in", "r", stdin);
+#endif
   int t = 0;
   scanf("%d", &t);
   while (t-- > 0) {

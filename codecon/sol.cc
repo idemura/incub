@@ -14,59 +14,65 @@
 
 typedef long long int lli;
 
-struct Name {
-  char s[12];
-};
+int counter[26];
+int mat[26][26];
 
-struct Edge {
-  int c;  // City index in adjacency matrix.
-  int w;  // Edge weight.
-  Edge(): c(), w() {}
-};
-
-int cities_n;
-Name *names;
-Edge **edges;
-int *edge_n;
-
-int
-void readAndSolve()
+// Floyd-Warshall works just good.
+void FW()
 {
-  scanf("%d", &cities_n);
-  names = new Name[cities_n]();
-  edges = new Edge*[cities_n]();
-  edge_num = new int[cities_n]();
-  for (int cn = 0; cn < cities_n; cn++) {
-    scanf("%s%d", names[i].s, &edge_n[cn]);
-    for (int i = 0; i < edge_n[cn]; i++) {
-      scanf("%d%d", &edges[i].c, &edges[i].w);
-      edges[i].c--;  // 1-base in input.
+  for (int i = 0; i < 26; i++) {
+    for (int j = 0; j < 26; j++) {
+      for (int k = 0; k < 26; k++) {
+        mat[i][j] = mat[i][j]? 1: mat[i][k] && mat[k][j];
+      }
     }
   }
-
-  int pairs;
-  scanf("%d", &pairs);
-  for (int i = 0; i< pairs; i++) {
-    char s_name[12], d_name[12];
-    scanf("%s%s", s_name, d_name);
-
-  }
-  for (int i = 0; i < cities_n; i++) {
-    delete[] edges[i];
-  }
-  delete[] edges;
-  delete[] names;
 }
 
 int main(int argc, char **argv)
 {
-#ifndef ONLINE_JUDGE
-  freopen("in", "r", stdin);
-#endif
-  int t = 0;
+// #ifndef ONLINE_JUDGE
+//   freopen("in", "r", stdin);
+// #endif
+  int t = 0, n;
   scanf("%d", &t);
   while (t-- > 0) {
-    readAndSolve();
+    memset(counter, 0, sizeof counter);
+    memset(mat, 0, sizeof mat);
+    scanf("%d", &n);
+    char buf[1024];
+    for (int i = 0; i < n; i++) {
+      scanf("%s", buf);
+      int i0 = buf[0] - 'a';
+      int i1 = buf[strlen(buf)-1] - 'a';
+      counter[i0]++;
+      counter[i1]--;
+      mat[i0][i1] = mat[i1][i0] = 1;
+    }
+    int n0 = 0, i0 = -1, n1 = 0, i1 = -1, others = 0;
+    for (int i = 0; i < 26; i++) {
+      if (counter[i] == -1) {
+        n0++;
+        i0 = i;
+      } else if (counter[i] == 1) {
+        n1++;
+        i1 = i;
+      } else if (counter[i] != 0) {
+        others++;
+      }
+    }
+    bool possible = false;
+    if (n0 <= 1 && n1 <= 1 && others == 0) {
+      FW();
+      int accessible = 1;
+      for (int i = 0; i < 26; i++)
+      if
+      if (n0 == 1 && n1)
+    } && FW()) {
+      printf("Ordering is possible.\n");
+    } else {
+      printf("The door cannot be opened.\n");
+    }
   }
   return 0;
 }

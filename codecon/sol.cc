@@ -14,18 +14,85 @@
 
 typedef long long int lli;
 
-int counter[26];
-int mat[26][26];
+const int DIM = 26;
+int counter[DIM];
+int mat[DIM][DIM];
+int visited[DIM];
 
-// Floyd-Warshall works just good.
-void FW()
+void clear()
 {
-  for (int i = 0; i < 26; i++) {
-    for (int j = 0; j < 26; j++) {
-      for (int k = 0; k < 26; k++) {
-        mat[i][j] = mat[i][j]? 1: mat[i][k] && mat[k][j];
-      }
+  for (int i = 0; i < DIM; i++) {
+    counter[i] = visited[i] = 0;
+    for (int j = 0; j < DIM; j++) {
+      mat[i][j] = 0;
     }
+  }
+}
+
+// Get connected component vertex count.
+int connectedComponent(int v, int depth)
+{
+  if (visited[v]) {
+    return 0;
+  }
+  visited[v] = 1;
+  int cc_num = 1;
+  for (int i = 0; i < DIM; i++) {
+    if (mat[v][i]) {
+      cc_num += connectedComponent(i, depth+1);
+    }
+  }
+  return cc_num;
+}
+
+void solve()
+{
+  static const char kPossible[] = "Ordering is possible.";
+  static const char kImpossible[] = "The door cannot be opened.";
+
+  clear();
+  int n;
+  scanf("%d", &n);
+  char buf[1024];
+  // `first` is some vertex in the indirected graph. We will check if whole
+  // graph is a connected component.
+  int first = -1, alpha_num = 0;
+  for (int i = 0; i < n; i++) {
+    scanf("%s", buf);
+    int i0 = buf[0] - 'a';
+    int i1 = buf[strlen(buf)-1] - 'a';
+    alpha_num++;
+    counter[i0]++;
+    counter[i1]--;
+    // Add edge into adjacency matrix of indirected graph:
+    mat[i0][i1] = mat[i1][i0] = 1;
+    if (first < 0) {
+      // The vertex we will start connected components search.
+      first = i0;
+    }
+  }
+  int n0 = 0, n1 = 0, others = 0;
+  for (int i = 0; i < 26; i++) {
+    if (counter[i] == -1) {
+      n0++;
+    } else if (counter[i] == 1) {
+      n1++;
+    } else if (counter[i] != 0) {
+      others++;
+      break;  // Others have to be 0, can break now.
+    }
+  }
+  if (n0 <= 1 && n1 <= 1 && others == 0) {
+    // We could have inaccessible components of the graph. Check the graph is
+    // connected.
+    int cc_size = connectedComponent(first, 0);
+    if (cc_size == alpha_num) {
+      printf("%s\n", kPossible);
+    } else {
+      printf("%s\n", kImpossible);
+    }
+  } else {
+    printf("%s\n", kImpossible);
   }
 }
 
@@ -34,45 +101,10 @@ int main(int argc, char **argv)
 // #ifndef ONLINE_JUDGE
 //   freopen("in", "r", stdin);
 // #endif
-  int t = 0, n;
+  int t = 0;
   scanf("%d", &t);
-  while (t-- > 0) {
-    memset(counter, 0, sizeof counter);
-    memset(mat, 0, sizeof mat);
-    scanf("%d", &n);
-    char buf[1024];
-    for (int i = 0; i < n; i++) {
-      scanf("%s", buf);
-      int i0 = buf[0] - 'a';
-      int i1 = buf[strlen(buf)-1] - 'a';
-      counter[i0]++;
-      counter[i1]--;
-      mat[i0][i1] = mat[i1][i0] = 1;
-    }
-    int n0 = 0, i0 = -1, n1 = 0, i1 = -1, others = 0;
-    for (int i = 0; i < 26; i++) {
-      if (counter[i] == -1) {
-        n0++;
-        i0 = i;
-      } else if (counter[i] == 1) {
-        n1++;
-        i1 = i;
-      } else if (counter[i] != 0) {
-        others++;
-      }
-    }
-    bool possible = false;
-    if (n0 <= 1 && n1 <= 1 && others == 0) {
-      FW();
-      int accessible = 1;
-      for (int i = 0; i < 26; i++)
-      if
-      if (n0 == 1 && n1)
-    } && FW()) {
-      printf("Ordering is possible.\n");
-    } else {
-      printf("The door cannot be opened.\n");
-    }
+  for (; t > 0; --t) {
+    solve();
   }
   return 0;
 }

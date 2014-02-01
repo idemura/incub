@@ -4,11 +4,21 @@ import java.io.PrintWriter;
 import java.util.*;
 
 public class Main {
-  public static void main(String[] args) throws Exception {
+  static void solve() throws Exception {
   }
 
-  private static StdInputScanner sc = new StdInputScanner();
-  private static PrintWriter writer = new PrintWriter(System.out);
+  public static void main(String[] args) throws Exception {
+    try {
+      for (int t = in.readInt(); t > 0; --t) {
+        solve();
+      }
+    } finally {
+      out.close();
+    }
+  }
+
+  private static StdInputScanner in = new StdInputScanner();
+  private static PrintWriter out = new PrintWriter(System.out);
 
   static class StdInputScanner {
     public StdInputScanner() {

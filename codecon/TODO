@@ -6,3 +6,4 @@ LCS: enumerate all sequences of max length
 Min heap C++ template class
 Matrix K-th min element if columns and rows are ordered
 Radix sort
+Chinese remainder theorem

@@ -14,100 +14,73 @@
 
 typedef long long int lli;
 
-const int DIM = 26;
-int mat[DIM][DIM];
-int visited[DIM];
+// Values of sequence we know.
+int vs[120];
+int vs_n, extra_n;
 
-void clear()
+// Use Newton form method.
+int gcd(int a, int b)
 {
-  for (int i = 0; i < DIM; i++) {
-    visited[i] = 0;
-    for (int j = 0; j < DIM; j++) {
-      mat[i][j] = 0;
-    }
+  if (a < 0) a = -a;
+  if (b < 0) b = -b;
+  while (b != 0) {
+    int t = a % b;
+    a = b;
+    b = t;
   }
+  return a;
 }
 
-// Get connected component vertex count.
-int connectedComponent(int v, int depth)
+int mulDiv(int x, int m1, int d1, int m2, int d2)
 {
-  if (visited[v]) {
-    return 0;
-  }
-  visited[v] = 1;
-  int cc_num = 1;
-  for (int i = 0; i < DIM; i++) {
-    if (mat[v][i]) {
-      cc_num += connectedComponent(i, depth+1);
+  return (int)((lli)x * m1 * m2 / d1 / d2);
+}
+
+int extrapolate(int x)
+{
+  const int kMax = 20000000;
+  int s = 0, n = 1, d = 1;
+  // Skip first because it will zero `k`.
+  for (int i = 1; i < vs_n; i++) {
+    n *= x - i - 1;
+    d *= -i;
+    if (n > kMax) {
+      int g = gcd(n, d);
+      n /= g;
+      d /= g;
     }
   }
-  return cc_num;
+  int k = n / d;
+  // Now we can do incrementally: add summand, modify coefficient.
+  for (int i = 0; ; i++) {
+    s += k * vs[i];
+    // We know that `md` is a divisor of `k`, so can divide and than multiply
+    // without concerns about overflow or remainders.
+    int xi = x - i - 1;
+    int ii = i + 1;
+    if (ii == vs_n) break;
+    k = mulDiv(k, xi, xi - 1, ii - vs_n, ii);
+  }
+  return s;
 }
 
 void solve()
 {
-  static const char kPossible[] = "Ordering is possible.";
-  static const char kImpossible[] = "The door cannot be opened.";
-
-  clear();
-  int n;
-  scanf("%d", &n);
-  char buf[1024];
-  // `first` is some vertex in the indirected graph. We will check if whole
-  // graph is a connected component.
-  int first = -1, alpha_num = 0, alpha[DIM] = {};
-  int counter[DIM] = {};
-  for (int i = 0; i < n; i++) {
-    scanf("%s", buf);
-    int i0 = buf[0] - 'a';
-    int i1 = buf[strlen(buf)-1] - 'a';
-    if (!alpha[i0]) {
-      alpha[i0] = 1;
-      alpha_num++;
-    }
-    if (!alpha[i1]) {
-      alpha[i1] = 1;
-      alpha_num++;
-    }
-    counter[i0]++;
-    counter[i1]--;
-    // Add edge into adjacency matrix of indirected graph:
-    mat[i0][i1] = mat[i1][i0] = 1;
-    if (first < 0) {
-      // The vertex we will start connected components search.
-      first = i0;
-    }
+  scanf("%d%d", &vs_n, &extra_n);
+  for (int i = 0; i < vs_n; i++) {
+    scanf("%d", &vs[i]);
   }
-  int n0 = 0, n1 = 0, others = 0;
-  for (int i = 0; i < 26; i++) {
-    if (counter[i] == -1) {
-      n0++;
-    } else if (counter[i] == 1) {
-      n1++;
-    } else if (counter[i] != 0) {
-      others++;
-      break;  // Others have to be 0, can break now.
-    }
+  for (int i = 1; i <= extra_n; i++) {
+    printf("%d ", extrapolate(i + vs_n));
   }
-  if (n0 <= 1 && n1 <= 1 && others == 0) {
-    // We could have inaccessible components of the graph. Check the graph is
-    // connected.
-    int cc_size = connectedComponent(first, 0);
-    if (cc_size == alpha_num) {
-      printf("%s\n", kPossible);
-    } else {
-      printf("%s\n", kImpossible);
-    }
-  } else {
-    printf("%s\n", kImpossible);
-  }
+  printf("\n");
 }
 
 int main(int argc, char **argv)
 {
-// #ifndef ONLINE_JUDGE
-//   freopen("in", "r", stdin);
-// #endif
+#ifndef ONLINE_JUDGE
+  freopen("in", "r", stdin);
+#endif
   int t = 0;
   scanf("%d", &t);
   for (; t > 0; --t) {

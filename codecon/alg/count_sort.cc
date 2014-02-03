@@ -7,7 +7,7 @@
 
 typedef long long int lli;
 
-void swap(lli* p1, lli* p2)
+void swap(lli *p1, lli *p2)
 {
     lli tmp = *p1;
     *p1 = *p2;

@@ -35,11 +35,12 @@ lli Cnk(int n, int k)
     cs[i] = n - i;
   }
   for (int j = k; j > 1; j--) {
-    int dj = n % j, d = j;
-    for (; d > 1; dj += j) {
-      int g = gcd(cs[dj], d);
+    int d = j;
+    for (int i = 0; d > 1; ++i) {
+      if (cs[i] == 1) continue;
+      int g = gcd(cs[i], d);
       if (g > 1) {
-        cs[dj] /= g;
+        cs[i] /= g;
         d /= g;
       }
     }
@@ -78,9 +79,9 @@ void solve()
 
 int main(int argc, char **argv)
 {
-#ifndef ONLINE_JUDGE
-  freopen("in", "r", stdin);
-#endif
+// #ifndef ONLINE_JUDGE
+//   freopen("in", "r", stdin);
+// #endif
   int t = 0;
   scanf("%d", &t);
   for (; t > 0; --t) {

@@ -84,12 +84,11 @@ int main(int argc, char **argv)
 // #ifndef ONLINE_JUDGE
 //     freopen("in", "r", stdin);
 // #endif
-  int T;
-  scanf("%d", &T);
-
   static char sn[1000008];
+  int t;
+  scanf("%d", &t);
   char *p = sn + 4;
-  for (int i = 0; i < T; i++) {
+  for (; t-- > 0;) {
     scanf("%s", p);
     printf("%s\n", nextPal(p));
   }

@@ -196,7 +196,7 @@ int main(int argc, char **argv)
 // #endif
   int t = 0;
   scanf("%d", &t);
-  while (t-- > 0) {
+  for (; t-- > 0;) {
     scanf("%s%s", a, b);
     routes();
   }

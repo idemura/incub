@@ -67,9 +67,9 @@ int main(int argc, char **argv)
   std::vector<int> primes;
   sieve(32000, &primes);
 
-  int T = 0, n, m;
-  scanf("%d", &T);
-  for (int i = 0; i < T; i++) {
+  int t = 0, n, m;
+  scanf("%d", &t);
+  for (; t-- > 0;) {
     scanf("%d%d", &m, &n);
     printPrimesIn(primes, m, n);
   }

@@ -110,7 +110,7 @@ int main(int argc, char **argv)
 // #endif
   int t = 0;
   scanf("%d", &t);
-  for (; t > 0; --t) {
+  for (; t-- > 0;) {
     solve();
   }
   return 0;

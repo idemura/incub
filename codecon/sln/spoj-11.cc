@@ -32,9 +32,9 @@ int main(int argc, char **argv)
 // #ifndef ONLINE_JUDGE
 //   freopen("in", "r", stdin);
 // #endif
-  int T = 0, n;
-  scanf("%d", &T);
-  for (; T-- > 0; ) {
+  int t = 0, n;
+  scanf("%d", &t);
+  for (; t-- > 0;) {
     scanf("%d", &n);
     printf("%d\n", factorialTrailingZeroesNum(n));
   }

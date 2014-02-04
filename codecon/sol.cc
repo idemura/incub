@@ -37,7 +37,9 @@ lli Cnk(int n, int k)
   for (int j = k; j > 1; j--) {
     int d = j;
     for (int i = 0; d > 1; ++i) {
-      if (cs[i] == 1) continue;
+      if (cs[i] == 1) {
+        continue;
+      }
       int g = gcd(cs[i], d);
       if (g > 1) {
         cs[i] /= g;

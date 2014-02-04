@@ -25,7 +25,7 @@ int gcd(int a, int b)
   return a;
 }
 
-int cs[500000];  // It's too much though.
+int cs[500000];  // Pessimistic estimation.
 lli Cnk(int n, int k)
 {
   if (n - k < k) {

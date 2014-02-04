@@ -191,9 +191,9 @@ void routes()
 
 int main(int argc, char **argv)
 {
-#ifndef ONLINE_JUDGE
-  freopen("in", "r", stdin);
-#endif
+// #ifndef ONLINE_JUDGE
+//   freopen("in", "r", stdin);
+// #endif
   int t = 0;
   scanf("%d", &t);
   while (t-- > 0) {

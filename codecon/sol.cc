@@ -22,10 +22,10 @@ int gcd(int a, int b)
     a = b;
     b = t;
   }
-  return true;
+  return a;
 }
 
-int cs[500000];  // It's too much tough:)
+int cs[500000];  // It's too much though.
 lli Cnk(int n, int k)
 {
   if (n - k < k) {

@@ -69,9 +69,9 @@ void solve()
 
 int main(int argc, char **argv)
 {
-#ifndef ONLINE_JUDGE
-  freopen("in", "r", stdin);
-#endif
+// #ifndef ONLINE_JUDGE
+//   freopen("in", "r", stdin);
+// #endif
   int t = 0;
   scanf("%d", &t);
   for (; t > 0; --t) {

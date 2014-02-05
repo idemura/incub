@@ -67,9 +67,9 @@ int main(int argc, char **argv)
 // #ifndef ONLINE_JUDGE
 //   freopen("in", "r", stdin);
 // #endif
-  int T = 0, a, b, c;
-  scanf("%d", &T);
-  for (; T-- > 0; ) {
+  int t = 0, a, b, c;
+  scanf("%d", &t);
+  for (; t-- > 0;) {
     scanf("%d%d%d", &a, &b, &c);
     printf("%d\n", solve(a, b, c));
   }

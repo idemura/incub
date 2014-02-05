@@ -14,28 +14,6 @@
 
 typedef long long int lli;
 
-void solve()
-{
-  int n, k, x;
-  scanf("%d%d", &n, &k);
-  int mods[11] = {};
-  for (int i = 0; i < n; i++) {
-    scanf("%d", &x);
-    mods[x % (k + 1)]++;
-  }
-  bool possible = false;
-  for (int i = 0; i <= k; i++) {
-    if (mods[i] >= n - 1) {
-      possible = true;
-      break;
-    }
-  }
-  printf("%s\n", possible? "YES": "NO");
-}
-
-// Transformation in the problem can be replaced with: we can add k+1, can we
-// achieve n-1 equal numbers? Since we can add only (k+1) it is possible if we
-// have at least n-1 equal mods by k+1.
 int main(int argc, char **argv)
 {
 // #ifndef ONLINE_JUDGE
@@ -43,8 +21,19 @@ int main(int argc, char **argv)
 // #endif
   int t = 0;
   scanf("%d", &t);
-  for (; t-- > 0;) {
-    solve();
+  int test_case[102], max = 0;
+  for (int i = 0; i < t; i++) {
+    scanf("%d", &test_case[i]);
+    if (test_case[i] > max) {
+      max = test_case[i];
+    }
+  }
+  ln[1][0] = ln_n[1] = 1;
+  for (int i = 2; i <= max; i++) {
+    mult(i - 1, i, i);
+  }
+  for (int i = 0; i < t; i++) {
+    printNum(test_case[i]);
   }
   return 0;
 }

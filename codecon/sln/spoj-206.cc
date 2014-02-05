@@ -63,9 +63,9 @@ int main(int argc, char **argv)
 // #ifndef ONLINE_JUDGE
 //   freopen("in", "r", stdin);
 // #endif
-  int T = 0;
-  scanf("%d", &T);
-  for (; T-- > 0; ) {
+  int t = 0;
+  scanf("%d", &t);
+  for (; t-- > 0;) {
     scanf("%d%d", &n, &m);
     char str[200] = {};
     std::vector<I2d> b;

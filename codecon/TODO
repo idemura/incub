@@ -1,6 +1,6 @@
 Floyd-Warshall with paths
 Rabin-Karp and rolling hash (max common substring of strings)
-Convex hull: Jarvis and possibly others
+Convex hull: Jarvis and others
 Hungarian algorithm
 LCS: enumerate all sequences of max length
 Min heap C++ template class
@@ -8,3 +8,5 @@ Matrix K-th min element if columns and rows are ordered
 Radix sort
 Chinese remainder theorem
 Josephus problem
+Newton interpolation polynomial
+Newton (tangents) method

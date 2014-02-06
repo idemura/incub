@@ -74,6 +74,14 @@ public class Main {
       return Integer.parseInt(readString());
     }
 
+    public long readLong() throws Exception {
+      return Long.parseLong(readString());
+    }
+
+    public char readChar() throws Exception {
+      throw new Exception("Not implemented!");
+    }
+
     public String readString() throws Exception {
       if (!readNextLine()) {
         throw new Exception("StdIn EOF");

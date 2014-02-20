@@ -10,9 +10,12 @@
 
 using namespace std;
 
+// Good article with formula proof can be found at:
+// http://neerc.ifmo.ru/wiki/index.php?title=%D0%9A%D0%BE%D0%B4%D1%8B_%D0%93%D1%80%D0%B5%D1%8F
+
 typedef unsigned int uint;
 
-void gray_list(int n, vector<int>* v_in)
+void grayList(int n, vector<int>* v_in)
 {
   vector<int>& v = *v_in;
   int pn = 1 << n;
@@ -44,12 +47,12 @@ string binary(int n, int width)
 // It's important that type is unsigned, because it relies on the fact that
 // after shift right, 0 appears in MSB.
 // Details at http://e-maxx.ru/algo/gray_code.
-uint encode_gray(uint n)
+uint encodeGray(uint n)
 {
   return n ^ (n >> 1);
 }
 
-uint decode_gray(uint g)
+uint decodeGray(uint g)
 {
   uint n = 0;
   for (; g; g >>= 1) {
@@ -62,12 +65,12 @@ int main()
 {
   int n = 3;
   vector<int> gs;
-  gray_list(n, &gs);
+  grayList(n, &gs);
   for (int i = 0; i < gs.size(); i++) {
-    int g = encode_gray(i);
+    int g = encodeGray(i);
     printf("%s -> %s / %s - %s\n", binary(i, n).c_str(),
            binary(gs[i], n).c_str(),
-           binary(g, n).c_str(), binary(decode_gray(g), n).c_str());
+           binary(g, n).c_str(), binary(decodeGray(g), n).c_str());
   }
   return 0;
 }

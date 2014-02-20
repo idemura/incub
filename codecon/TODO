@@ -1,4 +1,5 @@
 Rabin-Karp and rolling hash (max common substring of strings)
+Knuth-Morris-Pratt and suffix function
 Convex hull: Jarvis and others
 Hungarian algorithm
 Min heap C++ template class with index (remove op)

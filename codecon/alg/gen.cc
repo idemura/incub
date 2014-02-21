@@ -7,8 +7,6 @@
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
 #define INF 0x7fffffff
 
-using namespace std;
-
 #define DIM 3
 
 int generate(int max_value)

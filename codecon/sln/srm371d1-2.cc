@@ -10,7 +10,7 @@
 #include <stdlib.h>
 
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
-#define INF 0x3fffffff
+#define INF 0x7fffffff
 
 typedef long long int lli;
 

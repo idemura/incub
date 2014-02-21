@@ -10,13 +10,13 @@
 #include <stdlib.h>
 
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
-#define INF 0x3fffffff
+#define INF 0x7fffffff
 
 typedef long long int lli;
 
 template<class T>
 class OperatorLess {
- public:
+public:
   bool operator()(const T &l, const T &r) const
   {
     return l < r;
@@ -24,88 +24,149 @@ class OperatorLess {
 };
 
 template<class T, class Cmp = OperatorLess<T> >
-class MinHeap {
- public:
-  explicit MinHeap(const Cmp &cmp = Cmp()): cmp(cmp) {}
+class Heap {
+public:
+  typedef T ValueT;
 
-  void insert(T val)
+  explicit Heap(const Cmp &cmp = Cmp()): cmp(cmp) {}
+
+  void insert(const T &val, size_t *index = NULL)
   {
-    v.push_back(val);
-    for (size_t i = v.size() - 1; i > 0;) {
-      size_t p = (i - 1) / 2;
-      if (cmp(v[p], v[i])) {
-        break;
-      }
-      std::swap(v[p], v[i]);
-      i = p;
-    }
+    h.push_back(Elem(val, index));
+    setIndex(h.size() - 1);
+    heapifyParent(h.size() - 1);
     // check();
   }
 
   T popMin()
   {
-    assert(v.size() > 0);
-    const T min_val = v[0];
-    v[0] = v[v.size() - 1];
-    v.pop_back();
-    for (size_t i = 0; i < v.size();) {
-      size_t jmin = i, k;
-      k = 2 * i + 1;
-      if (k < v.size() && cmp(v[k], v[jmin])) {
-        jmin = k;
+    return remove(0);
+  }
+
+  T remove(size_t i)
+  {
+    // Swap i-th and last and restore heap property (heapify). If the last
+    // element was less than i-th, restore up, else - restore down.
+    assert(i < h.size());
+    h[i].setIndex(kNoIndex);
+    const T val = h[i].val;
+    bool last_is_less = less(h.size() - 1, i);
+    h[i] = h[h.size() - 1];
+    setIndex(i);
+    h.pop_back();
+    if (last_is_less) {
+      heapifyParent(i);
+    } else {
+      for (; ;) {
+        size_t kmin = i, k;
+        k = 2 * i + 1;
+        if (k < h.size() && less(k, kmin)) {
+          kmin = k;
+        }
+        k = 2 * i + 2;
+        if (k < h.size() && less(k, kmin)) {
+          kmin = k;
+        }
+        if (kmin != i) {
+          std::swap(h[kmin], h[i]);
+          setIndex(i);
+          setIndex(kmin);
+          i = kmin;
+        } else {
+          break;
+        }
       }
-      k = 2 * i + 2;
-      if (k < v.size() && cmp(v[k], v[jmin])) {
-        jmin = k;
-      }
-      if (jmin == i) {
-        break;
-      }
-      std::swap(v[i], v[jmin]);
-      i = jmin;
     }
     // check();
-    return min_val;
+    return val;
   }
 
   size_t size() const
   {
-    return v.size();
+    return h.size();
   }
 
   void check() const
   {
-    for (size_t i = 1; i < v.size(); i++) {
+    for (size_t i = 1; i < h.size(); i++) {
       size_t p = (i - 1) / 2;
-      if (cmp(v[i], v[p])) {
+      if (less(i, p)) {
         printf("*** Heap corrupted at %zu (parent %zu)\n", i, p);
       }
     }
   }
 
- private:
+private:
+  struct Elem {
+    T val;
+    size_t *index;
+
+    Elem(const T& val, size_t *index): val(val), index(index) {
+      setIndex(kNoIndex);
+    }
+
+    void setIndex(size_t i)
+    {
+      if (index) *index = i;
+    }
+  };
+
+  void setIndex(size_t i)
+  {
+    h[i].setIndex(i);
+  }
+
+  bool less(size_t i, size_t j) const
+  {
+    return cmp(h[i].val, h[j].val);
+  }
+
+  void heapifyParent(size_t i)
+  {
+    for (; i > 0;) {
+      size_t p = (i - 1) / 2;
+      if (less(p, i)) {
+        break;
+      }
+      std::swap(h[p], h[i]);
+      setIndex(p);
+      setIndex(i);
+      i = p;
+    }
+  }
+
+  static const size_t kNoIndex = -1;
   Cmp cmp;
-  std::vector<T> v;
+  std::vector<Elem> h;
 };
+
+void testHeapRemove(const int *a, int an, int rmi)
+{
+  auto *ind = new size_t[an]();
+  Heap<int> heap;
+  for (int i = 0; i < an; i++) {
+    heap.insert(a[i], ind + i);
+  }
+  heap.remove(ind[rmi]);
+  // `popMin` will produce a sorted sequence.
+  int prev = heap.popMin();
+  for (; heap.size() > 0;) {
+    int x = heap.popMin();
+    assert(prev <= x);
+    prev = x;
+  }
+  printf("Test case %d OK.\n", rmi);
+}
 
 int main(int argc, char **argv)
 {
 // #ifndef ONLINE_JUDGE
 //   freopen("in", "r", stdin);
 // #endif
-  MinHeap<int> h;
-  h.insert(9);
-  h.insert(5);
-  h.insert(1);
-  h.insert(7);
-  h.insert(8);
-  h.insert(2);
-  assert(h.popMin() == 1);
-  assert(h.popMin() == 2);
-  assert(h.popMin() == 5);
-  assert(h.popMin() == 7);
-  assert(h.popMin() == 8);
-  assert(h.popMin() == 9);
-  printf("OK.\n");
+  const int a[] = {9, 5, 1, 7, 8, 2};
+  const int an = ARRAY_SIZEOF(a);
+  for (int i = 0; i < an; i++) {
+    testHeapRemove(a, an, i);
+  }
   return 0;
 }

@@ -1,11 +1,10 @@
 Rabin-Karp and rolling hash (max common substring of strings)
 Convex hull: Jarvis and others
 Hungarian algorithm
-Min heap C++ template class with index (remove op)
 Matrix K-th min element if columns and rows are ordered
 Radix sort
 Chinese remainder theorem
 Josephus problem
 Newton interpolation polynomial
 Newton (tangents) method
-Gray code bit formula
+Gray code: subsets of length k

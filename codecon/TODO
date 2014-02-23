@@ -1,10 +1,10 @@
-Rabin-Karp and rolling hash (max common substring of strings)
 Convex hull: Jarvis and others
 Hungarian algorithm
-Matrix K-th min element if columns and rows are ordered
 Radix sort
 Chinese remainder theorem
 Josephus problem
 Newton interpolation polynomial
 Newton (tangents) method
 Gray code: subsets of length k
+Matrix K-th min element if columns and rows are ordered
+Max common substring of strings

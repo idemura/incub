@@ -14,25 +14,31 @@
 
 typedef long long int lli;
 
-void computePrefixFn(const char *s, int *pf)
+int* prefixFn(const char *s)
 {
-  if (*s == 0) {
-    return;
-  }
-  pf[0] = 0;
-  for (int i = 1; s[i]; i++) {
-    int k = pf[i - 1];
-    for (; k != 0 && s[i] != s[k];) {
-      k = pf[k - 1];
+  const int pf_size = strlen(s) + 1;
+  // Important: `pf` initialized with zeros.
+  int *pf = new int[pf_size]();
+  for (int i = 2; i < pf_size; i++) {
+    for (int k = pf[i - 1]; ; k = pf[k]) {
+      if (s[i - 1] == s[k]) {
+        pf[i] = k + 1;
+        break;
+      }
+      if (k == 0) break;
     }
-    pf[i] = k + (s[i] == s[k]);
   }
+  return pf;
+}
+
+void freePrefixFn(int *pf)
+{
+  delete[] pf;
 }
 
 int kmpSearch(const char *s, const char *n)
 {
-  int *pf = new int[strlen(n)]();
-  computePrefixFn(n, pf);
+  int *pf = prefixFn(n);
   int i = 0, j = 0;
   for (; s[i] && n[j];) {
     // Increase both if match.
@@ -45,10 +51,10 @@ int kmpSearch(const char *s, const char *n)
       i++;
     } else {
       // Try smaller prefix at the same position.
-      j = pf[j - 1];
+      j = pf[j];
     }
   }
-  delete[] pf;
+  freePrefixFn(pf);
   return n[j]? -1: i - j;
 }
 

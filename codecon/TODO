@@ -8,3 +8,4 @@ Newton (tangents) method
 Gray code: subsets of length k
 Matrix K-th min element if columns and rows are ordered
 Max common substring of strings
+MurmurHash

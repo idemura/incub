@@ -231,6 +231,18 @@ int sqrti(int n)
   return p;
 }
 
+// Input: 32 bit unsigned integer.
+int countBits32(unsigned int n) {
+  // Treat `n` as sums of groups of 1 bit.
+  n = (n & 0x55555555u) + ((n & 0xaaaaaaaau) >> 1);
+  // `n` is now sum of groups of 2 bits and so on on next steps.
+  n = (n & 0x33333333u) + ((n & 0xccccccccu) >> 2);
+  n = (n & 0x0f0f0f0fu) + ((n & 0xf0f0f0f0u) >> 4);
+  n = (n & 0x00ff00ffu) + ((n & 0xff00ff00u) >> 8);
+  n = (n & 0x0000ffffu) + (n >> 16);
+  return (int)n;
+}
+
 int main()
 {
   return 0;

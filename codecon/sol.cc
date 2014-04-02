@@ -146,15 +146,42 @@ void printRec(Node *node, int x, int l, char *tab, int d)
   int y = x + l - 1;
   int m = x + l / 2;
   printf("%s%p x %d y %d c %d\n", tab, node, x, y, node->c);
-  tab[d] = ' ';
-  printRec(node->l, x, l / 2, tab, d + 1);
-  printRec(node->r, m, l / 2, tab, d + 1);
+  tab[d++] = ' ';
+  tab[d++] = ' ';
+  printRec(node->l, x, l / 2, tab, d);
+  printRec(node->r, m, l / 2, tab, d);
 }
 
 void print(Node *node)
 {
   char tab[40] = {};
   printRec(node, 0, MAX_LEN, tab, 0);
+}
+
+int getCoverageRec(Node *node, int n, int x, int l)
+{
+  if (!node) {
+    return 0;
+  }
+  // Count how many exact coverages of this segment.
+  int lc = node->l? node->l->c: 0;
+  int rc = node->r? node->r->c: 0;
+  printf("node %p: counter %d, left %d, right %d\n", node, node->c, lc, rc);
+  int count = node->c - std::max(lc, rc);
+  assert(count >= 0);
+
+  int m = x + l / 2;
+  if (n < m) {
+    count += getCoverageRec(node->l, n, x, l / 2);
+  } else {
+    count += getCoverageRec(node->r, n, m, l / 2);
+  }
+  return count;
+}
+
+int getCoverage(Node *root, int n)
+{
+  return getCoverageRec(root, n, 0, MAX_LEN);
 }
 
 int main(int argc, char **argv)
@@ -171,6 +198,17 @@ int main(int argc, char **argv)
   insert(root, 4, 6);
   printf("\n");
   print(root);
+  printf("\n");
+
+  insert(root, 2, 5);
+  printf("\n");
+  print(root);
+  printf("\n");
+
+  printf("coverage of %d is %d\n", 2, getCoverage(root, 2));
+  printf("coverage of %d is %d\n", 4, getCoverage(root, 4));
+  printf("coverage of %d is %d\n", 1, getCoverage(root, 1));
+  printf("coverage of %d is %d\n", 7, getCoverage(root, 7));
   printf("\n");
 
   remove(root, 0, 4);

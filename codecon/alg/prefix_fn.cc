@@ -31,8 +31,6 @@ void printPrefixFn(const char *s, int *pf)
 bool isPrefix(const char *s, int substr_len, int prefix_len)
 {
   const char *suffix = s + substr_len - prefix_len;
-  // printf("str: %s\n", s);
-  // printf("suffix: %s\n", suffix);
   for (int i = 0; i < prefix_len; i++) {
     if (s[i] != suffix[i]) {
       return false;
@@ -46,17 +44,13 @@ int* naivePrefixFn(const char *s)
   const int pf_size = strlen(s) + 1;
   int *pf = new int[pf_size]();
   for (int i = 0; s[i]; i++) {
-    // printf("--------\n");
-    // printf("index in str %d: %s\n", i, s + i);
     // Check prefixes of length 1,...i.
     int l = 0;
     for (int j = 1; j <= i; j++) {
-      // printf("check length %d\n", j);
       if (isPrefix(s, i + 1, j)) {
         l = j;
       }
     }
-    // printf("value at %d: %d\n", i + 1, l);
     pf[i + 1] = l;
   }
   return pf;

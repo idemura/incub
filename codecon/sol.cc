@@ -15,48 +15,146 @@
 
 typedef long long int lli;
 
-bool smileyBalance(const char *s_in)
-{
-  std::vector<int> balance, sm_open, sm_close;
+struct Node {
+  Node *l, *r;
+  // int a, b;
+  int c;
 
-  for (const char *s = s_in; *s;) {
-    if (s[0] == ':' && s[1] == ')') {
-      sm_close.push_back(s - s_in);
-      s += 2;
-    } else if (s[0] == ':' && s[1] == '(') {
-      sm_open.push_back(s - s_in);
-      s += 2;
-    } else if (s[0] == ')') {
-      if (balance.size() > 0) {
-        balance.pop_back();
-      } else if (sm_open.size() > 0) {
-        sm_open.pop_back();
-      } else {
-        return false;
-      }
-      s++;
-    } else if (s[0] == '(') {
-      balance.push_back(s - s_in);
-      s++;
-    } else {
-      s++;
-    }
+  Node(): l(), r(), c() {}
+};
+
+const int MAX_LEN = 1<<4;
+
+void insertRec(Node *node, int a, int b, int x, int l)
+{
+  printf("insert at %p: a %d b %d l %d\n", node, a, b, l);
+  if (!node) {
+    printf("  return because is null.\n");
+    return;
   }
-  for (; balance.size() > 0 && sm_close.size() > 0;) {
-    if (balance.back() < sm_close.back()) {
-      balance.pop_back();
-      sm_close.pop_back();
-    } else {
-      return false;
-    }
+  node->c += 1;
+  int y = x + l - 1;
+  printf("  x %d\n", x);
+  printf("  y %d\n", y);
+  // return;
+  if (x == a && y == b) {
+    printf("  match, return!\n");
+    return;
   }
-  return balance.size() == 0;
+  int m = x + l / 2;
+  // [x, m - 1] is left, [m, y] is right.
+  printf("  left is %d - %d, right is %d - %d\n", x, m - 1, m, y);
+  if (a <= m - 1 && b >= x) {
+    printf("  insert %p: a=%d is on left\n", node, a);
+    if (!node->l) {
+      node->l = new Node();
+      // node->l->p = node;
+      printf("  make a new node %p\n", node->l);
+    }
+    insertRec(node->l, a, std::min(b, m - 1), x, l / 2);
+  } else {
+    printf("  %d %d is OUT of %d %d\n", a, b, x, m - 1);
+  }
+  if (b >= m && a <= y) {
+    printf("  insert %p: b=%d is on right\n", node, b);
+    if (!node->r) {
+      node->r = new Node();
+      // node->r->p = node;
+      printf("  make a new node %p\n", node->r);
+    }
+    insertRec(node->r, std::max(a, m), b, m, l / 2);
+  } else {
+    printf("  %d %d is OUT of %d %d\n", a, b, m, y);
+  }
+  printf("%p return %d %d, left/right %p %p\n", node, a, b, node->l, node->r);
 }
 
-char* skipSpaces(char *s)
+void insert(Node *root, int a, int b)
 {
-  for (; isspace(*s); s++);
-  return s;
+  insertRec(root, a, b, 0, MAX_LEN);
+}
+
+void deleteTree(Node *node)
+{
+  if (!node) {
+    return;
+  }
+  deleteTree(node->l);
+  deleteTree(node->r);
+  delete node;
+}
+
+void removeRec(Node **node_child_p, int a, int b, int x, int l)
+{
+  Node *node = *node_child_p;
+  printf("remove at %p: a %d b %d l %d\n", node, a, b, l);
+  if (!node) {
+    printf("  return because is null.\n");
+    return;
+  }
+  node->c -= 1;
+  printf("  new counter %d\n", node->c);
+  if (node->c == 0) {
+    printf("  delete tree %p\n", node);
+    if (l == MAX_LEN) {
+      deleteTree(node->l);
+      deleteTree(node->r);
+      node->r = node->l = nullptr;
+    } else {
+      deleteTree(node);
+      *node_child_p = nullptr;
+    }
+    return;
+  }
+  int y = x + l - 1;
+  printf("  x %d\n", x);
+  printf("  y %d\n", y);
+  // return;
+  if (x == a && y == b) {
+    printf("  match, return!\n");
+    return;
+  }
+  int m = x + l / 2;
+  printf("  left is %d - %d, right is %d - %d\n", x, m - 1, m, y);
+  if (a <= m - 1 && b >= x) {
+    printf("  remove %p: a=%d is on left\n", node, a);
+    if (node->l) {
+      removeRec(&node->l, a, std::min(b, m - 1), x, l / 2);
+    }
+  }
+  if (b >= m) {
+    printf("  remove %p: b=%d is on right\n", node, b);
+    if (node->r) {
+      removeRec(&node->r, std::max(a, m), b, m, l / 2);
+    }
+  }
+  printf("%p return\n", node);
+}
+
+void remove(Node *root, int a, int b)
+{
+  Node *root_child_p = root;  // Preserve `root`.
+  removeRec(&root_child_p, a, b, 0, MAX_LEN);
+}
+
+void printRec(Node *node, int x, int l, char *tab, int d)
+{
+  if (!node) {
+    return;
+  }
+  tab[d] = 0;
+  int y = x + l - 1;
+  int m = x + l / 2;
+  printf("%s%p x %d y %d c %d\n", tab, node, x, y, node->c);
+  tab[d] = ' ';
+  printRec(node->l, x, l / 2, tab, d + 1);
+  printRec(node->r, m, l / 2, tab, d + 1);
+}
+
+void print(Node *node)
+{
+  char tab[40] = {};
+  printRec(node, 0, MAX_LEN, tab, 0);
 }
 
 int main(int argc, char **argv)
@@ -64,20 +162,25 @@ int main(int argc, char **argv)
 // #ifndef ONLINE_JUDGE
 //   freopen("in", "r", stdin);
 // #endif
-  auto *f = fopen(argv[1], "rt");
-  if (!f) {
-    return -1;
-  }
-  char buf[1024] = {};
-  for (; fgets(buf, ARRAY_SIZEOF(buf), f);) {
-    char *s = skipSpaces(buf);
-    if (*s == 0) {
-      continue;
-    }
+  auto *root = new Node();
+  insert(root, 0, 4);
+  printf("\n");
+  print(root);
+  printf("\n");
 
-    bool balanced = smileyBalance(s);
-    printf("%s\n", balanced? "YES": "NO");
-  }
-  fclose(f);
+  insert(root, 4, 6);
+  printf("\n");
+  print(root);
+  printf("\n");
+
+  remove(root, 0, 4);
+  printf("\n");
+  print(root);
+  printf("\n");
+
+  remove(root, 4, 6);
+  printf("\n");
+  print(root);
+  printf("\n");
   return 0;
 }

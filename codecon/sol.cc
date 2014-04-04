@@ -15,63 +15,52 @@
 
 typedef long long int lli;
 
+struct Segm {
+  int x, y;
+
+  Segm(): x(), y() {}
+  Segm(int x, int y): x(x), y(y) {}
+};
+
 struct Node {
   Node *l, *r;
-  // int a, b;
   int c;
 
   Node(): l(), r(), c() {}
 };
 
-const int MAX_LEN = 1<<4;
+// Logically, this is a constant.
+int max_len = 1<<30;
 
 void insertRec(Node *node, int a, int b, int x, int l)
 {
-  printf("insert at %p: a %d b %d l %d\n", node, a, b, l);
   if (!node) {
-    printf("  return because is null.\n");
     return;
   }
   node->c += 1;
   int y = x + l - 1;
-  printf("  x %d\n", x);
-  printf("  y %d\n", y);
-  // return;
   if (x == a && y == b) {
-    printf("  match, return!\n");
     return;
   }
   int m = x + l / 2;
   // [x, m - 1] is left, [m, y] is right.
-  printf("  left is %d - %d, right is %d - %d\n", x, m - 1, m, y);
   if (a <= m - 1 && b >= x) {
-    printf("  insert %p: a=%d is on left\n", node, a);
     if (!node->l) {
       node->l = new Node();
-      // node->l->p = node;
-      printf("  make a new node %p\n", node->l);
     }
     insertRec(node->l, a, std::min(b, m - 1), x, l / 2);
-  } else {
-    printf("  %d %d is OUT of %d %d\n", a, b, x, m - 1);
   }
   if (b >= m && a <= y) {
-    printf("  insert %p: b=%d is on right\n", node, b);
     if (!node->r) {
       node->r = new Node();
-      // node->r->p = node;
-      printf("  make a new node %p\n", node->r);
     }
     insertRec(node->r, std::max(a, m), b, m, l / 2);
-  } else {
-    printf("  %d %d is OUT of %d %d\n", a, b, m, y);
   }
-  printf("%p return %d %d, left/right %p %p\n", node, a, b, node->l, node->r);
 }
 
 void insert(Node *root, int a, int b)
 {
-  insertRec(root, a, b, 0, MAX_LEN);
+  insertRec(root, a, b, 0, max_len);
 }
 
 void deleteTree(Node *node)
@@ -87,16 +76,12 @@ void deleteTree(Node *node)
 void removeRec(Node **node_child_p, int a, int b, int x, int l)
 {
   Node *node = *node_child_p;
-  printf("remove at %p: a %d b %d l %d\n", node, a, b, l);
   if (!node) {
-    printf("  return because is null.\n");
     return;
   }
   node->c -= 1;
-  printf("  new counter %d\n", node->c);
   if (node->c == 0) {
-    printf("  delete tree %p\n", node);
-    if (l == MAX_LEN) {
+    if (l == max_len) {
       deleteTree(node->l);
       deleteTree(node->r);
       node->r = node->l = nullptr;
@@ -107,55 +92,26 @@ void removeRec(Node **node_child_p, int a, int b, int x, int l)
     return;
   }
   int y = x + l - 1;
-  printf("  x %d\n", x);
-  printf("  y %d\n", y);
-  // return;
   if (x == a && y == b) {
-    printf("  match, return!\n");
     return;
   }
   int m = x + l / 2;
-  printf("  left is %d - %d, right is %d - %d\n", x, m - 1, m, y);
   if (a <= m - 1 && b >= x) {
-    printf("  remove %p: a=%d is on left\n", node, a);
     if (node->l) {
       removeRec(&node->l, a, std::min(b, m - 1), x, l / 2);
     }
   }
   if (b >= m) {
-    printf("  remove %p: b=%d is on right\n", node, b);
     if (node->r) {
       removeRec(&node->r, std::max(a, m), b, m, l / 2);
     }
   }
-  printf("%p return\n", node);
 }
 
 void remove(Node *root, int a, int b)
 {
   Node *root_child_p = root;  // Preserve `root`.
-  removeRec(&root_child_p, a, b, 0, MAX_LEN);
-}
-
-void printRec(Node *node, int x, int l, char *tab, int d)
-{
-  if (!node) {
-    return;
-  }
-  tab[d] = 0;
-  int y = x + l - 1;
-  int m = x + l / 2;
-  printf("%s%p x %d y %d c %d\n", tab, node, x, y, node->c);
-  tab[d++] = ' ';
-  tab[d++] = ' ';
-  printRec(node->l, x, l / 2, tab, d);
-  printRec(node->r, m, l / 2, tab, d);
-}
-
-void print(Node *node)
-{
-  char tab[40] = {};
-  printRec(node, 0, MAX_LEN, tab, 0);
+  removeRec(&root_child_p, a, b, 0, max_len);
 }
 
 int getCoverageRec(Node *node, int n, int x, int l)
@@ -166,7 +122,6 @@ int getCoverageRec(Node *node, int n, int x, int l)
   // Count how many exact coverages of this segment.
   int lc = node->l? node->l->c: 0;
   int rc = node->r? node->r->c: 0;
-  printf("node %p: counter %d, left %d, right %d\n", node, node->c, lc, rc);
   int count = node->c - std::max(lc, rc);
   assert(count >= 0);
 
@@ -181,7 +136,14 @@ int getCoverageRec(Node *node, int n, int x, int l)
 
 int getCoverage(Node *root, int n)
 {
-  return getCoverageRec(root, n, 0, MAX_LEN);
+  return getCoverageRec(root, n, 0, max_len);
+}
+
+int getMaxLen(int n)
+{
+  int max = 1;
+  for (; max <= n; max <<= 1) {}
+  return max;
 }
 
 int main(int argc, char **argv)
@@ -189,36 +151,45 @@ int main(int argc, char **argv)
 // #ifndef ONLINE_JUDGE
 //   freopen("in", "r", stdin);
 // #endif
+  char line[120] = {};
+
+  fgets(line, sizeof line, stdin);
+  int n = 0, m = 0;
+  sscanf(line, "%d%d", &n, &m);
+  max_len = getMaxLen(n);
+
   auto *root = new Node();
-  insert(root, 0, 4);
-  printf("\n");
-  print(root);
-  printf("\n");
-
-  insert(root, 4, 6);
-  printf("\n");
-  print(root);
-  printf("\n");
-
-  insert(root, 2, 5);
-  printf("\n");
-  print(root);
-  printf("\n");
-
-  printf("coverage of %d is %d\n", 2, getCoverage(root, 2));
-  printf("coverage of %d is %d\n", 4, getCoverage(root, 4));
-  printf("coverage of %d is %d\n", 1, getCoverage(root, 1));
-  printf("coverage of %d is %d\n", 7, getCoverage(root, 7));
-  printf("\n");
-
-  remove(root, 0, 4);
-  printf("\n");
-  print(root);
-  printf("\n");
-
-  remove(root, 4, 6);
-  printf("\n");
-  print(root);
-  printf("\n");
+  std::vector<Segm> segments;
+  for (int i = 0; i < m; i++) {
+    auto *p = line;
+    fgets(p, sizeof line, stdin);
+    int chars_consumed = 0;
+    char op = 0;
+    sscanf(p, "%c%n", &op, &chars_consumed);
+    p += chars_consumed;
+    switch (op) {
+      case 'B': {
+        int x = 0;
+        sscanf(p, "%d", &x);
+        printf("%d\n", getCoverage(root, x));
+      } break;
+      case 'P': {
+        int x = 0, y = 0;
+        sscanf(p, "%d%d", &x, &y);
+        insert(root, x, y);
+        segments.push_back(Segm(x, y));
+      } break;
+      case 'M': {
+        int j = 0, d = 0;
+        sscanf(p, "%d%d", &j, &d);
+        j--;  // Zero-based index.
+        auto &s = segments[j];
+        remove(root, s.x, s.y);
+        s.x += d;
+        s.y += d;
+        insert(root, s.x, s.y);
+      } break;
+    }
+  }
   return 0;
 }

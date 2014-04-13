@@ -20,13 +20,6 @@
 
 typedef long long int lli;
 
-struct Segm {
-  int a, b;
-
-  Segm(): a(), b() {}
-  Segm(int a, int b): a(a), b(b) {}
-};
-
 class StringPrinter {
   NON_COPYABLE(StringPrinter);
 public:

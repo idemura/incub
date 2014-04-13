@@ -14,61 +14,6 @@ typedef long long int lli;
 // MOD is prime
 const int MOD = 1000000007;
 
-// Logarithm 2: n >= 2 ^ ilog2f(n). Undefined for 0.
-int ilog2f(int n)
-{
-  int i;
-
-  for (i = 0; n != 1; i++) {
-    n >>= 1;
-  }
-  return i;
-}
-
-// Logarithm 2: n <= 2 ^ ilog2f(n). Undefined for 0.
-int ilog2c(int n)
-{
-  int i;
-
-  for (i = 0; (1 << i) < n; i++) {
-  }
-  return i;
-}
-
-int mmul(int a, int b)
-{
-  return (int)( ((lli)a * (lli)b) % MOD );
-}
-
-int mpow(int a, int p)
-{
-  int x = 1;
-  for (; p; p >>= 1) {
-    if (p & 1) {
-      x = mmul(x, a);
-    }
-    a = mmul(a, a);
-  }
-  return x;
-}
-
-int ipow(int a, int p)
-{
-  int x = 1;
-  for (; p; p >>= 1) {
-    if (p & 1) {
-      x *= a;
-    }
-    a *= a;
-  }
-  return x;
-}
-
-int minv(int a)
-{
-  return mpow(a, MOD - 2);
-}
-
 int gcd(int a, int b)
 {
   // Assumes `b < a`, otherwise the first iteration will swap `a` and `b`.
@@ -94,12 +39,8 @@ void extGCD(int a, int b, int *gcd, int *x_out, int *y_out)
     u = m, v = n;
   }
   *gcd = b;
-  if (x_out) {
-    *x_out = x;
-  }
-  if (y_out) {
-    *y_out = y;
-  }
+  *x_out = x;
+  *y_out = y;
 }
 
 int extGCDRec(int a, int b, int *xa, int *xb)
@@ -116,6 +57,109 @@ int extGCDRec(int a, int b, int *xa, int *xb)
   *xa = yb - q * ya;
   *xb = ya;
   return gcd;
+}
+
+inline int madd(int a, int b, int p)
+{
+  return (a + b) % p;
+}
+
+inline int msub(int a, int b, int p)
+{
+  return (a - b + p) % p;
+}
+
+inline int mmul(lli a, int b, int p)
+{
+  return (int)(a * b % p);
+}
+
+int mpow(lli a, int k, int p)
+{
+  lli x = 1;
+  for (; k; k >>= 1) {
+    if (k & 1) {
+      x *= a;
+      x %= p;
+    }
+    a *= a;
+    a %= p;
+  }
+  return (int)x;
+}
+
+inline int minv(int a, int p)
+{
+  return mpow(a, p - 2, p);
+}
+
+// inline int minv(int a, int p)
+// {
+//   int gcd, x, y;
+//   extGCD(a, p, &gcd, &x, &y);
+//   return x < 0? x + p: x;
+// }
+
+inline int mdiv(lli a, int b, int p)
+{
+  a *= minv(b, p);
+  a %= p;
+  return (int)a;
+}
+
+inline bool eurlerCriterion(int a, int p)
+{
+  return mpow(a, (p - 1) / 2, p) == 1;
+}
+
+int findQuadraticNonResidue(int p)
+{
+  // Brute force search for the first non-residue.
+  int k = 2;
+  for (; eurlerCriterion(k, p); k++) {}
+  return k;
+}
+
+// Returns a square root on `a` modulo `p` or -1 if doesn't exist.
+// Shanks-Tonelli algorithm, see
+// http://www.math.vt.edu/people/brown/doc/sqrts.pdf
+int shanksTonelli(int a, int p)
+{
+  if (p == 2 || a <= 1) {
+    return a;
+  }
+  if (!eurlerCriterion(a, p)) {
+    return -1; // No square root.
+  }
+  if (p % 4 == 3) {
+    return mpow(a, (p + 1) / 4, p);
+  }
+
+  int s = p - 1, e = 0;
+  for (; (s & 1) == 0; s /= 2) {
+    e++;
+  }
+
+  int x = mpow(a, (s + 1) / 2, p);
+  int b = mpow(a, s, p);
+  int g = mpow(findQuadraticNonResidue(p), s, p);
+  int r = e;
+  for (;;) {
+    int m = 0;
+    for (int y = b; y != 1; y = mmul(y, y, p)) {
+      m++;
+    }
+    if (m == 0) {
+      return x;
+    }
+    int g1 = mpow(g, 1 << (r - m - 1), p);
+    x = mmul(x, g1, p);
+    int g2 = mmul(g1, g1, p);
+    b = mmul(b, g2, p);
+    g = g2;
+    r = m;
+  }
+  return -1;
 }
 
 bool isPrime(int n)

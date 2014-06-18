@@ -6,6 +6,7 @@
 #include <utility>
 #include <assert.h>
 #include <ctype.h>
+#include <limits.h>
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -21,14 +22,16 @@
 
 typedef long long int lli;
 
+typedef std::pair<int, int> Key;
+
 class Treap {
   NON_COPYABLE(Treap);
 public:
   explicit Treap(int p): p_(p), root_() {}
   ~Treap() { clear(); }
-  int upper(int k);
-  void insert(int n);
-  void remove(int n);
+  Key upper(Key key);
+  void insert(Key key);
+  void remove(Key key);
   void clear();
   void printKeys();
   void print();
@@ -39,40 +42,36 @@ private:
   struct Node {
     Node *l, *r;
     int prio;
-    int n;
-    int d;
+    Key key;
+    int tree_key;
 
-    Node(): l(), r(), prio(rand()), n(), d() {}
-    int getKey(int p)
+    Node(): l(), r(), prio(rand()), key(), tree_key() {}
+
+    void update(int p)
     {
-      if (d != 0) {
-        n = (n + d) % p;
+      if (tree_key != 0) {
+        key.first = ((lli)key.first + tree_key) % p;
         if (l) {
-          l->update(d, p);
+          l->tree_key = ((lli)l->tree_key + tree_key) % p;
         }
         if (r) {
-          r->update(d, p);
+          r->tree_key = ((lli)r->tree_key + tree_key) % p;
         }
-        d = 0;
+        tree_key = 0;
       }
-      return n;
-    }
-
-    void update(int d1, int p)
-    {
-      d = (d + d1) % p;
     }
   };
 
+  void print(Node *root);
   static void clearRec(Node *node);
-  Node* upperRec(Node *node, int k);
+  Node* upperRec(Node *node, Key key, Node *left);
   Node* merge(Node *lst, Node *rst);
   // All key `lst` < k, and `k <= rst`.
-  void split(Node *node, int k, Node **lst, Node **rst);
+  void split(Node *node, Key key, Node **lst, Node **rst, bool right = true);
   void printKeysRec(Node *node);
-  void printRec(Node *node, int depth);
+  void printRec(Node *node, int depth, int idx);
   void checkTreeRec(Node *node, int min, int max);
-  void checkHeapRec(Node *node, int p);
+  void checkHeapRec(Node *node, int prio);
   void expandRec(Node *node);
 
   int p_;
@@ -93,26 +92,26 @@ void Treap::clearRec(Node *node)
   delete node;
 }
 
-int Treap::upper(int k)
+Key Treap::upper(Key key)
 {
-  auto where = upperRec(root_, k);
+  auto where = upperRec(root_, key, nullptr);
   if (!where) {
-    return -1;  // Something less than `k`.
+    return Key(-1, 0);  // Something less than `k`.
   }
-  return where->n;
+  return where->key;
 }
 
-Treap::Node* Treap::upperRec(Node *node, int k)
+Treap::Node* Treap::upperRec(Node *node, Key key, Node *left)
 {
-  if (!node) return nullptr;
-  int node_k = node->getKey(p_);
-  if (node_k == k) {
+  if (!node) return left;
+  node->update(p_);
+  if (node->key == key) {
     return node;
   }
-  if (k < node_k) {
-    return upperRec(node->l, k);
+  if (key < node->key) {
+    return upperRec(node->l, key, node);
   } else {
-    return upperRec(node->r, k);
+    return upperRec(node->r, key, left);
   }
 }
 
@@ -122,81 +121,56 @@ Treap::Node* Treap::merge(Node *lst, Node *rst)
   if (!rst) return lst;
   // We know all keys of `n1` are less than each key of `n2`.
   if (lst->prio < rst->prio) {
-    lst->getKey(p_);  // Actualize the key.
+    lst->update(p_);
     lst->r = merge(lst->r, rst);
     return lst;
   } else {
-    rst->getKey(p_);  // Actualize the key.
+    rst->update(p_);
     rst->l = merge(lst, rst->l);
     return rst;
   }
 }
 
-void Treap::split(Node *node, int k, Node **lst, Node **rst)
+void Treap::split(Node *node, Key key, Node **lst, Node **rst, bool right)
 {
   if (!node) {
     *lst = *rst = nullptr;
     return;
   }
-  if (k <= node->getKey(p_)) {
-    split(node->l, k, lst, rst);
-    node->l = *rst;
+  node->update(p_);
+  if (key < node->key || (key == node->key && right)) {
+    split(node->l, key, lst, &node->l, right);
     *rst = node;
   } else {
-    split(node->r, k, lst, rst);
-    node->r = *lst;
+    split(node->r, key, &node->r, rst, right);
     *lst = node;
   }
 }
 
-void Treap::insert(int n)
+void Treap::insert(Key key)
 {
-  printf("insert %d\n", n);
   Node *lst = nullptr, *rst = nullptr, *new_node = new Node;
-  split(root_, n, &lst, &rst);
-  new_node->n = n;
+  new_node->key = key;
+  split(root_, new_node->key, &lst, &rst);
   root_ = merge(merge(lst, new_node), rst);
 }
 
-void Treap::remove(int n)
+void Treap::remove(Key key)
 {
-  Node *lst = nullptr, *rst = nullptr, *n_node = nullptr;
-  printf("remove %d\n", n);
-  split(root_, n, &lst, &rst);
-  printKeysRec(lst);
-  printf("\n");
-  printKeysRec(rst);
-  printf("\n");
-  printf("--------\n");
-  split(rst, n + 1, &n_node, &rst);
-  printKeysRec(n_node);
-  printf("\n");
-  printKeysRec(rst);
-  printf("\n");
-  // Before merge, we add modifiers:
-  printf("--------\n");
-  printKeysRec(lst);
-  printf("\n");
-  printKeysRec(rst);
-  printf("\n");
-  if (n_node) {
-    delete n_node;
+  Node *lst = nullptr, *rst = nullptr, *node = nullptr;
+  split(root_, key, &lst, &rst);
+  split(rst, key, &node, &rst, false);
+  if (node) {
+    delete node;
     if (lst) {
-      lst->d = -n + p_;
+      lst->tree_key = -key.first + p_;
     }
     if (rst) {
-      rst->d = -n;
+      rst->tree_key = -key.first;
     }
   }
-  printf("++++\n");
-  printRec(rst, 0);
-  printf("++++\n");
-  printRec(lst, 0);
   // Now all numbers on the right are less than on the left, so why the order.
   root_ = merge(rst, lst);
-  printf("---- merged: ----\n");
-  printRec(root_, 0);
-  printf("----\n");
 }
 
 void Treap::printKeys()
@@ -209,29 +183,38 @@ void Treap::printKeysRec(Node *node)
 {
   if (!node) return;
   printKeysRec(node->l);
-  // printf("%d ", node->getKey(p_));
-  if (node->d) {
-    printf("%d(d %d) ", node->n, node->d);
+  // node->update(p_);
+  if (node->tree_key) {
+    printf("%d(tree_key %d) ", node->key.first, node->tree_key);
   } else {
-    printf("%d ", node->n);
+    printf("%d ", node->key.first);
   }
   printKeysRec(node->r);
 }
 
 void Treap::print()
 {
-  printRec(root_, 0);
+  print(root_);
 }
 
-void Treap::printRec(Node *node, int depth)
+void Treap::print(Node *root)
+{
+  printRec(root, 0, -1);
+}
+
+void Treap::printRec(Node *node, int depth, int idx)
 {
   if (!node) return;
   for (int i = 0; i < depth; i++) {
     printf("  ");
   }
-  printf("%p n %d d %d prio %d\n", node, node->n, node->d, node->prio);
-  printRec(node->l, depth + 1);
-  printRec(node->r, depth + 1);
+  if (idx >= 0) {
+    printf("%c ", "lr"[idx]);
+  }
+  printf("%p key %d/%d tree_key %d prio %d\n", node, node->key.first,
+         node->key.second, node->tree_key, node->prio);
+  printRec(node->l, depth + 1, 0);
+  printRec(node->r, depth + 1, 1);
 }
 
 void Treap::check()
@@ -243,20 +226,22 @@ void Treap::check()
 void Treap::checkTreeRec(Node *node, int min, int max)
 {
   if (!node) return;
+  node->update(p_);
   // Our treap stores only different keys.
-  if (!(min < node->getKey(p_) && node->getKey(p_) < max)) {
-    printf("TREE CHECK FAILED: %d is not in %d - %d\n", node->n, min, max);
+  if (!(min < node->key.first && node->key.first < max)) {
+    printf("TREE CHECK FAILED: %d is not in the range %d - %d\n",
+           node->key.first, min, max);
     assert(false);
   }
-  checkTreeRec(node->l, min, std::min(max, node->n));
-  checkTreeRec(node->r, std::max(min, node->n), max);
+  checkTreeRec(node->l, min, std::min(max, node->key.first));
+  checkTreeRec(node->r, std::max(min, node->key.first), max);
 }
 
-void Treap::checkHeapRec(Node *node, int p)
+void Treap::checkHeapRec(Node *node, int prio)
 {
   if (!node) return;
-  if (!(node->prio >= p)) {
-    printf("HEAP CHECK FAILED: %d greater %d\n", node->prio, p);
+  if (!(node->prio >= prio)) {
+    printf("HEAP CHECK FAILED: %d greater %d\n", node->prio, prio);
     assert(false);
   }
   checkHeapRec(node->l, node->prio);
@@ -271,32 +256,37 @@ void Treap::expand()
 void Treap::expandRec(Node *node)
 {
   if (!node) return;
-  node->getKey(p_);
+  node->update(p_);
   expandRec(node->l);
   expandRec(node->r);
 }
 
 
-int getMinModuloP(std::vector<int> &v, int k, int p)
+int getMinModuloP(const std::vector<int> &v, int k, int p)
 {
   Treap t(p);
-  int s = 0;
+  int sum = 0;
   for (int i = 0; i < v.size(); i++) {
-    s = (s + v[i]) % p;
-    t.insert(s);
+    sum = ((lli)sum + v[i]) % p;
+    t.insert(Key(sum, i));
   }
-  s = 0;
-  int upper_min = INT_MAX;
+  int min_gap = INT_MAX;
   for (int i = 0; i < v.size(); i++) {
-    s = (s + v[i]) % p;
-    int upper_k = t.upper(k);
-    if (upper_k == k) {
+    auto upper_key = t.upper(Key(k, 0));
+    if (upper_key.first < 0) {
+      // upper_key = t.upper(Key(0, 0));
+      upper_key.first = p;
+    }
+    if (upper_key.first == k) {
       return k;
     }
-    if (upper_k < upper_min) upper_min = upper_k;
-    t.remove(s);
+    int gap = ((lli)upper_key.first - k + p) % p;
+    if (gap < min_gap) {
+      min_gap = gap;
+    }
+    t.remove(Key(v[i], i));
   }
-  return upper_min;
+  return (k + min_gap) % p;
 }
 
 int main(int argc, char **argv)
@@ -306,51 +296,10 @@ int main(int argc, char **argv)
 #endif
   int n = 0, k = 0, p = 0;
   scanf("%d%d%d", &n, &k, &p);
-  printf("k %d p %d\n", k, p);
   auto v = std::vector<int>(n);
-  for (int i = 0; i < n; i++) {
+  for (int i = 0; i < v.size(); i++) {
     scanf("%d", &v[i]);
-    printf("%d ", v[i]);
   }
-  printf("\n");
-  printf("All possible:\n");
-  for (size_t i = 0; i < v.size(); i++) {
-    printf("%2zu: ", i);
-    int s = 0;
-    for (int j = i; j < v.size(); j++) {
-      s = (s + v[j]) % p;
-      printf("%2d ", s);
-    }
-    printf("\n");
-  }
-  // printf("%d\n", getMinModuloP(v, k, p));
-
-  Treap t(13);
-  t.print();
-  t.insert(0);
-  t.print();
-  t.insert(1);
-  t.print();
-  t.insert(2);
-  t.print();
-  t.insert(3);
-  t.print();
-  t.insert(4);
-  t.print();
-  t.insert(5);
-  t.print();
-  t.insert(6);
-  t.print();
-  t.insert(7);
-  t.print();
-  t.check();
-  t.printKeys();
-
-  printf("------------\n");
-  t.remove(3);
-  t.print();
-  t.printKeys();
-  t.expand();
-  t.printKeys();
+  printf("%d\n", getMinModuloP(v, k, p));
   return 0;
 }

@@ -1,67 +1,65 @@
 import std.algorithm, std.conv, std.json, std.stdio;
 
-struct Pt2i {
-  int x, y;
-}
-
-int[] grayCodes(int n)
+T getCoverageOf(T)(T vs, T[] m)
 {
-  auto a_num = 2 ^^ n;
-  auto a = new int[a_num];
-  foreach (i; 0 .. a_num) {
-    a[i] = i ^ (i >> 1);
+  auto r = vs;
+  size_t k = 0;
+  for (auto i = vs; i != 0; i >>>= 1) {
+    if (i & 1) {
+      r |= m[k];
+    }
+    k++;
   }
-  return a;
+  return r;
 }
 
-int[] getCoord(alias name)(Pt2i[] points)
+int countSetBits(ulong n)
 {
-  auto c = new int[points.length];
-  foreach (i, p; points) {
-    c[i] = mixin("p." ~ name);
+  auto c = 0;
+  for (; n; n = n & (n - 1)) {
+    c++;
   }
   return c;
 }
 
-long solve1D(int[] cs)
-{
-  if (cs.length == 1) {
-    return cs[0];
-  }
-  sort(cs);  // Actually, we need the median index.
-  if (cs.length % 2) {
-    return 1;
-  } else {
-    auto i = (cs.length - 1) / 2;
-    return cs[i + 1] - cs[i] + 1;
-  }
+unittest {
+
 }
 
-long solve(Pt2i[] points)
+T findMinimalCover(T)(T[] m)
 {
-  return solve1D(getCoord!"x"(points)) * solve1D(getCoord!"y"(points));
+  immutable n = m.length;
+  foreach (i; 0 .. 2 ^^ n) {
+    auto coverage = getCoverageOf(i, m);
+    if (coverage == np - 1) {
+      return gray_code;
+    }
+  }
+  return null;
 }
 
 void main(string[] args)
 {
-  auto gc = grayCodes(3);
-  foreach (c; gc) {
-    writefln("%03b", c);
-  }
+  //auto gc = grayCodes(3);
+  //foreach (c; gc) {
+  //  writefln("%03b", c);
+  //}
   try {
     auto f = File("in", "rt");
-    int t;
-    f.readf(" %d", &t);
-    foreach (i; 0 .. t) {
-      int n;
-      f.readf(" %d", &n);
-      auto points = new Pt2i[n];
-      foreach (j, ref p; points) {
-        f.readf(" %d %d", &p.x, &p.y);
-      }
-      writefln("%s", solve(points));
+    int n;
+    f.readf(" %d", &n);
+    writefln("%s", ulong.sizeof);
+    if (n > 8 * ulong.sizeof) {
+      throw new Exception("Too many vertices");
     }
-    //writefln("a %s b %s", a, b);
+    auto m = new ulong[](n);
+    foreach (i; 0 .. n) {
+      int a, b;
+      f.readf(" %d %d", &a, &b);
+      m[a] |= 1ul << b;
+      m[b] |= 1ul << a;
+    }
+    findMinimalCover(m);
   } catch (Exception e) {
     writefln("Exception: %s", e.msg);
   }

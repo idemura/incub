@@ -38,12 +38,100 @@ T findMinimalCover(T)(T[] m)
   return null;
 }
 
+uint[] combinations(int m, int n)
+{
+  static void recStep(int m, int n, uint s, int b, ref uint[] acc)
+  {
+    if (m > n) {
+      return;
+    }
+    if (m == 0) {
+      acc ~= s;
+    } else {
+      recStep(m - 1, n - 1, s | b, b << 1, acc);
+      recStep(m, n - 1, s, b << 1, acc);
+    }
+  }
+
+  if (m > n) {
+    return null;
+  }
+  auto acc = new uint[](0);
+  recStep(m, n, 0, 1, acc);
+  return acc;
+}
+
+void printSets(T)(int n, T[] c)
+{
+  auto format = "%0" ~ to!string(n) ~ "b";
+  foreach (s; c) {
+    writefln(format, s);
+  }
+  // writeln();
+}
+
+void testCombinations()
+{
+  immutable n = 4;
+  foreach (i; 0 .. n + 1) {
+    writefln("C %s %s:", i, n);
+    printSets(n, combinations(i, n));
+  }
+  writefln("");
+}
+
+size_t getDecliningSequence(T)(T[] a)
+{
+  size_t i = 1;
+  for (; i < a.length && a[i - 1] < a[i]; i++) {
+    // Empty.
+  }
+  return i;
+}
+
+uint[] permutations(int n)
+{
+  static bool step(uint[] p)
+  {
+    auto i = getDecliningSequence(p);
+    if (i == p.length) {
+      return false;
+    }
+    // a[i] > a[i - 1].
+    // Reverse and find the place where to put a[i] so we don't break the order.
+    reverse(p[0 .. i]);
+    // We can do it binary O(log N) time, but do linearly for simplicity.
+    typeof(i) j = 0;
+    for (; j < i; j++) {
+      if (p[j] > p[i]) break;
+    }
+    if (j == i) {
+      j = i - 1;
+    }
+    return true;
+  }
+
+  auto p = new uint[](n);
+  foreach (i, ref pi; p) {
+    pi = i;
+  }
+
+  auto acc = new uint[](0);
+  do {
+    acc ~= p;
+  } while (step(p));
+  return acc;
+}
+
 void main(string[] args)
 {
+  testCombinations();
+
   //auto gc = grayCodes(3);
   //foreach (c; gc) {
   //  writefln("%03b", c);
   //}
+
   try {
     auto f = File("in", "rt");
     int n;

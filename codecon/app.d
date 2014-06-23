@@ -1,43 +1,5 @@
 import std.algorithm, std.conv, std.json, std.stdio;
 
-T getCoverageOf(T)(T vs, T[] m)
-{
-  auto r = vs;
-  size_t k = 0;
-  for (auto i = vs; i != 0; i >>>= 1) {
-    if (i & 1) {
-      r |= m[k];
-    }
-    k++;
-  }
-  return r;
-}
-
-int countSetBits(ulong n)
-{
-  auto c = 0;
-  for (; n; n = n & (n - 1)) {
-    c++;
-  }
-  return c;
-}
-
-unittest {
-
-}
-
-T findMinimalCover(T)(T[] m)
-{
-  immutable n = m.length;
-  foreach (i; 0 .. 2 ^^ n) {
-    auto coverage = getCoverageOf(i, m);
-    if (coverage == np - 1) {
-      return gray_code;
-    }
-  }
-  return null;
-}
-
 uint[] combinations(int m, int n)
 {
   static void recStep(int m, int n, uint s, int b, ref uint[] acc)
@@ -80,75 +42,72 @@ void testCombinations()
   writefln("");
 }
 
-size_t getDecliningSequence(T)(T[] a)
+size_t getDecreasingSeqLength(T)(T[] a)
 {
   size_t i = 1;
-  for (; i < a.length && a[i - 1] < a[i]; i++) {
+  for (; i < a.length && a[i - 1] > a[i]; i++) {
     // Empty.
   }
   return i;
 }
 
-uint[] permutations(int n)
+int[][] permutations(int n)
 {
-  static bool step(uint[] p)
+  static bool step(int[] p)
   {
-    auto i = getDecliningSequence(p);
+    auto i = getDecreasingSeqLength(p);
     if (i == p.length) {
       return false;
     }
     // a[i] > a[i - 1].
     // Reverse and find the place where to put a[i] so we don't break the order.
-    reverse(p[0 .. i]);
+    if (i > 1) {
+      reverse(p[0 .. i]);
+    }
     // We can do it binary O(log N) time, but do linearly for simplicity.
     typeof(i) j = 0;
     for (; j < i; j++) {
       if (p[j] > p[i]) break;
     }
-    if (j == i) {
-      j = i - 1;
-    }
+    // `j` is always greater 0 (because p[0] is min always?).
+    swap(p[i], p[j - 1]);
     return true;
   }
 
-  auto p = new uint[](n);
+  auto p = new int[](n);
   foreach (i, ref pi; p) {
-    pi = i;
+    pi = cast(int)i;
   }
 
-  auto acc = new uint[](0);
+  auto acc = new int[][](0);
   do {
-    acc ~= p;
+    acc ~= p.dup;
   } while (step(p));
   return acc;
 }
 
+void testPermutations()
+{
+  writeln("Permutation of 3:");
+  writeln(permutations(3));
+}
+
 void main(string[] args)
 {
-  testCombinations();
+  // testCombinations();
+  testPermutations();
 
   //auto gc = grayCodes(3);
   //foreach (c; gc) {
   //  writefln("%03b", c);
   //}
 
-  try {
-    auto f = File("in", "rt");
-    int n;
-    f.readf(" %d", &n);
-    writefln("%s", ulong.sizeof);
-    if (n > 8 * ulong.sizeof) {
-      throw new Exception("Too many vertices");
-    }
-    auto m = new ulong[](n);
-    foreach (i; 0 .. n) {
-      int a, b;
-      f.readf(" %d %d", &a, &b);
-      m[a] |= 1ul << b;
-      m[b] |= 1ul << a;
-    }
-    findMinimalCover(m);
-  } catch (Exception e) {
-    writefln("Exception: %s", e.msg);
-  }
+  // try {
+  //   auto f = File("in", "rt");
+  //   int n;
+  //   f.readf(" %d", &n);
+  //   writefln("%d", n);
+  // } catch (Exception e) {
+  //   writefln("Exception: %s", e.msg);
+  // }
 }

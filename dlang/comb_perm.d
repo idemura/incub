@@ -1,4 +1,4 @@
-import std.algorithm, std.conv, std.json, std.stdio;
+import std.algorithm, std.conv, std.stdio;
 
 uint[] combinations(int m, int n)
 {
@@ -92,27 +92,8 @@ void testPermutations()
   writeln(permutations(3));
 }
 
-unittest {
-  writeln("hell0");
-}
-/*
 void main(string[] args)
 {
-  // testCombinations();
+  testCombinations();
   testPermutations();
-
-  //auto gc = grayCodes(3);
-  //foreach (c; gc) {
-  //  writefln("%03b", c);
-  //}
-
-  // try {
-  //   auto f = File("in", "rt");
-  //   int n;
-  //   f.readf(" %d", &n);
-  //   writefln("%d", n);
-  // } catch (Exception e) {
-  //   writefln("Exception: %s", e.msg);
-  // }
 }
-*/

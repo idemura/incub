@@ -2,7 +2,7 @@ import std.algorithm, std.conv, std.stdio;
 
 uint[] combinations(int m, int n)
 {
-  static void recStep(int m, int n, uint s, int b, ref uint[] acc)
+  static void rec(int m, int n, uint s, int b, ref uint[] acc)
   {
     if (m > n) {
       return;
@@ -10,8 +10,8 @@ uint[] combinations(int m, int n)
     if (m == 0) {
       acc ~= s;
     } else {
-      recStep(m - 1, n - 1, s | b, b << 1, acc);
-      recStep(m, n - 1, s, b << 1, acc);
+      rec(m - 1, n - 1, s | b, b << 1, acc);
+      rec(m, n - 1, s, b << 1, acc);
     }
   }
 
@@ -19,7 +19,7 @@ uint[] combinations(int m, int n)
     return null;
   }
   auto acc = new uint[](0);
-  recStep(m, n, 0, 1, acc);
+  rec(m, n, 0, 1, acc);
   return acc;
 }
 
@@ -53,7 +53,7 @@ size_t getDecreasingSeqLength(T)(T[] a)
 
 int[][] permutations(int n)
 {
-  static bool step(int[] p)
+  static bool rec(int[] p)
   {
     auto i = getDecreasingSeqLength(p);
     if (i == p.length) {
@@ -82,7 +82,7 @@ int[][] permutations(int n)
   auto acc = new int[][](0);
   do {
     acc ~= p.dup;
-  } while (step(p));
+  } while (rec(p));
   return acc;
 }
 

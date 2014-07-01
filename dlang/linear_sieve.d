@@ -5,7 +5,7 @@ import std.algorithm, std.conv, std.stdio;
 int[] linearSieve(int n)
 {
   auto a = new int[](n + 1);
-  int[] primes = [];
+  int[] primes;
   for (int i = 2; i < a.length; i++) {
     if (a[i] == 0) {
       a[i] = i;

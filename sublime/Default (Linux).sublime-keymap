@@ -208,10 +208,10 @@
 
   { "keys": ["ctrl+p"], "command": "show_overlay", "args": {"overlay": "command_palette"} },
   { "keys": ["alt+o"], "command": "switch_file", "args": {"extensions": ["cpp", "cxx", "cc", "c", "hpp", "hxx", "h", "ipp", "inl", "m", "mm"]} },
-  { "keys": ["alt+j"], "command": "show_overlay", "args": {"overlay": "goto", "show_files": true} },
-  { "keys": ["alt+m"], "command": "show_overlay", "args": {"overlay": "goto", "text": "@"} },
-  { "keys": ["alt+k"], "command": "show_overlay", "args": {"overlay": "goto", "text": ":"} },
-  { "keys": ["alt+l"], "command": "show_overlay", "args": {"overlay": "goto", "text": "#"} },
+  { "keys": ["ctrl+;"], "command": "show_overlay", "args": {"overlay": "goto", "show_files": true} },
+  // { "keys": ["alt+m"], "command": "show_overlay", "args": {"overlay": "goto", "text": "@"} },
+  // { "keys": ["alt+k"], "command": "show_overlay", "args": {"overlay": "goto", "text": ":"} },
+  // { "keys": ["alt+l"], "command": "show_overlay", "args": {"overlay": "goto", "text": "#"} },
 
   { "keys": ["ctrl+i"], "command": "show_panel", "args": {"panel": "incremental_find", "reverse":false} },
   { "keys": ["ctrl+shift+i"], "command": "show_panel", "args": {"panel": "incremental_find", "reverse":true} },

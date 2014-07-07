@@ -1,12 +1,10 @@
 import std.algorithm, std.conv, std.stdio;
 
-int[] topSort(int[][] al)
-{
+int[] topSort(int[][] al) {
   auto res = new int[](0);
   auto m = new int[](al.length);
 
-  void dfs(int v)
-  {
+  void dfs(int v) {
     if (m[v]) {
       if (m[v] == 1) {
         throw new Exception("Cycle detected");
@@ -32,16 +30,14 @@ int[] topSort(int[][] al)
   return res;
 }
 
-size_t indexOf(T)(T[] a, T x)
-{
+size_t indexOf(T)(T[] a, T x) {
   foreach (i, ai; a) {
     if (ai == x) return i;
   }
   throw new Exception("Not found");
 }
 
-bool checkTopSort(int[][] al, int[] ts)
-{
+bool checkTopSort(int[][] al, int[] ts) {
   foreach (i; 0..al.length) {
     foreach (j; 0..al[i].length) {
       auto ni = indexOf(ts, cast(int)i);
@@ -57,8 +53,7 @@ bool checkTopSort(int[][] al, int[] ts)
   return true;
 }
 
-void main(string[] args)
-{
+void main(string[] args) {
   // 0--1-----2--3
   //  \      /
   //   -4--5-

@@ -1,15 +1,13 @@
 import std.algorithm, std.conv, std.stdio;
 
-T upperPowOf2(T)(T n)
-{
+T upperPowOf2(T)(T n) {
   T p = 1;
   for (; p < n; p *= 2) {
   }
   return p;
 }
 
-int[] buildRmqTree(int[] v)
-{
+int[] buildRmqTree(int[] v) {
   auto pot_length = upperPowOf2(v.length);
   auto a = new int[](2 * pot_length - 1);
   auto i = a.length;
@@ -27,10 +25,8 @@ int[] buildRmqTree(int[] v)
   return a;
 }
 
-int rangeMin(int[] t, size_t i0, size_t i1)
-{
-  int rec(int k, size_t j0, size_t j1)
-  {
+int rangeMin(int[] t, size_t i0, size_t i1) {
+  int rec(int k, size_t j0, size_t j1) {
     if (j1 <= i0 || i1 <= j0) {
       return int.max;
     }
@@ -44,8 +40,7 @@ int rangeMin(int[] t, size_t i0, size_t i1)
   return rec(0, 0, (t.length + 1) / 2);
 }
 
-int rangeMinLinear(int[] a, size_t i, size_t j)
-{
+int rangeMinLinear(int[] a, size_t i, size_t j) {
   auto m = a[i++];
   for (; i < j; i++) {
     m = min(m, a[i]);
@@ -53,8 +48,7 @@ int rangeMinLinear(int[] a, size_t i, size_t j)
   return m;
 }
 
-void testRangeMin(int[] v, int[] t, size_t i0, size_t i1)
-{
+void testRangeMin(int[] v, int[] t, size_t i0, size_t i1) {
   auto m1 = rangeMinLinear(v, i0, i1);
   auto m2 = rangeMin(t, i0, i1);
   if (m1 != m2) {
@@ -64,8 +58,7 @@ void testRangeMin(int[] v, int[] t, size_t i0, size_t i1)
   }
 }
 
-void main(string[] args)
-{
+void main(string[] args) {
   auto v = [6, 2, 7, 1, 2, 4, 3];
   auto t = buildRmqTree(v);
   for (size_t s = 1; s <= v.length; s++) {

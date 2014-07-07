@@ -1,9 +1,7 @@
 import std.algorithm, std.conv, std.stdio;
 
-uint[] combinations(int m, int n)
-{
-  static void rec(int m, int n, uint s, int b, ref uint[] acc)
-  {
+uint[] combinations(int m, int n) {
+  static void rec(int m, int n, uint s, int b, ref uint[] acc) {
     if (m > n) {
       return;
     }
@@ -23,8 +21,7 @@ uint[] combinations(int m, int n)
   return acc;
 }
 
-void printSets(T)(int n, T[] c)
-{
+void printSets(T)(int n, T[] c) {
   auto format = "%0" ~ to!string(n) ~ "b";
   foreach (s; c) {
     writefln(format, s);
@@ -32,8 +29,7 @@ void printSets(T)(int n, T[] c)
   // writeln();
 }
 
-void testCombinations()
-{
+void testCombinations() {
   immutable n = 4;
   foreach (i; 0 .. n + 1) {
     writefln("C %s %s:", i, n);
@@ -42,8 +38,7 @@ void testCombinations()
   writefln("");
 }
 
-size_t getDecreasingSeqLength(T)(T[] a)
-{
+size_t getDecreasingSeqLength(T)(T[] a) {
   size_t i = 1;
   for (; i < a.length && a[i - 1] > a[i]; i++) {
     // Empty.
@@ -51,10 +46,8 @@ size_t getDecreasingSeqLength(T)(T[] a)
   return i;
 }
 
-int[][] permutations(int n)
-{
-  static bool rec(int[] p)
-  {
+int[][] permutations(int n) {
+  static bool rec(int[] p) {
     auto i = getDecreasingSeqLength(p);
     if (i == p.length) {
       return false;
@@ -86,14 +79,12 @@ int[][] permutations(int n)
   return acc;
 }
 
-void testPermutations()
-{
+void testPermutations() {
   writeln("Permutation of 3:");
   writeln(permutations(3));
 }
 
-void main(string[] args)
-{
+void main(string[] args) {
   testCombinations();
   testPermutations();
 }

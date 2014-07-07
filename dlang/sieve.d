@@ -2,8 +2,7 @@ import std.algorithm, std.conv, std.stdio;
 
 // Linear time sieve algorithm. Output array will contain for each the minimal
 // divisor for each integer [0..n] (0 for index 0 and 1).
-int[] linearSieve(int n)
-{
+int[] linearSieve(int n) {
   auto a = new int[](n + 1);
   int[] primes;
   for (int i = 2; i < a.length; i++) {
@@ -23,8 +22,7 @@ int[] linearSieve(int n)
   return a;
 }
 
-void main(string[] args)
-{
+void main(string[] args) {
   auto s = linearSieve(18);
   writefln("%s", s);
 }

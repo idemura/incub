@@ -14,7 +14,7 @@ fi
 src=$1
 output=${src%.*}  # Extension trimmed.
 
-rm -rf $output "$output.dSYM"
+rm -rf $output $output.dSYM
 
 dbg="-O0 -g -DDEBUG"
 opt="-O2 -flto -ffast-math -DNDEBUG"

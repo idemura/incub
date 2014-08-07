@@ -3,11 +3,12 @@ import string
 
 class Token:
   EOF = 0
-  BEGIN = 1
-  END = 2
-  LPAREN = 3
-  RPAREN = 4
-  COMMA = 5
+  BEGIN = 10
+  END = 11
+  EOL = 12
+  LPAREN = 20
+  RPAREN = 21
+  COMMA = 22
 
   def __init__(self, type, line, col):
     self.type = type
@@ -47,7 +48,9 @@ class LineSource
       print ('ET001 {0}@{1}: Line indentation space chars don\'t match ' +
              'to the prevous line').format(self.line_i + 1, i + 1)
       return
-    if len(indent_s) > len(self.indent):
+    if len(indent_s) == len(self.indent):
+      tokens.append(Token(Token.EOL, self.line_i, i))
+    elif len(indent_s) > len(self.indent):
       tokens.append(Token(Token.BEGIN, self.line_i, i))
     else:
       while len(indent_s) < self.indent_stack[-1]:

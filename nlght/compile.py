@@ -29,49 +29,129 @@ def suffixEq(s1, s2):
   ml = min(len(s1), len(s2))
   return s1[:ml] == s2[:ml]
 
-class LineSource
-  def __init__(self, lines):
+def error(abs_location, message):
+  j = message.find(':')
+  if j >= 0:
+    m = message[:j] + '{0}:{1}@{2}'.format(*abs_location) + message[j:]
+  else:
+    m = message
+  print m
+  exit(-1)
+
+class Liner:
+  def __init__(self, file_name, lines, tokens):
+    self.tokens = tokens
+    self.file_name = file_name
     self.lines = map(string.rstrip, lines)
-    self.line_i = 0
+    self.line_i = -1
     self.indent_stack = [0]
     self.indent = ''
+    self.wrap = False
+
+  # # Count of indentation levels.
+  # def getIndentCount(self):
+  #   # First element is 0.
+  #   return len(self.indent_stack) - 1
+
+  def getIndent(self):
+    return self.indent_stack[-1]
+
+  def pushIndent(self, indent):
+    if len(indent) < len(self.indent):
+      error('R001: Indent check')
+    if len(indent) > len(self.indent):
+      self.indent = indent
+      self.indent_stack.append(len(indent))
+
+  def popIndent(self):
+    n = self.indent_stack.pop()
+    self.indent = self.indent[:n]
+    return n
+
+  def popIndentUntil(self, n):
+    while self.indent_stack[-1] > n:
+      j = self.popIndent()
+      self.tokens.append(Token(Token.END, self.line_i, j))
+    if self.indent_stack[-1] != n:
+      error(self.getAbsLocation(0),
+            'L002: Line indentation width mismatch')
+
+  # def clearIndents(self):
+  #   self.indent_stack = [0]
+  #   self.indent = ''
+
+  # Current line or None if EOF.
+  def getCurrentLine(self):
+    if self.line_i < len(self.lines):
+      return self.lines[self.line_i]
+
+  # Translates column position to (file, line, column).
+  def getAbsLocation(self, col):
+    return (self.file_name, self.line_i + 1, col + 1)
+
+  # (line String | None, line_num I32).
+  def getNonEmptyLine(self):
+    if self.line_i == len(self.lines):
+      return (None, self.line_i)
+    self.line_i += 1
+    while self.line_i < len(self.lines):
+      s = self.lines[self.line_i]
+      i = getLeftSpaceCount(s)
+      if not (i == len(s) or s[i] == '#'):
+        indent_s = s[:i]
+        if not suffixEq(self.indent, indent_s):
+          error(self.getAbsLocation(i),
+                'L001: Indentation spaces mismatch')
+        return (s, self.line_i)
+      self.line_i += 1
+    return (None, self.line_i)
 
   def getLine(self):
-    s = self.lines[self.line_i]
+    if self.wrap:
+      self.popIndent()
+      self.wrap = False
+
+    s, line_i = self.getNonEmptyLine()
+    if s is None:
+      # EOF
+      self.popIndentUntil(0)
+      return (s, line_i)
+
     i = getLeftSpaceCount(s)
-    if i == len(s) or s[i] == '#':
-      self.line_i += 1
-      return getLine()
-
     indent_s = s[:i]
-    if not suffixEq(self.indent, indent_s):
-      print ('ET001 {0}@{1}: Line indentation space chars don\'t match ' +
-             'to the prevous line').format(self.line_i + 1, i + 1)
-      return
-    if len(indent_s) == len(self.indent):
-      tokens.append(Token(Token.EOL, self.line_i, i))
-    elif len(indent_s) > len(self.indent):
-      tokens.append(Token(Token.BEGIN, self.line_i, i))
+    # if not suffixEq(self.indent, indent_s):
+    #   print ('ET001 {0}@{1}: Line indentation space chars don\'t match ' +
+    #          'to the prevous line').format(self.line_i + 1, i + 1)
+    #   return
+    # if len(indent_s) == len(self.indent):
+    #   tokens.append(Token(Token.EOL, self.line_i, i))
+    # elif len(indent_s) > len(self.indent):
+    #   tokens.append(Token(Token.BEGIN, self.line_i, i))
+    if len(indent_s) > len(self.indent):
+      self.tokens.append(Token(Token.BEGIN, line_i, i))
     else:
-      while len(indent_s) < self.indent_stack[-1]:
-        tokens.append(Token(Token.END, self.line_i, i))
-        n = self.indent_stack.pop()
-        self.indent = self.indent[:n]
-      if len(indent_s) != self.indent_stack[-1]:
-        print ('ET002 {0}@{1}: Line indentation doesn\'t match to any ' +
-               'of lines above').format(self.line_i + 1, i + 1)
-        return
-    self.indent = indent_s
-    if self.indent_stack[-1] != len(indent_s):
-      self.indent_stack.append(len(indent_s))
-    self.line_i += 1
-    return (s, self.line_i - 1, i)
+      self.popIndentUntil(len(indent_s))
+    self.pushIndent(indent_s)
+    return (s, line_i)
 
-  def getCommaLine(self):
-    pass
-
-  def getSlashLine(self):
-    pass
+  # (line String | None, line_num I32)
+  def getWrappedLine(self):
+    s, line_i = self.getNonEmptyLine()
+    if s is None:
+      return (s, line_i)
+    i = getLeftSpaceCount(s)
+    if self.wrap:
+      if i != self.indent_stack[-1]:
+        error(self.getAbsLocation(i),
+              'L003: Wrapped line indentation width mismatch')
+        return (None, line_i)
+    else:
+      if i <= self.indent_stack[-1]:
+        error(self.getAbsLocation(i),
+              'L004: Wrapped line indentation should be greater than start line')
+        return (None, line_i)
+      self.wrap = True
+    return (s, line_i)
 
 def tokenizeLine(line, i, tokens):
   while i < len(line):
@@ -98,21 +178,11 @@ def tokenizeLine(line, i, tokens):
 
 # src: List(String)
 def compile(src):
-  src = map(string.rstrip, lines)
-  for i in range(len(src)):
-    print '{0}: {1}'.format(i + 1, src[i])
-  indent = ''
-  indent_stack = [0]
-  # tokens: List(Token)
   tokens = []
-  line_i = 0
-  MODE_NORMAL = 0
-  MODE_CARRY_SLASH = 1
-  MODE_CARRY_COMMA = 2
-  mode = MODE_NORMAL
-  carry_first = -1
-  carry_n = 0
-  while line < len(src):
+  liner = Liner('<file>', src, tokens)
+  s, line_i = liner.getLine()
+  while s is not None:
+
     s = src[line_i]
     i = getLeftSpaceCount(s)
     if i == len(s) or s[i] == '#':

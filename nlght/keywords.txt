@@ -1,0 +1,42 @@
+# ${Keywords}, first 10, sort
+if
+fn
+for
+while
+class
+var
+const
+record
+object
+case
+of
+else
+return
+template
+type
+enum
+virtual
+public
+import
+extern
+
+# ${SymOps}, first 100
+( lparen
+) rparen
+, comma
+[ lbracket
+] rbracket
+: colon
+! not
+~ tilde
+% mod
+/ div
+^ xor
+& and
+| or
++ plus
+- minus
+* star
+= assign
+> gt
+< lt

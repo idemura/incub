@@ -10,10 +10,10 @@ def main(argv):
     print 'Usage: nlght <file>'
     print 'Version: {0}'.format(VERSION)
     return -1
-  print cmdline.kvalue
-  with open(cmdline.positional[0], 'rt') as f:
-    compile.compile(f.readlines())
-    # Dump compiled to C file and run C compiler (?).
+  for file_name in cmdline.positional:
+    with open(file_name, 'rt') as f:
+      compile.compile(file_name, f.readlines())
+  # Error means program will exit in when error detected.
   return 0
 
 if __name__ == '__main__':

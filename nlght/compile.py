@@ -5,9 +5,9 @@ EOF = 0
 BEGIN = 1
 END = 2
 EOL = 3
-STRING_LITERAL = 4
-ID = 5
-TYPE_ID = 4
+ID = 4
+TYPE_ID = 5
+STRING_LITERAL = 10
 # ${Tokens}
 ALIAS = 100
 CASE = 101
@@ -203,6 +203,7 @@ class Liner:
     s = self.getNonEmptyLine()
     if s is None:
       # EOF. Emit END tokens for indents left in the stack.
+      self.tokens.append(Token(EOL, self.getAbsLocation(0)))
       self.popIndentUntil(0)
       return None
 
@@ -211,6 +212,8 @@ class Liner:
     if i > len(self.indent):
       self.tokens.append(Token(BEGIN, self.getAbsLocation(i)))
     elif i < len(self.indent):
+      # First, previous line is over.
+      self.tokens.append(Token(EOL, self.getAbsLocation(i)))
       self.popIndentUntil(i)
     else:
       self.tokens.append(Token(EOL, self.getAbsLocation(i)))
@@ -250,6 +253,16 @@ char_escapes = {
   'n' : '\n', 'r': '\r', 't': '\t', 's': ' ', 'a': '\a', 'b': '\b', '\\': '\\'
 }
 
+def getStringLiteralPrefix(s):
+  # TODO: Raw string literals, hexadecimal and ' literals or regexps?
+  for p in ['"', 'r"', 'x"']:
+    if s.startswith('"'):
+      return p
+  return None
+
+def isStringLiteral(s):
+  return getStringLiteralPrefix(s) is not None
+
 def tokenizeLine(liner, tokens):
   line = liner.getLine()
   if line is None:
@@ -270,7 +283,7 @@ def tokenizeLine(liner, tokens):
       first = i
       i, id_s = takeId(line, i)
       if id_s in KEYWORDS:
-        tokens.append(Token(KEYWORDS[id_s], liner.getAbsLocation(first), id_s))
+        tokens.append(Token(KEYWORDS[id_s], liner.getAbsLocation(first)))
       else:
         tokens.append(Token(ID, liner.getAbsLocation(first), id_s))
     elif line[i: i + 2] in SYMOPS:
@@ -280,11 +293,13 @@ def tokenizeLine(liner, tokens):
       tokens.append(Token(SYMOPS[line[i: i + 1]], liner.getAbsLocation(first)))
       i += 1
       # TODO: Check if `, `( or `[ ends the line.
-    elif line[i] == '"':
+    elif isStringLiteral(line[i:]):
+      p = getStringLiteralPrefix(line[i:])
       literal_first = i
       literal = ''
+      i += len(p)
       while i < len(line):
-        if line[i] == '"':
+        if line[i] == p[-1]:
           i += 1
           break
         if line[i] == '\\':
@@ -312,7 +327,6 @@ def tokenizeLine(liner, tokens):
       if i == len(line):
         error(liner.getAbsLocation(i),
               'T003: String literal isn\'t terminated')
-      print 'add string literal'
       tokens.append(Token(STRING_LITERAL, liner.getAbsLocation(literal_first),
                           literal))
   return True

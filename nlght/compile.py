@@ -130,7 +130,7 @@ def error(loc, message):
   if loc is not None:
     j = message.find(':')
     if j >= 0:
-      m = message[:j] + '{0}:{1}@{2}'.format(*loc) + message[j:]
+      m = message[:j] + ' {0}:{1}@{2}'.format(*loc) + message[j:]
     else:
       m = message
   print m
@@ -175,9 +175,6 @@ class Liner:
   # Translates column position to (file, line, column) for user message.
   def getAbsLocation(self, col):
     return (self.file_name, self.line_i + 1, col + 1)
-
-  def getLineIndex(self):
-    return self.line_i
 
   # (line String | None, line_num I32).
   def getNonEmptyLine(self):
@@ -286,13 +283,17 @@ def tokenizeLine(liner, tokens):
     elif line[i] == '"':
       literal_first = i
       literal = ''
-      while i < len(line) and line[i] != '"':
+      while i < len(line):
+        if line[i] == '"':
+          i += 1
+          break
         if line[i] == '\\':
           i += 1
           if i < len(line):
             # Escaped character.
             if line[i] in char_escapes:
-              literal.append(char_escapes[line[i]])
+              literal += char_escapes[line[i]]
+              i += 1
             else:
               error(liner.getAbsLocation(i),
                     'T002: Unknown escape char {0}'.format(line[j]))
@@ -303,12 +304,15 @@ def tokenizeLine(liner, tokens):
             if line[i] != '\\':
               error(liner.getAbsLocation(i),
                     'T001: \\ wrappend line should begin with \\')
+            i += 1
         else:
           # TODO: if space other than space, error, or bad utf8.
-          literal.append(line[i])
+          literal += line[i]
+          i += 1
       if i == len(line):
         error(liner.getAbsLocation(i),
               'T003: String literal isn\'t terminated')
+      print 'add string literal'
       tokens.append(Token(STRING_LITERAL, liner.getAbsLocation(literal_first),
                           literal))
   return True
@@ -319,6 +323,9 @@ def compile(file_name, src):
   liner = Liner(file_name, src, tokens)
   while tokenizeLine(liner, tokens):
     pass
+  tokens.append(Token(EOF, liner.getAbsLocation(0)))
 
-  print map(str, tokens)
-  return tokens
+  for t in tokens:
+    print str(t)
+
+  return True

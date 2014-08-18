@@ -1,3 +1,4 @@
+import cmdline
 import common
 import string
 
@@ -125,20 +126,9 @@ def suffixEq(s1, s2):
   ml = min(len(s1), len(s2))
   return s1[:ml] == s2[:ml]
 
-def error(loc, message):
-  m = message
-  if loc is not None:
-    j = message.find(':')
-    if j >= 0:
-      m = message[:j] + ' {0}:{1}@{2}'.format(*loc) + message[j:]
-    else:
-      m = message
-  print m
-  exit(-1)
-
 class Liner:
-  def __init__(self, file_name, lines, tokens):
-    self.tokens = tokens
+  def __init__(self, file_name, lines, add_token):
+    self.add_token = add_token
     self.file_name = file_name
     self.lines = map(string.rstrip, lines)
     self.line_i = -1
@@ -153,7 +143,7 @@ class Liner:
   # nothing.
   def pushIndent(self, indent):
     if len(indent) < len(self.indent):
-      error(None, 'R001: Indent check')
+      common.fatal(None, 'R001: Indent check')
     if len(indent) > len(self.indent):
       self.indent = indent
       self.indent_stack.append(len(indent))
@@ -166,10 +156,10 @@ class Liner:
   def popIndentUntil(self, n):
     while self.indent_stack[-1] > n:
       j = self.popIndent()
-      self.tokens.append(Token(END, self.getAbsLocation(j)))
+      self.add_token(Token(END, self.getAbsLocation(j)))
     if self.indent_stack[-1] != n:
-      error(self.getAbsLocation(0),
-            'L002: Line indentation width mismatch')
+      common.error(self.getAbsLocation(0),
+          'L002: Line indentation width mismatch')
     return n  # Consistency with popIndent.
 
   # Translates column position to (file, line, column) for user message.
@@ -188,8 +178,8 @@ class Liner:
       if not (i == len(s) or s[i] == '#'):
         indent_s = s[:i]
         if not suffixEq(self.indent, indent_s):
-          error(self.getAbsLocation(i),
-                'L001: Indentation spaces mismatch')
+          common.error(self.getAbsLocation(i),
+              'L001: Indentation spaces mismatch')
         return s
       self.line_i += 1
     return None
@@ -203,20 +193,20 @@ class Liner:
     s = self.getNonEmptyLine()
     if s is None:
       # EOF. Emit END tokens for indents left in the stack.
-      self.tokens.append(Token(EOL, self.getAbsLocation(0)))
+      self.add_token(Token(EOL, self.getAbsLocation(0)))
       self.popIndentUntil(0)
       return None
 
     i = countLeftSpaces(s)
     indent_s = s[:i]
     if i > len(self.indent):
-      self.tokens.append(Token(BEGIN, self.getAbsLocation(i)))
+      self.add_token(Token(BEGIN, self.getAbsLocation(i)))
     elif i < len(self.indent):
       # First, previous line is over.
-      self.tokens.append(Token(EOL, self.getAbsLocation(i)))
+      self.add_token(Token(EOL, self.getAbsLocation(i)))
       self.popIndentUntil(i)
     else:
-      self.tokens.append(Token(EOL, self.getAbsLocation(i)))
+      self.add_token(Token(EOL, self.getAbsLocation(i)))
     self.pushIndent(indent_s)
     return s
 
@@ -228,12 +218,12 @@ class Liner:
     i = countLeftSpaces(s)
     if self.wrap:
       if i != self.indent_stack[-1]:
-        error(self.getAbsLocation(i),
-              'L003: Wrapped line indentation width mismatch')
+        common.error(self.getAbsLocation(i),
+            'L003: Wrapped line indentation width mismatch')
     else:
       if i <= self.indent_stack[-1]:
-        error(self.getAbsLocation(i),
-              'L004: Wrapped line indentation should be greater than start line')
+        common.error(self.getAbsLocation(i),
+            'L004: Wrapped line indentation should be greater than start line')
       self.wrap = True
     return s
 
@@ -263,7 +253,7 @@ def getStringLiteralPrefix(s):
 def isStringLiteral(s):
   return getStringLiteralPrefix(s) is not None
 
-def tokenizeLine(liner, tokens):
+def tokenizeLine(liner, add_token):
   line = liner.getLine()
   if line is None:
     return False
@@ -278,25 +268,25 @@ def tokenizeLine(liner, tokens):
       first = i
       # TODO: Bangs are treated as part of type id in tokenizer.
       i, id_s = takeId(line, i)
-      tokens.append(Token(TYPE_ID, liner.getAbsLocation(first), id_s))
+      add_token(Token(TYPE_ID, liner.getAbsLocation(first), id_s))
     elif isIdFirst(line[i]):
       first = i
       i, id_s = takeId(line, i)
       if id_s in KEYWORDS:
-        tokens.append(Token(KEYWORDS[id_s], liner.getAbsLocation(first)))
+        add_token(Token(KEYWORDS[id_s], liner.getAbsLocation(first)))
       else:
-        tokens.append(Token(ID, liner.getAbsLocation(first), id_s))
+        add_token(Token(ID, liner.getAbsLocation(first), id_s))
     elif line[i: i + 2] in SYMOPS:
-      tokens.append(Token(SYMOPS[line[i: i + 2]], liner.getAbsLocation(first)))
+      add_token(Token(SYMOPS[line[i: i + 2]], liner.getAbsLocation(first)))
       i += 2
     elif line[i: i + 1] in SYMOPS:
-      tokens.append(Token(SYMOPS[line[i: i + 1]], liner.getAbsLocation(first)))
+      add_token(Token(SYMOPS[line[i: i + 1]], liner.getAbsLocation(first)))
       i += 1
       # TODO: Check if `, `( or `[ ends the line.
     elif isStringLiteral(line[i:]):
       p = getStringLiteralPrefix(line[i:])
-      literal_first = i
-      literal = ''
+      first = i
+      value = ''
       i += len(p)
       while i < len(line):
         if line[i] == p[-1]:
@@ -307,39 +297,47 @@ def tokenizeLine(liner, tokens):
           if i < len(line):
             # Escaped character.
             if line[i] in char_escapes:
-              literal += char_escapes[line[i]]
+              value += char_escapes[line[i]]
               i += 1
             else:
-              error(liner.getAbsLocation(i),
-                    'T002: Unknown escape char {0}'.format(line[j]))
+              common.error(liner.getAbsLocation(i),
+                  'T002: Unknown escape char {0}'.format(line[j]))
           else:
             # Wrap the line.
             line = liner.getWrappedLine()
             i = countLeftSpaces(line)
             if line[i] != '\\':
-              error(liner.getAbsLocation(i),
-                    'T001: \\ wrappend line should begin with \\')
+              common.error(liner.getAbsLocation(i),
+                  'T001: \\ wrappend line should begin with \\')
             i += 1
         else:
           # TODO: if space other than space, error, or bad utf8.
-          literal += line[i]
+          value += line[i]
           i += 1
       if i == len(line):
-        error(liner.getAbsLocation(i),
-              'T003: String literal isn\'t terminated')
-      tokens.append(Token(STRING_LITERAL, liner.getAbsLocation(literal_first),
-                          literal))
+        common.error(liner.getAbsLocation(i),
+            'T003: String literal isn\'t terminated')
+      add_token(Token(STRING_LITERAL, liner.getAbsLocation(first), value))
   return True
 
 # src: List(String)
 def compile(file_name, src):
   tokens = []
-  liner = Liner(file_name, src, tokens)
-  while tokenizeLine(liner, tokens):
-    pass
-  tokens.append(Token(EOF, liner.getAbsLocation(0)))
 
-  for t in tokens:
-    print str(t)
+  # Passing function instead of `tokens` themselves narrows interface to
+  # just adding and no other manipulation and data structure encapsulation.
+  def addToken(t):
+    tokens.append(t)
+
+  liner = Liner(file_name, src, addToken)
+  while tokenizeLine(liner, addToken):
+    pass
+  addToken(Token(EOF, liner.getAbsLocation(0)))
+
+  if cmdline.get('print_tokens', False):
+    print 'Tokens:'
+    for t in tokens:
+      print str(t)
+    print 'Tokens END.'
 
   return True

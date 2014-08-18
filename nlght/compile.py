@@ -6,50 +6,55 @@ BEGIN = 1
 END = 2
 EOL = 3
 STRING_LITERAL = 4
+ID = 5
+TYPE_ID = 4
 # ${Tokens}
-IF = 10
-FN = 11
-FOR = 12
-WHILE = 13
-CLASS = 14
-VAR = 15
-CONST = 16
-RECORD = 17
-OBJECT = 18
-CASE = 19
-OF = 20
-ELSE = 21
-RETURN = 22
-TEMPLATE = 23
-TYPE = 24
-ENUM = 25
-VIRTUAL = 26
-PUBLIC = 27
-IMPORT = 28
-EXTERN = 29
-LPAREN = 100
-RPAREN = 101
-COMMA = 102
-LBRACKET = 103
-RBRACKET = 104
-COLON = 105
-NOT = 106
-TILDE = 107
-MOD = 108
-DIV = 109
-XOR = 110
-AND = 111
-OR = 112
-PLUS = 113
-MINUS = 114
-STAR = 115
-ASSIGN = 116
-GT = 117
-LT = 118
+ALIAS = 100
+CASE = 101
+CLASS = 102
+CONST = 103
+ELSE = 104
+ENUM = 105
+EXTERN = 106
+FN = 107
+FOR = 108
+IF = 109
+IMPORT = 110
+IS = 111
+OBJECT = 112
+OF = 113
+PUBLIC = 114
+RECORD = 115
+RETURN = 116
+TEMPLATE = 117
+TYPE = 118
+VAR = 119
+VIRTUAL = 120
+WHILE = 121
+LPAREN = 150
+RPAREN = 151
+COMMA = 152
+LBRACKET = 153
+RBRACKET = 154
+COLON = 155
+NOT = 156
+TILDE = 157
+MOD = 158
+DIV = 159
+XOR = 160
+AND = 161
+OR = 162
+PLUS = 163
+MINUS = 164
+STAR = 165
+ASSIGN = 166
+GT = 167
+LT = 168
 # $END.
 
 KEYWORDS = {
   # ${Keywords}
+  'alias' : ALIAS,
   'case' : CASE,
   'class' : CLASS,
   'const' : CONST,
@@ -60,6 +65,7 @@ KEYWORDS = {
   'for' : FOR,
   'if' : IF,
   'import' : IMPORT,
+  'is' : IS,
   'object' : OBJECT,
   'of' : OF,
   'public' : PUBLIC,
@@ -280,7 +286,7 @@ def tokenizeLine(liner, tokens):
     elif line[i] == '"':
       literal_first = i
       literal = ''
-      while i < len(line) and line[j] != '"':
+      while i < len(line) and line[i] != '"':
         if line[i] == '\\':
           i += 1
           if i < len(line):
@@ -299,7 +305,7 @@ def tokenizeLine(liner, tokens):
                     'T001: \\ wrappend line should begin with \\')
         else:
           # TODO: if space other than space, error, or bad utf8.
-          literal.append(line[j])
+          literal.append(line[i])
       if i == len(line):
         error(liner.getAbsLocation(i),
               'T003: String literal isn\'t terminated')

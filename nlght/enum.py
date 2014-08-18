@@ -46,11 +46,13 @@ def parseTokens(liner, sec):
       n = cols[1].upper()
     else:
       n = cols[0].upper()
-    tokens.append(Token(cols[0], n, e))
-    e += 1
+    tokens.append(Token(cols[0], n, 0))
     l = liner.getLine()
   if sec.get('sort'):
     tokens.sort(key=lambda x: x.name)
+  for i, v in enumerate(tokens):
+    tokens[i].enum = e
+    e += 1
   return tokens
 
 def parse(lines_in):

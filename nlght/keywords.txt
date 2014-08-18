@@ -1,4 +1,4 @@
-# ${Keywords}, first 10, sort
+# ${Keywords}, first 100, sort
 alias
 if
 fn
@@ -22,7 +22,7 @@ import
 extern
 is
 
-# ${SymOps}, first 100
+# ${SymOps}, first 150
 ( lparen
 ) rparen
 , comma

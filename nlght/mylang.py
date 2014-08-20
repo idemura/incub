@@ -2,8 +2,10 @@ import http.*  # Import all
 import cron:Type,method
 import time  # Can access as time.Now()
 
-fn absDist(a I32, b I32) I32:  # here I can put or not :
-  if a > b:  # : or not
+fn absDist(a I32, b I32) I32  # here I can put or not :
+# or
+fn absDist(a, b I32) I32
+  if a > b:  # : or not, : used for one liners.
     return a - b
   else  # :?
     return b - a
@@ -33,20 +35,15 @@ fn f2(s String) I32
   return c
 
 # for cycle:
-for key in collection <var/val? too many keywords, value, var? as/as var?> ki:
+for key in collection <var/val? too many keywords, value, var? as/as var?> ki
   print(key, ki)
 
-# if unnamed template, then only for the record/object/fn immediately after.
-template(T)
-class Stream
-  fn read(out T x)
-  fn write(T x)
+for key in coll
+  print(key, coll[key])
 
-template CopierT(T, In, Out, K)
-  In is Stream(T)
-  Out is Stream(T)
-  K is [I32, I64, I16, I8]
-
+# You may need to name (alias) collection:
+for key in coll = coll_a ~ coll_b
+  print(key, coll[key])
 
 # generic loop is for too?
 var i = 0
@@ -63,6 +60,24 @@ while i < 100
   i += rand() % 13
 println("")
 
+# ENUM
+enum DaysOfWeek
+  # Big question about naming!
+  # Allow or now capital letter in the beginning? I think no.
+  monday  # 0 by default, as C.
+  tuesday  # +1 by default,
+  wednesday
+
+enum Masks
+  # Enums default value is the first in the enum list!
+  bit1 = 1  # explicit set
+  bit2 = _ * 2  # compile time. _ means previous value as base int value.
+
+# Setting U64 as base integral value.
+enum E2(U64)
+  val1
+  val2
+
 # varargs!?
 # overload? syntax like: see below.
 fn f1(x) Void
@@ -75,10 +90,11 @@ fn f1(x) Void
 # x, y I32, name String
 # seems like our philosophy type is tag to the term! So it's not allowed.
 # memeber are always same access as tuple type.
-value Point(x I32, y I32, s String)
-
+# No now we'd better allow it.
+record Point(x I32, y I32, s String)
+record Point(x, y I32, s String)
 # can be in the heap.
-value Point
+record Point
   x, y I32  # rule broken (type to token). The same for var?:
             #   var x, y I32
             #   var x, y = 0, 0 considered harmful as "many ways to do the same"
@@ -93,22 +109,24 @@ fn MyData(Iptr sz)
   # arrays are like vectors. Operators or functions?
 
 # CAST
+# Core feature - cast show exact type from and to:
+x cast(F32, I32)  # Here, x is F32 and casted to I32.
+# cast can be treated as binary operator.
 x I32
-(x + y) I32
-x I32 + y I32
-object MyData*
-(object MyData*).left = null
+(x + y) cast(F32, I32)
+(x cast(Object, MyObject)).left = 12
 
 # If struct implements something, it MUST be allocated in the heap.
 # Maybe better way? Pure for that doesn't allow "implement"?
 # Value and class + interface.
-struct MyData
+record MyData
   implements AdderBack, Remover
   data I32[]
   left, right MyData*
   public name, tag String  # public to all the list of name and tag
 
 # non-interface function.
+# this or _?
 fn MyData.printName()
   print("hello " + this.name)
 
@@ -136,7 +154,7 @@ fn A!I.getTime() I64: return 10
 # class - interface
 
 class B
-  empty
+  empty  # Better use pythonic pass as less wtf.
 fn B.setTime(t I64) Void
   empty
 
@@ -209,3 +227,13 @@ increment(&i1)
 # Export allows to use symbols.
 
 # TEMPLATES!
+# if unnamed template, then only for the record/object/fn immediately after.
+template(T)
+class Stream
+  fn read(out T x)
+  fn write(T x)
+
+template CopierT(T, In, Out, K)
+  In is Stream(T)
+  Out is Stream(T)
+  K is [I32, I64, I16, I8]

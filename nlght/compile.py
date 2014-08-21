@@ -318,6 +318,7 @@ def tokenizeLine(liner, add_token):
         common.error(liner.getAbsLocation(i),
             'T003: String literal isn\'t terminated')
       add_token(Token(STRING_LITERAL, liner.getAbsLocation(first), value))
+  # TODO: Integer and float literals.
   return True
 
 # src: List(String)

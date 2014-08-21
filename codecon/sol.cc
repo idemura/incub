@@ -24,6 +24,7 @@ struct ParenBal {
   int open_r, open_l;
   ParenBal(): open_r(), open_l() {}
 };
+typedef vector<ParenBal> ParenBalVector;
 
 ParenBal sum(const ParenBal &lh, const ParenBal &rh) {
   ParenBal r;
@@ -36,13 +37,14 @@ ParenBal sum(const ParenBal &lh, const ParenBal &rh) {
 int countStepsToSum(int n) {
   assert(n > 0);
   int c = 0;
-  for (; (n & 1) == 0; n >>= 1) {
+  while (!(n & 1)) {
     c++;
+    n >>= 1;
   }
   return c;
 }
 
-void buildBIT(const vector<char> &s, vector<ParenBal> &bit) {
+void buildBIT(const vector<char> &s, ParenBalVector &bit) {
   printf("string %s\n", &s[0]);
   bit.resize(s.size());
   for (int i = 0; i < s.size(); i++) {
@@ -62,12 +64,22 @@ void buildBIT(const vector<char> &s, vector<ParenBal> &bit) {
   }
 }
 
+bool check(const ParenBalVector &bit) {
+  int n = bit.size();
+  ParenBal pb;
+  while (n != 0) {
+    pb = sum(bit[n - 1], pb);
+    n -= n & -n;
+  }
+  return pb.open_r == 0 && pb.open_l == 0;
+}
+
 int main(int argc, char **argv) {
 #ifndef ONLINE_JUDGE
   freopen("in", "r", stdin);
 #endif
   vector<char> s;
-  vector<ParenBal> bit;
+  ParenBalVector bit;
   for (int i = 0; i < 1; i++) {
     int n = 0;
     scanf("%d", &n);
@@ -82,6 +94,8 @@ int main(int argc, char **argv) {
       int op = 0;
       scanf("%d", &op);
       if (op == 0) {
+        bool valid = check(bit);
+        printf("%s\n", valid? "YES": "NO");
       } else {
       }
     }

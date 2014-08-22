@@ -21,57 +21,96 @@ using namespace std;
 typedef long long int lli;
 
 struct ParenBal {
-  int open_r, open_l;
-  ParenBal(): open_r(), open_l() {}
+  // Count of open right parens on the left end, and open left parens on the
+  // right end.
+  int r, l;
+  ParenBal(): r(), l() {}
 };
 typedef vector<ParenBal> ParenBalVector;
 
+struct Bit {
+  int n;
+  vector<ParenBal> t;
+
+  Bit(): n() {}
+  void init(int str_len) {
+    int n = str_len;
+    int s = 0;
+    while (true) {
+      s += n;
+      if (n == 1) break;
+      n = (n + 1) / 2;
+    }
+    t.resize(s);
+    this->n = str_len;
+  }
+
+  void print() const {
+    int j = 0;
+    int n = this->n;
+    while (true) {
+      for (int i = 0; i < n; i++) {
+        printf("r %d l %d, ", t[j].r, t[j].l);
+        j++;
+      }
+      printf("\n");
+      if (n == 1) break;
+      n = (n + 1) / 2;
+    }
+  }
+};
+
 ParenBal sum(const ParenBal &lh, const ParenBal &rh) {
   ParenBal r;
-  int m = std::min(lh.open_l, rh.open_r);
-  r.open_l = lh.open_l + rh.open_l - m;
-  r.open_r = lh.open_r + rh.open_r - m;
+  int m = std::min(lh.l, rh.r);
+  r.l = lh.l + rh.l - m;
+  r.r = lh.r + rh.r - m;
   return r;
 }
 
-int countStepsToSum(int n) {
-  assert(n > 0);
-  int c = 0;
-  while (!(n & 1)) {
-    c++;
-    n >>= 1;
-  }
-  return c;
-}
+// int countStepsToSum(int n) {
+//   assert(n > 0);
+//   int c = 0;
+//   while (!(n & 1)) {
+//     c++;
+//     n >>= 1;
+//   }
+//   return c;
+// }
 
-void buildBIT(const vector<char> &s, ParenBalVector &bit) {
-  printf("string %s\n", &s[0]);
-  bit.resize(s.size());
-  for (int i = 0; i < s.size(); i++) {
+void create(const vector<char> &str, Bit &bit) {
+  printf("string %s\n", &str[0]);
+  bit.init(str.size());
+  for (int i = 0; i < str.size(); i++) {
     ParenBal pb;
-    pb.open_r = s[i] == ')'? 1: 0;
-    pb.open_l = s[i] == '('? 1: 0;
-    int steps_to_sum = countStepsToSum(i + 1);
-    for (int s = 0; s < steps_to_sum; s++) {
-      int step_i = i - (1 << s);
-      pb = sum(bit[step_i], pb);
+    pb.r = str[i] == ')'? 1: 0;
+    pb.l = str[i] == '('? 1: 0;
+    bit.t[i] = pb;
+    int n = str.size();
+    int s = n;
+    int j = i;
+    printf("----\n");
+    while (n > 1) {
+      printf("update index %d\n", s + j / 2);
+      bit.t[s + j / 2] = sum(bit.t[s + j / 2], pb);
+      n = (n + 1) / 2;
+      s += n;
+      j /= 2;
     }
-    bit[i] = pb;
   }
-
-  for (int i = 0; i < bit.size(); i++) {
-    printf("bit[%d] r %d l %d\n", i, bit[i].open_r, bit[i].open_l);
-  }
+  bit.print();
 }
 
-bool check(const ParenBalVector &bit) {
-  int n = bit.size();
-  ParenBal pb;
-  while (n != 0) {
-    pb = sum(bit[n - 1], pb);
-    n -= n & -n;
-  }
-  return pb.open_r == 0 && pb.open_l == 0;
+bool check(const Bit &bit) {
+  ParenBal pb = bit.t[bit.t.size() - 1];
+  return pb.r == 0 && pb.l == 0;
+}
+
+void update(int i, vector<char> &str, Bit &bit) {
+  str[i] = str[i] == '('? ')': '(';
+  printf("new string %s\n", &str[0]);
+  // TODO
+  bit.print();
 }
 
 int main(int argc, char **argv) {
@@ -79,14 +118,14 @@ int main(int argc, char **argv) {
   freopen("in", "r", stdin);
 #endif
   vector<char> s;
-  ParenBalVector bit;
+  Bit bit;
   for (int i = 0; i < 1; i++) {
     int n = 0;
     scanf("%d", &n);
     s.resize(n);
     scanf("%s", &s[0]);
 
-    buildBIT(s, bit);
+    create(s, bit);
 
     int m = 0;
     scanf("%d", &m);
@@ -97,6 +136,7 @@ int main(int argc, char **argv) {
         bool valid = check(bit);
         printf("%s\n", valid? "YES": "NO");
       } else {
+        update(op - 1, s, bit);
       }
     }
   }

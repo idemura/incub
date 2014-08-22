@@ -28,6 +28,13 @@ struct ParenBal {
 };
 typedef vector<ParenBal> ParenBalVector;
 
+ParenBal fromChar(char c) {
+  ParenBal pb;
+  pb.r = c == ')'? 1: 0;
+  pb.l = c == '('? 1: 0;
+  return pb;
+}
+
 struct Bit {
   int n;
   vector<ParenBal> t;
@@ -82,11 +89,9 @@ void create(const vector<char> &str, Bit &bit) {
   printf("string %s\n", &str[0]);
   bit.init(str.size());
   for (int i = 0; i < str.size(); i++) {
-    ParenBal pb;
-    pb.r = str[i] == ')'? 1: 0;
-    pb.l = str[i] == '('? 1: 0;
+    ParenBal pb = fromChar(str[i]);
     bit.t[i] = pb;
-    int n = str.size();
+    int n = bit.n;
     int s = n;
     int j = i;
     printf("----\n");
@@ -109,7 +114,20 @@ bool check(const Bit &bit) {
 void update(int i, vector<char> &str, Bit &bit) {
   str[i] = str[i] == '('? ')': '(';
   printf("new string %s\n", &str[0]);
-  // TODO
+  bit.t[i] = fromChar(str[i]);
+  int n = bit.n;
+  int s = n;
+  int j = i;
+  while (n > 1) {
+    if (j & 1) {
+      bit.t[s + j / 2] = sum(bit.t[j - 1], bit.t[j]);
+    } else {
+      bit.t[s + j / 2] = sum(bit.t[j], j + 1 < n? bit.t[j + 1]: ParenBal());
+    }
+    j /= 2;
+    n = (n + 1) / 2;
+    s += n;
+  }
   bit.print();
 }
 

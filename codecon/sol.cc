@@ -124,6 +124,7 @@ Node fromChar(char c) {
 }
 
 void init(Bit &bit, int leaf_n) {
+  bit.clear();
   int n = leaf_n;
   int s = 0;
   while (true) {

@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <functional>
 #include <map>
 #include <string>
 #include <vector>
@@ -14,50 +15,27 @@
 
 typedef long long int lli;
 
-template<class T>
-class OperatorLess {
-public:
-  bool operator()(const T &l, const T &r) const
-  {
-    return l < r;
-  }
-};
-
-template<class T, class Cmp = OperatorLess<T> >
+template<class T, class Cmp = std::less<T>>
 class Heap {
 public:
   typedef T ValueT;
 
   explicit Heap(const Cmp &cmp = Cmp()): cmp(cmp) {}
 
-  void insert(const T &val, size_t *index = NULL)
-  {
+  void insert(const T &val, size_t *index = NULL) {
     h.push_back(Elem(val, index));
     setIndex(h.size() - 1);
     heapifyParent(h.size() - 1);
-    // check();
+    check();
   }
 
-  T popMin()
-  {
-    return remove(0);
-  }
-
-  T remove(size_t i)
-  {
-    // Swap i-th and last and restore heap property (heapify). If the last
-    // element was less than i-th, restore up, else - restore down.
-    assert(i < h.size());
-    h[i].setIndex(kNoIndex);
-    const T val = h[i].val;
-    bool last_is_less = less(h.size() - 1, i);
-    h[i] = h[h.size() - 1];
-    setIndex(i);
-    h.pop_back();
-    if (last_is_less) {
+  // If you changed priority (either decrease or increase call this to
+  // restore heap property.
+  void reheapAt(size_t i) {
+    if (i > 0 && !less((i - 1) / 2, 0)) {
       heapifyParent(i);
     } else {
-      for (; ;) {
+      for (;;) {
         size_t kmin = i, k;
         k = 2 * i + 1;
         if (k < h.size() && less(k, kmin)) {
@@ -78,22 +56,29 @@ public:
       }
     }
     // check();
+  }
+
+  T popMin() {
+    return remove(0);
+  }
+
+  T remove(size_t i) {
+    // Swap i-th and last and restore heap property (heapify). If the last
+    // element was less than i-th, restore up, else - restore down.
+    assert(i < h.size());
+    h[i].setIndex(kNoIndex);
+    const T val = h[i].val;
+    h[i] = h[h.size() - 1];
+    setIndex(i);
+    h.pop_back();
+    if (h.size() > 1) {
+      reheapAt(i);
+    }
     return val;
   }
 
-  size_t size() const
-  {
+  size_t size() const {
     return h.size();
-  }
-
-  void check() const
-  {
-    for (size_t i = 1; i < h.size(); i++) {
-      size_t p = (i - 1) / 2;
-      if (less(i, p)) {
-        printf("*** Heap corrupted at %zu (parent %zu)\n", i, p);
-      }
-    }
   }
 
 private:
@@ -105,24 +90,20 @@ private:
       setIndex(kNoIndex);
     }
 
-    void setIndex(size_t i)
-    {
+    void setIndex(size_t i) {
       if (index) *index = i;
     }
   };
 
-  void setIndex(size_t i)
-  {
+  void setIndex(size_t i) {
     h[i].setIndex(i);
   }
 
-  bool less(size_t i, size_t j) const
-  {
+  bool less(size_t i, size_t j) const {
     return cmp(h[i].val, h[j].val);
   }
 
-  void heapifyParent(size_t i)
-  {
+  void heapifyParent(size_t i) {
     for (; i > 0;) {
       size_t p = (i - 1) / 2;
       if (less(p, i)) {
@@ -132,6 +113,15 @@ private:
       setIndex(p);
       setIndex(i);
       i = p;
+    }
+  }
+
+  void check() const {
+    for (size_t i = 1; i < h.size(); i++) {
+      size_t p = (i - 1) / 2;
+      if (less(i, p)) {
+        fprintf(stderr, "*** Heap corrupted at %zu (parent %zu)\n", i, p);
+      }
     }
   }
 

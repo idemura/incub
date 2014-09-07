@@ -1,6 +1,8 @@
 #include <algorithm>
+#include <functional>
 #include <map>
 #include <string>
+#include <queue>
 #include <vector>
 #include <assert.h>
 #include <ctype.h>
@@ -21,58 +23,107 @@ using namespace std;
 
 typedef long long int lli;
 
-struct IntMask {
-  int mask, n;
-  IntMask(): mask(), n() {}
+struct Rect {
+  int x0, y0, x1, y1;
+  Rect(): x0(), y0(), x1(), y1() {}
 };
 
-struct IntMaskLess {
-  bool operator()(const IntMask &lh, const IntMask &rh) const {
-    return lh.mask < rh.mask;
-  }
+struct SweepLine {
+  Rect *r;
+  SweepLine(): r() {}
+  int getY() const { return r->y0; }
+  bool operator<(const SweepLine &other) const { return getY() < other.getY(); }
+  bool operator>(const SweepLine &other) const { return getY() > other.getY(); }
 };
 
-vector<int> primes;
-vector<vector<int> > g;  // Adjacency list of our graph.
+struct Node {
+  Node *lc, *rc;
+  Rect *r;  // Highest rect that covers current range [x0, x1].
+  int x0, x1;
+  int h;  // Height in all the subtree.
+  Node(): lc(), rc(), r(), x0(), x1(), h() {}
+};
 
-void sieve(int n, std::vector<int> *primes)
-{
-  char *seq = new char[n + 1]();
-  int sqrtn = (int)sqrt(n);
-  int i;
-  for (i = 2; i <= sqrtn; i++) {
-    if (seq[i]) {
-      continue;
-    }
-    for (int j = i * i; j <= n; j += i) {
-      seq[j] = 1;
-    }
-    primes->push_back(i);
+Node* buildTree(const vector<int> &xs, int i0, int i1) {
+  assert(i1 - i0 >= 2);
+  Node *n = new Node();
+  n->x0 = xs[i0];
+  n->x1 = xs[i1 - 1];
+  if (i1 - i0 > 2) {
+    int m = (i0 + i1) / 2;
+    n->lc = buildTree(xs, i0, m + 1);
+    n->rc = buildTree(xs, m, i1);
   }
-  for (; i <= n; i++) {
-    if (!seq[i]) {
-      primes->push_back(i);
-    }
-  }
-  delete[] seq;
+  return n;
 }
 
-int getTripleOfInt(int n, int triple_i) {
-  switch (triple_i) {
-  case 0: return n / 10;  // 123
-  case 1: return (n / 100) * 10 + n % 10;  // 124
-  case 2: return (n / 1000) * 100 + n % 100;  // 134
-  case 3: return n % 1000;  // 234
-  }
-  assert(false);
-  return -1;
+void deleteTree(Node *n) {
+  if (!n) return;
+  deleteTree(n->lc);
+  deleteTree(n->rc);
+  delete n;
 }
 
-int findMinimalCost(int s, int d) {
-  if (s == d) {
-    return 0;
+int getMax(Node *root, int y) {
+  return 0;
+}
+
+void insertRec(Node* n, Rect *r, int x0, int x1) {
+  if (x1 <= n->x0 || x0 >= n->x1) {
+    return;
   }
-  return -1;
+  if (r->y1 > n->h) {
+    n->h = r->y1;
+  }
+  if (x0 <= n->x0 && n->x1 <= x1) {
+    if (!n->r || r->y1 > n->r->y1) {
+      n->r = r;
+    }
+  } else {
+    insertRec(n->lc, r, x0, x1);
+    insertRec(n->rc, r, x0, x1);
+  }
+}
+
+void insert(Node* root, Rect *r) {
+  insertRec(root, r, r->x0, r->x1);
+}
+
+void readAndSolve(Data &data) {
+  int n, r_num;
+  scanf("%d%d", &n, &r_num);
+  vector<Rect> rects(r_num);
+  for (int i = 0; i < rects.size(); i++) {
+    Rect &r = rects[i];
+    scanf("%d%d%d%d", &r.x0, &r.x1, &r.y0, &r.y1);
+  }
+  vector<SweepLine> lines(r_num);
+  for (int i = 0; i < rects.size(); i++) {
+    lines[i].y = rects[i].y0;
+    lines[i].r = &rects[i];
+  }
+  sort(lines.begin(), lines.end());
+  vector<int> xs(2 * r_num);
+  for (int i = 0; i < rects.size(); i++) {
+    xs[2 * i] = rects[i].x0;
+    xs[2 * i + 1] = rects[i].x1;
+  }
+  sort(xs.begin(), xs.end());
+  xs.erase(unique(xs.begin(), xs.end()), xs.end());
+  Node *root = buildTree(xs);
+  int sq_max = 0;
+  for (int i = 0; i < lines.size(); i++) {
+    if (lines[i].bottom) {
+      int sq = getMax(root, lines[i].y);
+      if (sq > sq_max) {
+        sq_max = sq;
+      }
+      insert(root, lines[i].r);
+    }
+  }
+  sq_max = std::max(sq_max, getMax(root, n));
+  printf("%d\n", sq_max);
+  deleteTree(root);
 }
 
 int main(int argc, char **argv) {
@@ -80,52 +131,11 @@ int main(int argc, char **argv) {
   freopen("in", "r", stdin);
 #endif
 
-  sieve(10000, &primes);
-  primes.erase(primes.begin(), lower_bound(primes.begin(), primes.end(), 1000));
-
-  vector<IntMask> masked(primes.size());
-  g.resize(primes.size());
-  for (int t = 0; t < 4; t++) {
-    for (int i = 0; i < primes.size(); i++) {
-      masked[i].n = i;
-      masked[i].mask = getTripleOfInt(primes[i], t);
-    }
-    sort(masked.begin(), masked.end(), IntMaskLess());
-
-    for (int i = 0; i < masked.size(); ) {
-      int i_hi = upper_bound(masked.begin(), masked.end(), masked[i],
-                             IntMaskLess()) - masked.begin();
-      if (i_hi - i > 1) {
-        // printf("for mask %d we have: ", masked[i].mask);
-        // for (int q = i; q < i_hi; q++) {
-        //   printf("%d ", primes[masked[q].n]);
-        // }
-        // printf("\n");
-
-        for (int j = i; j < i_hi; j++) {
-          for (int k = i; k < i_hi; k++) {
-            if (k == j) continue;
-            g[masked[j].n].push_back(masked[k].n);
-            g[masked[k].n].push_back(masked[j].n);
-            // printf("connect %d with %d\n", primes[masked[k].n], primes[masked[j].n]);
-          }
-        }
-      }
-      i = i_hi;
-    }
-  }
-
-  int test_num = 0;
-  scanf("%d", &test_num);
-  for (int t = 1; t <= test_num; t++) {
-    int s, d;
-    scanf("%d%d", &s, &d);
-    int cost = findMinimalCost(s, d);
-    if (cost < 0) {
-      printf("Impossible\n");
-    } else {
-      printf("%d\n", cost);
-    }
+  int t = 0, r = 0, n = 0;
+  scanf("%d", &t);
+  for (int i = 0; i < t; i++) {
+    Data data;
+    readAndSolve(data);
   }
   return 0;
 }

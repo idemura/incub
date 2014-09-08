@@ -1,5 +1,5 @@
 import cmdline
-import common
+from common import error
 import string
 
 EOF = 0
@@ -158,7 +158,7 @@ class Liner:
       j = self.popIndent()
       self.add_token(Token(END, self.getAbsLocation(j)))
     if self.indent_stack[-1] != n:
-      common.error(self.getAbsLocation(0),
+      error(self.getAbsLocation(0),
           'L002: Line indentation width mismatch')
     return n  # Consistency with popIndent.
 
@@ -178,7 +178,7 @@ class Liner:
       if not (i == len(s) or s[i] == '#'):
         indent_s = s[:i]
         if not suffixEq(self.indent, indent_s):
-          common.error(self.getAbsLocation(i),
+          error(self.getAbsLocation(i),
               'L001: Indentation spaces mismatch')
         return s
       self.line_i += 1
@@ -218,11 +218,11 @@ class Liner:
     i = countLeftSpaces(s)
     if self.wrap:
       if i != self.indent_stack[-1]:
-        common.error(self.getAbsLocation(i),
+        error(self.getAbsLocation(i),
             'L003: Wrapped line indentation width mismatch')
     else:
       if i <= self.indent_stack[-1]:
-        common.error(self.getAbsLocation(i),
+        error(self.getAbsLocation(i),
             'L004: Wrapped line indentation should be greater than start line')
       self.wrap = True
     return s
@@ -300,14 +300,14 @@ def tokenizeLine(liner, add_token):
               value += char_escapes[line[i]]
               i += 1
             else:
-              common.error(liner.getAbsLocation(i),
+              error(liner.getAbsLocation(i),
                   'T002: Unknown escape char {0}'.format(line[j]))
           else:
             # Wrap the line.
             line = liner.getWrappedLine()
             i = countLeftSpaces(line)
             if line[i] != '\\':
-              common.error(liner.getAbsLocation(i),
+              error(liner.getAbsLocation(i),
                   'T001: \\ wrappend line should begin with \\')
             i += 1
         else:
@@ -315,9 +315,18 @@ def tokenizeLine(liner, add_token):
           value += line[i]
           i += 1
       if i == len(line):
-        common.error(liner.getAbsLocation(i),
+        error(liner.getAbsLocation(i),
             'T003: String literal isn\'t terminated')
       add_token(Token(STRING_LITERAL, liner.getAbsLocation(first), value))
+    elif line[i] == '\\':
+      if i + 1 != len(line):
+        error('T004: Line wrap \\ only allowed at the end of the line'
+      else:
+        line = liner.getWrappedLine()
+        i = countLeftSpaces(line)
+    else:
+      error('T005: Invalid character {0}'.format(line[i]))
+
   # TODO: Integer and float literals.
   return True
 

@@ -2,6 +2,8 @@ import http.*  # Import all
 import cron:Type,method
 import time  # Can access as time.Now()
 
+# Tokenizer: Don't wrap in the middle of the token except of string.
+
 fn absDist(a I32, b I32) I32  # here I can put or not :
 # or
 fn absDist(a, b I32) I32

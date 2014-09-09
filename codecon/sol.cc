@@ -23,84 +23,41 @@ using namespace std;
 
 typedef long long int lli;
 
-struct Rect {
-  int x0, y0, x1, y1;
-  Rect(): x0(), y0(), x1(), y1() {}
-};
+const int kCoins[] = { 
+    5/5, 10/5, 20/5, 50/5, // Cents
+    100/5, 200/5, 500/5, 1000/5, 2000/5, 5000/5,
+    10000/5 };  // 100$
 
-struct Segm {
-  int x0, x1;
-  Segm(): x0(), x1() {}
-};
-
-typedef multimap<int, Rect*> YRectMap;
-
-int getMaxSq(const YRectMap &rects, int x, int y) {
-  if (rects.empty()) {
-    return x * y;
+void printCoins() {
+  for (int i = 0; i < ARRAY_SIZEOF(kCoins); i++) {
+    printf("%d ", kCoins[i]);
   }
-  vector<Segm> segms;
-  segms.push_back(Segm());
-  segms[0].x0 = 0;
-  segms[0].x1 = x;
-  int sq_max = 0;
-  for (YRectMap::const_iterator i = rects.begin(); i != rects.end(); ++i) {
-    Rect *r = i->second;
-    vector<Segm> temp;
-    Segm s;
-    for (int j = 0; j < segms.size(); j++) {
-      if (segms[j].x1 <= r->x0 || segms[j].x0 >= r->x1) {
-        // No overlap.
-        temp.push_back(segms[j]);
-      } else {
-        int sq = (y - r->y1) * (segms[j].x1 - segms[j].x0);
-        if (sq > sq_max) sq_max = sq;
-
-        if (segms[j].x0 < r->x0) {
-          s.x0 = segms[j].x0;
-          s.x1 = r->x0;
-          temp.push_back(s);
-        }
-        if (r->x1 < segms[j].x1) {
-          s.x0 = r->x1;
-          s.x1 = segms[j].x1;
-          temp.push_back(s);
-        }
-      }
-    }
-    segms.swap(temp);
-  }
-  for (int j = 0; j < segms.size(); j++) {
-    int sq = y * (segms[j].x1 - segms[j].x0);
-    if (sq > sq_max) sq_max = sq;
-  }
-  return sq_max;
+  printf("\n");
 }
 
-void readAndSolve() {
-  int n, r_num;
-  scanf("%d%d", &n, &r_num);
-  vector<Rect> rects(r_num);
-  for (int i = 0; i < rects.size(); i++) {
-    Rect &r = rects[i];
-    scanf("%d%d%d%d", &r.x0, &r.x1, &r.y0, &r.y1);
-  }
-  // May be we can just re-use `rects`.
-  YRectMap lines;
-  for (int i = 0; i < rects.size(); i++) {
-    lines.insert(make_pair(rects[i].y0, &rects[i]));
-  }
+int stupidCountRec(int n, int ci, int depth) {
+  char tab[24] = {};
+  for (int i = 0; i < depth; i++)
+    tab[i] = ' ';
 
-  YRectMap top_sorted;
-  int sq_max = 0;
-  for (YRectMap::const_iterator i = lines.begin(); i != lines.end(); i++) {
-    Rect *r = i->second;
-    int sq = getMaxSq(top_sorted, n, r->y0);
-    // Instead of using `greater` invert to negative.
-    top_sorted.insert(make_pair(-r->y1, r));
-    if (sq > sq_max) sq_max = sq;
+  printf("%sn %d ci %d value %d\n", tab, n, ci, kCoins[ci]);
+  if (ci == 0 || n == 0) {
+    printf("%sci is 0, return 1\n", tab);
+    return 1;
   }
-  printf("%d\n", sq_max);
+  int max_coins = n / kCoins[ci];
+  printf("%smax_coins %d\n", tab, max_coins);
+  int s = 0;
+  for (int i = 0; i <= max_coins; i++) {
+    s += stupidCountRec(n - i * kCoins[ci], ci - 1, depth + 1);
+    printf("%snew s %d\n", tab, s);
+  }
+  printf("%sreturn %d\n", tab, s);
+  return s;
+}
+
+int stupidCount(int n) {
+  return stupidCountRec(n, ARRAY_SIZEOF(kCoins) - 1, 0);
 }
 
 int main(int argc, char **argv) {
@@ -108,10 +65,8 @@ int main(int argc, char **argv) {
   freopen("in", "r", stdin);
 #endif
 
-  int t = 0;
-  scanf("%d", &t);
-  for (int i = 0; i < t; i++) {
-    readAndSolve();
-  }
+  printCoins();
+  printf("%d\n", stupidCount(200/5));
   return 0;
 }
+

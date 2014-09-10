@@ -55,12 +55,11 @@ int main(int argc, char **argv) {
 #ifndef ONLINE_JUDGE
   freopen("in", "r", stdin);
 #endif
-  // For some weird reason double doesn't work.
-  int a = 0, b = 0;
-  while (scanf("%d.%d", &a, &b) == 2) {
-    int n = (a * 100 + b) / 5;
+  double x = 0;
+  while (scanf("%lf", &x) == 1) {
+    int n = (x + 0.005) * 100 / 5;  // Adding 0.005 is crucial to get AC.
     if (n == 0) break;
-    printf("%3d.%.2d%17ld\n", a, b, count(n));
+    printf("%6.2lf%17ld\n", x, count(n));
   }
   return 0;
 }

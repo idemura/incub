@@ -54,7 +54,14 @@ int main(int argc, char **argv) {
 #ifndef ONLINE_JUDGE
   freopen("in", "r", stdin);
 #endif
-  printf("%d\n", count(200/5));
+  double x = 0;
+  while (scanf("%lf", &x) == 1) {
+    if (x == 0) {
+      break;
+    }
+    int n = x * 100 / 5;
+    printf("%d\n", count(n));
+  }
   return 0;
 }
 

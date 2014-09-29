@@ -26,22 +26,24 @@ typedef vector<int> VectorInt;
 
 struct DfsState {
   vector<VectorInt> *m;
-  int counter;
   VectorInt mark;
-  vector<VectorInt> vert_id_to_walk_id;
   VectorInt walk_id_to_vert_id;
   VectorInt walk;
+  vector<VectorInt> pos_in_walk;
 
   DfsState(int n, vector<VectorInt> *m):
-      m(m), counter(), mark(n), vert_id_to_walk_id(n) {
+      m(m), mark(n), pos_in_walk(n) {
   }
 
   int assignWalkId(int v) {
-    int walk_id = counter++;
-    assert(walk_id == walk_id_to_vert_id.size());
-    vert_id_to_walk_id[v].push_back(walk_id);
+    int walk_id = walk_id_to_vert_id.size();
     walk_id_to_vert_id.push_back(v);
     return walk_id;
+  }
+
+  void walkVertex(int v, int walk_id) {
+    pos_in_walk[v].push_back(walk_id);
+    walk.push_back(walk_id);
   }
 };
 
@@ -67,9 +69,10 @@ void dfs(DfsState &state, int v) {
 }
 
 int getRmqSize(int n) {
-  int len = 1;
-  while (len < n) {
-    len *= 2;
+  int len = 1, k = 1;
+  while (k <= n) {
+    len++;
+    k *= 2;
   }
   return len;
 }

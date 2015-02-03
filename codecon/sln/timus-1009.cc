@@ -23,7 +23,7 @@ int count(int n)
     if (n == 0) {
         return 1;
     }
-    return (K-1) * count(n-1) + (K-1)*count(n-2);
+    return (K-1) * count(n-1) + (K-1) * count(n-2);
 }
 
 int main()

@@ -24,69 +24,38 @@ using namespace std;
 
 typedef long long int i64;
 
-// Must be power of 2.
-static const int kMax = 1<<15;
-static const int kMaxBit = kMax / 2;
+struct Node {
+  vector<int> adj;
+};
 
-int getLeftCount(const vector<int> &tree, int i) {
-  int l = 2 * i + 1;
-  if (l < tree.size())
-    return tree[l];
-  else
-    return 0;
-}
+// Indices of the tree leaves.
+struct TreeLeaves {
+  vector<int> idx;
+};
 
-int countLeftRec(const vector<int> &tree, int x, int i, int bit) {
-  int res = 0;
-  if (i < tree.size()) {
-    if (x & bit) {
-      res = countLeftRec(tree, x, 2 * i + 2, bit >> 1) + getLeftCount(tree, i);
-    } else {
-      res = countLeftRec(tree, x, 2 * i + 1, bit >> 1);
-      if (bit == 0) {
-        // Add how much in the leaf, because it matches to x.
-        // May skip recursion too.
-        res += tree[i];
-      }
-    }
-  }
-  return res;
-}
+constexpr int DIM = 100;
 
-int countLeft(const vector<int> &tree, int x) {
-  return countLeftRec(tree, x, 0, kMaxBit);
-}
-
-void insertRec(vector<int> &tree, int x, int i, int bit) {
-  if (i < tree.size()) {
-    tree[i] += 1;
-    if (x & bit) {
-      insertRec(tree, x, 2 * i + 2, bit >> 1);
-    } else {
-      insertRec(tree, x, 2 * i + 1, bit >> 1);
-    }
-  }
-}
-
-void insert(vector<int> &tree, int x) {
-  insertRec(tree, x, 0, kMaxBit);
-}
+Node nodes[DIM] = {};
+int cost[DIM][DIM] = {};
 
 int main(int argc, char **argv) {
-  int n;
-  scanf("%d", &n);
-  vector<int> tree(kMax * 2 - 1);
-  vector<int> levels(n);
-  // Input is stored increasing y. Same y-s by increasing x.
+  int n = 0, q_limit = 0;
+  cin >> n >> q_limit;
+
   for (int i = 0; i < n; i++) {
-    int x, y;
-    scanf("%d%d", &x, &y);
-    int rank = countLeft(tree, x);
-    levels[rank]++;
-    insert(tree, x);
+    int a, b, c;
+    cin >> a >> b >> c;
+    a--;
+    b--;
+    cost[a][b] = cost[b][a] = c;
+    nodes[a].push_back(b);
+    nodes[b].push_back(a);
   }
-  for (auto l : levels) {
-    printf("%d\n", l);
+
+  // Perform BFS.
+  vector<TreeLeaves>
+  for (int q = 0; q < q_limit; q++) {
   }
+
   return 0;
 }

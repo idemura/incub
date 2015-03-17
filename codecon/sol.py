@@ -6,7 +6,8 @@ def parse_pos(s):
   return ("abcdefgh".find(s[0]), int(s[1]) - 1)
 def make_table(x):
   return [[x] * 8 for _ in range(8)]
-def on_board(x, y):
+def on_board(p):
+  x, y = p
   return 0 <= x and x < 8 and 0 <= y and y < 8;
 
 def pq_min(pq):
@@ -31,22 +32,41 @@ neibs = [
 ]
 
 data_in = sys.stdin.read().split()
-start, end = parse_pos(data_in[0]), parse_pos(data_in[1])
+s, e = parse_pos(data_in[0]), parse_pos(data_in[1])
 faces = [int(x) for x in data_in[2:]]
 min_known = {}
 # cost = make_table(INF)
 prev = make_table(None)
 
-pq = {start : 0}
-p = None
+# pp - prev position
+# np - next position
+# cv - current value
+# nv - next value
+# nk - next key
+pq = {(s, faces[4]) : 0}
+pp = None
 while len(pq) > 0:
-  (x, y), v = pq_min(pq)
-  min_known[(x, y)] = True
-  prev[(x, y)] = p
-  for dx, dy in neibs_delta:
-    xs = x + dx
-    ys = y + dy
-    if on_board(xs, ys):
-      vs = v +
-      if (xs, ys) in pq:
-        xs
+  # Current Position
+  (cp, f), cv = pq_min(pq)
+  min_known[cp] = cv
+  prev[cp] = pp
+  for i, (dx, dy) in enumerate(neibs_delta):
+    np = (cp[0] + dx, cp[1] + dy)
+    if on_board(np) and not min_known[np]:
+      nv = cv + faces[i]
+      nk = (np, faces[i])  # Next Key
+      if nk in pq:
+        pq[nk] = min(pq[nk], nv)
+      else:
+        pq[nk] = nv
+
+print min_known[e],
+path = [e]
+t = e
+while prev[t] is not None:
+  path += prev[t]
+  t = prev[t]
+path += s
+for p in reversed(path):
+  print "abcdefgh"[p[0]] + "12345678"[p[1]],
+print

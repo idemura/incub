@@ -15,6 +15,35 @@
 
 typedef long long int lli;
 
+// Min heap for value type non-exceptional type T.
+template<class T, class Cmp = std::less<T>>
+class MinHeap {
+public:
+  MinHeap() {}
+
+  void push(T v) {
+    h.push_back(v);
+    std::push_heap(h.begin(), h.end(), cmp);
+  }
+
+  bool empty() const { return h.empty(); }
+  T top() const { return h[0]; }
+
+  T pop_min() {
+    std::pop_heap(h.begin(), h.end(), cmp);
+    T min = h.back();
+    h.pop_back();
+    return min;
+  }
+
+private:
+  struct SwapCmp {
+    bool operator()(T a, T b) const { return c(b, a); }
+    Cmp c;
+  } cmp;
+  std::vector<T> h;
+};
+
 template<class T, class Cmp = std::less<T>>
 class Heap {
 public:

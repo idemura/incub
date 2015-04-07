@@ -75,6 +75,7 @@ void test(const string &s, const string &needle) {
 
 int main(int argc, char **argv) {
   ios_base::sync_with_stdio(false);
+  test("abc abcdab abcdabcdabde", "abcdabd");
   test("abcabcabaad", "abc");
   test("abcabababcd", "ababc");
   test("abcabcabaad", "cab");

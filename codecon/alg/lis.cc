@@ -1,61 +1,46 @@
 #include <algorithm>
+#include <functional>
+#include <iostream>
+#include <list>
 #include <map>
 #include <string>
+#include <queue>
 #include <vector>
-#include <utility>
+#include <memory>
+#include <sstream>
 #include <math.h>
-#include <assert.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
+#define ARRAY_SIZEOF(A) (sizeof(A) / sizeof(A[0]))
+#define NON_COPYABLE(C) \
+    C(const C&); \
+    C& operator=(const C&);
 
 using namespace std;
 
-void printIntVec(const vector<int> &v)
-{
-  for (int i = 0; i < v.size(); i++) {
-    printf("%d ", v[i]);
+typedef long long int i64;
+
+constexpr int INF = 0x7fffffff;
+constexpr int DIM = 200000;
+
+int lis(const vector<int> &v) {
+  vector<int> incr{v[0]};
+  int len = 1;
+  for (int i = 1; i < v.size(); i++) {
+    auto u = upper_bound(incr.begin(), incr.end(), v[i]);
+    incr.erase(u, incr.end());  // Same as resize.
+    incr.push_back(v[i]);
+    if (incr.size() > len) len = incr.size();
   }
-  printf("of size %zu\n", v.size());
+  return len;
 }
 
-int lis(const vector<int> &as, vector<int> *lis_out)
-{
-  vector<int> top;
-  for (int i = 0; i < as.size(); i++) {
-    // `top` maintained sorted all the time. `top[k]` is the minimal tail
-    // element of increasing sequence of length `k`. Can prove that adding
-    // to the maximum tail is the optimal strategy.
-    int x = as[i];
-    int l = 0, r = top.size();
-    while (l < r) {
-      int m = (r + l) / 2;
-      if (x <= top[m]) {
-        r = m;
-      } else {
-        l = m + 1;
-      }
-    }
-    // l is the index of an item >= x.
-    if (l == top.size()) {
-      top.push_back(as[i]);
-    } else {
-      top[l] = x;
-    }
-  }
-  lis_out->assign(top.begin(), top.end());
-  return 0;
-}
-
-int main()
-{
-  const int vs[] = {10, 30, 20, 15, 5, 8, 25, 40, 50};
-  vector<int> v(vs, vs + ARRAY_SIZEOF(vs));
-  vector<int> lis_out;
-  lis(v, &lis_out);
-  printf("LIS:\n");
-  printIntVec(lis_out);
+int main(int argc, char **argv) {
+  ios_base::sync_with_stdio(false);
+  vector<int> v{10, 30, 20, 15, 5, 8, 25, 25, 60, 40, 50};
+  cout << lis(v) << " (expected 6)" << endl;
   return 0;
 }

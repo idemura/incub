@@ -26,22 +26,60 @@ typedef long long int i64;
 constexpr int INF = 0x7fffffff;
 constexpr int DIM = 200000;
 
-// O(n log n).
-int lis(const vector<int> &v) {
-  vector<int> incr{v[0]};
-  int len = 1;
-  for (int i = 1; i < v.size(); i++) {
-    auto u = upper_bound(incr.begin(), incr.end(), v[i]);
-    incr.erase(u, incr.end());  // Same as resize.
-    incr.push_back(v[i]);
-    if (incr.size() > len) len = incr.size();
+vector<int> prefix_fn(const string &s) {
+  vector<int> pf(s.size());
+  // j is length of matching prefix up to (not including) char i.
+  for (int i = 1, j = 0; i < s.size(); ) {
+    if (s[i] == s[j]) {
+      pf[i] = j;
+      j++;
+      i++;
+    } else {
+      if (!pf[i]) pf[i] = j; // Set one(first) time.
+      if (j == 0) {
+        i++;
+      } else {
+        j = pf[j];
+      }
+    }
   }
-  return len;
+  return pf;
+}
+
+int kmp(const string &s, const string &needle) {
+  auto pf = prefix_fn(needle);
+  int i = 0, j = 0;
+  while (i < s.size() && j < needle.size()) {
+    if (s[i] == needle[j]) {
+      i++;
+      j++;
+    } else {
+      if (j == 0) {
+        i++;
+      } else {
+        j = pf[j];
+      }
+    }
+  }
+  return j == needle.size()? i - needle.size(): (int)string::npos;
+}
+
+void test(const string &s, const string &needle) {
+  int x = kmp(s, needle);
+  int y = s.find(needle);
+  if (x != y) {
+    cout << "FAILED:\ns=" << s << "\nneedle=" << needle << "\n";
+    cout << "  KMP " << x << " find " << y << endl;
+  }
 }
 
 int main(int argc, char **argv) {
   ios_base::sync_with_stdio(false);
-  vector<int> v{10, 30, 20, 15, 5, 8, 25, 25, 60, 40, 50};
-  cout << lis(v) << " (expected 6)" << endl;
+  test("abcabcabaad", "abc");
+  test("abcabababcd", "ababc");
+  test("abcabcabaad", "cab");
+  test("abcabcabaad", "bcab");
+  test("abcabcabaad", "aad");
+  test("abcabcabaad", "add");
   return 0;
 }

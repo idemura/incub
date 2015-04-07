@@ -35,7 +35,7 @@ vector<int> prefix_fn(const string &s) {
       j++;
       i++;
     } else {
-      if (j > pf[i]) pf[i] = j;
+      if (!pf[i]) pf[i] = j; // Set one(first) time.
       if (j == 0) {
         i++;
       } else {

@@ -35,7 +35,7 @@ vector<int> prefix_fn(const string &s) {
       j++;
       i++;
     } else {
-      if (j > pf[i]) pf[i] = j;
+      if (!pf[i]) pf[i] = j; // Set one(first) time.
       if (j == 0) {
         i++;
       } else {
@@ -76,7 +76,7 @@ void test(const string &s, const string &needle) {
 int main(int argc, char **argv) {
   ios_base::sync_with_stdio(false);
   test("abcabcabaad", "abc");
-  test("abcabcabaad", "abca");
+  test("abcabababcd", "ababc");
   test("abcabcabaad", "cab");
   test("abcabcabaad", "bcab");
   test("abcabcabaad", "aad");

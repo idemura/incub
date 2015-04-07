@@ -26,6 +26,7 @@ typedef long long int i64;
 constexpr int INF = 0x7fffffff;
 constexpr int DIM = 200000;
 
+// O(n log n).
 int lis(const vector<int> &v) {
   vector<int> incr{v[0]};
   int len = 1;

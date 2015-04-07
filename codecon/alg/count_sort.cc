@@ -43,6 +43,7 @@ void countingSort(lli *a, int a_n)
     // }
     k = c[i];
   }
+  delete[] c;
 }
 
 bool sorted(lli *a, int a_n)

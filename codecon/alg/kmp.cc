@@ -1,85 +1,80 @@
 #include <algorithm>
+#include <functional>
+#include <iostream>
+#include <list>
 #include <map>
 #include <string>
+#include <queue>
 #include <vector>
-#include <utility>
+#include <memory>
+#include <sstream>
 #include <math.h>
-#include <assert.h>
+#include <ctype.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
-#define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
-#define INF 0x7fffffff
+#define ARRAY_SIZEOF(A) (sizeof(A) / sizeof(A[0]))
+#define NON_COPYABLE(C) \
+    C(const C&); \
+    C& operator=(const C&);
 
-typedef long long int lli;
+using namespace std;
 
-int* prefixFn(const char *s)
-{
-  const int pf_size = strlen(s) + 1;
-  // Important: `pf` initialized with zeros.
-  int *pf = new int[pf_size]();
-  for (int i = 2; i < pf_size; i++) {
-    for (int k = pf[i - 1]; ; k = pf[k]) {
-      if (s[i - 1] == s[k]) {
-        pf[i] = k + 1;
-        break;
+typedef long long int i64;
+
+constexpr int INF = 0x7fffffff;
+constexpr int DIM = 200000;
+
+vector<int> prefix_fn(const string &s) {
+  vector<int> pf(s.size());
+  // j is length of matching prefix up to (not including) char i.
+  for (int i = 1, j = 0; i < s.size(); ) {
+    if (s[i] == s[j]) {
+      pf[i] = j;
+      j++;
+      i++;
+    } else {
+      if (j > pf[i]) pf[i] = j;
+      if (j == 0) {
+        i++;
+      } else {
+        j = pf[j];
       }
-      if (k == 0) break;
     }
   }
   return pf;
 }
 
-void freePrefixFn(int *pf)
-{
-  delete[] pf;
-}
-
-int kmpSearch(const char *s, const char *n)
-{
-  int *pf = prefixFn(n);
+int kmp(const string &s, const string &needle) {
+  auto pf = prefix_fn(needle);
   int i = 0, j = 0;
-  for (; s[i] && n[j];) {
-    // Increase both if match.
-    if (s[i] == n[j]) {
+  while (i < s.size() && j < needle.size()) {
+    if (s[i] == needle[j]) {
       i++;
       j++;
-      continue;
-    }
-    if (j == 0) {
-      i++;
     } else {
-      // Try smaller prefix at the same position.
-      j = pf[j];
+      if (j == 0) {
+        i++;
+      } else {
+        j = pf[j];
+      }
     }
   }
-  freePrefixFn(pf);
-  return n[j]? -1: i - j;
+  return j == needle.size()? i - needle.size(): (int)string::npos;
 }
 
-int strStrSearch(const char *s, const char *n)
-{
-  const char *p = strstr(s, n);
-  return p? p - s: -1;
-}
-
-void test(const char *s, const char *n)
-{
-  int i1 = kmpSearch(s, n);
-  int i2 = strStrSearch(s, n);
-  printf("Search %s in %s\n", n, s);
-  printf("  KMP: %d check: %d\n", i1, i2);
-  if (i1 != i2) {
-    printf("FAILED\n");
+void test(const string &s, const string &needle) {
+  int x = kmp(s, needle);
+  int y = s.find(needle);
+  if (x != y) {
+    cout << "FAILED:\ns=" << s << "\nneedle=" << needle << "\n";
+    cout << "  KMP " << x << " find " << y << endl;
   }
 }
 
-int main(int argc, char **argv)
-{
-// #ifndef ONLINE_JUDGE
-//   freopen("in", "r", stdin);
-// #endif
+int main(int argc, char **argv) {
+  ios_base::sync_with_stdio(false);
   test("abcabcabaad", "abc");
   test("abcabcabaad", "abca");
   test("abcabcabaad", "cab");

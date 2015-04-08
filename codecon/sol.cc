@@ -3,12 +3,15 @@
 #include <iostream>
 #include <list>
 #include <map>
+#include <unordered_map>
 #include <string>
 #include <queue>
 #include <vector>
 #include <memory>
 #include <sstream>
+#include <utility>
 #include <math.h>
+#include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,9 +51,13 @@ vector<int> prefix_fn(const string &s) {
 
 int kmp(const string &s, const string &needle) {
   auto pf = prefix_fn(needle);
-  int i = 0, j = 0;
-  while (i < s.size() && j < needle.size()) {
-    if (s[i] == needle[j]) {
+  int i = 0, j = 0, c = 0;
+  while (i < s.size()) {
+    if (j == needle.size()) {
+      c++;
+      j = 0;
+    }
+    if (s[i] & (1 << needle[j])) {
       i++;
       j++;
     } else {
@@ -61,26 +68,61 @@ int kmp(const string &s, const string &needle) {
       }
     }
   }
-  return j == needle.size()? i - needle.size(): (int)string::npos;
+  return c;
 }
 
-void test(const string &s, const string &needle) {
-  int x = kmp(s, needle);
-  int y = s.find(needle);
-  if (x != y) {
-    cout << "FAILED:\ns=" << s << "\nneedle=" << needle << "\n";
-    cout << "  KMP " << x << " find " << y << endl;
+void convert(string &s) {
+  for (auto &c : s) {
+    switch (c) {
+      case 'A': c = 0; break;
+      case 'T': c = 1; break;
+      case 'G': c = 2; break;
+      case 'C': c = 3; break;
+    }
   }
 }
 
 int main(int argc, char **argv) {
   ios_base::sync_with_stdio(false);
-  test("abc abcdab abcdabcdabde", "abcdabd");
-  test("abcabcabaad", "abc");
-  test("abcabababcd", "ababc");
-  test("abcabcabaad", "cab");
-  test("abcabcabaad", "bcab");
-  test("abcabcabaad", "aad");
-  test("abcabcabaad", "add");
+  int s_len, t_len, k;
+  cin >> s_len >> t_len >> k;
+  string s, t;
+  cin >> s >> t;
+  convert(s);
+  cout << "s: ";
+  for (auto c: s) cout << "ATGC"[c];
+  cout << endl;
+  convert(t);
+  cout << "t: ";
+  for (auto c: t) cout << "ATGC"[c];
+  cout << endl;
+  // Collapse k-left-right loc into one char.
+  int kc[4] = {};
+  for (int i = 0; i < k; i++) {
+    kc[s[i]]++;
+  }
+  string k_local(s.size(), 0);
+  for (int i = 0; i < s.size(); i++) {
+    cout << "at " << i << " kc: "
+         << kc[0] << " " << kc[1] << " " << kc[2] << " " << kc[3] << endl;
+    int l_rem = i - k - 1;
+    cout << "l_rem=" << l_rem << " char " << (int)s[l_rem] << endl;
+    if (l_rem >= 0) kc[s[l_rem]]--;
+    int r_ins = i + k;
+    cout << "r_ins=" << r_ins << " char " << (int)s[r_ins] << endl;
+    if (r_ins < s.size()) kc[s[r_ins]]++;
+    cout << "updated kc: "
+         << kc[0] << " " << kc[1] << " " << kc[2] << " " << kc[3] << endl;
+    k_local[i] = (kc[0]? 1: 0) | (kc[1]? 2: 0) | (kc[2]? 4: 0) | (kc[3]? 8: 0);
+  }
+
+  for (auto c : k_local) {
+    cout << (c & 1? "A": "")
+         << (c & 2? "T": "")
+         << (c & 4? "G": "")
+         << (c & 8? "C": "") << endl;
+  }
+
+  cout << kmp(k_local, t) << endl;
   return 0;
 }

@@ -9,5 +9,5 @@ src=$1
 ./build ${src}
 if [ $? -eq 0 ]; then
   output=${src%.*}  # Extension trimmed.
-  cat in | ./${output}
+  ./${output} < in
 fi

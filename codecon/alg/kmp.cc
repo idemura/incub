@@ -9,6 +9,7 @@
 #include <memory>
 #include <sstream>
 #include <math.h>
+#include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -67,6 +68,7 @@ int kmp(const string &s, const string &needle) {
 void test(const string &s, const string &needle) {
   int x = kmp(s, needle);
   int y = s.find(needle);
+  assert(x == y);
   if (x != y) {
     cout << "FAILED:\ns=" << s << "\nneedle=" << needle << "\n";
     cout << "  KMP " << x << " find " << y << endl;
@@ -76,6 +78,7 @@ void test(const string &s, const string &needle) {
 int main(int argc, char **argv) {
   ios_base::sync_with_stdio(false);
   test("abc abcdab abcdabcdabde", "abcdabd");
+  test("abcabcabaad", "aad");
   test("abcabcabaad", "abc");
   test("abcabababcd", "ababc");
   test("abcabcabaad", "cab");

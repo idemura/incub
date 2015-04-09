@@ -29,13 +29,48 @@ typedef long long int i64;
 constexpr int INF = 0x7fffffff;
 constexpr int DIM = 200000;
 
-int main(int argc, char **argv) {
-  ios_base::sync_with_stdio(false);
-  for (int i = 0; i < 100; i++) {
-    auto n = 100 - 3 * i;
-    if (n > 0 && n % 2 == 0) {
-      cout << "3*" << i << "+2*" << (n / 2) << " = 100\n";
+vector<int> prefix_fn(const string &s) {
+  vector<int> pf(s.size());
+  // j is length of matching prefix up to (not including) char i.
+  int i = 1, j = 0;
+  while (i < s.size()) {
+    if (s[i] == s[j]) {
+      pf[i] = j;
+      j++;
+      i++;
+    } else {
+      if (!pf[i]) pf[i] = j; // Set one(first) time.
+      if (j == 0) {
+        i++;
+      } else {
+        j = pf[j];
+      }
     }
   }
+  pf.push_back(j);
+  return pf;
+}
+
+int main(int argc, char **argv) {
+  ios_base::sync_with_stdio(false);
+  int n, k;
+  string s;
+  cin >> n >> k >> s;
+  cout << s << endl;
+  for (auto c : s) cout << c << " ";
+  cout << endl;
+  const auto& pf = prefix_fn(s);
+  for (int i = 1; i < pf.size(); i++) {
+    cout << pf[i] << " ";
+  }
+  cout << endl;
+  // assert(pf[4] == 2);
+  for (int i = 1; i < pf.size(); i++) {
+    int prefix_part = i - pf[i];
+    if (pf[i] / prefix_part + 1 == k) {
+      cout << i << endl;
+    }
+  }
+  cout << "0 0 0 1 1 0 0 0 0 1 1 1 1 1  1  0  0  0  0  1  1" << endl;
   return 0;
 }

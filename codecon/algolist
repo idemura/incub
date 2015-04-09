@@ -1,6 +1,6 @@
 Convex hull: Jarvis and others
 Hungarian algorithm
-Matrix K-th min element if columns and rows are ordered
+Matrix K-th min element if columns and rows are ordered O(n)
 Chinese remainder theorem
 Josephus problem
 Newton interpolation polynomial
@@ -8,3 +8,8 @@ Newton (tangents) method
 Gray code: subsets of length k
 Max common substring of strings
 MurmurHash
+Binary GCD
+FFT / discrete Fourier transform
+Trie
+Suffix array
+RMQ: tree and overlapping segments

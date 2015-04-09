@@ -31,5 +31,11 @@ constexpr int DIM = 200000;
 
 int main(int argc, char **argv) {
   ios_base::sync_with_stdio(false);
+  for (int i = 0; i < 100; i++) {
+    auto n = 100 - 3 * i;
+    if (n > 0 && n % 2 == 0) {
+      cout << "3*" << i << "+2*" << (n / 2) << " = 100\n";
+    }
+  }
   return 0;
 }

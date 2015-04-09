@@ -1,7 +1,6 @@
 *.o
 *.out
 *.dSYM
-in
 out
 sol
 *.class

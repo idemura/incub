@@ -65,12 +65,16 @@ int main(int argc, char **argv) {
   }
   cout << endl;
   // assert(pf[4] == 2);
+  string res(s.size(), 0);
   for (int i = 1; i < pf.size(); i++) {
     int prefix_part = i - pf[i];
     if (pf[i] / prefix_part + 1 == k) {
-      cout << i << endl;
+      res[i - 1] = '1';
+    } else {
+      res[i - 1] = '0';
     }
   }
   cout << "0 0 0 1 1 0 0 0 0 1 1 1 1 1  1  0  0  0  0  1  1" << endl;
+  cout << res << endl;
   return 0;
 }

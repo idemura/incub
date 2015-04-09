@@ -19,5 +19,5 @@ rm -rf $output $output.dSYM
 dbg="-O0 -g -DDEBUG"
 opt="-O2 -flto -ffast-math -DNDEBUG"
 mode=$dbg
-warnings="-Wall -Wno-unused-function -Wno-unused-result -Wno-sign-compare -Wno-char-subscripts"
+warnings="-Wall -Wno-unused-function -Wno-unused-result -Wno-sign-compare -Wno-char-subscripts -Wno-unused-const-variable"
 $cc -std=c++0x -march=native $mode $warnings $src -o $output -lm -lstdc++

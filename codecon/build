@@ -5,19 +5,18 @@ if [ ! $1 ]; then
   exit -1
 fi
 
+dbg="-O0 -g -DDEBUG"
+opt="-O2 -flto -ffast-math -DNDEBUG"
+mode=$dbg
+warnings="-Wall -Wno-unused-function -Wno-unused-result -Wno-sign-compare -Wno-char-subscripts"
 if [ $(uname) = "Darwin" ]; then
   cc=clang++
+  warnings="$warnings -Wno-unused-const-variable"
 else
   cc=g++
 fi
 
 src=$1
 output=${src%.*}  # Extension trimmed.
-
 rm -rf $output $output.dSYM
-
-dbg="-O0 -g -DDEBUG"
-opt="-O2 -flto -ffast-math -DNDEBUG"
-mode=$dbg
-warnings="-Wall -Wno-unused-function -Wno-unused-result -Wno-sign-compare -Wno-char-subscripts -Wno-unused-const-variable"
 $cc -std=c++0x -march=native $mode $warnings $src -o $output -lm -lstdc++

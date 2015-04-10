@@ -52,8 +52,7 @@ vector<int> prefix_fn(const string &s) {
 
 bool check(int n, int k) {
   auto q = n / k;
-  if (q >= k - 1) return true;
-  return n % k <= q;
+  return q >= k - 1 || n % k <= q;
 }
 
 int main(int argc, char **argv) {

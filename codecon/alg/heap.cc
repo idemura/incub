@@ -1,25 +1,21 @@
 #include <algorithm>
 #include <functional>
-#include <map>
-#include <string>
 #include <vector>
-#include <utility>
-#include <math.h>
+#include <iostream>
 #include <assert.h>
-#include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
 #define INF 0x7fffffff
 
-typedef long long int lli;
-
-// Min heap for value type non-exceptional type T.
+// Min heap for value type of a non-exceptional type T.
 template<class T, class Cmp = std::less<T>>
 class MinHeap {
 public:
   MinHeap() {}
+  explicit MinHeap(std::vector<T> data) : h(std::move(data)) {
+    std::make_heap(h.begin(), h.end(), cmp);
+  }
 
   void push(T v) {
     h.push_back(v);
@@ -149,7 +145,8 @@ private:
     for (size_t i = 1; i < h.size(); i++) {
       size_t p = (i - 1) / 2;
       if (less(i, p)) {
-        fprintf(stderr, "*** Heap corrupted at %zu (parent %zu)\n", i, p);
+        std::cerr << "Heap corrupted at " << i << " (parent " << p << ")"
+                  << std::endl;
       }
     }
   }
@@ -159,33 +156,29 @@ private:
   std::vector<Elem> h;
 };
 
-void testHeapRemove(const int *a, int an, int rmi)
+void testHeapRemove(const std::vector<int>& a, int rmi)
 {
-  auto *ind = new size_t[an]();
+  std::vector<size_t> ind(a.size());
   Heap<int> heap;
-  for (int i = 0; i < an; i++) {
-    heap.insert(a[i], ind + i);
+  for (int i = 0; i < a.size(); i++) {
+    heap.insert(a[i], &ind[i]);
   }
   heap.remove(ind[rmi]);
   // `popMin` will produce a sorted sequence.
-  int prev = heap.popMin();
+  auto prev = heap.popMin();
   for (; heap.size() > 0;) {
-    int x = heap.popMin();
+    auto x = heap.popMin();
     assert(prev <= x);
     prev = x;
   }
-  printf("Test case %d OK.\n", rmi);
+  std::cout << "Test case " << rmi << " OK." << std::endl;
 }
 
 int main(int argc, char **argv)
 {
-// #ifndef ONLINE_JUDGE
-//   freopen("in", "r", stdin);
-// #endif
-  const int a[] = {9, 5, 1, 7, 8, 2};
-  const int an = ARRAY_SIZEOF(a);
-  for (int i = 0; i < an; i++) {
-    testHeapRemove(a, an, i);
+  std::vector<int> a{9, 5, 1, 7, 8, 2};
+  for (int i = 0; i < a.size(); i++) {
+    testHeapRemove(a, i);
   }
   return 0;
 }

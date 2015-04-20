@@ -65,8 +65,8 @@ public:
 private:
   // If we have n leaves, how many should go to the left tree?
   static int left_num(int n) {
-    auto p = 1 << static_cast<int>(log2(n));
-    return p == n ? n / 2 : p;
+    // Split power of two in halves, or take largest power of two.
+    return n & (n - 1) ? 1 << static_cast<int>(log2(n)) : n / 2;
   }
 
   int build(int k, int i, int j, const std::vector<T> &a) {

@@ -1,4 +1,6 @@
 #!/bin/sh
+set -u
+
 if [ ! $1 ]; then
   echo "Usage:
   run <C++11 source file name>"
@@ -6,8 +8,10 @@ if [ ! $1 ]; then
 fi
 
 src=$1
+set +e
 ./build ${src}
+set -e
 if [ $? -eq 0 ]; then
   output=${src%.*}  # Extension trimmed.
-  ./${output} < in
+  ./${output} < sol.in
 fi

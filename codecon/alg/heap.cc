@@ -25,7 +25,7 @@ public:
   bool empty() const { return h.empty(); }
   T top() const { return h[0]; }
 
-  T pop_min() {
+  T pop() {
     std::pop_heap(h.begin(), h.end(), cmp);
     T min = h.back();
     h.pop_back();
@@ -83,7 +83,7 @@ public:
     // check();
   }
 
-  T popMin() {
+  T pop() {
     return remove(0);
   }
 
@@ -164,10 +164,10 @@ void testHeapRemove(const std::vector<int>& a, int rmi)
     heap.insert(a[i], &ind[i]);
   }
   heap.remove(ind[rmi]);
-  // `popMin` will produce a sorted sequence.
-  auto prev = heap.popMin();
+  // `pop` will produce a sorted sequence.
+  auto prev = heap.pop();
   for (; heap.size() > 0;) {
-    auto x = heap.popMin();
+    auto x = heap.pop();
     assert(prev <= x);
     prev = x;
   }

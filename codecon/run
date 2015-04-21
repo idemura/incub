@@ -1,7 +1,7 @@
 #!/bin/sh
 set -u
 
-if [ ! $1 ]; then
+if [ $# -ne 1 ]; then
   echo "Usage:
   run <C++11 source file name>"
   exit -1

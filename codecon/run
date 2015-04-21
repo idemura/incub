@@ -11,7 +11,7 @@ src=$1
 set +e
 ./build ${src}
 set -e
+output=${src%.*}.bin  # Extension trimmed.
 if [ $? -eq 0 ]; then
-  output=${src%.*}  # Extension trimmed.
   ./${output} < sol.in
 fi

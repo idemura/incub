@@ -17,6 +17,6 @@ else
 fi
 
 src=$1
-output=${src%.*}  # Extension trimmed.
+output=${src%.*}.bin  # Extension trimmed.
 rm -rf $output $output.dSYM
 $cc -std=c++0x -march=native $mode $warnings $src -o $output -lm -lstdc++

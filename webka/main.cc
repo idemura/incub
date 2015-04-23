@@ -26,8 +26,9 @@ bool process_request(mg_connection *conn, std::stringstream &buf) {
     return true;
   }
 
+  mg_send_header(conn, "Content-Type", "text/html; charset=utf-8");
   if (uri == "/hello") {
-    buf << "hello from the server";
+    buf << R"(<html><body><pre>hello <a href="/">from</a> the server</pre></body></html>)";
     return true;
   }
   cerr << "URI not found: " << uri << endl;

@@ -2,10 +2,32 @@
 #include "mongoose.h"
 
 namespace {
+bool trim_trailing(string &uri) {
+  if (!uri.empty() && uri[uri.size() - 1] == '/' && uri != "/") {
+    auto n = uri.size() - 1;
+    for (; uri[n] == '/' && n > 0; n--);
+    uri.resize(n + 1);
+    return true;
+  }
+  return false;
+}
+
+void respond_redirect(mg_connection *conn, const string &uri) {
+  mg_printf(conn,
+      "HTTP/1.1 302 Found\r\n"
+      "Location: %s\r\n"
+      "\r\n", uri.data());
+}
+
 bool process_request(mg_connection *conn, std::stringstream &buf) {
   string uri(conn->uri);
+  if (trim_trailing(uri)) {
+    respond_redirect(conn, uri);
+    return true;
+  }
+
   if (uri == "/hello") {
-    buf << "hello from me!!!";
+    buf << "hello from the server";
     return true;
   }
   cerr << "URI not found: " << uri << endl;
@@ -21,7 +43,7 @@ int event_handler(mg_connection *conn, mg_event ev) {
     std::stringstream buf;
     if (process_request(conn, buf)) {
       auto s = buf.str();
-      mg_write(conn, s.data(), s.size());
+      mg_send_data(conn, s.data(), s.size());
       return MG_TRUE;
     }
   }

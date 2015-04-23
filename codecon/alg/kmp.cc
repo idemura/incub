@@ -1,31 +1,4 @@
-#include <algorithm>
-#include <functional>
-#include <iostream>
-#include <list>
-#include <map>
-#include <string>
-#include <queue>
-#include <vector>
-#include <memory>
-#include <sstream>
-#include <math.h>
-#include <assert.h>
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#define ARRAY_SIZEOF(A) (sizeof(A) / sizeof(A[0]))
-#define NON_COPYABLE(C) \
-    C(const C&); \
-    C& operator=(const C&);
-
-using namespace std;
-
-typedef long long int i64;
-
-constexpr int INF = 0x7fffffff;
-constexpr int DIM = 200000;
+#include "base.h"
 
 vector<int> prefix_fn(const string &s) {
   vector<int> pf(s.size());
@@ -68,7 +41,6 @@ int kmp(const string &s, const string &needle) {
 void test(const string &s, const string &needle) {
   int x = kmp(s, needle);
   int y = s.find(needle);
-  assert(x == y);
   if (x != y) {
     cout << "FAILED:\ns=" << s << "\nneedle=" << needle << "\n";
     cout << "  KMP " << x << " find " << y << endl;

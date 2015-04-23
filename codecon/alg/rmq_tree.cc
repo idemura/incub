@@ -1,32 +1,4 @@
-#include <iostream>
-#include <algorithm>
-#include <map>
-#include <unordered_map>
-#include <list>
-#include <string>
-#include <vector>
-#include <memory>
-#include <limits>
-#include <sstream>
-#include <utility>
-#include <functional>
-#include <math.h>
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
-
-#define ARRAY_SIZEOF(A) (sizeof(A) / sizeof(A[0]))
-#define NON_COPYABLE(C) \
-    C(const C&) = delete; \
-    C& operator=(const C&) = delete;
-
-using namespace std;
-
-using i64 = long long int;
-
-constexpr char kEol[] = "\n";
-constexpr int INF = 0x7fffffff;
-constexpr int DIM = 0;
+#include "base.h"
 
 // Range Minimum query. T is an integral value.
 template<class T, T max_value = std::numeric_limits<T>::max()>

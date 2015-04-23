@@ -1,38 +1,15 @@
-#include <algorithm>
-#include <functional>
-#include <iostream>
-#include <map>
-#include <string>
-#include <queue>
-#include <vector>
-#include <assert.h>
-#include <ctype.h>
-#include <limits.h>
-#include <math.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "base.h"
 
-#define ARRAY_SIZEOF(A) (sizeof(A) / sizeof(A[0]))
-#define INF 0x7fffffff
-#define NON_COPYABLE(C) \
-    C(const C&); \
-    C& operator=(const C&);
+using vector_int = vector<int>;
 
-using namespace std;
-
-typedef long long int lli;
-typedef vector<int> vector_int;
-
-void printMapping(const vector_int &b_to_a) {
+void print_mapping(const vector_int &b_to_a) {
   cout << "Mapping:" << endl;
   for (int i = 0; i < b_to_a.size(); i++) {
     cout << i << " - " << b_to_a[i] << endl;
   }
 }
 
-int getProjectionSize(const vector<vector_int> &a) {
+int get_projection_size(const vector<vector_int> &a) {
   int n = -1;
   for (int i = 0; i < a.size(); i++) {
     for (int j = 0; j < a[i].size(); j++) {
@@ -70,8 +47,8 @@ void kuhn(const vector<vector_int> &a, int b_size, vector_int &b_to_a) {
 
 void test(const vector<vector_int> &a) {
   vector_int b_to_a;
-  kuhn(a, getProjectionSize(a), b_to_a);
-  printMapping(b_to_a);
+  kuhn(a, get_projection_size(a), b_to_a);
+  print_mapping(b_to_a);
 }
 
 int main(int argc, char **argv) {

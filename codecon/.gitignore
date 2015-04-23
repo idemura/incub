@@ -1,7 +1,5 @@
 *.o
-*.out
+*.bin
 *.dSYM
 out
-sol
 *.class
-app

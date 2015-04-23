@@ -13,12 +13,11 @@
 #include <sys/time.h>
 
 #define ARRAY_SIZEOF(A) (sizeof(A) / sizeof(A[0]))
-#define INF 0x7fffffff
 #define NON_COPYABLE(C) \
-    C(const C&); \
-    C& operator=(const C&);
+    C(const C&) = default; \
+    C& operator=(const C&) = default;
 
-typedef long long int lli;
+using i64 = long long int;
 
 class Set {
 public:

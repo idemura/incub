@@ -1,83 +1,43 @@
-#include <stdio.h>
-#include <assert.h>
-#include <stdlib.h>
-#include <memory.h>
-#include <utility>
+#include "base.h"
 
-#define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
+using namespace std;
 
-typedef long long int lli;
+void count_sort(std::vector<int> &a) {
+  if (a.empty()) return;
 
-// 'a' items are 0, 1, ...
-void countingSort(lli *a, int a_n)
-{
-  int i, j, k;
-
-  if (a_n == 0) {
-    return;
-  }
-
-  j = 0;
-  for (i = 1; i < a_n; i++) {
-    if (a[i] > a[j]) {
-      j = i;
-    }
-  }
-
-  lli max_a = a[j];
-  int *c = new int[max_a + 1]();
-  for (i = 0; i < a_n; i++) {
+  auto max_a = *std::max_element(a.begin(), a.end());
+  std::vector<int> c(max_a + 1);
+  for (int i = 0; i < a.size(); i++) {
     c[a[i]]++;
   }
-  for (i = 1; i <= max_a; i++) {
+  for (int i = 1; i < c.size(); i++) {
     c[i] += c[i-1];
   }
-  k = 0;
-  for (i = 0; i <= max_a; i++) {
-    for (j = k; j < c[i]; j++) {
+  for (int i = 0, j = 0; i < c.size(); i++) {
+    // CLR recommends to put value backwards to make stable.
+    for (; j < c[i]; j++) {
       a[j] = i;
     }
-    // CLR recommends to put value backwards to make stable:
-    // for (j = c[i]; j > k; j--) {
-    //     a[j-1] = i;
-    // }
-    k = c[i];
   }
-  delete[] c;
 }
 
-bool sorted(lli *a, int a_n)
-{
-  for (int i = 1; i < a_n; i++) {
-    if (a[i-1] > a[i]) {
-      return false;
-    }
+bool is_sorted(const vector<int> &a) {
+  for (int i = 1; i < a.size(); i++) {
+    if (a[i-1] > a[i]) return false;
   }
   return true;
 }
 
-void test()
-{
-  int i;
-  lli a_src1[] = {5, 8, 3, 7, 2, 4, 6, 9, 1, 0};
-  lli a_src2[] = {5, 5, 5, 7, 2, 4, 6, 6, 1, 0};
-  lli a[ARRAY_SIZEOF(a_src1)];
-  const int a_n = ARRAY_SIZEOF(a);
+int main() {
+  vector<int> a1{5, 8, 3, 7, 2, 4, 6, 9, 1, 0};
+  count_sort(a1);
+  CHECK(is_sorted(a1));
 
-  memcpy(a, a_src1, sizeof a_src1);
-  countingSort(a, a_n);
-  assert(sorted(a, a_n));
+  vector<int> a2{5, 5, 5, 7, 2, 4, 6, 6, 1, 0};
+  count_sort(a2);
+  CHECK(is_sorted(a2));
 
-  memcpy(a, a_src2, sizeof a_src2);
-  countingSort(a, a_n);
-  assert(sorted(a, a_n));
-
-  printf("Test 1 OK\n");
-}
-
-int main()
-{
-  test();
+  cout << "TESTS PASSED." << endl;
   return 0;
 }
 

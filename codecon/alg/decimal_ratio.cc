@@ -1,34 +1,16 @@
-#include <algorithm>
-#include <map>
-#include <vector>
-#include <utility>
-#include <math.h>
-#include <assert.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include "base.h"
 
-#define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
-#define INF 0x7fffffff
-#define MOD 1000000007
-
-int rems[5001];
-
-int main()
-{
-#ifndef ONLINE_JUDGE
-  freopen("in", "r", stdin);
-#endif
+int main() {
   int a, b;
-  scanf("%d%d", &a, &b);
+  cin >> a >> b;
   if (a >= b) {
-    printf("%d.", a / b);
+    cout << a / b << ".";
     a %= b;
   } else {
-    printf("0.");
+    cout << "0.";
   }
 
-  std::vector<int> dds;
+  vector<int> dds, rems(5001);
   while (rems[a] == 0) {
     rems[a] = dds.size() + 1;
     int d = 10 * a / b;
@@ -40,12 +22,12 @@ int main()
   const int cycle = rems[a] - 1;
   int i = 0;
   for (; i < cycle; i++) {
-    printf("%d", dds[i]);
+    cout << dds[i];
   }
-  printf("(");
+  cout << "(";
   for (; i < dds.size(); i++) {
-    printf("%d", dds[i]);
+    cout << dds[i];
   }
-  printf(")\n");
+  cout << ")" << endl;
   return 0;
 }

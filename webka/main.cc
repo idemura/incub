@@ -2,7 +2,7 @@
 #include "mongoose.h"
 
 namespace {
-bool trim_trailing(string &uri) {
+bool trim_trailing_slashes(string &uri) {
   if (!uri.empty() && uri[uri.size() - 1] == '/' && uri != "/") {
     auto n = uri.size() - 1;
     for (; uri[n] == '/' && n > 0; n--);
@@ -12,7 +12,7 @@ bool trim_trailing(string &uri) {
   return false;
 }
 
-void respond_redirect(mg_connection *conn, const string &uri) {
+void response_redirect(mg_connection *conn, const string &uri) {
   mg_printf(conn,
       "HTTP/1.1 302 Found\r\n"
       "Location: %s\r\n"
@@ -21,8 +21,8 @@ void respond_redirect(mg_connection *conn, const string &uri) {
 
 bool process_request(mg_connection *conn, std::stringstream &buf) {
   string uri(conn->uri);
-  if (trim_trailing(uri)) {
-    respond_redirect(conn, uri);
+  if (trim_trailing_slashes(uri)) {
+    response_redirect(conn, uri);
     return true;
   }
 

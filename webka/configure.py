@@ -64,4 +64,6 @@ def cxx_binary(name, srcs, deps=[]):
   n.build(name, bin_cxx, all_inputs(srcs, deps))
 
 c_library('mongoose', ['mongoose.c'])
-cxx_binary('main', ['main.cc'], ['mongoose'])
+cxx_library('template', ['template.cc'], [])
+cxx_binary('main', ['main.cc'], ['mongoose', 'template'])
+cxx_binary('template_test', ['template_test.cc'], ['template'])

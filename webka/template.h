@@ -13,6 +13,11 @@ using std::string;
 using i64 = long long int;
 using i32 = int;
 
+class RecordType {
+public:
+  //
+};
+
 class VarStore {
 public:
   // This add methods rely on C++11 move semantics.

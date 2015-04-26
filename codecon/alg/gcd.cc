@@ -1,5 +1,15 @@
 #include "base.h"
 
+// Assumes `b < a`, otherwise the first iteration will swap `a` and `b`.
+int gcd(int a, int b) {
+  while (b != 0) {
+    int t = a % b;
+    a = b;
+    b = t;
+  }
+  return a;
+}
+
 int ext_euclid(int m, int n, int* km, int *kn) {
   int x = m, y = n;
   int xu = 1, xv = 0;

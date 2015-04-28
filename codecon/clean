@@ -1,2 +1,2 @@
 #!/bin/sh
-rm -rf *.dSYM *.o sol *.class
+rm -rf *.dSYM *.o *.bin *.class

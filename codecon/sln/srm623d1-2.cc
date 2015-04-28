@@ -51,7 +51,8 @@ public:
     for (int i = 1; i < n; i++)
       y[i] = (y[i - 1] * i64(c) + d) % mod2;
     vector<Point> p;
-    // Turn 45 degree to make sectors aligned and do LIS.
+    // Turn -45 degree points (or 45 degree axis) to make sectors aligned and
+    // do LIS.
     for (int i = 0; i < n; i++) {
       if (y[i] >= abs(x[i])) {
         p.emplace_back(y[i] + x[i], y[i] - x[i]);

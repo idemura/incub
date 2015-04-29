@@ -23,8 +23,8 @@
       if (!(E)) { \
         cout << "CHECK failed at " << __FILE__ << "@" << __LINE__ << endl; \
         exit(EXIT_FAILURE); \
-      } \
-    } while (false)
+    } \
+  } while (false)
 
 using namespace std;
 
@@ -35,57 +35,40 @@ constexpr char kEol[] = "\n";
 constexpr int INF = 0x7fffffff;
 constexpr int MOD = 100000007;
 
-using Point = pair<int, int>;
-
-class CatchTheBeat {
-public:
-  int maxCatched(int n, int x0, int y0, int a, int b, int c, int d,
-                 int mod1, int mod2, int offset) {
-    vector<int> x(n), y(n);
-    x[0] = x0;
-    for (int i = 1; i < n; i++)
-      x[i] = (x[i - 1] * i64(a) + b) % mod1;
-    for (int i = 0; i < n; i++)
-      x[i] -= offset;
-    y[0] = y0;
-    for (int i = 1; i < n; i++)
-      y[i] = (y[i - 1] * i64(c) + d) % mod2;
-    vector<Point> p;
-    // Turn 45 degree to make sectors aligned and do LIS.
-    for (int i = 0; i < n; i++) {
-      if (y[i] >= abs(x[i])) {
-        p.emplace_back(y[i] + x[i], y[i] - x[i]);
-      }
-    }
-    sort(p.begin(), p.end());
-    vector<int> incr;
-    int len = 0;
-    for (int i = 0; i < p.size(); i++) {
-      auto u = upper_bound(incr.begin(), incr.end(), p[i].second);
-      incr.erase(u, incr.end());  // Same as resize.
-      incr.push_back(p[i].second);
-      if (incr.size() > len) len = incr.size();
-    }
-    return len;
+// How many ways I can represent n as sum? Say, 4=1+1+2 (same as 2+1+1!) and
+// so on.
+// `mem` should be a table, of course.
+// http://en.wikipedia.org/wiki/Partition_%28number_theory%29
+i64 count_groups_mem(map<pair<int, int>, i64> &mem, int n, int c) {
+  if (c > n) return 0;
+  auto it = mem.find(make_pair(n, c));
+  if (it != mem.end()) {
+    return it->second;
   }
-};
+  // Either take c or move forward.
+  auto &s = mem[make_pair(n, c)];
+  if (c == n)
+    s = 1;
+  else
+    s = count_groups_mem(mem, n - c, c) + count_groups_mem(mem, n, c + 1);
+  return s;
+}
 
-#define NEW_UNIQUE(X) unique_ptr<X> sol(new X);
+i64 count_groups(int n) {
+  map<pair<int, int>, i64> mem;
+  return count_groups_mem(mem, n, 1);
+}
 
 int main(int argc, char **argv) {
   ios_base::sync_with_stdio(false);
-  {
-    NEW_UNIQUE(CatchTheBeat);
-    cout << sol->maxCatched(10,
-      999999957,
-      79,
-      993948167,
-      24597383,
-      212151897,
-      999940854,
-      999999986,
-      999940855,
-      3404) << endl;
-  }
+  CHECK(count_groups(4) == 5);
+  CHECK(count_groups(5) == 7);
+  CHECK(count_groups(6) == 11);
+  CHECK(count_groups(7) == 15);
+  CHECK(count_groups(8) == 22);
+  CHECK(count_groups(9) == 30);
+  CHECK(count_groups(10) == 42);
+  CHECK(count_groups(11) == 56);
+  cout << "TESTS PASSED." << endl;
   return 0;
 }

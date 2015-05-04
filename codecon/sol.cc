@@ -35,43 +35,26 @@ constexpr char kEol[] = "\n";
 constexpr int INF = 0x7fffffff;
 constexpr int MOD = 100000007;
 
-class FanFailure {
+class Assemble {
 public:
-  using VectorInt = vector<int>;
-
-  vector<int> getRange(const vector<int> &cap, int min_cooling) {
-    // cooling -> last value in the array of indices producing this cooling.
-    unordered_map<int, int> c, next;
-    c[0] = -1;
-    int mfs = -1, mfc = -1;
-    int set_size = 1;
-    do {
-      next.clear();
-      int g = 0;
-      for (auto kv : c) {
-        for (int i = kv.second + 1; i < cap.size(); i++) {
-          auto new_cooling = kv.first + cap[i];
-          if (new_cooling >= min_cooling) {
-            g++;
-            if (mfs < 0) {
-              mfs = cap.size() - set_size;
-            }
-          }
-          auto it = next.find(new_cooling);
-          if (it == next.end()) {
-            next[new_cooling] = i;
-          } else {
-            if (i < it->second) it->second = i;
-          }
+  int minCost(const vector<int> &connect) {
+    int cost[50][50] = {};
+    const int n = connect.size() - 1;
+    // By length.
+    for (int l = 2; l <= n; l++) {
+      // By starting index.
+      for (int i = 0; i + l <= n; i++) {
+        auto min_cost = INF;
+        // By split size.
+        for (int k = 1; k < l; k++) {
+          auto x = (connect[i] + k) * (connect[i + l] + l - k) * connect[i + k];
+          auto c = cost[i][i + k - 1] + cost[i + k][i + l - 1] + x;
+          if (c < min_cost) min_cost = c;
         }
+        cost[i][i + l - 1] = min_cost;
       }
-      if (g == next.size() && mfc < 0) {
-        mfc = cap.size() - set_size;
-      }
-      next.swap(c);
-      set_size++;
-    } while (!c.empty());
-    return {mfs, mfc};
+    }
+    return cost[0][n - 1];
   }
 };
 
@@ -79,19 +62,12 @@ int main(int argc, char **argv)
 {
   ios_base::sync_with_stdio(false);
   {
-    NEW_UNIQUE(sol, FanFailure);
-    auto v = sol->getRange({1, 2, 3}, 2);
-    cout << v[0] << " " << v[1] << endl;
+    NEW_UNIQUE(sol, Assemble);
+    cout << sol->minCost({19, 50, 10, 39}) << endl;
   }
   {
-    NEW_UNIQUE(sol, FanFailure);
-    auto v = sol->getRange({8, 5, 6, 7}, 22);
-    cout << v[0] << " " << v[1] << endl;
-  }
-  {
-    NEW_UNIQUE(sol, FanFailure);
-    auto v = sol->getRange({676, 11, 223, 413, 823, 122, 547, 187, 28}, 1000);
-    cout << v[0] << " " << v[1] << endl;
+    NEW_UNIQUE(sol, Assemble);
+    cout << sol->minCost({13,18,24,11,25,100,93,92,79}) << endl;
   }
   return 0;
 }

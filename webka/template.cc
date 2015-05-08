@@ -12,6 +12,7 @@ private:
 };
 
 bool TemplateImpl::apply(const VarStore &vs) const {
+  return false;
 }
 
 }  // namespace webka

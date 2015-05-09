@@ -35,49 +35,39 @@ constexpr char kEol[] = "\n";
 constexpr int INF = 0x7fffffff;
 constexpr int MOD = 100000007;
 
-int gcd(int a, int b) {
-  while (b != 0) {
-    int t = a % b;
-    a = b;
-    b = t;
-  }
-  return a;
-}
-
-class BalanceScale {
+class BrokenButtons {
 public:
-  int takeWeights(vector<int> weight) {
-    auto g = weight[0];
-    for (int i = 1; i < weight.size(); i++) {
-      if (g == 1) break;
-      g = gcd(weight[i], g);
+  int minPresses(int page, vector<int> broken) {
+    if (broken.size() == 10) return abs(page - 100);
+
+    vector<int> dig;
+    for (int k = page; k != 0; k /= 10) {
+      dig.push_back(k % 10);
     }
-    if (g > 1) {
-      for (auto &x : weight) {
-        x /= g;
-      }
+    if (dig.empty()) {
+      dig.push_back(0);
     }
-    // `subset_gcds` is a set of gcd of subsets of size 1,2,...n elements of
-    // the array `weight`.
-    unordered_map<int, bool> subset_gcds;
-    for (auto x : weight) subset_gcds[x] = true;
-    // k is subset size.
-    for (int k = 1; true; k++) {
-      unordered_map<int, bool> t;
-      for (auto g : subset_gcds) {
-        if (g.first == 1) return k;
-        for (auto m : weight) {
-          t[gcd(m, g.first)] = true;
-        }
-      }
-      subset_gcds = move(t);
+    if (broken.empty()) {
+      return dig.size();
     }
-    return 0;  // Never here.
+
+    int broken_flag[10] = {};
+    for (auto b : broken) broken_flag[b] = 1;
+    for (int i = 0; i < 10; i++) {
+      if (!broken_flag[i]) good.push_back(i);
+    }
+    vector<int> next(dig.size());
+    int carry = 0;
+    for (int i = 0; i < dig.size(); i++) {
+
+    }
   }
+
+  vector<int> good;
 };
 
 int main() {
-  cout << NEW_UNIQUE(BalanceScale)->takeWeights({5, 4, 1, 8}) << endl;
-  cout << NEW_UNIQUE(BalanceScale)->takeWeights({2, 3, 8, 9}) << endl;
+  cout << NEW_UNIQUE(BrokenButtons)->minPresses({5, 4, 1, 8}) << endl;
+  cout << NEW_UNIQUE(BrokenButtons)->minPresses({2, 3, 8, 9}) << endl;
   return 0;
 }

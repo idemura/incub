@@ -1,130 +1,154 @@
 #include <algorithm>
+#include <functional>
+#include <iostream>
+#include <list>
 #include <map>
+#include <unordered_map>
 #include <string>
+#include <queue>
 #include <vector>
+#include <memory>
+#include <sstream>
 #include <utility>
 #include <math.h>
-#include <assert.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <memory.h>
 
-#define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
+#define ARRAY_SIZEOF(A) (sizeof(A) / sizeof(A[0]))
+#define NON_COPYABLE(C) \
+    C(const C&) = delete; \
+    C& operator=(const C&) = delete;
+#define NEW_UNIQUE(T) unique_ptr<T>(new T)
+#define CHECK(E) \
+  do { \
+      if (!(E)) { \
+        cout << "CHECK failed at " << __FILE__ << "@" << __LINE__ << endl; \
+        exit(EXIT_FAILURE); \
+    } \
+  } while (false)
 
-typedef long long int lli;
+using namespace std;
 
-void print(lli *a, int a_n, int i, int j)
-{
-  for (int k = 0; k < a_n; k++) {
-    printf("%lld ", a[k]);
-  }
-  printf("\n");
-  for (int k = 0; k < a_n; k++) {
+using i64 = long long int;
+using i32 = int;
+
+constexpr char kEol[] = "\n";
+constexpr int INF = 0x7fffffff;
+constexpr int MOD = 100000007;
+
+void print(const vector<int> &a, int i, int j) {
+  for (auto x : a) cout << x << " ";
+  cout << endl;
+  for (int k = 0; k < a.size(); k++) {
     if (k == i && i == j) {
-      printf("i,j");
+      cout << "i,j";
     } else if (k == i) {
-      printf("i ");
+      cout << "i ";
     } else if (k == j) {
-      printf("j ");
+      cout << "j ";
     } else {
-      printf("  ");
+      cout << "  ";
     }
   }
-  printf("\n");
+  cout << endl;
 }
 
-lli nthRec(lli *a, int a_n, int i0, int j0, int ith)
-{
-  if (i0 == j0) {
-    return a[i0];
-  }
-
-  int i = i0; // 'i' is count of items less than 'd'.
-  int j = j0;
-  lli d = a[i];
+// If p is a return value, then partitions are [i, p] and [p+1, j].
+// Requires elements of `a` to be less comparable.
+template<class T, class Cmp = std::less<T>>
+int random_partition(std::vector<T> &a, int i, int j, Cmp cmp = Cmp()) {
+  if (i == j) return -1;
+  auto i_in = i;
+  auto j_in = j;
+  auto pivot_i = i + rand() % (j - i + 1);
+  // Put pivot in the end to avoid bounds check in the first while and to have
+  // at least one in the right part.
+  if (pivot_i != j) std::swap(a[pivot_i], a[j]);
+  auto p = a[j];
   for (;;) {
-    for (; a[i] < d; i++) {
-    }
-    for (; j > i && a[j] >= d; j--) {
-    }
-    // 'i' can't be equal to 'j', because can't be at the same time
-    // a[i] >= d(from the first loop) and a[i] < d (from the second
-    // loop break condition).
-    if (i < j) {
-      std::swap(a[i], a[j]);
-      i++;
-      j--;
-    } else {
-      break;
-    }
+    // Don't need bounds check because the last is element of the range is
+    // pivot.
+    while (cmp(a[i], p)) i++;
+    // Use <= because we want to leave last element on its place.
+    while (i < j && !cmp(a[j], p)) j--;
+    if (i >= j) break;
+    std::swap(a[i], a[j]);
+    i++;
+    j--;
   }
-
-  // Here 'i' is count of a[i] such that a[i] < d.
-  if (i == i0) {
-    if (i == ith) {
-      return a[i];
-    } else {
-      i++;
-    }
-  }
-
-  if (ith < i) {
-    return nthRec(a, a_n, i0, i - 1, ith);
+  if (i == i_in) {
+    // Pivot was the minimal element.
+    std::swap(a[j], a[j_in]);
+    return i;
   } else {
-    return nthRec(a, a_n, i, j0, ith);
+    return i - 1;
   }
 }
 
-lli nth(lli *a, int a_n, int ith)
-{
-  assert(ith >= 0 && ith < a_n);
-  return nthRec(a, a_n, 0, a_n - 1, ith);
-}
-
-void test1()
-{
-  lli a_src[] = {5, 8, 3, 7, 2, 4, 6, 9, 1, 0};
-  lli a[ARRAY_SIZEOF(a_src)];
-  const int a_n = ARRAY_SIZEOF(a);
-
-  for (int i = 0; i < a_n; i++) {
-    memcpy(a, a_src, sizeof a_src);
-    assert(nth(a, a_n, i) == i);
+// Returns the value of ith element.
+template<class T, class Cmp = std::less<T>>
+int nth(vector<T> &a, int ith, Cmp cmp = Cmp()) {
+  CHECK(ith < a.size());
+  int i = 0;
+  int j = a.size() - 1;
+  while (i != j) {
+    auto p = random_partition(a, i, j, cmp);
+    if (ith <= p) {
+      j = p;
+    } else {
+      i = p + 1;
+    }
   }
-  printf("test1 OK\n");
+  return a[i];
 }
 
-void test2()
-{
-  lli a_src[] = {5, 5, 5, 5, 5};
-  lli a[ARRAY_SIZEOF(a_src)];
-  const int a_n = ARRAY_SIZEOF(a);
-
-  for (int i = 0; i < a_n; i++) {
-    memcpy(a, a_src, sizeof a_src);
-    assert(nth(a, a_n, i) == 5);
+void test1() {
+  srand(1);
+  vector<int> a{5, 8, 3, 7, 2, 4, 6, 9, 1, 0};
+  for (int i = 0; i < a.size(); i++) {
+    CHECK(nth(a, i) == i);
   }
-  printf("test2 OK\n");
+  cout << "test1 OK\n";
 }
 
-void test3()
-{
-  lli a_src[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  lli a[ARRAY_SIZEOF(a_src)];
-  const int a_n = ARRAY_SIZEOF(a);
-
-  for (int i = 0; i < a_n; i++) {
-    memcpy(a, a_src, sizeof a_src);
-    assert(nth(a, a_n, i) == i);
+void test2() {
+  srand(1);
+  vector<int> a{5, 5, 5, 5, 5};
+  for (int i = 0; i < a.size(); i++) {
+    CHECK(nth(a, i) == 5);
   }
-  printf("test3 OK\n");
+  cout << "test2 OK\n";
 }
 
-int main()
-{
+void test3() {
+  srand(1);
+  vector<int> a{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+  for (int i = 0; i < a.size(); i++) {
+    CHECK(nth(a, i) == i);
+  }
+  cout << "test3 OK\n";
+}
+
+void test4() {
+  srand(1);
+  vector<int> a{5, 8, 3, 7, 1, 7, 6, 9, 0, 0}, b;
+  CHECK(nth(b = a, 0) == 0);
+  CHECK(nth(b = a, 1) == 0);
+  CHECK(nth(b = a, 2) == 1);
+  CHECK(nth(b = a, 3) == 3);
+  CHECK(nth(b = a, 4) == 5);
+  CHECK(nth(b = a, 5) == 6);
+  CHECK(nth(b = a, 6) == 7);
+  CHECK(nth(b = a, 7) == 7);
+  CHECK(nth(b = a, 8) == 8);
+  CHECK(nth(b = a, 9) == 9);
+  cout << "test4 OK\n";
+}
+
+int main() {
   test1();
   test2();
   test3();
+  test4();
+  cout << "TESTS PASSED." << endl;
   return 0;
 }

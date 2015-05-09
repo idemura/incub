@@ -1,6 +1,5 @@
 #include "base.h"
 
-// Assumes `b < a`, otherwise the first iteration will swap `a` and `b`.
 int gcd(int a, int b) {
   while (b != 0) {
     int t = a % b;

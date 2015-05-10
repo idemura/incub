@@ -13,4 +13,5 @@ name=$1
 cp sol.cc sln/$name.cc
 git add sln/$name.cc
 git add sol.cc
+git status -s -uno
 git ci -m "$name"

@@ -65,5 +65,6 @@ public:
 int main() {
   cout << NEW_UNIQUE(BrokenButtons)->minPresses(5457, {6, 7, 8}) << endl;
   cout << NEW_UNIQUE(BrokenButtons)->minPresses(80000, {8, 9}) << endl;
+  cout << NEW_UNIQUE(BrokenButtons)->minPresses(0, {8, 9}) << endl;
   return 0;
 }

@@ -35,57 +35,131 @@ constexpr char kEol[] = "\n";
 constexpr int INF = 0x7fffffff;
 constexpr int MOD = 100000007;
 
-class SumOfSelectedCells {
+class PrinceOfPersia {
 public:
-  string hypothesis(const vector<string> &table) {
-    const int n1 = table.size();
-    vector<vector<int>> m(n1);
-    for (int i = 0; i < n1; i++) {
-      for (int j = 0; j != string::npos; ) {
-        auto k = table[i].find(' ', j);
-        if (k == string::npos) {
-          m[i].push_back(stoi(table[i].substr(j)));
-          break;
-        } else {
-          m[i].push_back(stoi(table[i].substr(j, k)));
-          j = k + 1;
-        }
-      }
+  struct Pos {
+    int x, y;
+    Pos(): x(), y() {}
+    Pos(int x, int y): x(x), y(y) {}
+  };
+
+  // BFS
+  int minObstacles(vector<string> maze_in) {
+    this->maze = maze_in;
+    front.push_back(get_initial_pos());
+    if (p_nearby(init.x, init.y)) {
+      return -1;
     }
-    const int n2 = m[0].size();
-    for (int i = 0; i < n1; i++) {
-      for (int j = i + 1; j < n1; j++) {
-        int d = m[i][0] - m[j][0];
-        for (int k = 1; k < n2; k++) {
-          if (m[i][k] - m[j][k] != d) {
-            return "INCORRECT";
-          }
-        }
+    cout<<"maze in"<<endl;
+    print_maze();
+    eliminate_dead_ends();
+    cout<<"maze no dead ends:"<<endl;
+    print_maze();
+    vector<int> levels;
+    for (int i = 0; i < front.size(); ) {
+      level = 0;
+      cout<<"next level!\n";
+      for (int n = front.size(); i < n; i++) {
+        cout<<"front "<<(front[i].x+1)<<" "<<(front[i].y+1)<<endl;
+        print_maze();
+        update_pos(front[i],  1,  0);
+        update_pos(front[i], -1,  0);
+        update_pos(front[i],  0,  1);
+        update_pos(front[i],  0, -1);
       }
+      cout<<"--- level="<<level<<endl;
+      if (level > 0) levels.push_back(level);
     }
-    for (int i = 0; i < n2; i++) {
-      for (int j = i + 1; j < n2; j++) {
-        int d = m[0][i] - m[0][j];
-        for (int k = 1; k < n1; k++) {
-          if (m[k][i] - m[k][j] != d) {
-            return "INCORRECT";
-          }
-        }
-      }
-    }
-    return "CORRECT";
+    if (!reached) return 0;
+    return *min_element(levels.begin(), levels.end());
   }
+
+  Pos get_initial_pos() {
+    for (int i = 0; i < maze.size(); i++) {
+      for (int j = 0; j < maze[i].size(); j++) {
+        if (maze[i][j] == 'P') {
+          init.x = i;
+          init.y = j;
+          return init;
+        }
+      }
+    }
+    return init;
+  }
+
+  bool update_pos(Pos p, int x, int y) {
+    x += p.x;
+    y += p.y;
+    if (outside(x, y)) return false;
+    if (maze[x][y] == '.') {
+      maze[x][y] = '*';
+      front.emplace_back(x, y);
+      level++;
+      return true;
+    }
+    if (maze[x][y] == 'P' && x != init.x && y != init.y) {
+      reached = true;
+      return true;
+    }
+    return false;
+  }
+
+  bool outside(int x, int y) {
+    return x < 0 || x >= maze.size() || y < 0 || y >= maze[0].size();
+  }
+
+  bool p_nearby(int x, int y) {
+    return (!outside(x + 1, y) && maze[x + 1][y] == 'P') ||
+           (!outside(x - 1, y) && maze[x - 1][y] == 'P') ||
+           (!outside(x, y + 1) && maze[x][y + 1] == 'P') ||
+           (!outside(x, y - 1) && maze[x][y - 1] == 'P');
+  }
+
+  void eliminate_dead_ends() {
+    int n_dead_ends = 0;
+    do {
+      n_dead_ends = 0;
+      cout<<"----\n";
+      print_maze();
+      for (int i = 0; i < maze.size(); i++) {
+        for (int j = 0; j < maze[i].size(); j++) {
+          if (maze[i][j] != '.') continue;
+          int n = (outside(i - 1, j) || maze[i - 1][j] == '#') +
+                  (outside(i + 1, j) || maze[i + 1][j] == '#') +
+                  (outside(i, j - 1) || maze[i][j - 1] == '#') +
+                  (outside(i, j + 1) || maze[i][j + 1] == '#');
+          cout<<"for x="<<(i + 1)<<" y="<<(j + 1)<<" n="<<n<<endl;
+          if (n >= 3) {
+            maze[i][j] = '#';
+            n_dead_ends++;
+          }
+        }
+      }
+    } while (n_dead_ends > 0);
+  }
+
+  int length(int x, int y) { return abs(x - init.x) + abs(y - init.y); }
+
+  void print_maze() {
+    for (auto &s : maze) cout << s << endl;
+  }
+
+  vector<string> maze;
+  Pos init;
+  vector<Pos> front;
+  int level = 0;
+  bool reached = false;
 };
 
 int main() {
-  cout << NEW_UNIQUE(SumOfSelectedCells)->hypothesis(
-      { "11 12 13 14",
-        "21 22 23 24",
-        "31 32 33 34",
-        "41 42 43 44" }) << endl;
-  cout << NEW_UNIQUE(SumOfSelectedCells)->hypothesis(
-      { "3 7",
-        "3 7",
-        "3 7" }) << endl;
+  cout << NEW_UNIQUE(PrinceOfPersia)->minObstacles(
+      { "P....",
+        "...##",
+        "##...",
+        "....P" }) << endl;
+  cout << NEW_UNIQUE(PrinceOfPersia)->minObstacles(
+    { ".....",
+      ".P.P.",
+      "....." }) << endl;
   return 0;
 }

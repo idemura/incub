@@ -16,3 +16,4 @@ RMQ: tree and overlapping segments
 Prim/Kruskal
 http://stackoverflow.com/questions/500607/what-are-the-lesser-known-but-useful-data-structures
 http://e-maxx.ru/algo/
+Johnson’s algorithm for all pair shortest path in sparse graph

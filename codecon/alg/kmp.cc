@@ -57,5 +57,6 @@ int main(int argc, char **argv) {
   test("abcabcabaad", "bcab");
   test("abcabcabaad", "aad");
   test("abcabcabaad", "add");
+  cout << "TESTS PASSED." << endl;
   return 0;
 }

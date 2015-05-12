@@ -2,14 +2,13 @@ Convex hull: Jarvis and others
 Hungarian algorithm
 Matrix K-th min element if columns and rows are ordered O(n)
 Chinese remainder theorem
-Josephus problem
 Newton interpolation polynomial
 Newton (tangents) method
 Gray code: subsets of length k
 Max common substring of strings
 MurmurHash
 Binary GCD
-FFT / discrete Fourier transform
+FFT / Discrete Fourier transform
 Trie
 Suffix array
 RMQ: tree and overlapping segments
@@ -17,3 +16,6 @@ Prim/Kruskal
 http://stackoverflow.com/questions/500607/what-are-the-lesser-known-but-useful-data-structures
 http://e-maxx.ru/algo/
 Johnson’s algorithm for all pair shortest path in sparse graph
+Bellman-Ford
+Max flow
+Min cost max flow

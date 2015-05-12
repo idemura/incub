@@ -1,12 +1,4 @@
-#include <algorithm>
-#include <functional>
-#include <vector>
-#include <iostream>
-#include <assert.h>
-#include <stdlib.h>
-
-#define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
-#define INF 0x7fffffff
+#include "base.h"
 
 // Min heap for value type of a non-exceptional type T.
 template<class T, class Cmp = std::less<T>>

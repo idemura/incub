@@ -35,25 +35,59 @@ constexpr char kEol[] = "\n";
 constexpr int INF = 0x7fffffff;
 constexpr int MOD = 100000007;
 
-class SpiralRoute {
+class RoadConstruction {
 public:
-  vector <int> thronePosition(int width, int length) {
-    int min_size = min(width, length);
-    while (min_size >= 3) min_size -= 2;
-    if (min_size == width) {
-      if (min_size == 1)
-        return {min_size / 2, min_size / 2 + length - min_size - 1};
-      else
-        return {min_size / 2 + 1, min_size / 2};
-    } else {
-      if (min_size == 1)
-        return {min_size / 2 + length - min_size - 1, min_size / 2};
-      else
-        return {min_size / 2, min_size / 2 + 1};
-    }
+  int getExitTime(vector<string> lanes) {
+    lanes_ = move(lanes);
+    yield_.resize(lanes_.size());
+    ix_.resize(lanes_.size());
+    while (step_rec(0) != 'D') {}
+    return c_ - 1;
   }
+
+  // A car exited from lanes >i or 0.
+  char step_rec(int i) {
+    if (i == lanes_.size()) return 0;
+    if (ix_[i] == lanes_[i].size()) {
+      return step_rec(i + 1);
+    }
+    if (yield_[i]) {
+      return exit_lane(i);
+    }
+    auto s = step_rec(i + 1);
+    if (s == 'D') {
+      return s;
+    }
+    if (s == 0) {
+      return exit_lane(i);
+    }
+    yield_[i] = 1;
+    return s;
+  }
+
+  char exit_lane(int i) {
+    c_++;
+    yield_[i] = 0;
+    return lanes_[i][ix_[i]++];
+  }
+
+  vector<string> lanes_;
+  vector<int> ix_, yield_;
+  int c_ = 0;
 };
 
 int main() {
+  cout << NEW_UNIQUE(RoadConstruction)->getExitTime(
+      { "AB",
+        "CD",
+        "E" }) << endl;
+  cout << NEW_UNIQUE(RoadConstruction)->getExitTime(
+      { "AAA",
+        "A",
+        "AAA",
+        "A",
+        "AAD",
+        "A",
+        "AAB" }) << endl;
   return 0;
 }

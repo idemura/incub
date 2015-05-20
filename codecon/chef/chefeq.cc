@@ -36,6 +36,7 @@ constexpr int INF = 0x7fffffff;
 constexpr int MOD = 100000007;
 
 int main() {
+  ios_base::sync_with_stdio(false);
   int t;
   cin >> t;
   while (t-- > 0) {

@@ -36,34 +36,39 @@ constexpr char kEol[] = "\n";
 constexpr int INF = 0x7fffffff;
 constexpr int MOD = 100000007;
 
+// Movable.
+struct SetAndTotal {
+  set<i64> subsums;
+  i64 total = 0;
+};
+
+SetAndTotal rec_step(const vector<int> &a, i64 m, int l, int r, i64* pmax) {
+  SetAndTotal st;
+  if (l - r == 1) {
+    st.total = a[l];
+    st.subsums.insert(a[l]);
+  } else {
+    auto m = l + (r - l) / 2;
+    auto st_l = rec_step(a, l, m, pmax);
+    auto st_r = rec_step(a, m, r, pmax);
+  }
+  return st;
+}
+
+i64 max_subarray_mod(const vector<int> &a, i64 m) {
+  i64 pmax = 0;
+}
+
 int main() {
   ios_base::sync_with_stdio(false);
-  int n = 0;
-  cin >> n;
-  vector<int> a(n);
-  for (int i = 0; i < n; i++) {
-    cin >> a[i];
+  int t = 0; cin >> t;
+  while (t-- > 0) {
+    i64 n, m;
+    cin >> n >> m;
+    vector<int> a;
+    for (int i = 0; i < n; i++)
+      cin >> a[i];
+    cout << max_subarray_mod(a, m) << endl;
   }
-  sort(a.begin(), a.end());
-  unordered_set<int> sums;
-  for (int i = 0; i < n; i++) {
-    for (int j = i + 1; j < n; j++) {
-      sums.insert(a[i] + a[j]);
-    }
-  }
-  int max_pair_n =  0;
-  for (auto s : sums) {
-    int pair_n = 0;
-    for (int i = 0, j = n - 1; i < j;) {
-      if (a[i] + a[j] < s) i++;
-      else if (a[i] + a[j] > s) j--;
-      else {
-        i++; j--;
-        pair_n++;
-      }
-    }
-    max_pair_n = max(max_pair_n, pair_n);
-  }
-  cout << 2 * max_pair_n << endl;
   return 0;
 }

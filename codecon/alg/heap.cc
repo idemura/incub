@@ -2,10 +2,10 @@
 
 // Min heap for value type of a non-exceptional type T.
 template<class T, class Cmp = std::less<T>>
-class MinHeap {
+class Heap {
 public:
-  MinHeap() {}
-  explicit MinHeap(std::vector<T> data) : h(std::move(data)) {
+  Heap() {}
+  explicit Heap(std::vector<T> data) : h(std::move(data)) {
     std::make_heap(h.begin(), h.end(), cmp);
   }
 
@@ -33,11 +33,11 @@ private:
 };
 
 template<class T, class Cmp = std::less<T>>
-class Heap {
+class ExtHeap {
 public:
   typedef T ValueT;
 
-  explicit Heap(const Cmp &cmp = Cmp()): cmp(cmp) {}
+  explicit ExtHeap(const Cmp &cmp = Cmp()): cmp(cmp) {}
 
   void insert(const T &val, size_t *index = NULL) {
     h.push_back(Elem(val, index));
@@ -148,10 +148,10 @@ private:
   std::vector<Elem> h;
 };
 
-void testHeapRemove(const std::vector<int>& a, int rmi)
+void testHeapRemove(const std::vector<int> &a, int rmi)
 {
   std::vector<size_t> ind(a.size());
-  Heap<int> heap;
+  ExtHeap<int> heap;
   for (int i = 0; i < a.size(); i++) {
     heap.insert(a[i], &ind[i]);
   }

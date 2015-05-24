@@ -107,10 +107,10 @@ void normalize_scc(vector<VertexVec> &scc) {
   for (auto &g : scc) {
     sort(g.begin(), g.end());
   }
-  auto cmp_vertor_first = [](const VertexVec &a, const VertexVec &b) {
+  auto cmp_vector_first = [](const VertexVec &a, const VertexVec &b) {
     return a[0] < b[0];
   };
-  sort(scc.begin(), scc.end(), cmp_vertor_first);
+  sort(scc.begin(), scc.end(), cmp_vector_first);
 }
 
 template<class T>

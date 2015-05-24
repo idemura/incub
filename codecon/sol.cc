@@ -96,6 +96,17 @@ void scc_tarjan(const vector<VertexVec> &a, vector<int> &scc, int &scc_num) {
   scc_num = c.scc_num;
 }
 
+vector<Edge> scc_reduce(const vector<VertexVec> &a, const vector<int> &scc) {
+  set<Edge> edge_set;
+  for (int v = 0; v < a.size(); v++) {
+    for (auto w : a[v]) {
+      auto e = Edge(scc[v], scc[w]);
+      if (e.first != e.second) edge_set.insert(e);
+    }
+  }
+  return vector<Edge>(edge_set.begin(), edge_set.end());
+}
+
 vector<VertexVec> scc_to_groups(const vector<int> &scc, int k) {
   vector<VertexVec> groups(k);
   for (int i = 0; i < scc.size(); i++) {
@@ -121,23 +132,6 @@ bool vector_sort_eq(vector<T> a, vector<T> b) {
   sort(a.begin(), a.end());
   sort(b.begin(), b.end());
   return vector_eq(a, b);
-}
-
-vector<Edge> scc_reduce(const vector<VertexVec> &a, const vector<int> &scc) {
-  set<Edge> edge_set;
-  for (int v = 0; v < a.size(); v++) {
-    for (auto w : a[v]) {
-      auto e = Edge(scc[v], scc[w]);
-      if (e.first != e.second) edge_set.insert(e);
-    }
-  }
-  return vector<Edge>(edge_set.begin(), edge_set.end());
-}
-
-void print_reduced(const vector<pair<int, int>> &es) {
-  for (auto e : es) {
-    cout << e.first << " -> " << e.second << endl;
-  }
 }
 
 void test1() {

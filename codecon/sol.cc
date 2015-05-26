@@ -107,7 +107,7 @@ void mst_prim_prepare_edges(vector<Edge> &es) {
 }
 
 void test1() {
-  // Exmaple from the CLR book.
+  // Example from the CLR book.
   vector<Edge> mst, es{
     {0, 1, 4},
     {0, 2, 8},

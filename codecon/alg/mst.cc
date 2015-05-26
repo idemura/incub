@@ -88,7 +88,7 @@ i64 mst_prim(
       auto e = h.pop();
       if (!in_mst[e.second.w]) {
         v = e.second.w;
-        mst.emplace_back(e.second);
+        mst.push_back(e.second);
         length += e.first;
         break;
       }

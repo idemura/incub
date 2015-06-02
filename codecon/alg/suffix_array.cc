@@ -29,11 +29,6 @@ constexpr int DIM = 200000;
 // Don't output if no error.
 static bool output_suffix_array = false;
 
-template<class T>
-bool vectors_eq(const vector<T> &a, const vector<T> &b) {
-  return a.size() == b.size() && equal(a.begin(), a.end(), b.begin());
-}
-
 int str_lcp(const string &a, const string &b) {
   auto min_n = min(a.size(), b.size());
   for (int i = 0; i < min_n; i++) {
@@ -170,11 +165,11 @@ void test_suffix_array(string s) {
   auto sa_y = suffix_array(s);
   vector<vector<int>> ord;
   auto sa_x = suffix_array_ord(s, ord);
-  if (!vectors_eq(sa_x, sa_y)) {
+  if (sa_x != sa_y) {
     cout << "suffix_array and suffix_array_ord - different results!\n";
     return;
   }
-  if (!vectors_eq(sa_n, sa_x)) {
+  if (sa_n != sa_x) {
     cout << "ERROR!\n";
     cout << "naive:\n";
     printer(sa_n);

@@ -87,7 +87,7 @@ vector<VertexVec> scc_to_groups(const vector<int> &scc, int k) {
 
 template<class T>
 bool vector_eq(const vector<T> &a, const vector<T> &b) {
-  return a.size() == b.size() && equal(a.begin(), a.end(), b.begin());
+  return a == b;
 }
 
 template<class T>

@@ -1,21 +1,6 @@
-#include <algorithm>
-#include <map>
-#include <vector>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "base.h"
 
-#define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
-#define INF 0x7fffffff
-
-typedef long long int lli;
-
-// MOD is prime
-const int MOD = 1000000007;
-
-int gcd(int a, int b)
-{
+int gcd(int a, int b) {
   // Assumes `b < a`, otherwise the first iteration will swap `a` and `b`.
   while (b != 0) {
     int t = a % b;
@@ -25,8 +10,7 @@ int gcd(int a, int b)
   return a;
 }
 
-void extGCD(int a, int b, int *gcd, int *x_out, int *y_out)
-{
+void extGCD(int a, int b, int *gcd, int *x_out, int *y_out) {
   int x = 0, y = 1;
   int u = 1, v = 0;
   while (a != 0) {
@@ -43,8 +27,7 @@ void extGCD(int a, int b, int *gcd, int *x_out, int *y_out)
   *y_out = y;
 }
 
-int extGCDRec(int a, int b, int *xa, int *xb)
-{
+int extGCDRec(int a, int b, int *xa, int *xb) {
   if (a == 0) {
     *xb = 1;
     *xa = 0;
@@ -59,24 +42,20 @@ int extGCDRec(int a, int b, int *xa, int *xb)
   return gcd;
 }
 
-inline int madd(int a, int b, int p)
-{
+inline int madd(int a, int b, int p) {
   return (a + b) % p;
 }
 
-inline int msub(int a, int b, int p)
-{
+inline int msub(int a, int b, int p) {
   return (a - b + p) % p;
 }
 
-inline int mmul(lli a, int b, int p)
-{
+inline int mmul(i64 a, int b, int p) {
   return (int)(a * b % p);
 }
 
-int mpow(lli a, int k, int p)
-{
-  lli x = 1;
+int mpow(i64 a, int k, int p) {
+  i64 x = 1;
   for (; k; k >>= 1) {
     if (k & 1) {
       x *= a;
@@ -88,8 +67,7 @@ int mpow(lli a, int k, int p)
   return (int)x;
 }
 
-inline int minv(int a, int p)
-{
+inline int minv(int a, int p) {
   return mpow(a, p - 2, p);
 }
 
@@ -100,31 +78,27 @@ inline int minv(int a, int p)
 //   return x < 0? x + p: x;
 // }
 
-inline int mdiv(lli a, int b, int p)
-{
+inline int mdiv(i64 a, int b, int p) {
   a *= minv(b, p);
   a %= p;
   return (int)a;
 }
 
-inline bool eurlerCriterion(int a, int p)
-{
+inline bool eurlerCriterion(int a, int p) {
   return mpow(a, (p - 1) / 2, p) == 1;
 }
 
-int findQuadraticNonResidue(int p)
-{
+int findQuadraticNonResidue(int p) {
   // Brute force search for the first non-residue.
   int k = 2;
-  for (; eurlerCriterion(k, p); k++) {}
+  while (eurlerCriterion(k, p)) k++;
   return k;
 }
 
 // Returns a square root on `a` modulo `p` or -1 if doesn't exist.
-// Shanks-Tonelli algorithm, see
+// Shanks-Tonei64 algorithm, see
 // http://www.math.vt.edu/people/brown/doc/sqrts.pdf
-int shanksTonelli(int a, int p)
-{
+int shanksTonei64(int a, int p) {
   if (p == 2 || a <= 1) {
     return a;
   }
@@ -162,8 +136,7 @@ int shanksTonelli(int a, int p)
   return -1;
 }
 
-bool isPrime(int n)
-{
+bool isPrime(int n) {
   if (n <= 5) {
     return n > 1 && n != 4;
   }
@@ -195,8 +168,7 @@ bool isPrime(int n)
 //  mod * (k1 + k2) - (mod / i * r) * i = 1
 // In the latest equation we can spot extended Euclid equation with, hence:
 //  inv(i) = - (mod / i) * inv(mod % i)
-void invList(int *inv, int mod)
-{
+void invList(int *inv, int mod) {
   inv[0] = 0;
   inv[1] = 1;
   for (int i = 2; i < mod; i++) {
@@ -204,58 +176,24 @@ void invList(int *inv, int mod)
   }
 }
 
-// Pascal triangle for [0..n]. Memory should be freed by `pascalFree`.
-int** pascal(int n)
-{
-  int **pas = new int*[n + 1]();
-  pas[0] = new int[(2 + n) * (n + 1) / 2]();
-  for (int i = 1; i <= n; i++) {
-    pas[i] = pas[i - 1] + i;
-  }
-  pas[0][0] = 1;
-  for (int i = 1; i <= n; ++i) {
-    pas[i][0] = 1;
-    for (int j = 1; j < i; ++j) {
-      pas[i][j] = pas[i - 1][j - 1] + pas[i - 1][j];
-    }
-    pas[i][i] = 1;
-  }
-  return pas;
-}
-
-void pascalFree(int **pas)
-{
-  if (pas) {
-    delete[] pas[0];
-    delete[] pas;
-  }
-}
-
-void sieve(int n, std::vector<int> *primes)
-{
-  char *seq = new char[n + 1]();
+void sieve(int n, std::vector<int> *primes) {
+  vector<char> seq(n + 1);
   int sqrtn = (int)sqrt(n);
   int i;
   for (i = 2; i <= sqrtn; i++) {
-    if (seq[i]) {
-      continue;
-    }
+    if (seq[i]) continue;
     for (int j = i * i; j <= n; j += i) {
       seq[j] = 1;
     }
     primes->push_back(i);
   }
   for (; i <= n; i++) {
-    if (!seq[i]) {
-      primes->push_back(i);
-    }
+    if (!seq[i]) primes->push_back(i);
   }
-  delete[] seq;
 }
 
 // Function computing the floor of the square root, by Dijkstra
-int sqrti(int n)
-{
+int sqrti(int n) {
   int p, q, r, h;
   p = 0;
   q = 1;
@@ -287,7 +225,6 @@ int countBits32(unsigned int n) {
   return (int)n;
 }
 
-int main()
-{
+int main() {
   return 0;
 }

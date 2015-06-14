@@ -1,0 +1,39 @@
+#!/usr/bin/python
+import os
+import os.path
+import sys
+import shutil
+
+HELP = """Usage: ./bkp [pop|clean]
+  Save/restores/clean sol.cc file version.
+"""
+
+def format_backup_file(n):
+  return 'sol.cc.{0}.backup'.format(n)
+
+def foreach_backup(f = None):
+  i = 0
+  while os.path.isfile(format_backup_file(i)):
+    if f is not None:
+      f(format_backup_file(i))
+    i += 1
+  return i
+
+args = sys.argv[1:]
+if len(args) == 0:
+  n = foreach_backup()
+  shutil.copy('sol.cc', format_backup_file(n))
+elif args[0] == 'pop':
+  n = foreach_backup()
+  if n == 0:
+    print 'No backups found'
+    sys.exit(-1)
+  else:
+    shutil.move(format_backup_file(n - 1), 'sol.cc')
+elif args[0] == 'clean':
+  foreach_backup(os.remove)
+elif args[0] == 'help':
+  print HELP
+else:
+  print 'Invalid command `{0}`'.format(args[0])
+  sys.exit(-1)

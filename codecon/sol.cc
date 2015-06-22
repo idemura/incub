@@ -1,101 +1,125 @@
-#include <algorithm>
-#include <functional>
-#include <list>
-#include <map>
-#include <unordered_map>
-#include <vector>
-#include <string>
-#include <random>
-#include <sstream>
-#include <utility>
-#include <iostream>
-#include <math.h>
+#include "base.h"
 
-#define ARRAY_SIZEOF(A) (sizeof(A) / sizeof(A[0]))
-#define fori(N) for (int i = 0; i < N; i++)
-#define forj(N) for (int j = 0; j < N; j++)
+template<class T>
+struct Node {
+  T data;
+  Node *p = nullptr, *l = nullptr, *r = nullptr;
 
-using namespace std;
-
-using i64 = long long int;
-using i32 = int;
-
-constexpr char kEol[] = "\n";
-constexpr int INF = 0x7fffffff;
-constexpr int MOD = 1000000007;
-constexpr int DIM = 100002;
-
-struct KthBits {
-  // i-th is 2^i-th parent of this vertex, 0 if no such parent.
-  int bit[18] = {};
+  Node(): data() {}
+  explicit Node(T data): data(data) {}
+  Node(T data, Node *l, Node* r): data(data), l(l), r(r) {
+    if (l != nullptr) l->p = this;
+    if (r != nullptr) r->p = this;
+  }
 };
 
-void add(vector<KthBits> &kbit, int v, int pred) {
-  for (int i = 0; i < 18 && pred != 0; i++) {
-    kbit[v].bit[i] = pred;
-    pred = kbit[pred].bit[i];
-  }
-}
-
-int query(const vector<KthBits> &kbit, int v, int k) {
-  int b = 0;
-  while (v && k) {
-    if (k & 1) {
-      v = kbit[v].bit[b];
-    }
-    b++;
-    k >>= 1;
-  }
-  return v;
-}
-
-void bfs(const vector<vector<int>> &a, vector<KthBits> &kbit) {
-  vector<pair<int, int>> q;
-  q.reserve(DIM);
-  q.emplace_back(a[0][0], 0);
+template<class T>
+void delete_tree(Node<T> *node) {
+  if (node == nullptr) return;
+  vector<Node<T>*> q{node};
   for (int i = 0; i < q.size(); i++) {
-    auto v = q[i].first;
-    add(kbit, v, q[i].second);
-    for (auto w : a[v]) {
-      q.emplace_back(w, v);
-    }
+    auto n = q[i];
+    if (n->l) q.push_back(n->l);
+    if (n->r) q.push_back(n->r);
+    delete n;
   }
 }
 
-void problem() {
-  int n, q;
-  cin >> n;
-  vector<vector<int>> a(DIM);
-  for (int i = 0; i < n; i++) {
-    int v, w;
-    cin >> v >> w;
-    a[w].push_back(v);
-  }
-  vector<KthBits> kbit(DIM);
-  bfs(a, kbit);
-  cin >> q;
-  for (int i = 0; i < q; i++) {
-    int t, x, y;
-    cin >> t;
-    if (t == 0) {
-      cin >> y >> x;
-      add(kbit, x, y);
-    } else if (t == 1) {
-      cin >> x;
-      kbit[x] = KthBits();
-    } else if (t == 2) {
-      cin >> x >> y;
-      cout << query(kbit, x, y) << endl;
+template<class T>
+void rotate(Node<T> *node) {
+  auto p = node->p;
+  if (p == nullptr) return;
+  node->p = p->p;
+  if (p->p) {
+    if (p->p->l == p) {
+      p->p->l = node;
+    } else {
+      p->p->r = node;
     }
   }
+  if (p->l == node) {
+    p->l = node->r;
+    node->r = p;
+  } else {
+    p->r = node->l;
+    node->l = p;
+  }
+  p->p = node;
+}
+
+template<class T>
+Node<T>* find_root(Node<T> *node) {
+  if (node == nullptr) return nullptr;
+  while (node->p) {
+    node = node->p;
+  }
+  return node;
+}
+
+using NodeInt = Node<int>;
+
+void check_root(NodeInt *n, int v) {
+  CHECK(n->p == nullptr);
+  CHECK(n->data == v);
+}
+
+void check_l(NodeInt *n, int v) {
+  CHECK(n->l != nullptr);
+  CHECK(n->l->p == n);
+  CHECK(n->l->data == v);
+}
+void check_l(NodeInt *n) {
+  CHECK(n->l == nullptr);
+}
+
+void check_r(NodeInt *n, int v) {
+  CHECK(n->r != nullptr);
+  CHECK(n->r->p == n);
+  CHECK(n->r->data == v);
+}
+void check_r(NodeInt *n) {
+  CHECK(n->r == nullptr);
+}
+
+void test1() {
+  auto t = new NodeInt(50);
+  rotate(t);
+  t = find_root(t);
+  check_root(t, 50);
+  check_l(t);
+  check_r(t);
+  delete_tree(t);
+}
+
+void test2() {
+  auto t = new NodeInt(50, new NodeInt(30), nullptr);
+  rotate(t->l);
+  t = find_root(t);
+  check_root(t, 30);
+  check_l(t);
+  check_r(t, 50);
+  check_l(t->r);
+  check_r(t->r);
+  delete_tree(t);
+}
+
+void test3() {
+  auto t = new NodeInt(30, nullptr, new NodeInt(50));
+  rotate(t->l);
+  t = find_root(t);
+  check_root(t, 50);
+  check_l(t, 30);
+  check_l(t->l);
+  check_r(t->l);
+  check_r(t);
+  delete_tree(t);
 }
 
 int main(int argc, char **argv) {
   ios_base::sync_with_stdio(false);
-  int t;
-  cin >> t;
-  while (t--) {
-    problem();
-  }
+  test1();
+  test2();
+  test3();
+  cout << "TESTS PASSED." << endl;
   return 0;
 }

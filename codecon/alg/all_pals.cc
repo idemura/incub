@@ -82,5 +82,6 @@ int main(int argc, char **argv) {
   test("abcd");
   test("abaaa");
   test("babcacac");
+  cout << "TESTS PASSED." << endl;
   return 0;
 }

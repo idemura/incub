@@ -105,7 +105,7 @@ void test2() {
 
 void test3() {
   auto t = new NodeInt(30, nullptr, new NodeInt(50));
-  rotate(t->l);
+  rotate(t->r);
   t = find_root(t);
   check_root(t, 50);
   check_l(t, 30);

@@ -31,11 +31,10 @@ void rotate(Node<T> *node) {
   if (up == nullptr) return;
   node->p = up->p;
   if (up->p) {
-    if (up->p->l == up) {
+    if (up->p->l == up)
       up->p->l = node;
-    } else {
+    else
       up->p->r = node;
-    }
   }
   up->p = node;
   if (up->l == node) {

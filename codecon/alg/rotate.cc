@@ -37,6 +37,7 @@ void rotate(Node<T> *node) {
       up->p->r = node;
     }
   }
+  up->p = node;
   if (up->l == node) {
     up->l = node->r;
     if (up->l) up->l->p = up;
@@ -46,7 +47,6 @@ void rotate(Node<T> *node) {
     if (up->r) up->r->p = up;
     node->l = up;
   }
-  up->p = node;
 }
 
 template<class T>
@@ -71,9 +71,11 @@ void test1() {
   delete_tree(t);
 }
 
-//   B    A
-//  /  =>  \
-// A        B
+/**
+  B    A
+ /  =>  \
+A        B
+**/
 void test2() {
   auto t = new NodeInt(50, new NodeInt(30), nullptr);
   rotate(t->l);
@@ -88,9 +90,11 @@ void test2() {
   delete_tree(t);
 }
 
-// B        A
-//  \  =>  /
-//   A    B
+/**
+B        A
+ \  =>  /
+  A    B
+**/
 void test3() {
   auto t = new NodeInt(30, nullptr, new NodeInt(50));
   rotate(t->r);
@@ -105,11 +109,13 @@ void test3() {
   delete_tree(t);
 }
 
-//     50        25
-//    / \       / \
-//   25  75 => 20  50
-//  / \           / \
-// 20  30        30  75
+/**
+    50        25
+   / \       / \
+  25  75 => 20  50
+ / \           / \
+20  30        30  75
+**/
 void test4() {
   auto t = new NodeInt(50,
       new NodeInt(25, new NodeInt(20), new NodeInt(30)),
@@ -154,13 +160,15 @@ void test4() {
   delete_tree(t);
 }
 
-//   40       40
-//    \        \
-//     50 =>    25
-//    /        / \
-//   25       20  50
-//  /
-// 20
+/**
+  40       40
+   \        \
+    50 =>    25
+   /        / \
+  25       20  50
+ /
+20
+**/
 void test5() {
   auto t = new NodeInt(40,
       nullptr,
@@ -185,13 +193,15 @@ void test5() {
   delete_tree(t);
 }
 
-//   40           40
-//    \            \
-//     50     =>    75
-//      \          / \
-//       75       50  80
-//        \
-//         80
+/**
+40           40
+ \            \
+  50     =>    75
+   \          / \
+    75       50  80
+     \
+      80
+**/
 void test6() {
   auto t = new NodeInt(40,
       nullptr,

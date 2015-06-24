@@ -26,6 +26,15 @@ void delete_tree(Node<T> *node) {
 }
 
 template<class T>
+Node<T>* find_root(Node<T> *node) {
+  if (node == nullptr) return nullptr;
+  while (node->p) {
+    node = node->p;
+  }
+  return node;
+}
+
+template<class T>
 void rotate(Node<T> *node) {
   auto up = node->p;
   if (up == nullptr) return;
@@ -37,6 +46,7 @@ void rotate(Node<T> *node) {
       up->p->r = node;
     }
   }
+  up->p = node;
   if (up->l == node) {
     up->l = node->r;
     if (up->l) up->l->p = up;
@@ -46,24 +56,34 @@ void rotate(Node<T> *node) {
     if (up->r) up->r->p = up;
     node->l = up;
   }
-  up->p = node;
 }
 
+// Splays node to the root.
 template<class T>
-Node<T>* find_root(Node<T> *node) {
-  if (node == nullptr) return nullptr;
-  while (node->p) {
-    node = node->p;
+void splay(Node<T> *node) {
+  if (node == nullptr) return;
+  while (node->p != nullptr) {
+    if (node->p->p) {
+      if ((node->p->l == node) == (node->p->p->l == node->p)) {
+        // zig-zig
+        rotate(node->p);
+        rotate(node);
+      } else {
+        // zig-zag
+        rotate(node);
+        rotate(node);
+      }
+    } else {
+      rotate(node);
+    }
   }
-  return node;
 }
 
 using NodeInt = Node<int>;
 
 void test1() {
   auto t = new NodeInt(50);
-  rotate(t);
-  t = find_root(t);
+  splay(t);
   CHECK(t->data == 50);
   CHECK(t->p == nullptr);
   CHECK(t->l == nullptr);
@@ -71,51 +91,19 @@ void test1() {
   delete_tree(t);
 }
 
-//   B    A
-//  /  =>  \
-// A        B
+/**
+    50        25
+   / \       / \
+  25  60 => 20  50
+ / \           / \
+20  30        30  60
+**/
 void test2() {
-  auto t = new NodeInt(50, new NodeInt(30), nullptr);
-  rotate(t->l);
-  t = find_root(t);
-  CHECK(t->data == 30);
-  CHECK(t->p == nullptr);
-  CHECK(t->l == nullptr);
-  CHECK(t->r->data == 50);
-  CHECK(t->r->p == t);
-  CHECK(t->r->l == nullptr);
-  CHECK(t->r->r == nullptr);
-  delete_tree(t);
-}
-
-// B        A
-//  \  =>  /
-//   A    B
-void test3() {
-  auto t = new NodeInt(30, nullptr, new NodeInt(50));
-  rotate(t->r);
-  t = find_root(t);
-  CHECK(t->data == 50);
-  CHECK(t->p == nullptr);
-  CHECK(t->l->data == 30);
-  CHECK(t->l->p == t);
-  CHECK(t->l->l == nullptr);
-  CHECK(t->l->r == nullptr);
-  CHECK(t->r == nullptr);
-  delete_tree(t);
-}
-
-//     50        25
-//    / \       / \
-//   25  75 => 20  50
-//  / \           / \
-// 20  30        30  75
-void test4() {
   auto t = new NodeInt(50,
       new NodeInt(25, new NodeInt(20), new NodeInt(30)),
-      new NodeInt(75));
-  rotate(t->l);
-  t = find_root(t);
+      new NodeInt(60));
+  t = t->l;
+  splay(t);
   CHECK(t->data == 25);
   CHECK(t->p == nullptr);
   CHECK(t->l->data == 20);
@@ -128,91 +116,95 @@ void test4() {
   CHECK(t->r->l->p == t->r);
   CHECK(t->r->l->l == nullptr);
   CHECK(t->r->l->r == nullptr);
-  CHECK(t->r->r->data == 75);
+  CHECK(t->r->r->data == 60);
   CHECK(t->r->r->p == t->r);
   CHECK(t->r->r->l == nullptr);
   CHECK(t->r->r->r == nullptr);
-  // Now rotate back to the initial state.
-  rotate(t->r);
-  t = find_root(t);
-  CHECK(t->data == 50);
-  CHECK(t->p == nullptr);
-  CHECK(t->l->data == 25);
-  CHECK(t->l->p == t);
-  CHECK(t->l->l->data == 20);
-  CHECK(t->l->l->p == t->l);
-  CHECK(t->l->l->l == nullptr);
-  CHECK(t->l->l->r == nullptr);
-  CHECK(t->l->r->data == 30);
-  CHECK(t->l->r->p == t->l);
-  CHECK(t->l->r->l == nullptr);
-  CHECK(t->l->r->r == nullptr);
-  CHECK(t->r->data == 75);
-  CHECK(t->r->p == t);
-  CHECK(t->r->l == nullptr);
-  CHECK(t->r->r == nullptr);
   delete_tree(t);
 }
 
-//   40       40
-//    \        \
-//     50 =>    25
-//    /        / \
-//   25       20  50
-//  /
-// 20
-void test5() {
-  auto t = new NodeInt(40,
-      nullptr,
-      new NodeInt(50,
-          new NodeInt(25, new NodeInt(20), nullptr),
-          nullptr));
-  rotate(t->r->l);
-  t = find_root(t);
-  CHECK(t->data == 40);
+// zig-zig.
+/**
+      50        20
+     / \       / \
+    30  55 => 15  30
+   / \           / \
+  20  35        25  50
+ / \               / \
+15  25            35  55
+**/
+void test3() {
+  auto t = new NodeInt(50,
+      new NodeInt(30,
+          new NodeInt(20, new NodeInt(15), new NodeInt(25)),
+          new NodeInt(35)),
+      new NodeInt(55));
+  t = t->l->l;
+  splay(t);
+  CHECK(t->data == 20);
   CHECK(t->p == nullptr);
-  CHECK(t->l == nullptr);
-  CHECK(t->r->data == 25);
+  CHECK(t->l->data == 15);
+  CHECK(t->l->p == t);
+  CHECK(t->l->l == nullptr);
+  CHECK(t->l->r == nullptr);
+  CHECK(t->r->data == 30);
   CHECK(t->r->p == t);
-  CHECK(t->r->l->data == 20);
+  CHECK(t->r->l->data == 25);
   CHECK(t->r->l->p == t->r);
   CHECK(t->r->l->l == nullptr);
   CHECK(t->r->l->r == nullptr);
   CHECK(t->r->r->data == 50);
   CHECK(t->r->r->p == t->r);
-  CHECK(t->r->r->l == nullptr);
-  CHECK(t->r->r->r == nullptr);
+  CHECK(t->r->r->l->data == 35);
+  CHECK(t->r->r->l->p == t->r->r);
+  CHECK(t->r->r->l->l == nullptr);
+  CHECK(t->r->r->l->r == nullptr);
+  CHECK(t->r->r->r->data == 55);
+  CHECK(t->r->r->r->p == t->r->r);
+  CHECK(t->r->r->r->l == nullptr);
+  CHECK(t->r->r->r->r == nullptr);
   delete_tree(t);
 }
 
-//   40           40
-//    \            \
-//     50     =>    75
-//      \          / \
-//       75       50  80
-//        \
-//         80
-void test6() {
-  auto t = new NodeInt(40,
-      nullptr,
-      new NodeInt(50,
-          nullptr,
-          new NodeInt(75, nullptr, new NodeInt(80))));
-  rotate(t->r->r);
-  t = find_root(t);
-  CHECK(t->data == 40);
+/**
+  50                80
+ / \               / \
+45  70     =>     70  85
+   / \           / \
+  65  80        50  75
+     / \       / \
+    75  85    45  65
+**/
+void test4() {
+  auto t = new NodeInt(50,
+      new NodeInt(45),
+      new NodeInt(70,
+          new NodeInt(65),
+          new NodeInt(80, new NodeInt(75), new NodeInt(85))));
+  t = t->r->r;
+  splay(t);
+  CHECK(t->data == 80);
   CHECK(t->p == nullptr);
-  CHECK(t->l == nullptr);
-  CHECK(t->r->data == 75);
+  CHECK(t->l->data == 70);
+  CHECK(t->l->p == t);
+  CHECK(t->l->l->data == 50);
+  CHECK(t->l->l->p == t->l);
+  CHECK(t->l->l->l->data == 45);
+  CHECK(t->l->l->l->p == t->l->l);
+  CHECK(t->l->l->l->l == nullptr);
+  CHECK(t->l->l->l->r == nullptr);
+  CHECK(t->l->l->r->data == 65);
+  CHECK(t->l->l->r->p == t->l->l);
+  CHECK(t->l->l->r->l == nullptr);
+  CHECK(t->l->l->r->r == nullptr);
+  CHECK(t->l->r->data == 75);
+  CHECK(t->l->r->p == t->l);
+  CHECK(t->l->r->l == nullptr);
+  CHECK(t->l->r->r == nullptr);
+  CHECK(t->r->data == 85);
   CHECK(t->r->p == t);
-  CHECK(t->r->l->data == 50);
-  CHECK(t->r->l->p == t->r);
-  CHECK(t->r->l->l == nullptr);
-  CHECK(t->r->l->r == nullptr);
-  CHECK(t->r->r->data == 80);
-  CHECK(t->r->r->p == t->r);
-  CHECK(t->r->r->l == nullptr);
-  CHECK(t->r->r->r == nullptr);
+  CHECK(t->r->l == nullptr);
+  CHECK(t->r->r == nullptr);
   delete_tree(t);
 }
 
@@ -222,8 +214,6 @@ int main(int argc, char **argv) {
   test2();
   test3();
   test4();
-  test5();
-  test6();
   cout << "TESTS PASSED." << endl;
   return 0;
 }

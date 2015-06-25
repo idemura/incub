@@ -1,247 +1,225 @@
-#include <algorithm>
-#include <map>
-#include <string>
-#include <vector>
-#include <stdlib.h>
-#include <stdio.h>
+#include "base.h"
 
-#define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
-#define INF 0x7fffffff
-
-using namespace std;
-
+// K and P are < and > comparable.
+template<class K, class P>
 struct Node {
-  int k;
-  int p;
-  Node *l, *r;
+  K k;
+  P p;
+  Node *l = nullptr, *r = nullptr;
 
-  Node(int k, int p) : k(k), p(p), l(nullptr), r(nullptr) { }
+  Node(K k, P p) : k(k), p(p) {}
 };
 
-Node* merge(Node *L, Node *R)
-{
-  Node *root = nullptr, **U = &root;
-  while (L && R) {
-    if (L->p > R->p) {
-      *U = L;
-      U = &L->r;
-      L = *U;
+template<class K, class P>
+Node<K, P>* merge(Node<K, P> *l, Node<K, P> *r) {
+  Node<K, P> *root = nullptr;
+  auto u = &root;
+  while (l && r) {
+    if (l->p > r->p) {
+      *u = l;
+      u = &l->r;
+      l = *u;
     } else {
-      *U = R;
-      U = &R->l;
-      R = *U;
+      *u = r;
+      u = &r->l;
+      r = *u;
     }
   }
-  *U = L? L: R;
+  *u = l? l: r;
   return root;
 }
 
-Node* mergeRec(Node *L, Node *R)
-{
-  if (!L) {
-    return R;
-  }
-  if (!R) {
-    return L;
-  }
-  if (L->p > R->p) {
-    L->r = merge(L->r, R);
-    return L;
+template<class K, class P>
+Node<K, P>* merge_rec(Node<K, P> *l, Node<K, P> *r) {
+  if (!l) return r;
+  if (!r) return l;
+  if (l->p > r->p) {
+    l->r = merge_rec(l->r, r);
+    return l;
   } else {
-    R->l = merge(L, R->l);
-    return R;
+    r->l = merge_rec(l, r->l);
+    return r;
   }
 }
 
-void split(Node *T, int k0, Node **L, Node **R, bool strict = false)
-{
-  while (T) {
-    if (T->k < k0 || (!strict && T->k == k0)) {
-      *L = T;
-      L = &T->r;
-      T = *L;
+template<class K, class P>
+void split(Node<K, P> *t, int k0,
+           Node<K, P> **l,
+           Node<K, P> **r,
+           bool strict = false) {
+  while (t) {
+    if (t->k < k0 || (!strict && t->k == k0)) {
+      *l = t;
+      l = &t->r;
+      t = *l;
     } else {
-      *R = T;
-      R = &T->l;
-      T = *R;
+      *r = t;
+      r = &t->l;
+      t = *r;
     }
   }
-  *L = *R = nullptr;
+  *l = *r = nullptr;
 }
 
-void splitRec(Node *T, int k0, Node **L, Node **R)
-{
-  if (!T) {
-    *L = *R = nullptr;
+template<class K, class P>
+void split_rec(Node<K, P> *t, int k0, Node<K, P> **l, Node<K, P> *r) {
+  if (!t) {
+    *l = *r = nullptr;
     return;
   }
-  if (T->k <= k0) {
-    split(T->r, k0, L, R);
-    T->r = *L;
-    *L = T;
+  if (t->k <= k0) {
+    split_rec(t->r, k0, l, r);
+    t->r = *l;
+    *l = t;
   } else {
-    split(T->l, k0, L, R);
-    T->l = *R;
-    *R = T;
+    split_rec(t->l, k0, l, r);
+    t->l = *r;
+    *r = t;
   }
 }
 
-void deleteTreap(Node *T)
-{
-  if (T) {
-    deleteTreap(T->l);
-    deleteTreap(T->r);
-    delete T;
+template<class K, class P>
+void delete_treap(Node<K, P> *t) {
+  if (t) {
+    delete_treap(t->l);
+    delete_treap(t->r);
+    delete t;
   }
 }
 
-void insert(Node **T, int k, int p)
-{
-  Node *n = new Node(k, p);
-  if (!*T) {
-    *T = n;
+template<class K, class P>
+void insert(Node<K, P> **t, int k, int p) {
+  auto n = new Node<K, P>(k, p);
+  if (!*t) {
+    *t = n;
     return;
   }
-  Node *L = nullptr, *R = nullptr;
-  split(*T, k, &L, &R);
-  *T = merge(merge(L, n), R);
+  Node<K, P> *l = nullptr, *r = nullptr;
+  split(*t, k, &l, &r);
+  *t = merge(merge(l, n), r);
 }
 
-void remove(Node **T, int k)
-{
-  if (!*T) {
-    return;
-  }
-  Node *L = nullptr, *R = nullptr;
-  split(*T, k, &L, &R);
-  Node *K = nullptr;  // Nodes exactly equal to `k`.
-  split(L, k, &L, &K, true);
-  deleteTreap(K);
-  *T = merge(L, R);
+template<class K, class P>
+void remove(Node<K, P> **t, int k) {
+  if (!*t) return;
+  Node<K, P> *l = nullptr, *r = nullptr, *q = nullptr;
+  split(*t, k, &l, &r);
+  split(l, k, &l, &q, true);
+  delete_treap(q);
+  *t = merge(l, r);
 }
 
-bool checkTree(Node *T, int *kmin, int *kmax)
-{
-  if (!T) {
-    return true;
-  }
+using NodeInt = Node<int, int>;
+
+bool check_tree(NodeInt *t, int *kmin, int *kmax) {
+  if (!t) return true;
 
   int bmin, bmax;
-  if (T->l) {
-    checkTree(T->l, &bmin, &bmax);
-    if (!(bmax <= T->k)) {
-      printf("Tree failed at %d and %d: %d, %d\n", T->k, T->l->k, bmin, bmax);
+  if (t->l) {
+    check_tree(t->l, &bmin, &bmax);
+    if (!(bmax <= t->k)) {
+      cout << "Tree failed at l of " << t->k << endl;
       return false;
     }
     *kmin = bmin;
   }
   else {
-    *kmin = T->k;
+    *kmin = t->k;
   }
 
-  if (T->r) {
-    checkTree(T->r, &bmin, &bmax);
-    if (!(bmin >= T->k)) {
-      printf("Tree failed at %d and %d: %d, %d\n", T->k, T->r->k, bmin, bmax);
+  if (t->r) {
+    check_tree(t->r, &bmin, &bmax);
+    if (!(bmin >= t->k)) {
+      cout << "Tree failed at r of " << t->k << endl;
       return false;
     }
     *kmax = bmax;
   } else {
-    *kmax = T->k;
+    *kmax = t->k;
   }
 
   return true;
 }
 
-bool checkHeap(Node *T)
-{
-  if (!T) {
-    return true;
-  }
+bool check_heap(NodeInt *t) {
+  if (!t) return true;
 
-  if (T->l) {
-    if (T->p <= T->l->p) {
-      printf("Heap failed at %d(%d) and %d(%d)\n", T->k, T->p,
-             T->l->k, T->l->p);
+  if (t->l) {
+    if (t->p <= t->l->p) {
+      cout << "Heap failed on l at " << t->k << " p=" << t->p << endl;
       return false;
     }
-    checkHeap(T->l);
+    check_heap(t->l);
   }
 
-  if (T->r) {
-    if (T->p <= T->r->p) {
-      printf("Heap failed at %d(%d) and %d(%d)\n", T->k, T->p,
-             T->r->k, T->r->p);
+  if (t->r) {
+    if (t->p <= t->r->p) {
+      cout << "Heap failed on r at " << t->k << " p=" << t->p << endl;
       return false;
     }
-    checkHeap(T->r);
+    check_heap(t->r);
   }
 
   return true;
 }
 
-bool checkTreap(Node *T)
-{
+bool check_treap(NodeInt *t) {
   int kmin = -1, kmax = -1;
-  bool b1 = checkTree(T, &kmin, &kmax);
-  bool b2 = checkHeap(T);
+  bool b1 = check_tree(t, &kmin, &kmax);
+  bool b2 = check_heap(t);
   if (b1 && b2) {
-    printf("Treap is OK.\n");
+    cout << "Treap is OK." << endl;
   }
   return b1 && b2;
 }
 
-void printTreapNode(Node *T, int tab)
-{
+void print_treap_node(NodeInt *t, int tab) {
   for (int i = 0; i < tab; i++) {
-    printf(" ");
+    cout<< " ";
   }
-  if (T) {
-    printf("k %d p %d\n", T->k, T->p);
-    printTreapNode(T->l, tab + 1);
-    printTreapNode(T->r, tab + 1);
+  if (t) {
+    cout << "k=" << t->k <<" p=" << t->p << endl;
+    print_treap_node(t->l, tab + 1);
+    print_treap_node(t->r, tab + 1);
   } else {
-    printf("null\n");
+    cout << "null" << endl;
   }
 }
 
-void printTreap(Node *T)
-{
-  if (!T) {
-    printf("Treap is null.\n");
+void print_treap(NodeInt *t) {
+  if (!t) {
+    cout << "Treap is null" << endl;
     return;
   }
-  printTreapNode(T, 0);
+  print_treap_node(t, 0);
 }
 
 int lcrn_seed = 13;
-int lcrnNext()
-{
+int lcrn_next() {
   lcrn_seed = 0x7fffffff & (lcrn_seed * 1103515245 + 12345);
   return lcrn_seed;
 }
 
-int randPriority()
-{
-  return lcrnNext() % 109;
+int rand_priority() {
+  return lcrn_next() % 109;
 }
 
 int main()
 {
-  Node *T = nullptr;
-  insert(&T, 10, randPriority());
-  insert(&T, 15, randPriority());
-  insert(&T, 20, randPriority());
-  insert(&T, 25, randPriority());
-  insert(&T, 30, randPriority());
-  insert(&T, 35, randPriority());
-  insert(&T, 40, randPriority());
-  insert(&T, 45, randPriority());
-  printTreap(T);
-  checkTreap(T);
+  NodeInt *t = nullptr;
+  insert(&t, 10, rand_priority());
+  insert(&t, 15, rand_priority());
+  insert(&t, 20, rand_priority());
+  insert(&t, 25, rand_priority());
+  insert(&t, 30, rand_priority());
+  insert(&t, 35, rand_priority());
+  insert(&t, 40, rand_priority());
+  insert(&t, 45, rand_priority());
+  print_treap(t);
+  check_treap(t);
 
-  remove(&T, 30);
-  printTreap(T);
-  checkTreap(T);
+  remove(&t, 30);
+  print_treap(t);
+  check_treap(t);
   return 0;
 }

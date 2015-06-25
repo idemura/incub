@@ -204,8 +204,7 @@ int rand_priority() {
   return lcrn_next() % 109;
 }
 
-int main()
-{
+int main() {
   NodeInt *t = nullptr;
   insert(&t, 10, rand_priority());
   insert(&t, 15, rand_priority());

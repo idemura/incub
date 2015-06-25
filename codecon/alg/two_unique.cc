@@ -1,7 +1,7 @@
 #include "base.h"
 
 pair<int, int> two_unique(const vector<int> &a) {
-  // CHECK(a.size() % 2 == 0);
+  CHECK(a.size() % 2 == 0);
   auto bit_xor = 0;
   for (auto e : a) bit_xor ^= e;
   // Find set bit in `bit_xor`. Say, j-th bit. This means two distinct numbers

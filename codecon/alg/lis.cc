@@ -16,6 +16,7 @@ int lis(const vector<T> &v) {
 int main(int argc, char **argv) {
   ios_base::sync_with_stdio(false);
   vector<int> v{10, 30, 20, 15, 5, 8, 25, 25, 60, 40, 50};
-  cout << lis(v) << " (expected 6)" << endl;
+  CHECK(lis(v) == 6);
+  cout << "TESTS PASSED." << endl;
   return 0;
 }

@@ -1,94 +1,11 @@
-#include "base.h"
-
-template<class T>
-struct Node {
-  T key;
-  Node *p = nullptr, *l = nullptr, *r = nullptr;
-
-  Node(): key() {}
-  explicit Node(T key): key(key) {}
-  Node(T key, Node *l, Node* r): key(key), l(l), r(r) {
-    if (l != nullptr) l->p = this;
-    if (r != nullptr) r->p = this;
-  }
-};
-
-template<class T>
-void delete_tree(Node<T> *node) {
-  if (node == nullptr) return;
-  vector<Node<T>*> q{node};
-  for (int i = 0; i < q.size(); i++) {
-    auto n = q[i];
-    if (n->l) q.push_back(n->l);
-    if (n->r) q.push_back(n->r);
-    delete n;
-  }
-}
-
-template<class T>
-Node<T>* find_root(Node<T> *node) {
-  if (node == nullptr) return nullptr;
-  while (node->p) {
-    node = node->p;
-  }
-  return node;
-}
-
-template<class T>
-void rotate(Node<T> *node) {
-  auto up = node->p;
-  if (up == nullptr) return;
-  node->p = up->p;
-  if (up->p) {
-    if (up->p->l == up) {
-      up->p->l = node;
-    } else {
-      up->p->r = node;
-    }
-  }
-  up->p = node;
-  if (up->l == node) {
-    up->l = node->r;
-    if (up->l) up->l->p = up;
-    node->r = up;
-  } else {
-    up->r = node->l;
-    if (up->r) up->r->p = up;
-    node->l = up;
-  }
-}
-
-// Splays node to the root.
-template<class T>
-void splay(Node<T> *node) {
-  if (node == nullptr) return;
-  while (node->p != nullptr) {
-    if (node->p->p) {
-      if ((node->p->l == node) == (node->p->p->l == node->p)) {
-        // zig-zig
-        rotate(node->p);
-        rotate(node);
-      } else {
-        // zig-zag
-        rotate(node);
-        rotate(node);
-      }
-    } else {
-      rotate(node);
-    }
-  }
-}
-
-using NodeInt = Node<int>;
+#include "tree.h"
 
 void test1() {
-  auto t = new NodeInt(50);
-  splay(t);
-  CHECK(t->key == 50);
-  CHECK(t->p == nullptr);
-  CHECK(t->l == nullptr);
-  CHECK(t->r == nullptr);
-  delete_tree(t);
+  auto n50 = make_node(50);
+  splay(n50);
+  CHECK(n50->root());
+  CHECK(n50->leaf());
+  delete_tree(n50);
 }
 
 /**
@@ -99,28 +16,23 @@ void test1() {
 20  30        30  60
 **/
 void test2() {
-  auto t = new NodeInt(50,
-      new NodeInt(25, new NodeInt(20), new NodeInt(30)),
-      new NodeInt(60));
-  t = t->l;
-  splay(t);
-  CHECK(t->key == 25);
-  CHECK(t->p == nullptr);
-  CHECK(t->l->key == 20);
-  CHECK(t->l->p == t);
-  CHECK(t->l->l == nullptr);
-  CHECK(t->l->r == nullptr);
-  CHECK(t->r->key == 50);
-  CHECK(t->r->p == t);
-  CHECK(t->r->l->key == 30);
-  CHECK(t->r->l->p == t->r);
-  CHECK(t->r->l->l == nullptr);
-  CHECK(t->r->l->r == nullptr);
-  CHECK(t->r->r->key == 60);
-  CHECK(t->r->r->p == t->r);
-  CHECK(t->r->r->l == nullptr);
-  CHECK(t->r->r->r == nullptr);
-  delete_tree(t);
+  auto n20 = make_node(20);
+  auto n25 = make_node(25);
+  auto n30 = make_node(30);
+  auto n50 = make_node(50);
+  auto n60 = make_node(60);
+  link(n50, link(n25, n20, n30),
+            n60);
+  splay(n25);
+  CHECK(n25->root());
+  CHECK(is_l(n25, n20));
+  CHECK(n20->leaf());
+  CHECK(is_r(n25, n50));
+  CHECK(is_l(n50, n30));
+  CHECK(n30->leaf());
+  CHECK(is_r(n50, n60));
+  CHECK(n60->leaf());
+  delete_tree(n25);
 }
 
 // zig-zig.
@@ -134,36 +46,29 @@ void test2() {
 15  25            35  55
 **/
 void test3() {
-  auto t = new NodeInt(50,
-      new NodeInt(30,
-          new NodeInt(20, new NodeInt(15), new NodeInt(25)),
-          new NodeInt(35)),
-      new NodeInt(55));
-  t = t->l->l;
-  splay(t);
-  CHECK(t->key == 20);
-  CHECK(t->p == nullptr);
-  CHECK(t->l->key == 15);
-  CHECK(t->l->p == t);
-  CHECK(t->l->l == nullptr);
-  CHECK(t->l->r == nullptr);
-  CHECK(t->r->key == 30);
-  CHECK(t->r->p == t);
-  CHECK(t->r->l->key == 25);
-  CHECK(t->r->l->p == t->r);
-  CHECK(t->r->l->l == nullptr);
-  CHECK(t->r->l->r == nullptr);
-  CHECK(t->r->r->key == 50);
-  CHECK(t->r->r->p == t->r);
-  CHECK(t->r->r->l->key == 35);
-  CHECK(t->r->r->l->p == t->r->r);
-  CHECK(t->r->r->l->l == nullptr);
-  CHECK(t->r->r->l->r == nullptr);
-  CHECK(t->r->r->r->key == 55);
-  CHECK(t->r->r->r->p == t->r->r);
-  CHECK(t->r->r->r->l == nullptr);
-  CHECK(t->r->r->r->r == nullptr);
-  delete_tree(t);
+  auto n15 = make_node(15);
+  auto n20 = make_node(20);
+  auto n25 = make_node(25);
+  auto n30 = make_node(30);
+  auto n35 = make_node(35);
+  auto n50 = make_node(50);
+  auto n55 = make_node(55);
+  link(n50, link(n30, link(n20, n15, n25),
+                      n35),
+            n55);
+  splay(n20);
+  CHECK(n20->root());
+  CHECK(is_l(n20, n15));
+  CHECK(n15->leaf());
+  CHECK(is_r(n20, n30));
+  CHECK(is_l(n30, n25));
+  CHECK(n25->leaf());
+  CHECK(is_r(n30, n50));
+  CHECK(is_l(n50, n35));
+  CHECK(n35->leaf());
+  CHECK(is_r(n50, n55));
+  CHECK(n55->leaf());
+  delete_tree(n20);
 }
 
 /**
@@ -176,36 +81,29 @@ void test3() {
     75  85    45  65
 **/
 void test4() {
-  auto t = new NodeInt(50,
-      new NodeInt(45),
-      new NodeInt(70,
-          new NodeInt(65),
-          new NodeInt(80, new NodeInt(75), new NodeInt(85))));
-  t = t->r->r;
-  splay(t);
-  CHECK(t->key == 80);
-  CHECK(t->p == nullptr);
-  CHECK(t->l->key == 70);
-  CHECK(t->l->p == t);
-  CHECK(t->l->l->key == 50);
-  CHECK(t->l->l->p == t->l);
-  CHECK(t->l->l->l->key == 45);
-  CHECK(t->l->l->l->p == t->l->l);
-  CHECK(t->l->l->l->l == nullptr);
-  CHECK(t->l->l->l->r == nullptr);
-  CHECK(t->l->l->r->key == 65);
-  CHECK(t->l->l->r->p == t->l->l);
-  CHECK(t->l->l->r->l == nullptr);
-  CHECK(t->l->l->r->r == nullptr);
-  CHECK(t->l->r->key == 75);
-  CHECK(t->l->r->p == t->l);
-  CHECK(t->l->r->l == nullptr);
-  CHECK(t->l->r->r == nullptr);
-  CHECK(t->r->key == 85);
-  CHECK(t->r->p == t);
-  CHECK(t->r->l == nullptr);
-  CHECK(t->r->r == nullptr);
-  delete_tree(t);
+  auto n45 = make_node(45);
+  auto n50 = make_node(50);
+  auto n65 = make_node(65);
+  auto n70 = make_node(70);
+  auto n75 = make_node(75);
+  auto n80 = make_node(80);
+  auto n85 = make_node(85);
+  link(n50, n45,
+            link(n70, n65,
+                      link(n80, n75, n85)));
+  splay(n80);
+  CHECK(n80->root());
+  CHECK(is_l(n80, n70));
+  CHECK(is_l(n70, n50));
+  CHECK(is_l(n50, n45));
+  CHECK(n45->leaf());
+  CHECK(is_r(n50, n65));
+  CHECK(n65->leaf());
+  CHECK(is_r(n70, n75));
+  CHECK(n75->leaf());
+  CHECK(is_r(n80, n85));
+  CHECK(n85->leaf());
+  delete_tree(n80);
 }
 
 // zig-zag.
@@ -219,41 +117,34 @@ void test4() {
   35  45
 **/
 void test5() {
-  auto t = new NodeInt(50,
-      new NodeInt(30,
-          new NodeInt(25),
-          new NodeInt(40, new NodeInt(35), new NodeInt(45))),
-      new NodeInt(55));
-  t = t->l->r;
-  splay(t);
-  CHECK(t->key == 40);
-  CHECK(t->p == nullptr);
-  CHECK(t->l->key == 30);
-  CHECK(t->l->p == t);
-  CHECK(t->l->l->key == 25);
-  CHECK(t->l->l->p == t->l);
-  CHECK(t->l->l->l == nullptr);
-  CHECK(t->l->l->r == nullptr);
-  CHECK(t->l->r->key == 35);
-  CHECK(t->l->r->p == t->l);
-  CHECK(t->l->r->l == nullptr);
-  CHECK(t->l->r->r == nullptr);
-  CHECK(t->r->key == 50);
-  CHECK(t->r->p == t);
-  CHECK(t->r->l->key == 45);
-  CHECK(t->r->l->p == t->r);
-  CHECK(t->r->l->l == nullptr);
-  CHECK(t->r->l->r == nullptr);
-  CHECK(t->r->r->key == 55);
-  CHECK(t->r->r->p == t->r);
-  CHECK(t->r->r->l == nullptr);
-  CHECK(t->r->r->r == nullptr);
-  delete_tree(t);
+  auto n25 = make_node(25);
+  auto n30 = make_node(30);
+  auto n35 = make_node(35);
+  auto n40 = make_node(40);
+  auto n45 = make_node(45);
+  auto n50 = make_node(50);
+  auto n55 = make_node(55);
+  link(n50, link(n30, n25,
+                      link(n40, n35, n45)),
+            n55);
+  splay(n40);
+  CHECK(n40->root());
+  CHECK(is_l(n40, n30));
+  CHECK(is_l(n30, n25));
+  CHECK(n25->leaf());
+  CHECK(is_r(n30, n35));
+  CHECK(n35->leaf());
+  CHECK(is_r(n40, n50));
+  CHECK(is_l(n50, n45));
+  CHECK(n45->leaf());
+  CHECK(is_r(n50, n55));
+  CHECK(n55->leaf());
+  delete_tree(n40);
 }
 
 /**
-  50              60
- / \             /   \
+  50               60
+ / \              /   \
 45  70     =>   50     70
    / \         / \    / \
   60  75      45  55 65  75
@@ -261,36 +152,29 @@ void test5() {
 55  65
 **/
 void test6() {
-  auto t = new NodeInt(50,
-      new NodeInt(45),
-      new NodeInt(70,
-          new NodeInt(60, new NodeInt(55), new NodeInt(65)),
-          new NodeInt(75)));
-  t = t->r->l;
-  splay(t);
-  CHECK(t->key == 60);
-  CHECK(t->p == nullptr);
-  CHECK(t->l->key == 50);
-  CHECK(t->l->p == t);
-  CHECK(t->l->l->key == 45);
-  CHECK(t->l->l->p == t->l);
-  CHECK(t->l->l->l == nullptr);
-  CHECK(t->l->l->r == nullptr);
-  CHECK(t->l->r->key == 55);
-  CHECK(t->l->r->p == t->l);
-  CHECK(t->l->r->l == nullptr);
-  CHECK(t->l->r->r == nullptr);
-  CHECK(t->r->key == 70);
-  CHECK(t->r->p == t);
-  CHECK(t->r->l->key == 65);
-  CHECK(t->r->l->p == t->r);
-  CHECK(t->r->l->l == nullptr);
-  CHECK(t->r->l->r == nullptr);
-  CHECK(t->r->r->key == 75);
-  CHECK(t->r->r->p == t->r);
-  CHECK(t->r->r->l == nullptr);
-  CHECK(t->r->r->r == nullptr);
-  delete_tree(t);
+  auto n45 = make_node(45);
+  auto n50 = make_node(50);
+  auto n55 = make_node(55);
+  auto n60 = make_node(60);
+  auto n65 = make_node(65);
+  auto n70 = make_node(70);
+  auto n75 = make_node(75);
+  link(n50, n45,
+            link(n70, link(n60, n55, n65),
+                      n75));
+  splay(n60);
+  CHECK(n60->root());
+  CHECK(is_l(n60, n50));
+  CHECK(is_l(n50, n45));
+  CHECK(n45->leaf());
+  CHECK(is_r(n50, n55));
+  CHECK(n55->leaf());
+  CHECK(is_r(n60, n70));
+  CHECK(is_l(n70, n65));
+  CHECK(n65->leaf());
+  CHECK(is_r(n70, n75));
+  CHECK(n75->leaf());
+  delete_tree(n60);
 }
 
 int main(int argc, char **argv) {

@@ -68,8 +68,8 @@ void test3() {
         {90, 0, 0}));
   // Move 60 to root.
   splay(n60);
-  CHECK(walk(n60) ==
-        vector<int>({60, 50, 30, 10, 0, 0, 40, 0, 0, 0, 80, 0, 0}));
+  CHECK(walk(n60) == vector<int>(
+        {60, 50, 30, 10, 0, 0, 40, 0, 0, 0, 80, 0, 0}));
   auto linked = splay_join(sub.first, sub.second);
   CHECK(walk(linked) == vector<int>(
         {80, 60, 50, 30, 10, 0, 0, 40, 0, 0, 0, 0, 90, 0, 0}));

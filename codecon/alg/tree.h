@@ -9,7 +9,7 @@ struct Node {
   Node *p = nullptr, *l = nullptr, *r = nullptr;
 
   Node(): key() {}
-  explicit Node(T key): key(key) {}
+  explicit Node(T key): key(move(key)) {}
   bool leaf() const { return l == nullptr && r == nullptr; }
   bool root() const { return p == nullptr; }
 };

@@ -16,7 +16,7 @@ struct Node {
 
 template<class T>
 Node<T>* make_node(T key) {
-  return new Node<T>(key);
+  return new Node<T>(move(key));
 }
 
 template<class T>

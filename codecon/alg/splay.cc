@@ -2,12 +2,12 @@
 
 template<class T>
 struct Node {
-  T data;
+  T key;
   Node *p = nullptr, *l = nullptr, *r = nullptr;
 
-  Node(): data() {}
-  explicit Node(T data): data(data) {}
-  Node(T data, Node *l, Node* r): data(data), l(l), r(r) {
+  Node(): key() {}
+  explicit Node(T key): key(key) {}
+  Node(T key, Node *l, Node* r): key(key), l(l), r(r) {
     if (l != nullptr) l->p = this;
     if (r != nullptr) r->p = this;
   }
@@ -84,7 +84,7 @@ using NodeInt = Node<int>;
 void test1() {
   auto t = new NodeInt(50);
   splay(t);
-  CHECK(t->data == 50);
+  CHECK(t->key == 50);
   CHECK(t->p == nullptr);
   CHECK(t->l == nullptr);
   CHECK(t->r == nullptr);
@@ -104,19 +104,19 @@ void test2() {
       new NodeInt(60));
   t = t->l;
   splay(t);
-  CHECK(t->data == 25);
+  CHECK(t->key == 25);
   CHECK(t->p == nullptr);
-  CHECK(t->l->data == 20);
+  CHECK(t->l->key == 20);
   CHECK(t->l->p == t);
   CHECK(t->l->l == nullptr);
   CHECK(t->l->r == nullptr);
-  CHECK(t->r->data == 50);
+  CHECK(t->r->key == 50);
   CHECK(t->r->p == t);
-  CHECK(t->r->l->data == 30);
+  CHECK(t->r->l->key == 30);
   CHECK(t->r->l->p == t->r);
   CHECK(t->r->l->l == nullptr);
   CHECK(t->r->l->r == nullptr);
-  CHECK(t->r->r->data == 60);
+  CHECK(t->r->r->key == 60);
   CHECK(t->r->r->p == t->r);
   CHECK(t->r->r->l == nullptr);
   CHECK(t->r->r->r == nullptr);
@@ -141,25 +141,25 @@ void test3() {
       new NodeInt(55));
   t = t->l->l;
   splay(t);
-  CHECK(t->data == 20);
+  CHECK(t->key == 20);
   CHECK(t->p == nullptr);
-  CHECK(t->l->data == 15);
+  CHECK(t->l->key == 15);
   CHECK(t->l->p == t);
   CHECK(t->l->l == nullptr);
   CHECK(t->l->r == nullptr);
-  CHECK(t->r->data == 30);
+  CHECK(t->r->key == 30);
   CHECK(t->r->p == t);
-  CHECK(t->r->l->data == 25);
+  CHECK(t->r->l->key == 25);
   CHECK(t->r->l->p == t->r);
   CHECK(t->r->l->l == nullptr);
   CHECK(t->r->l->r == nullptr);
-  CHECK(t->r->r->data == 50);
+  CHECK(t->r->r->key == 50);
   CHECK(t->r->r->p == t->r);
-  CHECK(t->r->r->l->data == 35);
+  CHECK(t->r->r->l->key == 35);
   CHECK(t->r->r->l->p == t->r->r);
   CHECK(t->r->r->l->l == nullptr);
   CHECK(t->r->r->l->r == nullptr);
-  CHECK(t->r->r->r->data == 55);
+  CHECK(t->r->r->r->key == 55);
   CHECK(t->r->r->r->p == t->r->r);
   CHECK(t->r->r->r->l == nullptr);
   CHECK(t->r->r->r->r == nullptr);
@@ -183,25 +183,25 @@ void test4() {
           new NodeInt(80, new NodeInt(75), new NodeInt(85))));
   t = t->r->r;
   splay(t);
-  CHECK(t->data == 80);
+  CHECK(t->key == 80);
   CHECK(t->p == nullptr);
-  CHECK(t->l->data == 70);
+  CHECK(t->l->key == 70);
   CHECK(t->l->p == t);
-  CHECK(t->l->l->data == 50);
+  CHECK(t->l->l->key == 50);
   CHECK(t->l->l->p == t->l);
-  CHECK(t->l->l->l->data == 45);
+  CHECK(t->l->l->l->key == 45);
   CHECK(t->l->l->l->p == t->l->l);
   CHECK(t->l->l->l->l == nullptr);
   CHECK(t->l->l->l->r == nullptr);
-  CHECK(t->l->l->r->data == 65);
+  CHECK(t->l->l->r->key == 65);
   CHECK(t->l->l->r->p == t->l->l);
   CHECK(t->l->l->r->l == nullptr);
   CHECK(t->l->l->r->r == nullptr);
-  CHECK(t->l->r->data == 75);
+  CHECK(t->l->r->key == 75);
   CHECK(t->l->r->p == t->l);
   CHECK(t->l->r->l == nullptr);
   CHECK(t->l->r->r == nullptr);
-  CHECK(t->r->data == 85);
+  CHECK(t->r->key == 85);
   CHECK(t->r->p == t);
   CHECK(t->r->l == nullptr);
   CHECK(t->r->r == nullptr);
@@ -226,25 +226,25 @@ void test5() {
       new NodeInt(55));
   t = t->l->r;
   splay(t);
-  CHECK(t->data == 40);
+  CHECK(t->key == 40);
   CHECK(t->p == nullptr);
-  CHECK(t->l->data == 30);
+  CHECK(t->l->key == 30);
   CHECK(t->l->p == t);
-  CHECK(t->l->l->data == 25);
+  CHECK(t->l->l->key == 25);
   CHECK(t->l->l->p == t->l);
   CHECK(t->l->l->l == nullptr);
   CHECK(t->l->l->r == nullptr);
-  CHECK(t->l->r->data == 35);
+  CHECK(t->l->r->key == 35);
   CHECK(t->l->r->p == t->l);
   CHECK(t->l->r->l == nullptr);
   CHECK(t->l->r->r == nullptr);
-  CHECK(t->r->data == 50);
+  CHECK(t->r->key == 50);
   CHECK(t->r->p == t);
-  CHECK(t->r->l->data == 45);
+  CHECK(t->r->l->key == 45);
   CHECK(t->r->l->p == t->r);
   CHECK(t->r->l->l == nullptr);
   CHECK(t->r->l->r == nullptr);
-  CHECK(t->r->r->data == 55);
+  CHECK(t->r->r->key == 55);
   CHECK(t->r->r->p == t->r);
   CHECK(t->r->r->l == nullptr);
   CHECK(t->r->r->r == nullptr);
@@ -268,25 +268,25 @@ void test6() {
           new NodeInt(75)));
   t = t->r->l;
   splay(t);
-  CHECK(t->data == 60);
+  CHECK(t->key == 60);
   CHECK(t->p == nullptr);
-  CHECK(t->l->data == 50);
+  CHECK(t->l->key == 50);
   CHECK(t->l->p == t);
-  CHECK(t->l->l->data == 45);
+  CHECK(t->l->l->key == 45);
   CHECK(t->l->l->p == t->l);
   CHECK(t->l->l->l == nullptr);
   CHECK(t->l->l->r == nullptr);
-  CHECK(t->l->r->data == 55);
+  CHECK(t->l->r->key == 55);
   CHECK(t->l->r->p == t->l);
   CHECK(t->l->r->l == nullptr);
   CHECK(t->l->r->r == nullptr);
-  CHECK(t->r->data == 70);
+  CHECK(t->r->key == 70);
   CHECK(t->r->p == t);
-  CHECK(t->r->l->data == 65);
+  CHECK(t->r->l->key == 65);
   CHECK(t->r->l->p == t->r);
   CHECK(t->r->l->l == nullptr);
   CHECK(t->r->l->r == nullptr);
-  CHECK(t->r->r->data == 75);
+  CHECK(t->r->r->key == 75);
   CHECK(t->r->r->p == t->r);
   CHECK(t->r->r->l == nullptr);
   CHECK(t->r->r->r == nullptr);

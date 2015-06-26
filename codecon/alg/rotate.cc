@@ -2,12 +2,12 @@
 
 template<class T>
 struct Node {
-  T data;
+  T key;
   Node *p = nullptr, *l = nullptr, *r = nullptr;
 
-  Node(): data() {}
-  explicit Node(T data): data(data) {}
-  Node(T data, Node *l, Node* r): data(data), l(l), r(r) {
+  Node(): key() {}
+  explicit Node(T key): key(key) {}
+  Node(T key, Node *l, Node* r): key(key), l(l), r(r) {
     if (l != nullptr) l->p = this;
     if (r != nullptr) r->p = this;
   }
@@ -63,7 +63,7 @@ void test1() {
   auto t = new NodeInt(50);
   rotate(t);
   t = find_root(t);
-  CHECK(t->data == 50);
+  CHECK(t->key == 50);
   CHECK(t->p == nullptr);
   CHECK(t->l == nullptr);
   CHECK(t->r == nullptr);
@@ -79,10 +79,10 @@ void test2() {
   auto t = new NodeInt(50, new NodeInt(30), nullptr);
   rotate(t->l);
   t = find_root(t);
-  CHECK(t->data == 30);
+  CHECK(t->key == 30);
   CHECK(t->p == nullptr);
   CHECK(t->l == nullptr);
-  CHECK(t->r->data == 50);
+  CHECK(t->r->key == 50);
   CHECK(t->r->p == t);
   CHECK(t->r->l == nullptr);
   CHECK(t->r->r == nullptr);
@@ -98,9 +98,9 @@ void test3() {
   auto t = new NodeInt(30, nullptr, new NodeInt(50));
   rotate(t->r);
   t = find_root(t);
-  CHECK(t->data == 50);
+  CHECK(t->key == 50);
   CHECK(t->p == nullptr);
-  CHECK(t->l->data == 30);
+  CHECK(t->l->key == 30);
   CHECK(t->l->p == t);
   CHECK(t->l->l == nullptr);
   CHECK(t->l->r == nullptr);
@@ -121,38 +121,38 @@ void test4() {
       new NodeInt(75));
   rotate(t->l);
   t = find_root(t);
-  CHECK(t->data == 25);
+  CHECK(t->key == 25);
   CHECK(t->p == nullptr);
-  CHECK(t->l->data == 20);
+  CHECK(t->l->key == 20);
   CHECK(t->l->p == t);
   CHECK(t->l->l == nullptr);
   CHECK(t->l->r == nullptr);
-  CHECK(t->r->data == 50);
+  CHECK(t->r->key == 50);
   CHECK(t->r->p == t);
-  CHECK(t->r->l->data == 30);
+  CHECK(t->r->l->key == 30);
   CHECK(t->r->l->p == t->r);
   CHECK(t->r->l->l == nullptr);
   CHECK(t->r->l->r == nullptr);
-  CHECK(t->r->r->data == 75);
+  CHECK(t->r->r->key == 75);
   CHECK(t->r->r->p == t->r);
   CHECK(t->r->r->l == nullptr);
   CHECK(t->r->r->r == nullptr);
   // Now rotate back to the initial state.
   rotate(t->r);
   t = find_root(t);
-  CHECK(t->data == 50);
+  CHECK(t->key == 50);
   CHECK(t->p == nullptr);
-  CHECK(t->l->data == 25);
+  CHECK(t->l->key == 25);
   CHECK(t->l->p == t);
-  CHECK(t->l->l->data == 20);
+  CHECK(t->l->l->key == 20);
   CHECK(t->l->l->p == t->l);
   CHECK(t->l->l->l == nullptr);
   CHECK(t->l->l->r == nullptr);
-  CHECK(t->l->r->data == 30);
+  CHECK(t->l->r->key == 30);
   CHECK(t->l->r->p == t->l);
   CHECK(t->l->r->l == nullptr);
   CHECK(t->l->r->r == nullptr);
-  CHECK(t->r->data == 75);
+  CHECK(t->r->key == 75);
   CHECK(t->r->p == t);
   CHECK(t->r->l == nullptr);
   CHECK(t->r->r == nullptr);
@@ -176,16 +176,16 @@ void test5() {
           nullptr));
   rotate(t->r->l);
   t = find_root(t);
-  CHECK(t->data == 40);
+  CHECK(t->key == 40);
   CHECK(t->p == nullptr);
   CHECK(t->l == nullptr);
-  CHECK(t->r->data == 25);
+  CHECK(t->r->key == 25);
   CHECK(t->r->p == t);
-  CHECK(t->r->l->data == 20);
+  CHECK(t->r->l->key == 20);
   CHECK(t->r->l->p == t->r);
   CHECK(t->r->l->l == nullptr);
   CHECK(t->r->l->r == nullptr);
-  CHECK(t->r->r->data == 50);
+  CHECK(t->r->r->key == 50);
   CHECK(t->r->r->p == t->r);
   CHECK(t->r->r->l == nullptr);
   CHECK(t->r->r->r == nullptr);
@@ -209,16 +209,16 @@ void test6() {
           new NodeInt(75, nullptr, new NodeInt(80))));
   rotate(t->r->r);
   t = find_root(t);
-  CHECK(t->data == 40);
+  CHECK(t->key == 40);
   CHECK(t->p == nullptr);
   CHECK(t->l == nullptr);
-  CHECK(t->r->data == 75);
+  CHECK(t->r->key == 75);
   CHECK(t->r->p == t);
-  CHECK(t->r->l->data == 50);
+  CHECK(t->r->l->key == 50);
   CHECK(t->r->l->p == t->r);
   CHECK(t->r->l->l == nullptr);
   CHECK(t->r->l->r == nullptr);
-  CHECK(t->r->r->data == 80);
+  CHECK(t->r->r->key == 80);
   CHECK(t->r->r->p == t->r);
   CHECK(t->r->r->l == nullptr);
   CHECK(t->r->r->r == nullptr);

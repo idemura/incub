@@ -9,49 +9,39 @@ int gcd(int a, int b) {
   return a;
 }
 
-int ext_euclid(int m, int n, int* km, int *kn) {
-  int x = m, y = n;
-  int xu = 1, xv = 0;
-  int yu = 0, yv = 1;
-  // Maintain the following predicate:
-  //  x = xu * m + xv * n;
-  //  y = yu * m + yv * n;
-  // Each step we have y[n+1] = x[n] - q * y[n], hence formulas.
-  int r = x % y;
-  while (r) {
-    int t;
-    int q = x / y;
-    x = y;
-    y = r;
-    t = xu;
-    xu = yu;
-    yu = t - q * yu;
-    t = xv;
-    xv = yv;
-    yv = t - q * yv;
-    r = x % y;
+struct ExtGCD {
+  int gcd, a, b;
+  ExtGCD(int gcd, int a, int b): gcd(gcd), a(a), b(b) {}
+};
+
+ExtGCD ext_gcd(int a, int b) {
+  if (b == 0) {
+    return {a, 1, 0};
   }
-  *km = yu;
-  *kn = yv;
-  return y;
+  auto r = ext_gcd(b, a % b);
+  // Represent as matrix multiplication and do in a cycle.
+  return {r.gcd, r.b, r.a - (a / b) * r.b};
 }
 
-void test(int m, int n, int gcd_expected) {
-  int km, kn;
-  int gcd = ext_euclid(m, n, &km, &kn);
-  CHECK(gcd == gcd_expected);
-  CHECK(m % gcd == 0);
-  CHECK(n % gcd == 0);
-  CHECK(gcd == km * m + kn * n);
+bool operator==(const ExtGCD &x, const ExtGCD &y) {
+  return x.gcd == y.gcd && x.a == y.a && x.b == y.b;
+}
+bool operator!=(const ExtGCD &x, const ExtGCD &y) {
+  return !(x == y);
+}
+
+void test1() {
+  CHECK(ext_gcd(4, 6) == ExtGCD(2, -1, 1));
+  CHECK(ext_gcd(6, 4) == ExtGCD(2, 1, -1));
+  CHECK(ext_gcd(9, 4) == ExtGCD(1, 1, -2));
+  CHECK(ext_gcd(3, 7) == ExtGCD(1, -2, 1));
+  CHECK(ext_gcd(12, 15) == ExtGCD(3, -1, 1));
+  CHECK(ext_gcd(10, 15) == ExtGCD(5, -1, 1));
 }
 
 int main(int argc, char **argv) {
-  test(4, 6, 2);
-  test(6, 4, 2);
-  test(9, 4, 1);
-  test(3, 7, 1);
-  test(12, 15, 3);
-  test(10, 15, 5);
+  ios_base::sync_with_stdio(false);
+  test1();
   cout << "TESTS PASSED." << endl;
   return 0;
 }

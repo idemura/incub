@@ -1,15 +1,5 @@
 #include "base.h"
 
-int gcd(int a, int b) {
-  // Assumes `b < a`, otherwise the first iteration will swap `a` and `b`.
-  while (b != 0) {
-    int t = a % b;
-    a = b;
-    b = t;
-  }
-  return a;
-}
-
 void extGCD(int a, int b, int *gcd, int *x_out, int *y_out) {
   int x = 0, y = 1;
   int u = 1, v = 0;
@@ -173,22 +163,6 @@ void invList(int *inv, int mod) {
   inv[1] = 1;
   for (int i = 2; i < mod; i++) {
     inv[i] = mod - ((mod / i) * inv[mod % i]) % mod;
-  }
-}
-
-void sieve(int n, std::vector<int> *primes) {
-  vector<char> seq(n + 1);
-  int sqrtn = (int)sqrt(n);
-  int i;
-  for (i = 2; i <= sqrtn; i++) {
-    if (seq[i]) continue;
-    for (int j = i * i; j <= n; j += i) {
-      seq[j] = 1;
-    }
-    primes->push_back(i);
-  }
-  for (; i <= n; i++) {
-    if (!seq[i]) primes->push_back(i);
   }
 }
 

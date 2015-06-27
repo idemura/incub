@@ -1,10 +1,15 @@
 #include "base.h"
 
+int sqrt_int(int n) {
+  return static_cast<int>(sqrt(n));
+}
+
 // Result[i] means minimal divisor of i.
 vector<int> sieve(int n) {
   vector<int> factor(n + 1);
   factor[1] = 1;
-  for (int i = 2; i <= n; i++) {
+  auto i = 2, imax = sqrt_int(n);
+  for (; i <= imax; i++) {
     if (factor[i] != 0) continue;
     factor[i] = i;
     for (int j = i * i; j <= n; j += i) {
@@ -12,6 +17,9 @@ vector<int> sieve(int n) {
         factor[j] = i;
       }
     }
+  }
+  for (; i <= n; i++) {
+    if (factor[i] == 0) factor[i] = i;
   }
   return move(factor);
 }
@@ -36,14 +44,24 @@ vector<pair<int, int>> factorize(const vector<int> &factor, int n) {
 
 vector<int> primes(int n) {
   vector<int> sieve(n + 1), result;
-  for (int i = 2; i <= n; i++) {
+  auto i = 2, imax = sqrt_int(n);
+  for (; i <= imax; i++) {
     if (sieve[i] != 0) continue;
     result.push_back(i);
     for (int j = i * i; j <= n; j += i) {
       sieve[j] = 1;
     }
   }
+  for (; i <= n; i++) {
+    if (sieve[i] == 0) result.push_back(i);
+  }
   return move(result);
+}
+
+void test0() {
+  for (volatile int i = 0; i < 46340; i++) {
+    CHECK(i == sqrt_int(i * i));
+  }
 }
 
 void test1() {
@@ -101,6 +119,7 @@ void test2() {
 
 int main(int argc, char **argv) {
   ios_base::sync_with_stdio(false);
+  test0();
   test1();
   test2();
   cout << "TESTS PASSED." << endl;

@@ -1,37 +1,5 @@
 #include "base.h"
 
-void extGCD(int a, int b, int *gcd, int *x_out, int *y_out) {
-  int x = 0, y = 1;
-  int u = 1, v = 0;
-  while (a != 0) {
-    div_t qr = div(b, a);
-    int m = x - u * qr.quot;
-    int n = y - v * qr.quot;
-    b = a;
-    a = qr.rem;
-    x = u, y = v;
-    u = m, v = n;
-  }
-  *gcd = b;
-  *x_out = x;
-  *y_out = y;
-}
-
-int extGCDRec(int a, int b, int *xa, int *xb) {
-  if (a == 0) {
-    *xb = 1;
-    *xa = 0;
-    return b;
-  }
-  int q = b / a;
-  int r = b % a;
-  int ya, yb;
-  int gcd = extGCDRec(r, a, &ya, &yb);
-  *xa = yb - q * ya;
-  *xb = ya;
-  return gcd;
-}
-
 inline int madd(int a, int b, int p) {
   return (a + b) % p;
 }

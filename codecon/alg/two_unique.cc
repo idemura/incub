@@ -30,22 +30,19 @@ pair<T, T> ord_pair(const pair<T, T> &p) {
 void test1() {
   vector<int> a{1, 3, 6, 5, 4, 5, 1, 6};
   auto uniq = ord_pair(two_unique(a));
-  CHECK(uniq.first == 3);
-  CHECK(uniq.second == 4);
+  CHECK(uniq == make_pair(3, 4));
 }
 
 void test2() {
   vector<int> a{1, 4};
   auto uniq = ord_pair(two_unique(a));
-  CHECK(uniq.first == 1);
-  CHECK(uniq.second == 4);
+  CHECK(uniq == make_pair(1, 4));
 }
 
 void test3() {
   vector<int> a{1, 9, 6, 3, 5, 4, 5, 1, 6, 3};
   auto uniq = ord_pair(two_unique(a));
-  CHECK(uniq.first == 4);
-  CHECK(uniq.second == 9);
+  CHECK(uniq == make_pair(4, 9));
 }
 
 int main(int argc, char **argv) {

@@ -35,7 +35,7 @@ vector<T> walk(Node<T> *node) {
   vector<Node<T>*> q;
   while (true) {
     if (node == nullptr) {
-      result.push_back(0);
+      result.push_back(T());
       if (q.empty()) break;
       node = q.back();
       q.pop_back();

@@ -16,15 +16,15 @@ void print_edges(const AMat &m) {
 }
 
 int update_path(AMat &m, const vector<int> &path) {
-  auto min_cap = INT_MAX;
+  auto cap = numeric_limits<int>::max();
   for (int i = 1; i < path.size(); i++) {
-    min_cap = min(min_cap, m[path[i - 1]][path[i]]);
+    cap = min(cap, m[path[i - 1]][path[i]]);
   }
   for (int i = 1; i < path.size(); i++) {
-    m[path[i - 1]][path[i]] -= min_cap;
-    m[path[i]][path[i - 1]] += min_cap;
+    m[path[i - 1]][path[i]] -= cap;
+    m[path[i]][path[i - 1]] += cap;
   }
-  return min_cap;
+  return cap;
 }
 
 int dinic(AMat &m, int s, int t) {

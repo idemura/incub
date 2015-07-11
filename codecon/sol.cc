@@ -52,6 +52,7 @@ int main(int argc, char **argv) {
       c[n]++;
     }
   }
+
   int t;
   cin >> t;
   for (; t > 0; t--) {

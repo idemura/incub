@@ -6,7 +6,7 @@ Newton interpolation polynomial
 Newton (tangents) method
 Gray code: subsets of length k
 Max common substring of strings
-MurmurHash
+MurmurHash, FNV-1/2, city hash
 Binary GCD
 FFT / Discrete Fourier transform
 Trie
@@ -20,3 +20,4 @@ Min cost max flow
 Kirchhoff's theorem
 Tutte matrix (perfect matching)
 Fractional cascading
+LSM Tree

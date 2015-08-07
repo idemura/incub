@@ -23,14 +23,18 @@ def foreach_backup(f = None):
 args = sys.argv[1:]
 if len(args) == 0:
   n = foreach_backup()
-  shutil.copy('sol.cc', format_backup_file(n))
+  bkp_name = format_backup_file(n)
+  shutil.copy('sol.cc', bkp_name)
+  print 'Saved to {0}'.format(bkp_name)
 elif args[0] == 'pop':
   n = foreach_backup()
   if n == 0:
     print 'No backups found'
     sys.exit(-1)
   else:
-    shutil.move(format_backup_file(n - 1), 'sol.cc')
+    bkp_name = format_backup_file(n - 1)
+    shutil.move(bkp_name, 'sol.cc')
+    print 'Restored {0}'.format(bkp_name)
 elif args[0] == 'clean':
   foreach_backup(os.remove)
 elif args[0] == 'help':

@@ -37,6 +37,12 @@ string bigint_prep(string s, int k) {
 string bigint_from_string(string s) {
   return bigint_prep(s, -'0');
 }
+string bigint_from_int(int n) {
+  return bigint_from_string(to_string(n));
+}
+string bigint_from_int(i64 n) {
+  return bigint_from_string(to_string(n));
+}
 
 string bigint_string(string b) {
   return bigint_prep(b, +'0');
@@ -133,8 +139,8 @@ string bigint_sub(Substr a, Substr b) {
       i++;
     }
     r[i]--;
-    if (r.back() == 0) r.pop_back();
   }
+  if (r.back() == 0 && r.size() > 1) r.pop_back();
   return r;
 }
 
@@ -158,85 +164,117 @@ string bigint_mult(Substr a, Substr b) {
   return bigint_sum(hh, bigint_sum(lh, ll, m), 2 * m);
 }
 
+string bigint_div2(Substr s) {
+  string r(s.size(), 0);
+  for (int i = 0; i < s.size(); i++) {
+    if (s[i] & 1 && i > 0) {
+      r[i - 1] += 5;
+    }
+    r[i] = s[i] >> 1;
+  }
+  if (r.back() == 0 && r.size() > 1) r.pop_back();
+  return r;
+}
+
 void test_mult_scalar() {
-  auto check_op = [](string b, int n, string r) {
-    return bigint_string(bigint_mult_scalar(bigint_from_string(b), n)) == r;
+  auto check_op = [](string a, int b) {
+    return bigint_mult_scalar(bigint_from_string(a), b) ==
+           bigint_from_int(stoi(a) * b);
   };
-  CHECK(check_op("2", 3, "6"));
-  CHECK(check_op("3", 7, "21"));
-  CHECK(check_op("21", 3, "63"));
-  CHECK(check_op("46", 3, "138"));
-  CHECK(check_op("46", 5, "230"));
-  CHECK(check_op("73", 8, "584"));
-  CHECK(check_op("73", 0, "0"));
+  CHECK(check_op("2", 3));
+  CHECK(check_op("3", 7));
+  CHECK(check_op("21", 3));
+  CHECK(check_op("46", 3));
+  CHECK(check_op("46", 5));
+  CHECK(check_op("73", 8));
+  CHECK(check_op("73", 0));
 }
 
 void test_sum() {
-  auto check_op = [](string a, string b, string r) {
-    return bigint_string(
-        bigint_sum(bigint_from_string(a),
-                   bigint_from_string(b))) == r;
+  auto check_op = [](string a, string b) {
+    return bigint_sum(bigint_from_string(a), bigint_from_string(b)) ==
+           bigint_from_int(stoi(a) + stoi(b));
   };
-  CHECK(check_op("2", "3", "5"));
-  CHECK(check_op("9", "0", "9"));
-  CHECK(check_op("9", "", "9"));
-  CHECK(check_op("09", "1", "10"));
-  CHECK(check_op("09", "10", "19"));
-  CHECK(check_op("12", "13", "25"));
-  CHECK(check_op("17", "24", "41"));
-  CHECK(check_op("999", "4", "1003"));
-  CHECK(check_op("27", "185", "212"));
+  CHECK(check_op("2", "3"));
+  CHECK(check_op("9", "0"));
+  CHECK(check_op("09", "1"));
+  CHECK(check_op("09", "10"));
+  CHECK(check_op("12", "13"));
+  CHECK(check_op("17", "24"));
+  CHECK(check_op("999", "4"));
+  CHECK(check_op("27", "185"));
+}
+
+int pow10(int n) {
+  return pow(10, n);
 }
 
 void test_sum_shift() {
-  auto check_op = [](string a, int a_shift, string b, string r) {
-    return bigint_string(
-        bigint_sum(bigint_from_string(a),
-                   bigint_from_string(b), a_shift)) == r;
+  auto check_op = [](string a, int a_shift, string b) {
+    return bigint_sum(bigint_from_string(a), bigint_from_string(b), a_shift) ==
+           bigint_from_int(stoi(a) * pow10(a_shift) + stoi(b));
   };
-  CHECK(check_op("2", 1, "3", "23"));
-  CHECK(check_op("2", 1, "32", "52"));
-  CHECK(check_op("9", 1, "13", "103"));
-  CHECK(check_op("9", 2, "13", "913"));
-  CHECK(check_op("1", 2, "7", "107"));
-  CHECK(check_op("20", 1, "0", "200"));
-  CHECK(check_op("0", 2, "12", "12"));
+  CHECK(check_op("2", 1, "3"));
+  CHECK(check_op("2", 1, "32"));
+  CHECK(check_op("9", 1, "13"));
+  CHECK(check_op("9", 2, "13"));
+  CHECK(check_op("1", 2, "7"));
+  CHECK(check_op("20", 1, "0"));
+  CHECK(check_op("0", 2, "12"));
 }
 
 void test_sub() {
-  auto check_op = [](string a, string b, string r) {
-    return bigint_string(
-        bigint_sub(bigint_from_string(a),
-                   bigint_from_string(b))) == r;
+  auto check_op = [](string a, string b) {
+    return bigint_sub(bigint_from_string(a), bigint_from_string(b)) ==
+           bigint_from_int(stoi(a) - stoi(b));
   };
-  CHECK(check_op("3569", "1234", "2335"));
-  CHECK(check_op("1569", "234", "1335"));
-  CHECK(check_op("1561", "129", "1432"));
-  CHECK(check_op("1569", "189", "1380"));
-  CHECK(check_op("2000", "189", "1811"));
-  CHECK(check_op("2000", "9", "1991"));
-  CHECK(check_op("2000", "0", "2000"));
-  CHECK(check_op("1000", "17", "983"));
-  CHECK(check_op("1000", "10", "990"));
+  CHECK(check_op("3569", "1234"));
+  CHECK(check_op("1569", "234"));
+  CHECK(check_op("1561", "129"));
+  CHECK(check_op("1569", "189"));
+  CHECK(check_op("2000", "189"));
+  CHECK(check_op("2000", "9"));
+  CHECK(check_op("2000", "0"));
+  CHECK(check_op("1000", "17"));
+  CHECK(check_op("1000", "10"));
+  CHECK(check_op("10", "10"));
+  CHECK(check_op("6", "6"));
 }
 
 void test_mult() {
-  auto check_op = [](string a, string b, string r) {
-    return bigint_string(
-        bigint_mult(bigint_from_string(a),
-                    bigint_from_string(b))) == r;
+  auto check_op = [](string a, string b) {
+    return bigint_mult(bigint_from_string(a), bigint_from_string(b)) ==
+           bigint_from_int(stoi(a) * stoi(b));
   };
-  CHECK(check_op("2", "3", "6"));
-  CHECK(check_op("12", "13", "156"));
-  CHECK(check_op("40", "35", "1400"));
-  CHECK(check_op("123", "76", "9348"));
-  CHECK(check_op("76", "123", "9348"));
-  CHECK(check_op("76", "10001", "760076"));
-  CHECK(check_op("276", "1001", "276276"));
-  CHECK(check_op("276", "9999", "2759724"));
-  CHECK(check_op("276", "100", "27600"));
-  CHECK(check_op("276", "0", "0"));
-  CHECK(check_op("5523", "1309", "7229607"));
+  CHECK(check_op("2", "3"));
+  CHECK(check_op("12", "13"));
+  CHECK(check_op("40", "35"));
+  CHECK(check_op("123", "76"));
+  CHECK(check_op("76", "123"));
+  CHECK(check_op("76", "10001"));
+  CHECK(check_op("276", "1001"));
+  CHECK(check_op("276", "9999"));
+  CHECK(check_op("276", "100"));
+  CHECK(check_op("276", "0"));
+  CHECK(check_op("5523", "1309"));
+  CHECK(check_op("1937", "118"));
+  CHECK(check_op("100", "100"));
+}
+
+void test_div2() {
+  auto check_op = [](string a) {
+    return bigint_div2(bigint_from_string(a)) == bigint_from_int(stoi(a) / 2);
+  };
+  CHECK(check_op("0"));
+  CHECK(check_op("1"));
+  CHECK(check_op("2"));
+  CHECK(check_op("3"));
+  CHECK(check_op("10"));
+  CHECK(check_op("15"));
+  CHECK(check_op("16"));
+  CHECK(check_op("128"));
+  CHECK(check_op("112"));
+  CHECK(check_op("252"));
 }
 
 int main(int argc, char **argv) {
@@ -246,6 +284,7 @@ int main(int argc, char **argv) {
   test_sum_shift();
   test_sub();
   test_mult();
+  test_div2();
   cout << "TESTS PASSED." << endl;
   return 0;
 }

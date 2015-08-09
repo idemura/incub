@@ -26,7 +26,7 @@ ostream& operator<<(ostream &os, Substr s) {
   return os.write(s.data(), s.size());
 }
 
-const string kBigIntZero("\0", 1);
+const string kBigIntZero(1, 0);
 
 string bigint_prep(string s, int k) {
   reverse(s.begin(), s.end());

@@ -27,28 +27,44 @@ ostream& operator<<(ostream &os, Substr s) {
 }
 
 const string kBigIntZero(1, 0);
+constexpr int kBigIntBase = 100;  // div2 need base to be even.
 
-string bigint_prep(string s, int k) {
-  reverse(s.begin(), s.end());
-  for (auto &d : s) { d += k; }
-  return move(s);
+string bigint_string(string s) {
+  string r;
+  for (int i = 0; i < s.size(); i++) {
+    r.push_back(s[i] % 10 + '0');
+    r.push_back(s[i] / 10 + '0');
+  }
+  if (r.back() == '0' && r.size() > 1) r.pop_back();
+  reverse(r.begin(), r.end());
+  return move(r);
+  // For 10 based:
+  // for (auto &d : s) d += '0';
+  // reverse(s.begin(), s.end());
+  // return move(s);
+}
+string bigint_string(Substr s) {
+  return bigint_string(s.str());
 }
 
 string bigint_from_string(string s) {
-  return bigint_prep(move(s), -'0');
+  reverse(s.begin(), s.end());
+  if (s.size() % 2 != 0) s.push_back('0');
+  string r(s.size() / 2, 0);
+  for (int i = 0; i < r.size(); i++) {
+    r[i] = (s[2*i] - '0') + 10 * (s[2*i+1] - '0');
+  }
+  return move(r);
+  // For 10 based:
+  // reverse(s.begin(), s.end());
+  // for (auto &d : s) d -= '0';
+  // return move(s);
 }
 string bigint_from_int(int n) {
   return bigint_from_string(to_string(n));
 }
 string bigint_from_int(i64 n) {
   return bigint_from_string(to_string(n));
-}
-
-string bigint_string(string b) {
-  return bigint_prep(move(b), +'0');
-}
-string bigint_string(Substr b) {
-  return bigint_string(b.str());
 }
 
 bool bigint_zero(Substr s) {
@@ -61,8 +77,8 @@ string bigint_mult_scalar(Substr s, int n) {
   int c = 0;
   for (auto &d : r) {
     int m = d * n + c;
-    d = m % 10;
-    c = m / 10;
+    d = m % kBigIntBase;
+    c = m / kBigIntBase;
   }
   if (c != 0) r.push_back(c);
   return r;
@@ -84,11 +100,12 @@ string bigint_sum(Substr a, Substr b, size_t a_shift = 0) {
   // `r[a_shift .. min_s]` are already filled with 0.
   int c = 0;
   for (i = a_shift; i < min_s; i++) {
-    r[i] = a[ai++] + b[bi++] + c;
-    if (r[i] >= 10) {
-      r[i] -= 10;
+    int d = c + a[ai++] + b[bi++];
+    if (d >= kBigIntBase) {
+      r[i] = d - kBigIntBase;
       c = 1;
     } else {
+      r[i] = d;
       c = 0;
     }
   }
@@ -97,7 +114,7 @@ string bigint_sum(Substr a, Substr b, size_t a_shift = 0) {
   }
   if (c != 0) {
     for (int i = min_s; i < max_s && c != 0; i++) {
-      if (r[i] == 9) {
+      if (r[i] == kBigIntBase - 1) {
         r[i] = 0;
       } else {
         r[i]++;
@@ -118,7 +135,7 @@ string bigint_sub(Substr a, Substr b) {
   for (int i = 0; i < min_s; i++) {
     if (c != 0) {
       if (r[i] == 0) {
-        r[i] = 9 - b[i];
+        r[i] = (kBigIntBase - 1) - b[i];
         continue;
       } else {
         r[i]--;
@@ -127,7 +144,7 @@ string bigint_sub(Substr a, Substr b) {
     }
     if (r[i] < b[i]) {
       c = 1;
-      r[i] += 10 - b[i];
+      r[i] += kBigIntBase - b[i];
     } else {
       r[i] -= b[i];
     }
@@ -135,7 +152,7 @@ string bigint_sub(Substr a, Substr b) {
   if (c != 0) {
     int i = min_s;
     while (r[i] == 0) {
-      r[i] = 9;
+      r[i] = kBigIntBase - 1;
       i++;
     }
     r[i]--;
@@ -168,7 +185,7 @@ string bigint_div2(Substr s) {
   string r(s.size(), 0);
   for (int i = 0; i < s.size(); i++) {
     if (s[i] & 1 && i > 0) {
-      r[i - 1] += 5;
+      r[i - 1] += kBigIntBase / 2;
     }
     r[i] = s[i] >> 1;
   }
@@ -176,10 +193,18 @@ string bigint_div2(Substr s) {
   return r;
 }
 
+void test_format() {
+  CHECK(bigint_from_string("12") == "\014");
+  CHECK(bigint_from_int(12) == "\014");
+  CHECK(bigint_from_string("138") == "\046\01");
+  CHECK(bigint_from_int(138) == "\046\01");
+}
+
 void test_mult_scalar() {
   auto check_op = [](string a, int b) {
-    return bigint_mult_scalar(bigint_from_string(a), b) ==
-           bigint_from_int(stoi(a) * b);
+    auto v = bigint_mult_scalar(bigint_from_string(a), b);
+    auto e = bigint_from_int(stoi(a) * b);
+    return v == e;
   };
   CHECK(check_op("2", 3));
   CHECK(check_op("3", 7));
@@ -192,27 +217,31 @@ void test_mult_scalar() {
 
 void test_sum() {
   auto check_op = [](string a, string b) {
-    return bigint_sum(bigint_from_string(a), bigint_from_string(b)) ==
-           bigint_from_int(stoi(a) + stoi(b));
+    auto v = bigint_sum(bigint_from_string(a), bigint_from_string(b));
+    auto e = bigint_from_int(stoi(a) + stoi(b));
+    return v == e;
+
   };
   CHECK(check_op("2", "3"));
   CHECK(check_op("9", "0"));
   CHECK(check_op("09", "1"));
   CHECK(check_op("09", "10"));
+  CHECK(check_op("99", "99"));
   CHECK(check_op("12", "13"));
   CHECK(check_op("17", "24"));
   CHECK(check_op("999", "4"));
   CHECK(check_op("27", "185"));
 }
 
-int pow10(int n) {
-  return pow(10, n);
+int pow_base(int n) {
+  return pow(kBigIntBase, n);
 }
 
 void test_sum_shift() {
   auto check_op = [](string a, int a_shift, string b) {
-    return bigint_sum(bigint_from_string(a), bigint_from_string(b), a_shift) ==
-           bigint_from_int(stoi(a) * pow10(a_shift) + stoi(b));
+    auto v = bigint_sum(bigint_from_string(a), bigint_from_string(b), a_shift);
+    auto e = bigint_from_int(stoi(a) * pow_base(a_shift) + stoi(b));
+    return v == e;
   };
   CHECK(check_op("2", 1, "3"));
   CHECK(check_op("2", 1, "32"));
@@ -225,8 +254,9 @@ void test_sum_shift() {
 
 void test_sub() {
   auto check_op = [](string a, string b) {
-    return bigint_sub(bigint_from_string(a), bigint_from_string(b)) ==
-           bigint_from_int(stoi(a) - stoi(b));
+    auto v = bigint_sub(bigint_from_string(a), bigint_from_string(b));
+    auto e = bigint_from_int(stoi(a) - stoi(b));
+    return v == e;
   };
   CHECK(check_op("3569", "1234"));
   CHECK(check_op("1569", "234"));
@@ -243,8 +273,9 @@ void test_sub() {
 
 void test_mult() {
   auto check_op = [](string a, string b) {
-    return bigint_mult(bigint_from_string(a), bigint_from_string(b)) ==
-           bigint_from_int(stoi(a) * stoi(b));
+    auto v = bigint_mult(bigint_from_string(a), bigint_from_string(b));
+    auto e = bigint_from_int(stoi(a) * stoi(b));
+    return v == e;
   };
   CHECK(check_op("2", "3"));
   CHECK(check_op("12", "13"));
@@ -263,7 +294,9 @@ void test_mult() {
 
 void test_div2() {
   auto check_op = [](string a) {
-    return bigint_div2(bigint_from_string(a)) == bigint_from_int(stoi(a) / 2);
+    auto v = bigint_div2(bigint_from_string(a));
+    auto e = bigint_from_int(stoi(a) / 2);
+    return v == e;
   };
   CHECK(check_op("0"));
   CHECK(check_op("1"));
@@ -279,6 +312,7 @@ void test_div2() {
 
 int main(int argc, char **argv) {
   ios_base::sync_with_stdio(false);
+  test_format();
   test_mult_scalar();
   test_sum();
   test_sum_shift();

@@ -35,7 +35,7 @@ string bigint_prep(string s, int k) {
 }
 
 string bigint_from_string(string s) {
-  return bigint_prep(s, -'0');
+  return bigint_prep(move(s), -'0');
 }
 string bigint_from_int(int n) {
   return bigint_from_string(to_string(n));
@@ -45,7 +45,7 @@ string bigint_from_int(i64 n) {
 }
 
 string bigint_string(string b) {
-  return bigint_prep(b, +'0');
+  return bigint_prep(move(b), +'0');
 }
 string bigint_string(Substr b) {
   return bigint_string(b.str());

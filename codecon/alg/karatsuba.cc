@@ -135,7 +135,7 @@ string bigint_sub(Substr a, Substr b) {
   for (int i = 0; i < min_s; i++) {
     if (c != 0) {
       if (r[i] == 0) {
-        r[i] = (kBigIntBase - 1) - b[i];
+        r[i] = kBigIntBase - 1 - b[i];
         continue;
       } else {
         r[i]--;

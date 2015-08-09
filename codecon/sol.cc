@@ -27,38 +27,45 @@ ostream& operator<<(ostream &os, Substr s) {
 }
 
 const string kBigIntZero(1, 0);
-constexpr int kBigIntBase = 100;  // div2 need base to be even.
+// Function div2 needs base to be even.
+// Base 100 is much faster.
+constexpr int kBigIntBase = 100;
+static_assert(kBigIntBase == 10 || kBigIntBase == 100, "Only 10 or 100 base");
 
 string bigint_string(string s) {
-  string r;
-  for (int i = 0; i < s.size(); i++) {
-    r.push_back(s[i] % 10 + '0');
-    r.push_back(s[i] / 10 + '0');
+  if (kBigIntBase == 100) {
+    string r;
+    for (int i = 0; i < s.size(); i++) {
+      r.push_back(s[i] % 10 + '0');
+      r.push_back(s[i] / 10 + '0');
+    }
+    if (r.back() == '0' && r.size() > 1) r.pop_back();
+    reverse(r.begin(), r.end());
+    return move(r);
+  } else {
+    for (auto &d : s) d += '0';
+    reverse(s.begin(), s.end());
+    return move(s);
   }
-  if (r.back() == '0' && r.size() > 1) r.pop_back();
-  reverse(r.begin(), r.end());
-  return move(r);
-  // For 10 based:
-  // for (auto &d : s) d += '0';
-  // reverse(s.begin(), s.end());
-  // return move(s);
 }
 string bigint_string(Substr s) {
   return bigint_string(s.str());
 }
 
 string bigint_from_string(string s) {
-  reverse(s.begin(), s.end());
-  if (s.size() % 2 != 0) s.push_back('0');
-  string r(s.size() / 2, 0);
-  for (int i = 0; i < r.size(); i++) {
-    r[i] = (s[2*i] - '0') + 10 * (s[2*i+1] - '0');
+  if (kBigIntBase == 100) {
+    reverse(s.begin(), s.end());
+    if (s.size() % 2 != 0) s.push_back('0');
+    string r(s.size() / 2, 0);
+    for (int i = 0; i < r.size(); i++) {
+      r[i] = (s[2*i] - '0') + 10 * (s[2*i+1] - '0');
+    }
+    return move(r);
+  } else {
+    reverse(s.begin(), s.end());
+    for (auto &d : s) d -= '0';
+    return move(s);
   }
-  return move(r);
-  // For 10 based:
-  // reverse(s.begin(), s.end());
-  // for (auto &d : s) d -= '0';
-  // return move(s);
 }
 string bigint_from_int(int n) {
   return bigint_from_string(to_string(n));
@@ -194,10 +201,17 @@ string bigint_div2(Substr s) {
 }
 
 void test_format() {
-  CHECK(bigint_from_string("12") == "\014");
-  CHECK(bigint_from_int(12) == "\014");
-  CHECK(bigint_from_string("138") == "\046\01");
-  CHECK(bigint_from_int(138) == "\046\01");
+  if (kBigIntBase == 100) {
+    CHECK(bigint_from_string("12") == "\014");
+    CHECK(bigint_from_int(12) == "\014");
+    CHECK(bigint_from_string("138") == "\046\01");
+    CHECK(bigint_from_int(138) == "\046\01");
+  } else {
+    CHECK(bigint_from_string("12") == "\02\01");
+    CHECK(bigint_from_int(12) == "\02\01");
+    CHECK(bigint_from_string("138") == "\010\03\01");
+    CHECK(bigint_from_int(138) == "\010\03\01");
+  }
 }
 
 void test_mult_scalar() {
@@ -315,6 +329,28 @@ void test_div2() {
   CHECK(check_op("252"));
 }
 
+string gen_bigint(int len, minstd_rand &rg) {
+  string s(len, 0);
+  s[0] = rg() % 9 + '1';
+  for (int i = 1; i < len; i++) {
+    s[i] = rg() % 10 + '0';
+  }
+  return bigint_from_string(s);
+}
+
+void perf_test() {
+  minstd_rand rg;
+  vector<string> rand_num(100);
+  for (auto &b : rand_num) {
+    b = gen_bigint(100 + rg() % 100, rg);
+  }
+  string f = bigint_from_int(1);
+  for (auto &b : rand_num) {
+    f = bigint_mult(f, b);
+  }
+  cout << bigint_string(f) << endl;
+}
+
 int main(int argc, char **argv) {
   ios_base::sync_with_stdio(false);
   test_format();
@@ -325,5 +361,6 @@ int main(int argc, char **argv) {
   test_mult();
   test_div2();
   cout << "TESTS PASSED." << endl;
+  // perf_test();
   return 0;
 }

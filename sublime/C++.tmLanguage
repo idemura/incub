@@ -107,7 +107,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\b(export|mutable|typename)\b</string>
+			<string>\b(export|mutable|typename|decltype|static_assert)\b</string>
 			<key>name</key>
 			<string>storage.modifier.c++</string>
 		</dict>

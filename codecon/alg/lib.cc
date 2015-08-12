@@ -42,25 +42,27 @@ inline int mdiv(i64 a, int b, int p) {
   return (int)a;
 }
 
-inline bool eurlerCriterion(int a, int p) {
+inline bool eurler_criterion(int a, int p) {
   return mpow(a, (p - 1) / 2, p) == 1;
 }
 
-int findQuadraticNonResidue(int p) {
+int find_quadratic_non_residue(int p) {
   // Brute force search for the first non-residue.
   int k = 2;
-  while (eurlerCriterion(k, p)) k++;
+  while (eurler_criterion(k, p)) {
+    k++;
+  }
   return k;
 }
 
 // Returns a square root on `a` modulo `p` or -1 if doesn't exist.
-// Shanks-Tonei64 algorithm, see
+// Shanks-Toneilli algorithm, see
 // http://www.math.vt.edu/people/brown/doc/sqrts.pdf
-int shanksTonei64(int a, int p) {
+int shanks_tonelli(int a, int p) {
   if (p == 2 || a <= 1) {
     return a;
   }
-  if (!eurlerCriterion(a, p)) {
+  if (!eurler_criterion(a, p)) {
     return -1; // No square root.
   }
   if (p % 4 == 3) {
@@ -74,7 +76,7 @@ int shanksTonei64(int a, int p) {
 
   int x = mpow(a, (s + 1) / 2, p);
   int b = mpow(a, s, p);
-  int g = mpow(findQuadraticNonResidue(p), s, p);
+  int g = mpow(find_quadratic_non_residue(p), s, p);
   int r = e;
   for (;;) {
     int m = 0;
@@ -94,7 +96,7 @@ int shanksTonei64(int a, int p) {
   return -1;
 }
 
-bool isPrime(int n) {
+bool is_prime(int n) {
   if (n <= 5) {
     return n > 1 && n != 4;
   }
@@ -114,7 +116,7 @@ bool isPrime(int n) {
 // Revert by modulo with 2 ways:
 //  1) ext_euclid(x, MOD, &gcd, &inv, 0);
 //  2) inv = mpow(x, MOD - 2), by Euler theorem, phi(MOD) = MOD - 1
-
+//
 // Inverts all numbers in [0..mod) where `mod` is prime into `inv` (should be
 // at least `mod` long).
 //
@@ -126,12 +128,14 @@ bool isPrime(int n) {
 //  mod * (k1 + k2) - (mod / i * r) * i = 1
 // In the latest equation we can spot extended Euclid equation with, hence:
 //  inv(i) = - (mod / i) * inv(mod % i)
-void invList(int *inv, int mod) {
+vector<int> invert_all(int mod) {
+  vector<int> inv(mod);
   inv[0] = 0;
   inv[1] = 1;
   for (int i = 2; i < mod; i++) {
-    inv[i] = mod - ((mod / i) * inv[mod % i]) % mod;
+    inv[i] = mod - (i64(mod / i) * inv[mod % i]) % mod;
   }
+  return move(inv);
 }
 
 // Function computing the floor of the square root, by Dijkstra
@@ -156,7 +160,7 @@ int sqrti(int n) {
 }
 
 // Input: 32 bit unsigned integer.
-int countBits32(unsigned int n) {
+int count_bits32(unsigned int n) {
   // Treat `n` as sums of groups of 1 bit.
   n = (n & 0x55555555u) + ((n & 0xaaaaaaaau) >> 1);
   // `n` is now sum of groups of 2 bits and so on on next steps.

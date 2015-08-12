@@ -33,11 +33,14 @@ int mpow(i64 a, int k, int p) {
 void test() {
   i64 n, m;
   cin >> n >> m;
-  vector<int> a(m + 2);
-  a[1] = 1;
-  for (int i = 2; i <= m; i++) {
+  vector<i64> a(m + 1);
+  a[1] = 1 % m;
+  for (int i = 2; i < a.size(); i++) {
     a[i] = (a[i - 1] + mpow(i, i, m)) % m;
   }
+  i64 p = (i64(n / m) * a[m]) % m;
+  i64 q = a[n % m];
+  cout << (p + q) % m << endl;
 }
 
 int main(int argc, char **argv) {
@@ -47,6 +50,5 @@ int main(int argc, char **argv) {
   for (int i = 0; i < t; i++) {
     test();
   }
-  cout << "TESTS PASSED." << endl;
   return 0;
 }

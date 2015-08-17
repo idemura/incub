@@ -5,6 +5,7 @@
 #include <functional>
 #include <list>
 #include <map>
+#include <set>
 #include <unordered_map>
 #include <vector>
 #include <string>
@@ -13,8 +14,8 @@
 #include <sstream>
 #include <utility>
 #include <iostream>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdlib>
+#include <cmath>  // Overloads for abs.
 
 #define ARRAY_SIZEOF(A) (sizeof(A) / sizeof(A[0]))
 #define NON_COPYABLE(C) \

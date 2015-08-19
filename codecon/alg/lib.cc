@@ -1,5 +1,18 @@
 #include "base.h"
 
+truct ExtGCD {
+  int gcd, a, b;
+  ExtGCD(int gcd, int a, int b): gcd(gcd), a(a), b(b) {}
+};
+
+ExtGCD ext_gcd(int a, int b) {
+  if (b == 0) {
+    return {a, 1, 0};
+  }
+  auto r = ext_gcd(b, a % b);
+  return {r.gcd, r.b, r.a - (a / b) * r.b};
+}
+
 inline int madd(int a, int b, int p) {
   return (a + b) % p;
 }
@@ -29,12 +42,15 @@ inline int minv(int a, int p) {
   return mpow(a, p - 2, p);
 }
 
-// inline int minv(int a, int p)
-// {
-//   int gcd, x, y;
-//   extGCD(a, p, &gcd, &x, &y);
-//   return x < 0? x + p: x;
-// }
+// Compared to pow version, this may invert if `p` if not prime; but it has to
+// be coprime with `a`.
+inline int minv_bezout(int a, int p) {
+  auto g = ext_gcd(a, p);
+  if (g.gcd != 1)
+    return 0;  // Inverse doesn't exist.
+  else
+    return x < 0? x + p: x;
+}
 
 inline int mdiv(i64 a, int b, int p) {
   a *= minv(b, p);

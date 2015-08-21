@@ -39,4 +39,9 @@ constexpr char kEol[] = "\n";
 constexpr int INF = 0x7fffffff;
 constexpr int MOD = 100000007;
 
+template<class T>
+unique_ptr<T> wrap_unique(T *p) {
+  return unique_ptr<T>(p);
+}
+
 #endif // BASE_H

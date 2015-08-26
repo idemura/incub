@@ -1,9 +1,9 @@
 #include "base.h"
 
 struct FC_Node {
-  FC_Node *ptr = nullptr;
-  int n = 0;
-  int f = 0;  // 1 if cascaded in from the previous layer.
+  int n = -1;  // Data. 
+  int j = -1;  // Meaning depends on `kind`.
+  int kind = 0;  // 1 if cascaded in from the previous layer.
 };
 
 struct FC {
@@ -17,7 +17,7 @@ void fc_build_first(const vector<int> &l, vector<FC_Node> &nodes) {
   }
 }
 
-// Builds fixed fraction cascading (fraction parameter p = 0.5).
+// Builds fixed fraction cascading (fraction parameter p = 1/2).
 void fc_build(const vector<vector<int>> &lists) {
   FC fc;
   fc.resize(lists.size());
@@ -34,10 +34,10 @@ void fc_build(const vector<vector<int>> &lists) {
         fc.nodes[i][kr].n = list[i][k1];
         fc.nodes[i][kr].f = 0;
         fc.nodes[i][kr].ptr = prev_c;
-        while (prev_c >= 0 && prev_c->ptr == nullptr) {
+        while (prev_c >= 0 && fc.nodes[i][prev_c].f == 1 &&
+               fc.nodes[prev_c]. == nullptr) {
           prev_c->ptr = &fc.nodes[i][kr];
           prev_c--;
-
         }
         kr++;
         k1 += 1;

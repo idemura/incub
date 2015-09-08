@@ -1,10 +1,10 @@
 #include "base.h"
 
 int sqrt_int(int n) {
-  return static_cast<int>(sqrt(n));
+  return int(sqrt(n));
 }
 
-// Result[i] means minimal divisor of i.
+// Result[i] means minimal divisor of i. Use it in `factorize`.
 vector<int> sieve(int n) {
   vector<int> factor(n + 1);
   factor[1] = 1;
@@ -21,9 +21,10 @@ vector<int> sieve(int n) {
   for (; i <= n; i++) {
     if (factor[i] == 0) factor[i] = i;
   }
-  return move(factor);
+  return factor;
 }
 
+// Pairs (factor, degree).
 vector<pair<int, int>> factorize(const vector<int> &factor, int n) {
   vector<pair<int, int>> result;
   if (n <= 1) return result;
@@ -39,7 +40,7 @@ vector<pair<int, int>> factorize(const vector<int> &factor, int n) {
     n /= factor[n];
   }
   result.push_back(p);
-  return move(result);
+  return result;
 }
 
 vector<int> primes(int n) {
@@ -55,7 +56,7 @@ vector<int> primes(int n) {
   for (; i <= n; i++) {
     if (sieve[i] == 0) result.push_back(i);
   }
-  return move(result);
+  return result;
 }
 
 void test0() {

@@ -6,7 +6,9 @@
 #include <list>
 #include <map>
 #include <set>
+#include <chrono>
 #include <unordered_map>
+#include <memory>
 #include <vector>
 #include <string>
 #include <random>
@@ -15,6 +17,7 @@
 #include <utility>
 #include <iostream>
 #include <cstdlib>
+#include <cstring>
 #include <cmath>  // Overloads for abs.
 
 #define ARRAY_SIZEOF(A) (sizeof(A) / sizeof(A[0]))

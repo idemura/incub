@@ -25,6 +25,7 @@
 	"bold_folder_labels": false,
 	"caret_style": "smooth",
 	"close_windows_when_empty": false,
+	"color_scheme": "Packages/Color Scheme - Default/Monokai.tmTheme",
 	"default_encoding": "UTF-8",
 	"default_line_ending": "system",
 	"detect_indentation": true,
@@ -66,11 +67,11 @@
 		".hg",
 		"CVS"
 	],
-	"font_face": "Menlo",
+	"font_face": "DejaVu Sans Mono",
 	"font_options":
 	[
 	],
-	"font_size": 9,
+	"font_size": 12,
 	"gutter": true,
 	"highlight_line": false,
 	"highlight_modified_tabs": false,
@@ -99,9 +100,7 @@
 	"remember_open_files": true,
 	"rulers":
 	[
-		80,
-		100,
-		120
+		80
 	],
 	"save_on_focus_lost": false,
 	"scroll_speed": 1.0,

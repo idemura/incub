@@ -75,33 +75,6 @@ vector<Factor> sieve_degree(int n) {
   return factor;
 }
 
-vector<Factor> factorize(const vector<int> &factor, int n) {
-  vector<Factor> result;
-  if (n<=1) return result;
-  Factor p(factor[n],1);
-  n/=factor[n];
-  while (n!=1) {
-    if (p.n==factor[n]) {
-      p.d++;
-    } else {
-      result.push_back(p);
-      p=Factor(factor[n],1);
-    }
-    n/=factor[n];
-  }
-  result.push_back(p);
-  return result;
-}
-
-void print_max_and_avg(const vector<vector<int>> &v) {
-  i64 total=0, size_max=0;
-  for (auto &subv : v) {
-    total+=subv.size();
-    size_max=max<i64>(subv.size(),size_max);
-  }
-  cout<<"total="<<total<<" avg="<<(total/v.size())<<" max="<<size_max<<endl;
-}
-
 vector<PRange> divisors(const vector<Factor> &ft, IntPool &pool) {
   vector<PRange> divs(ft.size());
   // To speed up use stack memory. We know numbers less or equal than 1e5 have
@@ -131,19 +104,6 @@ vector<PRange> divisors(const vector<Factor> &ft, IntPool &pool) {
     merge(tmp,tmp+multiples_n,tmp+multiples_n,tmp+h,divs[i].p);
   }
   return divs;
-}
-
-int count_divisors(const vector<Factor> &f) {
-  auto c=f[0].d;
-  for (int i=1; i<f.size(); i++) {
-    c=(f[i].d+1)*c+f[i].d;
-  }
-  return c;  //1 is not counted.
-}
-
-void test(const vector<int> &ft, int n) {
-  auto c=count_divisors(factorize(ft,n));
-  cout<<"n="<<n<<" count "<<c<<endl;
 }
 
 PRange cascade_merge(
@@ -178,6 +138,7 @@ PRange cascade_merge(
       i2++;
     }
   }
+  cout<<"main loop done"<<endl;
   for (; i1<in1.n; i1++) tmp[tmp_n++]=in1.p[i1];
   for (; i2<in2.n; i2++) tmp[tmp_n++]=in2.p[i2];
   auto out=pool.alloc(tmp+1,tmp_n-1);

@@ -15,7 +15,7 @@ struct FC_Node {
 };
 
 struct FC {
-  vector<FC_Node> nodes;
+  vector<vector<FC_Node>> nodes;
 };
 
 vector<FC_Node> fc_build_first(const vector<int> &a) {
@@ -37,9 +37,9 @@ vector<FC_Node> fc_build_cascade(
     const vector<int> &w,
     const vector<FC_Node> &b) {
   vector<FC_Node> res(w.size()+b.size()/2);
-  int wi=0, bi=0;
+  int wi=0, bi=0,ri=0;
   int prev_black=-1;  // Previous cascaded node.
-  for (int ri=0; bi<b.size() && wi<w.size(); ri++) {
+  for (; bi<b.size() && wi<w.size(); ri++) {
     if (w[wi]<b[bi].v) {
       res[ri].v=w[wi];
       res[ri].c=kWhite;
@@ -77,14 +77,17 @@ vector<FC_Node> fc_build_cascade(
 // Builds fixed fraction cascading (fraction parameter p = 1/2).
 void fc_build(const vector<vector<int>> &lists) {
   FC fc;
-  fc.vodes.resize(lists.size());
-  fc.vodes[0]=fc_build_first(lists[0]);
+  fc.nodes.resize(lists.size());
+  fc.nodes[0]=fc_build_first(lists[0]);
   for (int i=1; i<lists.size(); i++) {
-    fc.vodes[i]=fc_build_cascade(lists[i], fc.vodes[i-1]);
+    fc.nodes[i]=fc_build_cascade(lists[i], fc.nodes[i-1]);
   }
 }
 
 void fc_search() {
+}
+
+void test() {
 }
 
 int main(int argc, char **argv) {

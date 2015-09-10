@@ -12,6 +12,21 @@ double time_diff(SysTime start, SysTime end) {
   return Seconds(end-start).count();
 }
 
+template<class T>
+void check_sort(T a, int n, const char *msg) {
+  for (int i=1; i<n; i++) {
+    if (a[i-1]>a[i]) {
+      cout<<"CHECK failed "<<msg<<endl;
+      cout<<"Array:";
+      for (int i=0; i<n; i++) {
+        cout<<" "<<a[i];
+      }
+      cout<<endl;
+      exit(-1);
+    }
+  }
+}
+
 struct PRange {
   int *p=nullptr, n=0;
   PRange() {}
@@ -91,17 +106,23 @@ vector<PRange> divisors(const vector<Factor> &ft, IntPool &pool) {
     int h=multiples_n;
     int no_fi=i/tmp[multiples_n-1];
     if (no_fi!=1) {
+      cout<<"-----\n";
       for (int j=0; j<divs[no_fi].n; j++) {
         tmp[h++]=divs[no_fi].p[j];
+        cout<<"initial "<<tmp[h-1]<<endl;
       }
       for (int k=0; k<multiples_n; k++) {
+        cout<<"mult by "<<tmp[k]<<endl;
         for (int j=0; j<divs[no_fi].n; j++) {
           tmp[h++]=tmp[k]*divs[no_fi].p[j];
+          cout<<"added "<<tmp[h-1]<<endl;
         }
       }
+      check_sort(tmp+multiples_n,h-multiples_n,"mutiples prev");
     }
     divs[i]=pool.alloc(nullptr,h);
     merge(tmp,tmp+multiples_n,tmp+multiples_n,tmp+h,divs[i].p);
+    check_sort(divs[i].p,divs[i].n,"divisors merge");
   }
   return divs;
 }
@@ -110,43 +131,42 @@ PRange cascade_merge(
       const PRange &in1,
       const PRange &in2,
       IntPool &pool) {
-  cout<<"-------------------\n";
   cout<<"in1:";
-  for (int i=0; i<in1.n; i++) {
-    cout<<" "<<in1.p[i];
+  for (int k=0; k<in1.n; k++) {
+    cout<<" "<<in1.p[k];
   }
   cout<<endl;
   cout<<"in2:";
-  for (int i=0; i<in2.n; i++) {
-    cout<<" "<<in2.p[i];
+  for (int k=0; k<in2.n; k++) {
+    cout<<" "<<in2.p[k];
   }
   cout<<endl;
-  int tmp[140]={}, tmp_n=1;
+  int tmp[180]={}, tmp_n=1;
   int i1=0, i2=0;
   while (i1<in1.n && i2<in2.n) {
     if (in1.p[i1]<in2.p[i2]) {
       if (in1.p[i1]!=tmp[tmp_n-1]) {
-        cout<<"added "<<in1.p[i1]<<endl;
         tmp[tmp_n++]=in1.p[i1];
       }
       i1++;
     } else {
       if (in2.p[i2]!=tmp[tmp_n-1]) {
-        cout<<"added "<<in2.p[i2]<<endl;
         tmp[tmp_n++]=in2.p[i2];
       }
       i2++;
     }
   }
-  cout<<"main loop done"<<endl;
   for (; i1<in1.n; i1++) tmp[tmp_n++]=in1.p[i1];
   for (; i2<in2.n; i2++) tmp[tmp_n++]=in2.p[i2];
   auto out=pool.alloc(tmp+1,tmp_n-1);
-  cout<<"out:";
-  for (int i=0; i<out.n; i++) {
-    cout<<" "<<out.p[i];
-  }
-  cout<<endl;
+  cout<<"tmp_n="<<tmp_n<<endl;
+  CHECK(tmp_n<=ARRAY_SIZEOF(tmp));
+  // cout<<"out:";
+  // for (int k=0; k<out.n; k++) {
+  //   cout<<" "<<out.p[k];
+  // }
+  // cout<<endl;
+  check_sort(out.p,out.n,"cascade_merge");
   return out;
 }
 
@@ -158,9 +178,11 @@ void cascade(vector<PRange> &divs, IntPool &pool, vector<vector<PRange>> &csd) {
     auto &src=csd[i-1];
     auto &dst=csd[i];
     dst.resize(src.size()>>1);
-    cout<<"src.size="<<src.size()<<" dst.size="<<dst.size()<<endl;
-    for (int j=0; j<src.size(); j+=2) {
-      dst[j>>1]=cascade_merge(src[j],src[j+1],pool);
+    cout<<"dst.size()="<<dst.size()<<" src.size()="<<src.size()<<endl;
+    for (int j=0; j<dst.size(); j++) {
+      cout<<"j="<<j<<endl;
+      cout<<"access "<<(2*j)<<" "<<(2*j+1)<<endl;
+      dst[j]=cascade_merge(src[2*j],src[2*j+1],pool);
     }
   }
 }
@@ -169,11 +191,11 @@ int main(int argc, char **argv) {
   ios_base::sync_with_stdio(false);
   auto start=system_time();
   IntPool pool;
-  constexpr int k=20;
+  constexpr int k=159;
   auto ft=sieve_degree(k);
   auto divs=divisors(ft,pool);
   auto t=time_diff(start,system_time());
-  cout<<"Sieve and divisors "<<t*1000<<endl;
+  cout<<"Sieve and divisors "<<int(t*1000)<<endl;
   // print_max_and_avg(divs);
   for (int i=0; i<=20; i++) {
     cout<<i<<":";
@@ -187,7 +209,7 @@ int main(int argc, char **argv) {
   vector<vector<PRange>> csd;
   cascade(divs,pool,csd);
   t=time_diff(start,system_time());
-  cout<<"Cascading: "<<t*1000<<endl;
+  cout<<"Cascading: "<<int(t*1000)<<endl;
 
   // auto max_divisors=0, n=0;
   // unordered_map<int,int> freq_map;

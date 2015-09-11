@@ -83,7 +83,19 @@ void build(const vector<vector<int>> &lists) {
   }
 }
 
-void search() {
+// Returns vector of list index (first) and index in the list (second) where
+// `n` where found.
+vector<pair<int, int>> search(const FCascade &fc, int n) {
+  vector<pair<int, int>> loc;
+  auto it = lower_bound(fc.nodes[0].begin(), fc.nodes[0].end(), n,
+        [](const Node& node, int n) {
+          return node.v < n;
+        });
+  int i0 = it == fc.nodes[0].end()
+      ? fc.nodes[0].size()
+      : it - fc.nodes[0].begin();
+  cout<<"i0="<<i0<<endl;
+  return loc;
 }
 
 void test() {

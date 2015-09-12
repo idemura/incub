@@ -10,7 +10,7 @@ struct Node {
   int c = kBlack;  // Color.
   // Inverted color index. Closest white to the right of a black node and
   // closest to the left black node of a white node.
-  int inv_ix = 0;
+  int j = 0;
   int cascade_ix = 0;  // Cascaded index, for black node only.
 };
 
@@ -23,7 +23,7 @@ vector<Node> build_first(const vector<int> &a) {
   for (int i = 0; i < a.size(); i++) {
     res[i].v = a[i];
     res[i].c = kWhite;
-    res[i].inv_ix = res[i].cascade_ix = -1;
+    res[i].j = res[i].cascade_ix = -1;
   }
   return res;
 }
@@ -39,10 +39,11 @@ vector<Node> build_cascade(
   int wi = 0, bi = 0, ri = 0;
   int prev_black = -1;  // Previous cascaded node.
   for (; bi < b.size() && wi < w.size(); ri++) {
+    CHECK(ri < res.size());
     if (w[wi] < b[bi].v) {
       res[ri].v = w[wi];
       res[ri].c = kWhite;
-      res[ri].inv_ix = prev_black;
+      res[ri].j = prev_black;
       wi += 1;
     } else {
       res[ri].v = b[bi].v;
@@ -53,34 +54,37 @@ vector<Node> build_cascade(
     }
   }
   for (; bi < b.size(); bi += 2, ri++) {
+    CHECK(ri < res.size());
     res[ri].v = b[bi].v;
     res[ri].c = kBlack;
     res[ri].cascade_ix = bi;
   }
   for (; wi < w.size(); wi += 1, ri++) {
+    CHECK(ri < res.size());
     res[ri].v = w[wi];
     res[ri].c = kWhite;
-    res[ri].inv_ix = prev_black;
+    res[ri].j = prev_black;
   }
   int prev_white = -1;
   for (int i = res.size(); i-- > 0; ) {
     if (res[i].c == kWhite) {
       prev_white = i;
     } else {
-      res[i].inv_ix = prev_white;
+      res[i].j = prev_white;
     }
   }
   return res;
 }
 
 // Builds fixed fraction cascading (fraction parameter p = 1/2).
-void build(const vector<vector<int>> &lists) {
+FCascade build(const vector<vector<int>> &lists) {
   FCascade fc;
   fc.nodes.resize(lists.size());
   fc.nodes[0] = build_first(lists[0]);
   for (int i = 1; i < lists.size(); i++) {
     fc.nodes[i] = build_cascade(lists[i], fc.nodes[i - 1]);
   }
+  return fc;
 }
 
 // Returns vector of list index (first) and index in the list (second) where
@@ -99,6 +103,23 @@ vector<pair<int, int>> search(const FCascade &fc, int n) {
 }
 
 void test() {
+  vector<vector<int>> lists{
+    {1, 10, 20},
+    {5, 9, 15, 24},
+  };
+  auto fc = build(lists);
+  for (auto &nodes : fc.nodes) {
+    cout<<"----NODES:"<<endl;
+    for (int i = 0; i < nodes.size(); i++) {
+      auto &n = nodes[i];
+      auto color_str = n.c == kWhite ? "white" : "black";
+      cout<<"Node #"<<i
+          <<"\n  color="<<color_str
+          <<"\n  v="<<n.v
+          <<"\n  j="<<n.j
+          <<"\n  cascade_ix="<<n.cascade_ix<<endl;
+    }
+  }
 }
 
 int main(int argc, char **argv) {

@@ -1,0 +1,11 @@
+{
+	"in_process_packages":
+	[
+	],
+	"installed_packages":
+	[
+		"C++11",
+		"Package Control",
+		"Theme - Soda"
+	]
+}

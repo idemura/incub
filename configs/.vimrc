@@ -11,3 +11,8 @@ set expandtab
 set cc=80
 set incsearch
 
+nnoremap i k
+nnoremap k j
+nnoremap j h
+nnoremap h i
+

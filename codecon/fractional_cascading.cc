@@ -3,6 +3,9 @@
 constexpr int kBlack = 0;
 constexpr int kWhite = 1;
 
+template<class T>
+using vecvec = vector<vector<T>>;
+
 // I call nodes from the i-th list 'white' and nodes cascaded from (i-1)-th
 // level 'black'.
 struct Node {
@@ -15,7 +18,7 @@ struct Node {
 };
 
 struct FCascade {
-  vector<vector<Node>> nodes;
+  vecvec<Node> nodes;
 };
 
 vector<Node> build_first(const vector<int> &a) {
@@ -32,10 +35,9 @@ vector<Node> build_first(const vector<int> &a) {
 //   1. Set @index of the previous black node,
 //   2. For all black nodes before it we set @index to @wi. This step I defer
 //      until the end, where I go back and set it.
-vector<Node> build_cascade(
-    const vector<int> &w,
-    const vector<Node> &b) {
-  vector<Node> res(w.size() + b.size() / 2);
+vector<Node> build_cascade(const vector<int> &w, const vector<Node> &b) {
+  cout<<"w.size="<<w.size()<<" b.size="<<b.size()<<endl;
+  vector<Node> res(w.size() + (b.size() + 1) / 2);
   int wi = 0, bi = 0, ri = 0;
   int prev_black = -1;  // Previous cascaded node.
   for (; bi < b.size() && wi < w.size(); ri++) {
@@ -65,6 +67,7 @@ vector<Node> build_cascade(
     res[ri].c = kWhite;
     res[ri].j = prev_black;
   }
+  CHECK(res.size() == ri);
   int prev_white = -1;
   for (int i = res.size(); i-- > 0; ) {
     if (res[i].c == kWhite) {
@@ -77,7 +80,7 @@ vector<Node> build_cascade(
 }
 
 // Builds fixed fraction cascading (fraction parameter p = 1/2).
-FCascade build(const vector<vector<int>> &lists) {
+FCascade build(const vecvec<int> &lists) {
   FCascade fc;
   fc.nodes.resize(lists.size());
   fc.nodes[0] = build_first(lists[0]);
@@ -102,24 +105,28 @@ vector<pair<int, int>> search(const FCascade &fc, int n) {
   return loc;
 }
 
-void test() {
-  vector<vector<int>> lists{
-    {1, 10, 20},
-    {5, 9, 15, 24},
-  };
-  auto fc = build(lists);
+void print(const FCascade &fc) {
+  int l = 0;
   for (auto &nodes : fc.nodes) {
-    cout<<"----NODES:"<<endl;
+    cout<<"----NODES: level="<<(l++)<<endl;
     for (int i = 0; i < nodes.size(); i++) {
       auto &n = nodes[i];
-      auto color_str = n.c == kWhite ? "white" : "black";
       cout<<"Node #"<<i
-          <<"\n  color="<<color_str
+          <<"\n  color="<<(n.c == kWhite ? "white" : "black")
           <<"\n  v="<<n.v
           <<"\n  j="<<n.j
           <<"\n  cascade_ix="<<n.cascade_ix<<endl;
     }
   }
+}
+
+void test() {
+  vecvec<int> lists{
+    {1, 10, 20},
+    {5, 9, 15, 24},
+  };
+  auto fc = build(lists);
+  print(fc);
 }
 
 int main(int argc, char **argv) {

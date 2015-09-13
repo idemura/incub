@@ -21,9 +21,14 @@
 #include <cmath>  // Overloads for abs.
 
 #define ARRAY_SIZEOF(A) (sizeof(A) / sizeof(A[0]))
-#define NON_COPYABLE(C) \
-    C(const C&) = delete; \
-    C& operator=(const C&) = delete;
+
+#define DEFINE_COPY(C, OP) \
+    C(const C&) = OP; \
+    C& operator=(const C&) = OP;
+#define DELETE_COPY(C) DEFINE_COPY(C, delete)
+#define DEFAULT_COPY(C) DEFINE_COPY(C, default)
+#define NON_COPYABLE(C) DELETE_COPY(C)
+
 #define NEW_UNIQUE(T) unique_ptr<T>(new T)
 #define CHECK(E) \
     do { \

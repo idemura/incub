@@ -18,5 +18,7 @@ rcopy '.config/sublime-text-2'
 rcopy '.config/gtk-3.0/settings.ini'
 
 find_rm '*.cache'
+find_rm '*.sublime_session'
+find_rm '*.last-run'
 find_rm '*.pyc'
 

@@ -13,11 +13,12 @@ function find_rm() {
 rcopy '.bashrc'
 rcopy '.i3'
 rcopy '.i3status.conf'
+rcopy '.inputrc'
 rcopy '.tmux.conf'
 rcopy '.vimrc'
 rcopy '.Xmodmap'
 rcopy '.config/gtk-3.0/settings.ini'
-rcopy '.config/sublime-text-2'
+# rcopy '.config/sublime-text-2'
 rcopy '.config/terminator'
 
 find_rm '*.cache'

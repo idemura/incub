@@ -53,7 +53,6 @@ private:
 template<class T, class Less>
 void FCascade<T, Less>::build_cascade(const vector<T> &w, const vector<Node> &b,
       vector<Node> &res) const {
-  cout<<"w.size="<<w.size()<<" b.size="<<b.size()<<endl;
   res.resize(w.size() + (b.size() + 1) / 2);
   int wi = 0, bi = 0, ri = 0;
   int cascade_j = -1;
@@ -129,7 +128,7 @@ int FCascade<T, Less>::binary(const vector<Node> &nl, T x) const {
 // `n` where found.
 template<class T, class Less>
 vector<int> FCascade<T, Less>::search(T x) const {
-  cout<<"search for "<<x<<endl;
+  // cout<<"search for "<<x<<endl;
   vector<int> loc(cascades_.size());  // For RVO.
   if (cascades_.empty()) {
     return loc;
@@ -138,24 +137,24 @@ vector<int> FCascade<T, Less>::search(T x) const {
   for (auto &nl : cascades_) {
     if (index == 1) {
       i = binary(nl, x);
-      cout<<"initial i="<<i<<endl;
+      // cout<<"initial i="<<i<<endl;
     }
     if (i == -1) i = nl.size();
-    cout<<"i="<<i<<endl;
-    nl[i].print(cout)<<endl;
+    // cout<<"i="<<i<<endl;
+    // nl[i].print(cout)<<endl;
     if (i != 0 && !le_(nl[i - 1].v, x)) {
-      cout<<"move one left"<<endl;
+      // cout<<"move one left"<<endl;
       i--;
     } else if (i == 0 && le_(x, nl[i].v)) {
-      cout<<"less than min in all"<<endl;
+      // cout<<"less than min in all"<<endl;
       break;
     }
     if (i == nl.size()) {
-      cout<<"i behind the last"<<endl;
+      // cout<<"i behind the last"<<endl;
       i = -1;
       continue;
     }
-    cout<<"add to result "<<i<<" original index="<<nl[i].j<<endl;
+    // cout<<"add to result "<<i<<" original index="<<nl[i].j<<endl;
     loc[cascades_.size() - index] = nl[i].j;
     i = nl[i].cascade_j;
     index++;
@@ -175,14 +174,15 @@ void FCascade<T, Less>::print() const {
   }
 }
 
-void print_search_result(const vector<int> &res) {
-  cout<<"Search result:"<<endl;
+void print_search_result(int x, const vector<int> &res) {
+  cout<<"Search "<<x<<" result:"<<endl;
   for (int i = 0; i < res.size(); i++) {
     cout<<"  list "<<i<<" #"<<res[i]<<endl;
   }
 }
 
 bool check_fc(const vecvec<int> &l, int x, const vector<int> &res) {
+  print_search_result(x, res);
   for (int i = 0; i < l.size(); i++) {
     int lb = lower_bound(l[i].begin(), l[i].end(), x) - l[i].begin();
     if (lb != res[i]) {
@@ -204,9 +204,10 @@ void test() {
   FCascade<int> fc;
   for (auto &v : l) fc.add_list(v);
   fc.print();
-  CHECK(check_fc(l, 10, fc.search(10)));
-  CHECK(check_fc(l, 11, fc.search(11)));
-  CHECK(check_fc(l, 15, fc.search(15)));
+  //for (int x = 0; x <= 25; x++) {
+    //CHECK(check_fc(l, x, fc.search(x)));
+  //}
+  CHECK(check_fc(l, 21, fc.search(21)));
 }
 
 int main(int argc, char **argv) {
@@ -215,3 +216,4 @@ int main(int argc, char **argv) {
   cout << "TESTS PASSED." << endl;
   return 0;
 }
+

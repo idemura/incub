@@ -44,10 +44,14 @@ private:
   void build_cascade(const vector<ValueT> &w, const vector<Node> &b,
                      vector<Node> &res) const;
   int binary(const vector<Node> &nl, ValueT x) const;
+  bool lt(ValueT a, ValueT b) const { return le_(a, b); }
+  bool gt(ValueT a, ValueT b) const { return le_(b, a); }
+  bool le(ValueT a, ValueT b) const { return !gt(a, b); }
+  bool ge(ValueT a, ValueT b) const { return !lt(a, b); }
 
   // In each cascade, white nodes go first because of lower_bound property. 
   list<vector<Node>> cascades_;
-  Less le_;
+  const Less le_;
 };
 
 template<class T, class Less>
@@ -58,7 +62,7 @@ void FCascade<T, Less>::build_cascade(const vector<T> &w, const vector<Node> &b,
   int cascade_j = -1;
   for (; bi < b.size() && wi < w.size(); ri++) {
     CHECK(ri < res.size());
-    if (le_(b[bi].v, w[wi])) {
+    if (lt(b[bi].v, w[wi])) {
       res[ri].v = b[bi].v;
       res[ri].c = kBlack;
       res[ri].cascade_j = bi;
@@ -119,7 +123,7 @@ template<class T, class Less>
 int FCascade<T, Less>::binary(const vector<Node> &nl, T x) const {
   auto i = lower_bound(nl.begin(), nl.end(), x,
       [this] (const Node& node, const T &y) {
-        return le_(node.v, y);
+        return lt(node.v, y);
       });
   return i - nl.begin();
 }
@@ -128,35 +132,27 @@ int FCascade<T, Less>::binary(const vector<Node> &nl, T x) const {
 // `n` where found.
 template<class T, class Less>
 vector<int> FCascade<T, Less>::search(T x) const {
-  // cout<<"search for "<<x<<endl;
   vector<int> loc(cascades_.size());  // For RVO.
   if (cascades_.empty()) {
     return loc;
   }
   int index = 1, i = -1;
   for (auto &nl : cascades_) {
-    if (index == 1) {
-      i = binary(nl, x);
-      // cout<<"initial i="<<i<<endl;
-    }
-    if (i == -1) i = nl.size();
-    // cout<<"i="<<i<<endl;
-    // nl[i].print(cout)<<endl;
-    if (i != 0 && !le_(nl[i - 1].v, x)) {
-      // cout<<"move one left"<<endl;
+    if (index == 1) i = binary(nl, x);
+    if (i < 0) i = nl.size();
+    // Minimum is always first and cascaded up. So if x less than first we
+    // can break (@loc initialized with 0).
+    if (i == 0 && lt(x, nl[i].v)) break;
+    if (i != 0 && le(x, nl[i - 1].v)) {
       i--;
-    } else if (i == 0 && le_(x, nl[i].v)) {
-      // cout<<"less than min in all"<<endl;
-      break;
     }
     if (i == nl.size()) {
-      // cout<<"i behind the last"<<endl;
-      i = -1;
-      continue;
+      loc[cascades_.size() - index] = nl.back().j + 1;
+      i = -1; // Set i to size of the next cascade on next iteration.
+    } else {
+      loc[cascades_.size() - index] = nl[i].j;
+      i = nl[i].cascade_j;
     }
-    // cout<<"add to result "<<i<<" original index="<<nl[i].j<<endl;
-    loc[cascades_.size() - index] = nl[i].j;
-    i = nl[i].cascade_j;
     index++;
   }
   return loc;
@@ -165,10 +161,11 @@ vector<int> FCascade<T, Less>::search(T x) const {
 template<class T, class Less>
 void FCascade<T, Less>::print() const {
   int l = 0;
+  cout<<cascades_.size()<<" fractional cascades in reverse order:"<<endl;
   for (auto &nl : cascades_) {
-    cout<<"--- Cascade #"<<(l++)<<endl;
+    cout<<"Cascade #"<<(l++)<<endl;
     for (int i = 0; i < nl.size(); i++) {
-      cout<<"Node #"<<i<<" ";
+      cout<<"  Node #"<<i<<" ";
       nl[i].print(cout)<<endl;
     }
   }
@@ -182,7 +179,7 @@ void print_search_result(int x, const vector<int> &res) {
 }
 
 bool check_fc(const vecvec<int> &l, int x, const vector<int> &res) {
-  print_search_result(x, res);
+  //print_search_result(x, res);
   for (int i = 0; i < l.size(); i++) {
     int lb = lower_bound(l[i].begin(), l[i].end(), x) - l[i].begin();
     if (lb != res[i]) {
@@ -196,23 +193,37 @@ bool check_fc(const vecvec<int> &l, int x, const vector<int> &res) {
   return true;
 }
 
-void test() {
+void test1() {
   const vecvec<int> l{
     {1, 10, 20},
     {5, 9, 15, 24},
   };
   FCascade<int> fc;
   for (auto &v : l) fc.add_list(v);
-  fc.print();
-  //for (int x = 0; x <= 25; x++) {
-    //CHECK(check_fc(l, x, fc.search(x)));
-  //}
-  CHECK(check_fc(l, 21, fc.search(21)));
+  //fc.print();
+  for (int x = 0; x <= 25; x++) {
+    CHECK(check_fc(l, x, fc.search(x)));
+  }
+}
+
+void test2() {
+  const vecvec<int> l{
+    {1, 10, 20, 29},
+    {5, 9, 15, 24},
+    {2, 8, 10, 16, 24},
+  };
+  FCascade<int> fc;
+  for (auto &v : l) fc.add_list(v);
+  //fc.print();
+  for (int x = 0; x <= 30; x++) {
+    CHECK(check_fc(l, x, fc.search(x)));
+  }
 }
 
 int main(int argc, char **argv) {
   ios_base::sync_with_stdio(false);
-  test();
+  test1();
+  test2();
   cout << "TESTS PASSED." << endl;
   return 0;
 }

@@ -16,6 +16,8 @@ set incsearch
 set nu
 set hidden
 
+filetype plugin on
+
 " Set the runtime path to include Vundle and initialize
 set rtp+=~/.vim/bundle/Vundle.vim
 
@@ -31,7 +33,9 @@ Plugin 'VundleVim/Vundle.vim'
 " Bundle 'powerline/powerline', {'rtp': 'powerline/bindings/vim/'}
 Bundle 'kien/ctrlp.vim'
 Bundle 'Valloric/YouCompleteMe'
-Bundle 'tpope/vim-commentary'
+" Bundle 'tpope/vim-commentary'
+Bundle 'scrooloose/nerdcommenter'
+Bundle 'csexton/trailertrash.vim'
 
 " All of your Plugins must be added before the following line
 call vundle#end()

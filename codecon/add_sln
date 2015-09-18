@@ -11,7 +11,6 @@ set -e
 
 name=$1
 cp sol.cc sln/$name.cc
-git add sln/$name.cc
-git add sol.cc sol.in
+git add sln/$name.cc sol.cc sol.in
 git status -s -uno
 git ci -m "$name"

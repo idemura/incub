@@ -25,4 +25,5 @@ find_rm '*.cache'
 find_rm '*.sublime_session'
 find_rm '*.last-run'
 find_rm '*.pyc'
+rm -rf .config/sublime-text-2/Backup
 

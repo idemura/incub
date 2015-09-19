@@ -5,7 +5,7 @@
 	"auto_complete_selector": "source - comment",
 	"auto_complete_with_fields": false,
 	"auto_indent": true,
-	"auto_match_enabled": false,
+	"auto_match_enabled": true,
 	"binary_file_patterns":
 	[
 		"*.jpg",
@@ -25,7 +25,7 @@
 	"bold_folder_labels": false,
 	"caret_style": "smooth",
 	"close_windows_when_empty": false,
-	"color_scheme": "Packages/Color Scheme - Default/Monokai.tmTheme",
+	"color_scheme": "Packages/Color Scheme - Default/Pastel.tmTheme",
 	"default_encoding": "UTF-8",
 	"default_line_ending": "system",
 	"detect_indentation": true,
@@ -78,6 +78,7 @@
 	"hot_exit": true,
 	"ignored_packages":
 	[
+		"Package Control",
 		"Vintage"
 	],
 	"indent_guide_options":

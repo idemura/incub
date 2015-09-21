@@ -15,6 +15,8 @@ set cc=80
 set incsearch
 set nu
 set hidden
+set nowrap
+set noswapfile
 
 filetype plugin on
 
@@ -35,6 +37,7 @@ Bundle 'kien/ctrlp.vim'
 Bundle 'Valloric/YouCompleteMe'
 " Bundle 'tpope/vim-commentary'
 Bundle 'scrooloose/nerdcommenter'
+Bundle 'csexton/trailertrash.vim'
 Bundle 'jiangmiao/auto-pairs'
 
 " All of your Plugins must be added before the following line

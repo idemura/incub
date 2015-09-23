@@ -34,10 +34,16 @@ string binary_u64(u64 n) {
       s[i] = '1';
     }
   }
+  //reverse(s.begin(), s.end());
   return s;
 }
 
 u64 lo_bits(u64 n, int b) {
+  if (b == sizeof(u64) * 8) return n;
+  //cout<<"~0llu << "<<b<<" == "<<binary_u64(~0llu << b)<<endl;
+  //cout<<"~0llu << "<<63<<" == "<<binary_u64(~0llu << 63)<<endl;
+  //cout<<"~0llu << "<<64<<" == "<<binary_u64(~0llu << 64)<<endl;
+  //cout<<"n="<<binary_u64(n)<<endl;
   return n & ~(~0llu << b);
 }
 
@@ -49,37 +55,62 @@ void print_bin_array(const u64 *a, int n) {
   cout<<endl;
 }
 
+void rot_shiftr(const u64 *a, int n, int s, u64 *b) {
+  constexpr int ku64bits = sizeof(u64) * 8;
+  int i = 0;  // Destination word.
+  int j = s / 64;
+  int sr = s % 64;
+  int sw = a[j] >> sr;
+  for (int i = 0; i < n; i += ku64bits) {
+    
+
+  }
+}
+
 void shift(const u64 *a, int n, int s, u64 *b) {
-  cout<<"n="<<n<<endl;
-  cout<<"s="<<s<<endl;
+  int s_in = s;
+  //cout<<"n="<<n<<endl;
+  //cout<<"s="<<s<<endl;
   for (int i = 0; i < n; i += 64) {
-    cout<<"i="<<i<<endl;
+    //cout<<"i="<<i<<endl;
     int s_mod = s & 63;
-    cout<<"s_mod="<<s_mod<<endl;
+    //cout<<"s_mod="<<s_mod<<endl;
     int w = s >> 6;
-    cout<<"w="<<w<<endl;
+    //cout<<"w="<<w<<endl;
     if (s + 64 <= n) {
-      cout<<"64 bit word fits, no wrap"<<endl;
+      //cout<<"64 bit word fits, no wrap"<<endl;
       // `bw` least significant bits consumed, `64 - bw` left to consume.
-      cout<<"a[w]="<<binary_u64(a[w])<<endl;
-      cout<<"high 64-s_mod bits moved to lo bits:\n";
-      cout<<binary_u64(a[w] >> s_mod)<<endl;
-      cout<<"a[w+1]="<<binary_u64(a[w+1])<<endl;
-      cout<<"low b bits for next word moved to high:\n";
-      cout<<binary_u64(a[w + 1] << (64 - s_mod))<<endl;
+      //cout<<"a[w]="<<binary_u64(a[w])<<endl;
+      //cout<<"high 64-s_mod bits moved to lo bits:\n";
+      //cout<<binary_u64(a[w] >> s_mod)<<endl;
+      //cout<<"a[w+1]="<<binary_u64(a[w+1])<<endl;
+      //cout<<"low b bits for next word moved to high:\n";
+      //cout<<binary_u64(a[w + 1] << (64 - s_mod))<<endl;
       b[i >> 6] = (a[w] >> s_mod) | (a[w + 1] << (64 - s_mod));
-      cout<<"b[]="<<binary_u64(b[i >> 6])<<endl;
+      //cout<<"b[]="<<binary_u64(b[i >> 6])<<endl;
       s += 64;
     } else {
-      cout<<"CASE2\n";
+      //cout<<"CASE2\n";
       // 64 bits word wrapped around @n. Read m=`n - b` and `64 - m` bits
       // from the beginning. Given that we maintain 0 after n-th bit, we
       // mask out only lower @b bits.
-      cout<<"s="<<s<<endl;
+      //cout<<"s="<<s<<endl;
       s += 64 - n;
-      cout<<"s="<<s<<endl;
+      //cout<<"s="<<s<<endl;
+      //cout<<"b index "<<(i>>6)<<endl;
+      //cout<<binary_u64(a[w] >> s_mod)<<endl;
+      //cout<<"lo_bits of "<<binary_u64(a[0])<<endl;
+      //cout<<"...     is "<<binary_u64(lo_bits(a[0], s))<<endl;
       b[i >> 6] = (a[w] >> s_mod) | lo_bits(a[0], s);
     }
+  }
+  // Fill extra bits with zeroes.
+  int residue_bits = n & (sizeof(u64) * 8 - 1);
+  if (residue_bits > 0) {
+    //cout<<"opa!"<<endl;
+    //cout<<"r="<<binary_u64((1llu << residue_bits) - 1)<<endl;
+    //cout<<"n="<<(n>>6)<<endl;
+    b[n >> 6] &= (1llu << residue_bits) - 1;
   }
 }
 
@@ -95,7 +126,8 @@ int main(int argc, char **argv) {
   q[2] |= 1llu;
   q[2] |= 1llu<<1;
   print_bin_array(q, 3);
-  shift(q, 130, 2, res);
+  //shift(q, 131, 2, res);
+  rot_shiftr(q, 130, 2, res);
   print_bin_array(res, 3);
   return 0;
   int n, k;

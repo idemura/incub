@@ -1,8 +1,8 @@
 #!/bin/sh
-if [ ! $1 ]; then
-  echo "Usage:
-  build <C++11 source file name>"
-  exit -1
+if [ -z $1 ]; then
+  src='sol.cc'
+else
+  src=$1
 fi
 
 dbg='-O0 -g -DDEBUG'
@@ -16,9 +16,9 @@ else
   cc=g++-4.9
 fi
 
-src=$1
 output=${src%.*}.bin  # Extension trimmed.
 rm -rf $output $output.dSYM
 $cc -std=c++14 $src -o $output $mode -march=native -Wall $no_warnings \
     -fdiagnostics-color=auto \
     -lm -lstdc++
+

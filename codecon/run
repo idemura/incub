@@ -1,13 +1,10 @@
 #!/bin/sh
-set -u
-
-if [ $# -ne 1 ]; then
-  echo "Usage:
-  run <C++11 source file name>"
-  exit -1
+if [ -z $1 ]; then
+  src='sol.cc'
+else
+  src=$1
 fi
 
-src=$1
 set +e
 ./build ${src}
 set -e
@@ -15,3 +12,4 @@ output=${src%.*}.bin  # Extension trimmed.
 if [ $? -eq 0 ]; then
   ./${output} < sol.in
 fi
+

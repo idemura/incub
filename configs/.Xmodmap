@@ -5,4 +5,9 @@ keycode 84 = KP_Down
 ! keysym Caps_Lock = Escape
 clear Lock
 keycode 66 = Escape NoSymbol Escape
+! For Kinesis FreeStyle 2
+keycode 117 = End
+keycode 112 = Home
+keycode 115 = Next
+keycode 110 = Prior
 

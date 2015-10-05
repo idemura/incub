@@ -1,7 +1,9 @@
-#ifndef IPED_HXX_
-#define IPED_HXX_
+#ifndef IPED_HXX
+#define IPED_HXX
 
+namespace iped {
 constexpr int kVersion = 1;
+}  // namespace
 
 #endif
 

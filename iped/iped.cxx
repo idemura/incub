@@ -1,8 +1,14 @@
 #include "iped.hxx"
-#include <iostream>
+#include "base.hxx"
 
-int main(int arc, char **argv) {
+namespace iped {
+int main(int argc, char **argv) {
   std::cout<<"iped "<<kVersion<<std::endl;
   return 0;
+}
+}  // namespace
+
+int main(int argc, char **argv) {
+  return iped::main(argc, argv);
 }
 

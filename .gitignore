@@ -1,4 +1,8 @@
-.DS_Store
 *.backup
+*.bin
+*.class
+.DS_Store
+*.dSYM
+*.o
+*.pyc
 *.swp
-

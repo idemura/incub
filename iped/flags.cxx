@@ -1,84 +1,107 @@
 #include "flags.hxx"
 
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
 namespace iped {
 namespace {
-
-enum class Type {
-  kInt32,
-  kInt64,
-  kBool,
-  kString,
-  kDouble,
-};
-
-class Flags {
- public:
-  Flags();
-  bool parse(int *argc, char **argv);
-
-  string temp_dir = ".";
-  string log_file;
-
- private:
-  struct TypedPtr {
-    Type type = Type::kInt32;
-    void *p = nullptr;
-
-    TypedPtr() {}
-    TypedPtr(Type type, void *p): type(type), p(p) {}
-  };
-
-  void register_flag(const char* name, i32 *f) {
-    insert(name, Type::kInt32, f);
-  }
-  void register_flag(const char* name, i64 *f) {
-    insert(name, Type::kInt64, f);
-  }
-  void register_flag(const char* name, bool *f) {
-    insert(name, Type::kBool, f);
-  }
-  void register_flag(const char* name, string *f) {
-    insert(name, Type::kString, f);
-  }
-  void register_flag(const char* name, double *f) {
-    insert(name, Type::kDouble, f);
-  }
-
-  void insert(const string &name, Type type, void *p);
-
-  std::unordered_map<string, TypedPtr> flags_;
-  NON_COPYABLE(Flags);
-};
-
-Flags::Flags() {
-  register_flag("temp_dir", &temp_dir);
-  register_flag("log_file", &log_file);
+bool hyphen(char *s) {
+  return s[0] == '-' && s[1] == 0;
 }
+}  // namespace
 
 void Flags::insert(const string &name, Type type, void *p) {
   if (flags_.find(name) != flags_.end()) {
-    cerr<<"Duplicated flag "<<name<<endl;
+    cerr<<"Duplicate flag "<<name<<endl;
     exit(-1);
   }
   flags_[name] = {type, p};
 }
 
-bool Flags::parse(int *argc, char **argv) {
+bool Flags::parse_flag(int i, int argc, char **argv, int *i_out) {
+  auto a = argv[i];
+  if (*a == '-') a++;
+  if (*a == '-') a++;
+  if (*a == 0) return false;
+  auto it = flags_.find(a);
+  if (it == flags_.end()) {
+    int l = strlen(a);
+    if (a[l - 1] == '-' || a[l - 1] == '+') {
+      it = flags_.find(string(a, l - 1));
+      if (it != flags_.end() && it->second.type == Type::kBool) {
+        *(bool*)it->second.p = a[l - 1] == '+';
+        *i_out = i + 1;
+        return true;
+      }
+    }
+    cerr<<"Invalid flag: "<<a<<endl;
+    return false;
+  }
+  auto tp = it->second;
+  if (tp.type == Type::kBool) {
+    *(bool*)tp.p = true;
+    *i_out = i + 1;
+    return true;
+  }
+  i++;
+  auto allow_hyphen = false;
+  if (i < argc && hyphen(argv[i])) {
+    i++;
+    allow_hyphen = true;
+  }
+  if (i >= argc || (!allow_hyphen && argv[i][0] == '-')) {
+    cerr<<"Missing value for: "<<a<<endl;
+    return false;
+  }
+  if (it->second.type == Type::kString) {
+    ((string*)tp.p)->assign(argv[i]);
+    *i_out = i + 1;
+    return true;
+  }
+  int n = 0, sr = 0;
+  switch (tp.type) {
+    case Type::kInt32:
+      sr = std::sscanf(argv[i], kI32f "%n", (i32*)tp.p, &n);
+      break;
+    case Type::kInt64:
+      sr = std::sscanf(argv[i], kI64f "%n", (i64*)tp.p, &n);
+      break;
+    case Type::kDouble:
+      sr = std::sscanf(argv[i], "%lf%n", (double*)tp.p, &n);
+      break;
+    default: break;
+  }
+  if (sr != 1 || n != strlen(argv[i])) {
+    cerr<<"Invalid format: "<<a<<endl;
+    return false;
+  }
+  *i_out = i + 1;
   return true;
 }
 
-std::unique_ptr<Flags> flags;
-}  // namespace
+bool Flags::parse(int *argc, char **argv) {
+  auto k = 1, i = 1;
+  while (i < *argc) {
+    auto a = argv[i];
+    if (hyphen(a)) {
+      i++;
+      if (i < *argc) {
+        argv[k++] = argv[i++];
+      }
+    } else if (*a == '-') {
+      if (!parse_flag(i, *argc, argv, &i)) {
+        return false;
+      }
+    } else {
+      argv[k++] = argv[i++];
+    }
+  }
+  *argc = k;
+  for (; k < *argc; k++) {
+    argv[k] = nullptr;
+  }
+  return true;
+}
 
-const string& flag_temp_dir() {
-  return flags->temp_dir;
-}
-const string& flag_log_file() {
-  return flags->log_file;
-}
-
-bool init_flags(int *argc, char **argv) {
-  flags.reset(new Flags());
-  return flags->parse(argc, argv);
-}
 }  // namespace

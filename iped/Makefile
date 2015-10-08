@@ -20,17 +20,16 @@ headers:=$(wildcard *.hxx)
 sources:=$(wildcard *.cxx)
 objects:=$(patsubst %.cxx,%.o,$(sources))
 
-mongoose.o: mongoose.c
-	$(CC) -I. -march=native $(CXXOPT) -c $<
-
-%.o: %.cxx
-	$(CXX) $(CXXFLAGS) -c $<
-
-iped: $(objects) $(headers) mongoose.o
-	$(CXX) -o iped $(objects) mongoose.o $(LDOPT)
-
 all: iped
 
 clean:
 	@$(RM) *.o iped
 
+iped: $(objects) $(headers) mongoose.o
+	$(CXX) -o iped $(objects) mongoose.o $(LDOPT)
+
+%.o: %.cxx
+	$(CXX) $(CXXFLAGS) -c $<
+
+mongoose.o: mongoose.c
+	$(CC) -I. -march=native $(CXXOPT) -c $<

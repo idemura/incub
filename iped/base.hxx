@@ -29,6 +29,9 @@
       } \
     } while (false)
 
+#define kI32f "%d"
+#define kI64f "%lld"
+
 namespace iped {
 
 using i32 = int;

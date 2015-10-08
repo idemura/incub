@@ -1,5 +1,6 @@
 #include "iped.hxx"
 #include "base.hxx"
+#include "mongoose.h"
 
 namespace iped {
 int main(int argc, char **argv) {

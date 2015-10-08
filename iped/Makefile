@@ -4,6 +4,7 @@ MODE=dbg
 RM=rm -f
 
 CXX=g++-4.9
+CC=gcc
 ifeq ($(MODE), dbg)
 	CXXOPT=-O0 -g
 	LDOPT=
@@ -19,11 +20,14 @@ headers:=$(wildcard *.hxx)
 sources:=$(wildcard *.cxx)
 objects:=$(patsubst %.cxx,%.o,$(sources))
 
+mongoose.o: mongoose.c
+	$(CC) -I. -march=native $(CXXOPT) -c $<
+
 %.o: %.cxx
 	$(CXX) $(CXXFLAGS) -c $<
 
-iped: $(objects) $(headers)
-	$(CXX) -o iped $(objects) $(LDOPT)
+iped: $(objects) $(headers) mongoose.o
+	$(CXX) -o iped $(objects) mongoose.o $(LDOPT)
 
 all: iped
 

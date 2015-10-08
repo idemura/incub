@@ -18,9 +18,14 @@ CXXFLAGS=-std=c++14 -I. -march=native -fdiagnostics-color=auto $(CXXOPT) \
 
 headers:=$(wildcard *.hxx)
 sources:=$(wildcard *.cxx)
-objects:=$(patsubst %.cxx,%.o,$(sources))
+objects:=$(filter-out %_test.cxx, $(sources))
 
-all: iped
+all: iped tests
+
+tests: flags_test
+
+flag_test: $(objects) $(headers) flag_test.o
+	$(CXX) -o  $(objects) mongoose.o $(LDOPT)
 
 clean:
 	@$(RM) *.o iped
@@ -33,3 +38,4 @@ iped: $(objects) $(headers) mongoose.o
 
 mongoose.o: mongoose.c
 	$(CC) -I. -march=native $(CXXOPT) -c $<
+

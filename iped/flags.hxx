@@ -5,10 +5,10 @@
 
 namespace iped {
 
-class Flags {
+class FlagSet {
  public:
-  Flags() {}
-  virtual ~Flags() {}
+  FlagSet() {}
+  virtual ~FlagSet() {}
   bool parse(int *argc, char **argv);
 
  protected:

@@ -2,10 +2,10 @@
 #include "mongoose.h"
 
 namespace iped {
-std::unique_ptr<AppFlags> flags;
+std::unique_ptr<Flags> flags;
 
 int main(int argc, char **argv) {
-  flags.reset(new AppFlags());
+  flags.reset(new Flags());
   if (!flags->parse(&argc, argv)) {
     return -1;
   }

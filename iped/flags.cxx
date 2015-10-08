@@ -11,7 +11,7 @@ bool hyphen(char *s) {
 }
 }  // namespace
 
-void Flags::insert(const string &name, Type type, void *p) {
+void FlagSet::insert(const string &name, Type type, void *p) {
   if (flags_.find(name) != flags_.end()) {
     cerr<<"Duplicate flag "<<name<<endl;
     exit(-1);
@@ -19,7 +19,7 @@ void Flags::insert(const string &name, Type type, void *p) {
   flags_[name] = {type, p};
 }
 
-bool Flags::parse_flag(int i, int argc, char **argv, int *i_out) {
+bool FlagSet::parse_flag(int i, int argc, char **argv, int *i_out) {
   auto a = argv[i];
   if (*a == '-') a++;
   if (*a == '-') a++;
@@ -80,7 +80,7 @@ bool Flags::parse_flag(int i, int argc, char **argv, int *i_out) {
   return true;
 }
 
-bool Flags::parse(int *argc, char **argv) {
+bool FlagSet::parse(int *argc, char **argv) {
   auto k = 1, i = 1;
   while (i < *argc) {
     auto a = argv[i];
@@ -105,3 +105,4 @@ bool Flags::parse(int *argc, char **argv) {
 }
 
 }  // namespace
+

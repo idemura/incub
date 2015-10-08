@@ -1,12 +1,15 @@
 #ifndef IPED_FLAGS_HXX
 #define IPED_FLAGS_HXX
 
-#include <string>
+#include "base.hxx"
 
 namespace iped {
-extern std::string flag_temp_path;
 
-bool init_flags(int argc, char **argv);
+const string& flag_temp_dir();
+const string& flag_log_file();
+
+bool init_flags(int *argc, char **argv);
+
 }  // namespace
 
 #endif

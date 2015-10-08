@@ -1,24 +1,20 @@
 #include "iped.hxx"
-#include "base.hxx"
+#include "flags.hxx"
 #include "mongoose.h"
 
 namespace iped {
 int main(int argc, char **argv) {
-  std::cout<<"iped "<<kVersion<<std::endl;
+  if (!init_flags(&argc, argv)) {
+    return -1;
+  }
+  cout<<"temp_path="<<flag_temp_dir()<<endl;
+  cout<<"iped "<<kVersion<<endl;
   return 0;
 }
 }  // namespace
 
-int gn = 0;
-static struct InitFlags {
-  InitFlags() {
-    gn = 10;
-  }
-} init_flags;
-
 int main(int argc, char **argv) {
   std::ios_base::sync_with_stdio(false);
-  std::cout<<gn<<std::endl;
   return iped::main(argc, argv);
 }
 

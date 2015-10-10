@@ -4,22 +4,17 @@
 #include "flags.hxx"
 
 namespace iped {
-constexpr int kVersion = 1;
 
 class Flags: public FlagSet {
  public:
-  string temp_dir = "/tmp";
-  i32 n32 = 32;
-  i64 n64 = 64;
-  bool b = false;
-  double dbl = 0.5;
+  i32 port = 8060;
+  string document_root = ".";
+  i32 poll_ms = 20;
 
   Flags() {
-    register_flag("temp_dir", &temp_dir);
-    register_flag("n32", &n32);
-    register_flag("n64", &n64);
-    register_flag("b", &b);
-    register_flag("dbl", &dbl);
+    register_flag("port", &port);
+    register_flag("document_root", &document_root);
+    register_flag("poll_ms", &poll_ms);
   }
 };
 

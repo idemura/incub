@@ -39,5 +39,6 @@ iped: iped.o mongoose.o $(objects)
 	$(CXX) $(CXXFLAGS) -c $<
 
 mongoose.o: mongoose.c mongoose.h
-	$(CC) -I. -march=native $(CXXOPT) -c $<
-
+	$(CC) -I. -march=native $(CXXOPT) -c $< \
+      -DMONGOOSE_NO_DAV \
+      -DMONGOOSE_NO_FILESYSTEM

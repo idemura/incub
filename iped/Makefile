@@ -16,26 +16,28 @@ CXXWARNINGS=-Wall -Wno-unused-function -Wno-sign-compare -Wno-char-subscripts
 CXXFLAGS=-std=c++14 -I. -march=native -fdiagnostics-color=auto $(CXXOPT) \
 				 $(CXXWARNINGS)
 
-headers:=$(wildcard *.hxx)
-sources:=$(wildcard *.cxx)
-objects:=$(filter-out %_test.cxx, $(sources))
+sources:=base.cxx flags.cxx
+headers:=base.hxx flags.hxx
+objects:=$(patsubst %.cxx,%.o,$(sources))
+tests:=$(patsubst %_test.cxx,%_test,$(wildcard *_test.cxx))
 
-all: iped tests
-
-tests: flags_test
-
-flag_test: $(objects) $(headers) flag_test.o
-	$(CXX) -o  $(objects) mongoose.o $(LDOPT)
+all: iped $(tests)
+run_tests: all
+	./flags_test
+	@echo TESTS PASSED
 
 clean:
-	@$(RM) *.o iped
+	$(RM) *.o iped *_test
 
-iped: $(objects) $(headers) mongoose.o
-	$(CXX) -o iped $(objects) mongoose.o $(LDOPT)
+iped: iped.o mongoose.o $(objects)
+	$(CXX) $(LDOPT) -o $@ $^ -lpthread
 
-%.o: %.cxx
+%_test: %_test.o $(objects)
+	$(CXX) $(LDOPT) -o $@ $^
+
+%.o: %.cxx $(headers)
 	$(CXX) $(CXXFLAGS) -c $<
 
-mongoose.o: mongoose.c
+mongoose.o: mongoose.c mongoose.h
 	$(CC) -I. -march=native $(CXXOPT) -c $<
 

@@ -21,6 +21,8 @@ headers:=base.hxx flags.hxx
 objects:=$(patsubst %.cxx,%.o,$(sources))
 tests:=$(patsubst %_test.cxx,%_test,$(wildcard *_test.cxx))
 
+.PHONY: clean
+
 all: iped $(tests)
 run_tests: all
 	./flags_test

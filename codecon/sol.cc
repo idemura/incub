@@ -96,22 +96,23 @@ int bitsets[10002][320];
 
 int main(int argc, char **argv) {
   ios_base::sync_with_stdio(false);
-  int n, k;
-  cin>>n;
-  u32 temp[320] = {};
-  for (int i = 0; i < n && (a[0] & 1) == 0; i++) {
-    cout<<"i="<<i<<endl;
-    cin>>k;
-    k %= n;
-    // Rotate if not first (i == 0) or shift makes sense (k != 0).
-    memset(b, 0, sizeof bmem);
-    if (i == 0 || k == 0) {
-    }
-  }
-  if (a[0] & 1) {
-    cout<<"possible!!!"<<endl;
-  } else {
-    cout<<"0\n";
-  }
+  // int n, k;
+  // cin>>n;
+  // u32 temp[320] = {};
+  // for (int i = 0; i < n && (a[0] & 1) == 0; i++) {
+  //   cout<<"i="<<i<<endl;
+  //   cin>>k;
+  //   k %= n;
+  //   // Rotate if not first (i == 0) or shift makes sense (k != 0).
+  //   memset(b, 0, sizeof bmem);
+  //   if (i == 0 || k == 0) {
+  //   }
+  // }
+  // if (a[0] & 1) {
+  //   cout<<"possible!!!"<<endl;
+  // } else {
+  //   cout<<"0\n";
+  // }
+  cout<<"hello"<<endl;
   return 0;
 }

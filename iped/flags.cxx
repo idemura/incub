@@ -1,8 +1,6 @@
 #include "flags.hxx"
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+#include <cstdio>  // sscanf
 
 namespace iped {
 namespace {

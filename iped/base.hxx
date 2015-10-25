@@ -1,6 +1,7 @@
 #ifndef IPED_BASE_HXX
 #define IPED_BASE_HXX
 
+#include <cstring>
 #include <algorithm>
 #include <cstdlib>
 #include <iostream>
@@ -44,7 +45,99 @@ using std::cout;
 using std::endl;
 using std::string;
 
+class Substr {
+public:
+  // For @npos, use `string::npos`.
+
+  using Iter = const char*;
+
+  Substr() : data_(nullptr), size_(0) {}
+  Substr(const char *data): Substr(data, std::strlen(data)) {}
+  Substr(const char *data, size_t size): data_(data), size_(0) {}
+  Substr(const string &str): Substr(str.data(), str.size()) {}
+  Substr(const Substr &other): Substr(other.data_, other.size_) {}
+  Substr& operator=(const Substr &other) { return assign(other); }
+
+  char operator[](size_t i) const { return data_[i]; }
+  const char* data() const { return data_; }
+  char* mutable_data() { return const_cast<char*>(data_); }
+  char* mutable_at(size_t i) { return mutable_data() + i; }
+  size_t size() const { return size_; }
+  bool empty() const { return size_ == 0; }
+  char front() const { return *data_; }
+  char back() const { return data_[size_ - 1]; }
+  Iter begin() const { return data_; }
+  Iter end() const { return data_ + size_; }
+
+  Substr& assign(const char *data) { return assign(data, std::strlen(data)); }
+  Substr& assign(const char *data, size_t size) {
+    data_ = data;
+    size_ = size;
+    return *this;
+  }
+  Substr& assign(const string &str) { return assign(str.data(), str.size()); }
+  Substr& assign(Substr other) { return assign(other.data_, other.size_); }
+
+  Substr expand_r(size_t count) const { return Substr(data_, size_ + count); }
+  Substr expand_l(size_t count) const { return Substr(data_ - count, size_); }
+  Substr shrink_r(size_t count) const { return Substr(data_, size_ - count); }
+  Substr shrink_l(size_t count) const { return Substr(data_ + count, size_); }
+
+  Substr substr(size_t pos) const { return substr(pos, size_ - pos); }
+  Substr substr(size_t pos, size_t count) const {
+    return Substr(data_ + pos, count);
+  }
+
+  Substr prefix(size_t count) const {
+    if (count > size_) count = size_;
+    return substr(0, count);
+  }
+  Substr suffix(size_t count) const {
+    if (count > size_) count = size_;
+    return substr(size_ - count, count);
+  }
+
+  u64 hash() const;
+
+  bool equal(Substr other) const {
+    return size_ == other.size_ && std::memcmp(data_, other.data_, size_) == 0;
+  }
+  bool order(Substr other) const {
+    auto r = std::memcmp(data_, other.data_, std::min(size_, other.size_));
+    return r < 0 || (r == 0 && size_ < other.size_);
+  }
+
+private:
+  const char *data_;
+  size_t size_;
+};
+
+inline bool operator<(Substr l, Substr r) {
+  return l.order(r);
+}
+inline bool operator>(Substr l, Substr r) {
+  return r.order(l);
+}
+inline bool operator<=(Substr l, Substr r) {
+  return !(r < l);
+}
+inline bool operator>=(Substr l, Substr r) {
+  return !(l < r);
+}
+inline bool operator==(Substr l, Substr r) {
+  return l.equal(r);
+}
+inline bool operator!=(Substr l, Substr r) {
+  return !(l == r);
+}
 }  // namespace
+
+namespace std {
+template<>
+struct hash<iped::Substr> {
+  size_t operator()(iped::Substr key) const { return key.hash(); }
+};
+}  // namespace std (specialization)
 
 #endif
 

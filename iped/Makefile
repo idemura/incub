@@ -2,7 +2,7 @@
 MODE=dbg
 
 RM=rm -f
-
+AR=ar rcs
 CXX=g++-4.9
 CC=gcc
 ifeq ($(MODE), dbg)
@@ -15,6 +15,7 @@ endif
 CXXWARNINGS=-Wall -Wno-unused-function -Wno-sign-compare -Wno-char-subscripts
 CXXFLAGS=-std=c++14 -I. -march=native -fdiagnostics-color=auto $(CXXOPT) \
 				 $(CXXWARNINGS)
+LDLIB=-lpthread -lcityhash
 
 sources:=base.cxx flags.cxx
 headers:=base.hxx flags.hxx
@@ -32,15 +33,14 @@ clean:
 	$(RM) *.o iped *_test
 
 iped: iped.o mongoose.o $(objects)
-	$(CXX) $(LDOPT) -o $@ $^ -lpthread
+	$(CXX) $(LDOPT) -o $@ $^ $(LDLIB)
 
 %_test: %_test.o $(objects)
-	$(CXX) $(LDOPT) -o $@ $^
+	$(CXX) $(LDOPT) -o $@ $^ $(LDLIB)
 
 %.o: %.cxx $(headers)
 	$(CXX) $(CXXFLAGS) -c $<
 
 mongoose.o: mongoose.c mongoose.h
-	$(CC) -I. -march=native $(CXXOPT) -c $< \
-      -DMONGOOSE_NO_DAV \
-      -DMONGOOSE_NO_FILESYSTEM
+	$(CC) -I. -march=native $(CXXOPT) -c $< -DMONGOOSE_NO_FILESYSTEM
+

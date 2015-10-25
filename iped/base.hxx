@@ -61,7 +61,8 @@ public:
   char operator[](size_t i) const { return data_[i]; }
   const char* data() const { return data_; }
   char* mutable_data() { return const_cast<char*>(data_); }
-  char* mutable_at(size_t i) { return mutable_data() + i; }
+  const char* ptr(size_t i) const { return data_ + i; }
+  char* mutable_ptr(size_t i) { return mutable_data() + i; }
   size_t size() const { return size_; }
   bool empty() const { return size_ == 0; }
   char front() const { return *data_; }
@@ -79,9 +80,13 @@ public:
   Substr& assign(Substr other) { return assign(other.data_, other.size_); }
 
   Substr expand_r(size_t count) const { return Substr(data_, size_ + count); }
-  Substr expand_l(size_t count) const { return Substr(data_ - count, size_); }
+  Substr expand_l(size_t count) const {
+    return Substr(data_ - count, size_ + count);
+  }
   Substr shrink_r(size_t count) const { return Substr(data_, size_ - count); }
-  Substr shrink_l(size_t count) const { return Substr(data_ + count, size_); }
+  Substr shrink_l(size_t count) const {
+    return Substr(data_ + count, size_ - count);
+  }
 
   Substr substr(size_t pos) const { return substr(pos, size_ - pos); }
   Substr substr(size_t pos, size_t count) const {
@@ -129,6 +134,10 @@ inline bool operator==(Substr l, Substr r) {
 }
 inline bool operator!=(Substr l, Substr r) {
   return !(l == r);
+}
+
+std::ostream& operator<<(ostream& os, Substr s) {
+  return os.write(s.data(), s.size());
 }
 }  // namespace
 

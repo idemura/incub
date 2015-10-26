@@ -77,18 +77,14 @@ public:
   Substr& assign(const string &str) { return assign(str.data(), str.size()); }
   Substr& assign(Substr other) { return assign(other.data_, other.size_); }
 
-  Substr expand_r(size_t count) const { return Substr(data_, size_ + count); }
-  Substr expand_l(size_t count) const {
-    return Substr(data_ - count, size_ + count);
-  }
-  Substr shrink_r(size_t count) const { return Substr(data_, size_ - count); }
-  Substr shrink_l(size_t count) const {
-    return Substr(data_ + count, size_ - count);
-  }
-
   Substr substr(size_t pos) const { return substr(pos, size_ - pos); }
   Substr substr(size_t pos, size_t count) const {
     return Substr(data_ + pos, count);
+  }
+
+  Substr range(size_t first) const { return range(first, size_); }
+  Substr range(size_t first, size_t last) const {
+    return Substr(data_ + first, last - first);
   }
 
   Substr prefix(size_t count) const {
@@ -144,6 +140,10 @@ template<>
 struct hash<iped::Substr> {
   size_t operator()(iped::Substr key) const { return key.hash(); }
 };
+
+string to_string(Substr s) {
+  return string(s.data(), s.size());
+}
 }  // namespace std (specialization)
 
 #endif

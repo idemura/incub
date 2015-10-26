@@ -5,20 +5,21 @@
 
 namespace iped {
 
-class ValueMap {
+class TmplDict {
 public:
-  virtual ~ValueMap() {}
+  virtual ~TmplDict() {}
   virtual void set_string(Substr name, const std::string &value) = 0;
-  virtual ValueMap* add_map(Substr name) = 0;
+  virtual TmplDict* add_dict(Substr name) = 0;
 };
 
 class Template {
 public:
   virtual ~Template() {}
-  virtual bool expand(ValueMap *map) const = 0;
+  virtual bool expand(TmplDict *dict, std::string *res) const = 0;
 };
 
 std::unique_ptr<Template> make_template(Substr s);
+std::unique_ptr<TmplDict> make_dict();
 
 }  // namespace
 

@@ -61,8 +61,6 @@ public:
   char operator[](size_t i) const { return data_[i]; }
   const char* data() const { return data_; }
   char* mutable_data() { return const_cast<char*>(data_); }
-  const char* ptr(size_t i) const { return data_ + i; }
-  char* mutable_ptr(size_t i) { return mutable_data() + i; }
   size_t size() const { return size_; }
   bool empty() const { return size_ == 0; }
   char front() const { return *data_; }

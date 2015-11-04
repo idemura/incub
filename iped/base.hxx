@@ -130,7 +130,7 @@ inline bool operator!=(Substr l, Substr r) {
   return !(l == r);
 }
 
-std::ostream& operator<<(ostream& os, Substr s) {
+inline std::ostream& operator<<(std::ostream& os, Substr s) {
   return os.write(s.data(), s.size());
 }
 }  // namespace
@@ -141,7 +141,7 @@ struct hash<iped::Substr> {
   size_t operator()(iped::Substr key) const { return key.hash(); }
 };
 
-string to_string(Substr s) {
+inline string to_string(iped::Substr s) {
   return string(s.data(), s.size());
 }
 }  // namespace std (specialization)

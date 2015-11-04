@@ -1,7 +1,7 @@
 #include "flags.hxx"
 
 namespace iped {
-namespace test {
+namespace {
 
 class Flags: public FlagSet {
  public:
@@ -20,7 +20,7 @@ class Flags: public FlagSet {
   }
 };
 
-void test1() {
+void test_basic() {
   char p0[] = "test_main";
   char p1[] = "-n32";
   char p2[] = "132";
@@ -41,9 +41,7 @@ void test1() {
 }  // namespace
 
 int main() {
-  using namespace iped::test;
   std::ios_base::sync_with_stdio(false);
-  test1();
+  iped::test_basic();
   return 0;
 }
-

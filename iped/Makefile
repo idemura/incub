@@ -17,8 +17,8 @@ CXXFLAGS=-std=c++14 -I. -march=native -fdiagnostics-color=auto $(CXXOPT) \
 				 $(CXXWARNINGS)
 LDLIB=-lpthread -lcityhash
 
-sources:=base.cxx flags.cxx
-headers:=base.hxx flags.hxx
+sources:=base.cxx flags.cxx template.cxx
+headers:=base.hxx flags.hxx template.hxx
 objects:=$(patsubst %.cxx,%.o,$(sources))
 tests:=$(patsubst %_test.cxx,%_test,$(wildcard *_test.cxx))
 
@@ -26,7 +26,9 @@ tests:=$(patsubst %_test.cxx,%_test,$(wildcard *_test.cxx))
 
 all: iped $(tests)
 run_tests: all
+	./base_test
 	./flags_test
+	./template_test
 	@echo TESTS PASSED
 
 clean:

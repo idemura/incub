@@ -6,7 +6,7 @@ namespace {
 class TmplDictImpl;
 class TemplateImpl;
 
-using section = std::vector<TmplDictImpl*>;
+using Section = std::vector<TmplDictImpl*>;
 
 struct Value {
   enum Type {
@@ -60,7 +60,7 @@ public:
   TmplDictImpl() {}
   ~TmplDictImpl() override { DeleteAll(map_); }
   void set_string(Substr name, const std::string &value) override;
-  void add_map(Substr name) override;
+  void add_dict(Substr name) override;
   Value lookup(Substr name) const;
 
 private:

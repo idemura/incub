@@ -3,23 +3,42 @@
 namespace iped {
 namespace {
 
-class TmplDictImpl;
+class TemplateDictImpl;
 class TemplateImpl;
-
-using Section = std::vector<TmplDictImpl*>;
 
 struct Value {
   enum Type {
-    kLiteral,
-    kSection,
+    kString,
+    kVector,
   };
 
-  Type type = kLiteral;
+  Type type = kString;
   void *p = nullptr;
 
-  Section* as_section() const { return reinterpret_cast<Section*>(p); }
   string* as_string() const { return reinterpret_cast<string*>(p); }
+  std::vector<TemplateDictImpl*>* as_vector() const {
+    return reinterpret_cast<std::vector<TemplateDictImpl*>*>(p);
+  }
+
+  void delete_ptr();
+  bool no_data() const { return p == nullptr; }
 };
+
+void Value::delete_ptr() {
+  if (p == nullptr) return;
+  switch (type) {
+    case kString: {
+      delete as_string();
+      break;
+    }
+    case kVector: {
+      auto v = as_vector();
+      for (auto p : *v) delete p;
+      delete v;
+      break;
+    }
+  }
+}
 
 struct Instr {
   enum Op {
@@ -33,68 +52,57 @@ struct Instr {
   Op op = kLiteral;
   Substr s;
 
+  Instr() {}
   Instr(Op op, Substr s): op(op), s(s) {}
 };
 
-void delete_value(Value v);
-
-void delete_all(const std::unordered_map<Substr, Value> &dict) {
-  for (const auto& kv : dict) {
-    delete_value(kv.second);
-  }
-}
-
-void delete_value(Value v) {
-  if (v.p == nullptr) return;
-  if (v.type == Value::kSection) {
-    for (auto d : *v.as_section()) {
-      delete_all(d);
-    }
-  } else {
-    delete v.as_string();
-  }
-}
-
-class TmplDictImpl : public TmplDict {
+class TemplateDictImpl : public TemplateDict {
 public:
-  TmplDictImpl() {}
-  ~TmplDictImpl() override { DeleteAll(map_); }
+  TemplateDictImpl() {}
+  ~TemplateDictImpl() override;
   void set_string(Substr name, const std::string &value) override;
-  void add_dict(Substr name) override;
+  TemplateDict* add_dict(Substr name) override;
   Value lookup(Substr name) const;
 
 private:
   std::unordered_map<Substr, Value> map_;
-  NON_COPYABLE(TmplDictImpl);
+  NON_COPYABLE(TemplateDictImpl);
 };
 
-void TmplDictImpl::set_string(Substr name, const std::string& value) {
-  auto& v = map_[name];
-  if (v.p != nullptr) {
-    delete_value(v);
+TemplateDictImpl::~TemplateDictImpl() {
+  for (const auto& kv : map_) {
+    kv.second.delete_ptr();
   }
-  v.type = Value::kLiteral;
-  v.p = new string(value);
 }
 
-TmplDict* TmplDictImpl::add_map(Substr name) {
+void TemplateDictImpl::set_string(Substr name, const std::string& value) {
   auto& v = map_[name];
-  if (v.type != Value::kSection) {
-    DeleteValue(v);
+  if (!v.no_data() && v.type == Value::kString) {
+    *v.as_string() = value;
+  } else {
+    v.delete_ptr();
+    v.type = Value::kString;
+    v.p = new string(value);
   }
-  v.type = Value::kSection;
-  if (v.p == nullptr) {
-    v.p = new MapRec();
-  }
-  auto m = new TmplDictImpl();
-  v.as_section()->push_back(m);
-  return m;
 }
 
-Value TmplDictImpl::lookup(Substr name) const {
+TemplateDict* TemplateDictImpl::add_map(Substr name) {
+  auto& v = map_[name];
+  if (v.type != Value::kVector) {
+    v.delete_ptr();
+  }
+  v.type = Value::kVector;
+  if (v.no_data()) {
+    v.p = new std::vector<TemplateDictImpl*>;
+  }
+  v.as_vector()->emplace_back(new TemplateDictImpl>());
+  return v.as_vector()->last().get();
+}
+
+Value TemplateDictImpl::lookup(Substr name) const {
   auto i = map_.find(name);
-  if (i == map_.end()) {
-    return Value();
+  if (map_.end() == i) {
+    return {};
   } else {
     return i->second;
   }
@@ -107,47 +115,54 @@ public:
   }
 
   ~TemplateImpl() override {}
-  bool expand(TmplDict *dict, std::string *res) override;
+  bool expand(TemplateDict *dict, std::string *res) override;
 
 private:
   std::vector<Instr> program_;
   NON_COPYABLE(TemplateImpl);
 };
 
-string* lookup_dict_stack(const std::vector<TmplDictImpl*> &ds, Substr id) {
+Value lookup_dict_stack(const std::vector<TemplateDictImpl*> &ds,
+    Substr id,
+    Value::Type type) {
+  const Value empty;
   for (int i = ds.size(); i-- > 0; ) {
     auto v = ds[i]->lookup(id);
-    if (v.p != nullptr) {
-      if (v.type != Value::kLiteral) {
-        // error
-        return nullptr;
-      }
-      return v.as_literal();
+    if (!v.no_data()) {
+      return v.type == type ? v : empty;
     }
   }
-  return nullptr;
+  return empty;
 }
 
-bool TemplateImpl::expand(TmplDict *dict, std::string *res) override {
-  std::vector<TmplDictImpl*> ds{
-    reinterpret_cast<TmplDictImpl*>(dict)
+bool TemplateImpl::expand(TemplateDict *dict, std::string *res) override {
+  std::vector<TemplateDictImpl*> ds{
+    reinterpret_cast<TemplateDictImpl*>(dict)
   };
   for (auto &&instr : program_) {
     switch (instr.op) {
-      case Instr::kLiteral:
-        res->append();
+      case Instr::kString: {
+        res->append(instr.s.data(), instr.s.size());
         break;
-      case Instr::kReplace:
-        auto literal = lookup_dict_stack(ds, instr.s);
-        if (literal == nullptr) return false;
-        res->append(*literal);
+      }
+      case Instr::kReplace: {
+        auto v = lookup_dict_stack(ds, instr.s);
+        if (v.no_data()) {
+          return false;
+        }
+        res->append(*v.as_string());
         break;
-      case Instr::kSection:
-      case Instr::kSectionNot:
-      case Instr::kSectionPop:
+      }
+      case Instr::kVector: {
+      }
+      case Instr::kVectorNot: {
+      }
+      case Instr::kVectorPop: {
         break;
+      }
     }
   }
+  return true;
 }
 
 struct Context {
@@ -164,7 +179,7 @@ bool is_space(char c) {
 
 void op_literal(Context &c, Substr s, int i) {
   if (c.literal_first < 0) return;
-  c.program.emplace_back(Instr::kLiteral, s.range(c.literal_first, i));
+  c.program.emplace_back(Instr::kString, s.range(c.literal_first, i));
   c.literal_first = -1;
 }
 
@@ -224,11 +239,11 @@ bool parse_rec(Context &c, Substr s, int *i) {
   }
   switch (s[op_index]) {
     case '$':
-      c.program.emplace_back(Instr::kSection, id);
+      c.program.emplace_back(Instr::kVector, id);
       c.rec_stack.push_back(id);
       break;
     case '!':
-      c.program.emplace_back(Instr::kSectionNot, id);
+      c.program.emplace_back(Instr::kVectorNot, id);
       c.rec_stack.push_back(id);
       break;
     case '/':
@@ -242,7 +257,7 @@ bool parse_rec(Context &c, Substr s, int *i) {
         return false;
       }
       c.rec_stack.pop_back();
-      c.program.emplace_back(Instr::kSectionPop, Substr());
+      c.program.emplace_back(Instr::kVectorPop, Substr());
       break;
   }
   return true;
@@ -304,8 +319,8 @@ std::unique_ptr<Template> make_template(Substr s) {
   return new TemplateImpl(std::move(c.program));
 }
 
-std::unique_ptr<TmplDict> make_dict() {
-  return new TmplDictImpl();
+std::unique_ptr<TemplateDict> make_dict() {
+  return new TemplateDictImpl();
 }
 }  // namespace
 

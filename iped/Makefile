@@ -20,11 +20,12 @@ LDLIB=-lpthread -lcityhash
 sources:=base.cxx flags.cxx template.cxx
 headers:=base.hxx flags.hxx template.hxx
 objects:=$(patsubst %.cxx,%.o,$(sources))
-tests:=$(patsubst %_test.cxx,%_test,$(wildcard *_test.cxx))
+tests:=base_test.cxx flags_test.cxx template_test.cxx
 
 .PHONY: clean
 
-all: iped $(tests)
+all: iped $(patsubst %_test.cxx, %_test, $(tests))
+
 run_tests: all
 	./base_test
 	./flags_test

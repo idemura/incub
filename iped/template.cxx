@@ -6,40 +6,47 @@ namespace {
 class TemplateDictImpl;
 class TemplateImpl;
 
+// Value is copyable, but it doesn't free memory in destructor.
+// Use delete_rec to delete a subtree.
 struct Value {
   enum Type {
     kString,
     kVector,
+    kNone,
   };
-
-  Type type = kString;
-  void *p = nullptr;
-
-  string* as_string() const { return reinterpret_cast<string*>(p); }
-  std::vector<TemplateDictImpl*>* as_vector() const {
-    return reinterpret_cast<std::vector<TemplateDictImpl*>*>(p);
-  }
-
-  void delete_ptr();
-  bool no_data() const { return p == nullptr; }
+  virtual ~Value() = default;
+  virtual Type type() const { return kNone; }
 };
 
-void Value::delete_ptr() {
-  if (p == nullptr) return;
-  switch (type) {
-    case kString: {
-      delete as_string();
-      break;
-    }
-    case kVector: {
-      auto v = as_vector();
-      for (auto p : *v) delete p;
-      delete v;
-      break;
-    }
-  }
-}
+struct ValueString : public Value {
+  ~ValueString() override {}
+  Type type() const override { return kString; }
 
+  string s;
+};
+
+struct ValueVector : public Value {
+  ~ValueVector() override {}
+  Type type() const override { return kVector; }
+
+  std::vector<std::unique_ptr<TemplateDictImpl>> v;
+};
+
+// Template dictionary implementaion.
+class TemplateDictImpl : public TemplateDict {
+public:
+  TemplateDictImpl() {}
+  ~TemplateDictImpl() override {}
+  void set_string(Substr name, string value) override;
+  TemplateDict* add_dict(Substr name) override;
+  Value* lookup(Substr name) const;
+
+private:
+  std::unordered_map<Substr, std::unique_ptr<Value>> map_;
+  NON_COPYABLE(TemplateDictImpl);
+};
+
+// Template implementation: instruction, stack frame and etc.
 struct Instr {
   enum Op {
     kLiteral,
@@ -56,57 +63,12 @@ struct Instr {
   Instr(Op op, Substr s): op(op), s(s) {}
 };
 
-class TemplateDictImpl : public TemplateDict {
-public:
-  TemplateDictImpl() {}
-  ~TemplateDictImpl() override;
-  void set_string(Substr name, const std::string &value) override;
-  TemplateDict* add_dict(Substr name) override;
-  Value lookup(Substr name) const;
+struct StackFrame {
+  TemplateDictImpl *dict = nullptr;
+  StackFrame *const prev;
 
-private:
-  std::unordered_map<Substr, Value> map_;
-  NON_COPYABLE(TemplateDictImpl);
+  explicit StackFrame(StackFrame *prev): prev(prev) {}
 };
-
-TemplateDictImpl::~TemplateDictImpl() {
-  for (const auto& kv : map_) {
-    kv.second.delete_ptr();
-  }
-}
-
-void TemplateDictImpl::set_string(Substr name, const std::string& value) {
-  auto& v = map_[name];
-  if (!v.no_data() && v.type == Value::kString) {
-    *v.as_string() = value;
-  } else {
-    v.delete_ptr();
-    v.type = Value::kString;
-    v.p = new string(value);
-  }
-}
-
-TemplateDict* TemplateDictImpl::add_map(Substr name) {
-  auto& v = map_[name];
-  if (v.type != Value::kVector) {
-    v.delete_ptr();
-  }
-  v.type = Value::kVector;
-  if (v.no_data()) {
-    v.p = new std::vector<TemplateDictImpl*>;
-  }
-  v.as_vector()->emplace_back(new TemplateDictImpl>());
-  return v.as_vector()->last().get();
-}
-
-Value TemplateDictImpl::lookup(Substr name) const {
-  auto i = map_.find(name);
-  if (map_.end() == i) {
-    return {};
-  } else {
-    return i->second;
-  }
-}
 
 class TemplateImpl : public Template {
 public:
@@ -115,58 +77,116 @@ public:
   }
 
   ~TemplateImpl() override {}
-  bool expand(TemplateDict *dict, std::string *res) override;
+  bool expand(TemplateDict *dict, string *res) const override;
 
 private:
+  bool expand_impl(
+      TemplateDictImpl *dict,
+      StackFrame *prev_sf,
+      string* res) const;
+
   std::vector<Instr> program_;
   NON_COPYABLE(TemplateImpl);
 };
 
-Value lookup_dict_stack(const std::vector<TemplateDictImpl*> &ds,
-    Substr id,
-    Value::Type type) {
-  const Value empty;
-  for (int i = ds.size(); i-- > 0; ) {
-    auto v = ds[i]->lookup(id);
-    if (!v.no_data()) {
-      return v.type == type ? v : empty;
-    }
+void TemplateDictImpl::set_string(Substr name, string value) {
+  auto &v = map_[name];
+  if (v->type() != Value::kString) {
+    v.reset(new ValueString);
   }
-  return empty;
+  auto val = reinterpret_cast<ValueString*>(v.get());
+  val->s = std::move(value);
 }
 
-bool TemplateImpl::expand(TemplateDict *dict, std::string *res) override {
-  std::vector<TemplateDictImpl*> ds{
-    reinterpret_cast<TemplateDictImpl*>(dict)
-  };
+TemplateDict* TemplateDictImpl::add_dict(Substr name) {
+  auto &v = map_[name];
+  if (v->type() != Value::kVector) {
+    v.reset(new ValueVector);
+  }
+  auto val = reinterpret_cast<ValueVector*>(v.get());
+  val->v.emplace_back(new TemplateDictImpl);
+  return val->v.back().get();
+}
+
+Value* TemplateDictImpl::lookup(Substr name) const {
+  auto i = map_.find(name);
+  if (map_.end() == i) {
+    return nullptr;
+  } else {
+    return i->second.get();
+  }
+}
+
+Value* lookup_dict_stack(
+    StackFrame *sf,
+    Substr id,
+    Value::Type type) {
+  while (nullptr != sf) {
+    auto v = sf->dict->lookup(id);
+    if (nullptr != v) {
+      if (v->type() != type)
+        return nullptr;
+      else
+        return v;
+    }
+    sf = sf->prev;
+  }
+  return nullptr;
+}
+
+bool TemplateImpl::expand(TemplateDict *dict, string *res) const {
+  return expand_impl(reinterpret_cast<TemplateDictImpl*>(dict), nullptr, res);
+}
+
+bool TemplateImpl::expand_impl(
+    TemplateDictImpl *dict,
+    StackFrame *prev_sf,
+    string *res) const {
+  StackFrame sf(prev_sf);
+  sf.dict = reinterpret_cast<TemplateDictImpl*>(dict);
   for (auto &&instr : program_) {
+    auto pop = false;
     switch (instr.op) {
-      case Instr::kString: {
+      case Instr::kLiteral: {
         res->append(instr.s.data(), instr.s.size());
         break;
       }
       case Instr::kReplace: {
-        auto v = lookup_dict_stack(ds, instr.s);
-        if (v.no_data()) {
+        auto v = lookup_dict_stack(&sf, instr.s, Value::kString);
+        if (nullptr == v) {
           return false;
         }
-        res->append(*v.as_string());
+        res->append(reinterpret_cast<ValueString*>(v)->s);
         break;
       }
-      case Instr::kVector: {
+      case Instr::kSection: {
+        auto v = lookup_dict_stack(&sf, instr.s, Value::kVector);
+        if (nullptr == v) {
+          return false;
+        }
+        auto val = reinterpret_cast<ValueVector*>(v);
+        for (auto &&sub_dict : val->v) {
+          if (!expand_impl(sub_dict.get(), &sf, res)) {
+            return false;
+          }
+        }
+        break;
       }
-      case Instr::kVectorNot: {
+      case Instr::kSectionNot: {
+        break;
       }
-      case Instr::kVectorPop: {
+      case Instr::kSectionPop: {
+        pop = true;
         break;
       }
     }
+    if (pop) break;
   }
   return true;
 }
 
 struct Context {
-  std::string error;
+  string error;
   int literal_first = -1;
   int line = 1;
   std::vector<Instr> program;
@@ -177,9 +197,9 @@ bool is_space(char c) {
   return c == ' ' || c == '\t' || c == '\v' || c == '\r';
 }
 
-void op_literal(Context &c, Substr s, int i) {
+void op_literal(Context &c, Substr s, int end_pos) {
   if (c.literal_first < 0) return;
-  c.program.emplace_back(Instr::kString, s.range(c.literal_first, i));
+  c.program.emplace_back(Instr::kLiteral, s.range(c.literal_first, end_pos));
   c.literal_first = -1;
 }
 
@@ -239,11 +259,11 @@ bool parse_rec(Context &c, Substr s, int *i) {
   }
   switch (s[op_index]) {
     case '$':
-      c.program.emplace_back(Instr::kVector, id);
+      c.program.emplace_back(Instr::kSection, id);
       c.rec_stack.push_back(id);
       break;
     case '!':
-      c.program.emplace_back(Instr::kVectorNot, id);
+      c.program.emplace_back(Instr::kSectionNot, id);
       c.rec_stack.push_back(id);
       break;
     case '/':
@@ -257,26 +277,26 @@ bool parse_rec(Context &c, Substr s, int *i) {
         return false;
       }
       c.rec_stack.pop_back();
-      c.program.emplace_back(Instr::kVectorPop, Substr());
+      c.program.emplace_back(Instr::kSectionPop, Substr());
       break;
   }
   return true;
 }
 
 bool parse_line(Context &c, Substr s, int *i) {
-  const int line_beginning = *i;
+  const int line_begin = *i;
   int j = *i;
   while (is_space(s[j])) {
     j++;
   }
   if (s[j] == '\n') {
     // Just a blank line.
-    if (c.literal_first < 0) c.literal_first = i;
+    if (c.literal_first < 0) c.literal_first = *i;
     *i = j;
     return true;
   }
-  if (c.s[j] == '#') {
-    op_literal(c, line_beginning);
+  if (s[j] == '#') {
+    op_literal(c, s, line_begin);
     *i = j;
     return parse_rec(c, s, i);
   }
@@ -292,17 +312,17 @@ bool parse_line(Context &c, Substr s, int *i) {
   *i = j;
   return true;
 }
-}  // namespace
+} // namespace
 
 std::unique_ptr<Template> make_template(Substr s) {
-  if (s.empty() || s.last() != '\n') {
+  if (s.empty() || s.back() != '\n') {
     cerr<<"Empty or not ends with new line"<<endl;
     return nullptr;
   }
   Context c;
   int i = 0;
   while (i < s.size()) {
-    if (!parse_line(c, s, i)) {
+    if (!parse_line(c, s, &i)) {
       break;
     }
     while (s[i] != '\n') {
@@ -314,13 +334,13 @@ std::unique_ptr<Template> make_template(Substr s) {
   if (!c.error.empty()) {
     return nullptr;
   }
-  // if literal is left, put into program.
+  // If literal is left, put into program.
   op_literal(c, s, s.size());
-  return new TemplateImpl(std::move(c.program));
+  return std::make_unique<TemplateImpl>(std::move(c.program));
 }
 
 std::unique_ptr<TemplateDict> make_dict() {
-  return new TemplateDictImpl();
+  return std::make_unique<TemplateDictImpl>();
 }
-}  // namespace
+} // namespace
 

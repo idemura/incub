@@ -7,9 +7,8 @@ namespace iped {
 
 class TemplateDict {
 public:
-  virtual ~TemplateDict() {}
-  virtual void set_string(Substr name, const std::string &value) = 0;
-  // Returned dictionary is owned by this dictionary.
+  virtual ~TemplateDict() = default;
+  virtual void set_string(Substr name, string value) = 0;
   virtual TemplateDict* add_dict(Substr name) = 0;
 };
 
@@ -22,6 +21,6 @@ public:
 std::unique_ptr<Template> make_template(Substr s);
 std::unique_ptr<TemplateDict> make_dict();
 
-}  // namespace
+} // namespace
 
 #endif

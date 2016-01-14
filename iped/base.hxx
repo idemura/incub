@@ -48,6 +48,7 @@ using std::string;
 class Substr {
 public:
   // For @npos, use `string::npos`.
+  // Seems like constexpr can be decalred here.
 
   using Iter = const char*;
 

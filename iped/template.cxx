@@ -173,6 +173,11 @@ bool TemplateImpl::expand_impl(
         break;
       }
       case Instr::kSectionNot: {
+        auto v = lookup_dict_stack(&sf, instr.s, Value::kVector);
+        if (nullptr == v) {
+          return false;
+        }
+        auto val = reinterpret_cast<ValueVector*>(v);
         break;
       }
       case Instr::kSectionPop: {

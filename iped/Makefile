@@ -14,7 +14,7 @@ CXXWARNS=-Wall -Wno-unused-function -Wno-sign-compare -Wno-char-subscripts
 CXXFLAGS=-std=c++14 -I. -march=native -fdiagnostics-color=auto $(CXXOPT) $(CXXWARNS)
 .PHONY: clean
 all: iped
-iped.o: base.o flags.o template.o libmongoose.a iped.hxx
+iped.o: base.o flags.o libmongoose.a template.o iped.hxx
 	$(CXX) $(CXXFLAGS) -c iped.cxx
 template_test.o: template.o
 	$(CXX) $(CXXFLAGS) -c template_test.cxx
@@ -26,7 +26,7 @@ libmongoose.a: mongoose.c mongoose.h
 	$(CC) -I. -march=native $(CXXOPT) -c mongoose.c -DMONGOOSE_NO_FILE_SYSTEM
 	$(AR) libmongoose.a mongoose.o
 iped: iped.o
-	$(CXX) $(LDOPT) -L. -o iped base.o template.o iped.o flags.o -lmongoose -lcityhash -lpthread
+	$(CXX) $(LDOPT) -L. -o iped base.o flags.o iped.o template.o -lcityhash -lmongoose -lpthread
 base_test.o: base.o
 	$(CXX) $(CXXFLAGS) -c base_test.cxx
 flags_test.o: flags.o
@@ -34,7 +34,7 @@ flags_test.o: flags.o
 template_test: template_test.o
 	$(CXX) $(LDOPT) -L. -o template_test base.o template.o template_test.o -lcityhash
 flags_test: flags_test.o
-	$(CXX) $(LDOPT) -L. -o flags_test base.o flags_test.o flags.o -lcityhash
+	$(CXX) $(LDOPT) -L. -o flags_test base.o flags.o flags_test.o -lcityhash
 template.o: base.o template.hxx
 	$(CXX) $(CXXFLAGS) -c template.cxx
 flags.o: base.o flags.hxx

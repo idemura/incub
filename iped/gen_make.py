@@ -66,6 +66,7 @@ class MakeRule:
             s += '\t' + c + '\n'
         return s
 
+# Base build target class. Contains dependencies (children).
 class Target:
     def __init__(self, deps):
         self.deps = deps
@@ -81,9 +82,9 @@ class Target:
             rule_deps.append(d.output())
             if isinstance(d, TargetCxxBin):
                 fail('Dependency on C++ binary is not allowed')
-        return rule_deps
+        return sorted(rule_deps)
 
-# Generic file needs to build rule.
+# Generic file needs no a build rule.
 class TargetFile(Target):
     def __init__(self, file_name):
         Target.__init__(self, [])
@@ -99,6 +100,7 @@ class TargetFile(Target):
     def generate(self):
         return MakeRule(None, None, [], [])
 
+# Builds C++ binary.
 class TargetCxxBin(Target):
     def __init__(self, file_name, deps):
         Target.__init__(self, deps)
@@ -121,10 +123,11 @@ class TargetCxxBin(Target):
             objs.add(o.output())
         cmd = '$(CXX) $(LDOPT) -L. -o {0} {1} {2}'.format(
                 self.output(),
-                ' '.join(objs),
-                arg_list(libs, '-l', ' '))
+                ' '.join(sorted(list(objs))),
+                arg_list(sorted(list(libs)), '-l', ' '))
         return MakeRule(self.file_name, self.output(), rule_deps, [cmd])
 
+# Builds C++ file (with possibly .hxx header).
 class TargetCxxMod(Target):
     def __init__(self, file_name, deps):
         Target.__init__(self, deps)
@@ -145,6 +148,7 @@ class TargetCxxMod(Target):
         cmd = '$(CXX) $(CXXFLAGS) -c {0}'.format(self.file_name)
         return MakeRule(self.file_name, self.output(), rule_deps, [cmd])
 
+# Naive build of a C library.
 class TargetCLib(Target):
     def __init__(self, name, sources, defines):
         Target.__init__(self, [])
@@ -171,6 +175,7 @@ class TargetCLib(Target):
         cmd.append('$(AR) {0} {1}'.format(self.output(), ' '.join(obj)))
         return MakeRule(self.name, self.output(), self.sources, cmd)
 
+# System library.
 class TargetSysLib(Target):
     def __init__(self, name):
         Target.__init__(self, [])
@@ -186,9 +191,11 @@ class TargetSysLib(Target):
     def generate(self):
         return MakeRule(None, None, [], [])
 
+# True if target's output may be deleted.
 def do_clean(t):
     return not(isinstance(t, TargetFile) or isinstance(t, TargetSysLib))
 
+# Walks dependency tree and collects libs.
 def walk_libs(t):
     if t.lib_deps is not None:
         return t.lib_deps
@@ -197,6 +204,7 @@ def walk_libs(t):
         t.lib_deps |= walk_libs(ct)
     return t.lib_deps
 
+# Walks dependency tree and collects objs.
 def walk_objs(t):
     if t.obj_deps is not None:
         return t.obj_deps
@@ -206,18 +214,17 @@ def walk_objs(t):
             t.obj_deps |= walk_objs(ct)
     return t.obj_deps
 
+# MakeFile class. Use its methods to add targets and generate output file.
+# After calling @makefile/@write object state is frozen: you can't add more
+# targets into it.
 class MakeFile:
-    def __init__(self, common_libs=[]):
+    def __init__(self, sys_libs=[]):
         self.targets = {}
         self.tests = []
-        for l in common_libs:
+        for l in sys_libs:
             self.sys_lib(l)
         self.def_rule = None
-
-    def dup_target(self, file_name):
-        if file_name in self.targets:
-            fail('Duplicated target ' + file_name)
-        return False
+        self.m = None
 
     def generic_file(self, file_name):
         if not self.dup_target(file_name):
@@ -227,7 +234,6 @@ class MakeFile:
         if not self.dup_target(file_name):
             self.targets[file_name] = TargetCxxBin(file_name, deps)
 
-    # C++ .cxx + .hxx.
     def cxx_mod(self, file_name, deps):
         if not self.dup_target(file_name):
             self.targets[file_name] = TargetCxxMod(file_name, deps)
@@ -245,21 +251,11 @@ class MakeFile:
         if not self.dup_target(name):
             self.targets[name] = TargetCLib(name, sources, defines)
 
-    # @name: String
-    # @t: Target
-    def walk_target(self, name, t):
-        if t.visited:
-            return
-        t.visited = True
-        for d in t.deps:
-            if d not in self.targets:
-                fail('No target: ' + d + ' needed by ' + name)
-            self.walk_target(d, self.targets[d])
-
     def set_default(self, deps):
         self.def_rule = deps
 
     def makefile(self):
+        if self.m is not None: return self.m
         # Check deps.
         for name in self.targets:
             t = self.targets[name]
@@ -301,9 +297,29 @@ class MakeFile:
             for t in test_output:
                 m += '\t./{0}\n'.format(t)
             m += '\t@echo TESTS PASSED\n'
+        self.m = m
         return m
 
     def write(self, file_name='Makefile'):
         with open(file_name, 'wt') as f:
             f.write(self.makefile())
+
+    # END PUBLIC METHODS.
+
+    def dup_target(self, file_name):
+        if file_name in self.targets:
+            fail('Duplicated target ' + file_name)
+        return False
+
+    # @name: String
+    # @t: Target
+    def walk_target(self, name, t):
+        if t.visited:
+            return
+        t.visited = True
+        for d in t.deps:
+            if d not in self.targets:
+                fail('No target: ' + d + ' needed by ' + name)
+            self.walk_target(d, self.targets[d])
+
 

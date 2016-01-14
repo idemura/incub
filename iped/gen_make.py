@@ -129,24 +129,26 @@ class TargetCxxBin(Target):
 
 # Builds C++ file (with possibly .hxx header).
 class TargetCxxMod(Target):
-    def __init__(self, file_name, deps):
+    def __init__(self, cxx_name, hxx_name, deps):
         Target.__init__(self, deps)
-        self.file_name = file_name
+        self.cxx_name = cxx_name
+        self.hxx_name = hxx_name
     def __str__(self):
-        return 'TargetCxxMod: file_name=' + self.file_name
+        return 'TargetCxxMod: cxx_name={0}  hxx_name={1}'.format(
+                self.cxx_name,
+                self.hxx_name)
     def output(self):
-        return repl_ext(self.file_name, '.o')
+        return repl_ext(self.cxx_name, '.o')
     def get_obj(self):
         return [self]
     def get_lib(self):
         return []
     def generate(self):
         rule_deps = self.rule_deps()
-        hxx = repl_ext(self.file_name, '.hxx')
-        if os.path.isfile(hxx):
-            rule_deps.append(hxx)
-        cmd = '$(CXX) $(CXXFLAGS) -c {0}'.format(self.file_name)
-        return MakeRule(self.file_name, self.output(), rule_deps, [cmd])
+        if os.path.isfile(self.hxx_name):
+            rule_deps.append(self.hxx_name)
+        cmd = '$(CXX) $(CXXFLAGS) -c {0}'.format(self.cxx_name)
+        return MakeRule(self.cxx_name, self.output(), rule_deps, [cmd])
 
 # Naive build of a C library.
 class TargetCLib(Target):
@@ -218,7 +220,8 @@ def walk_objs(t):
 # After calling @makefile/@write object state is frozen: you can't add more
 # targets into it.
 class MakeFile:
-    def __init__(self, sys_libs=[]):
+    def __init__(self, sys_libs=[], hxx_ext='.hxx'):
+        self.hxx_ext = hxx_ext
         self.targets = {}
         self.tests = []
         for l in sys_libs:
@@ -236,7 +239,10 @@ class MakeFile:
 
     def cxx_mod(self, file_name, deps):
         if not self.dup_target(file_name):
-            self.targets[file_name] = TargetCxxMod(file_name, deps)
+            self.targets[file_name] = TargetCxxMod(
+                    file_name,
+                    repl_ext(file_name, self.hxx_ext),
+                    deps)
 
     def cxx_test(self, file_name, deps):
         self.cxx_mod(file_name, deps)

@@ -102,30 +102,30 @@ class TargetFile(Target):
 
 # Builds C++ binary.
 class TargetCxxBin(Target):
-    def __init__(self, file_name, deps):
+    def __init__(self, name, deps):
         Target.__init__(self, deps)
-        self.file_name = file_name
+        self.name = name
     def __str__(self):
-        return 'TargetCxxBin: file_name=' + self.file_name
+        return 'TargetCxxBin: name=' + self.name
     def output(self):
-        return self.file_name
+        return self.name
     def get_obj(self):
         return []
     def get_lib(self):
         return []
     def generate(self):
         rule_deps = self.rule_deps()
-        libs = set()
+        libs = []
         for l in self.lib_deps:
-            libs.add(lib_base_name(l.output()))
-        objs = set()
+            libs.append(lib_base_name(l.output()))
+        objs = []
         for o in self.obj_deps:
-            objs.add(o.output())
+            objs.append(o.output())
         cmd = '$(CXX) $(LDOPT) -L. -o {0} {1} {2}'.format(
                 self.output(),
-                ' '.join(sorted(list(objs))),
-                arg_list(sorted(list(libs)), '-l', ' '))
-        return MakeRule(self.file_name, self.output(), rule_deps, [cmd])
+                ' '.join(sorted(objs)),
+                arg_list(libs, '-l', ' '))
+        return MakeRule(self.name, self.output(), rule_deps, [cmd])
 
 # Builds C++ file (with possibly .hxx header).
 class TargetCxxMod(Target):
@@ -149,6 +149,27 @@ class TargetCxxMod(Target):
             rule_deps.append(self.hxx_name)
         cmd = '$(CXX) $(CXXFLAGS) -c {0}'.format(self.cxx_name)
         return MakeRule(self.cxx_name, self.output(), rule_deps, [cmd])
+
+# Builds C++ library.
+class TargetCxxLib(Target):
+    def __init__(self, name, deps):
+        Target.__init__(self, deps)
+        self.name = name
+    def __str__(self):
+        return 'TargetCxxLib: name=' + self.name
+    def output(self):
+        return lib_full_name(self.name)
+    def get_obj(self):
+        return []
+    def get_lib(self):
+        return [self]
+    def generate(self):
+        rule_deps = self.rule_deps()
+        objs = []
+        for o in self.obj_deps:
+            objs.append(o.output())
+        cmd = '$(AR) {0} {1}'.format(self.output(), ' '.join(objs))
+        return MakeRule(self.name, self.output(), rule_deps, [cmd])
 
 # Naive build of a C library.
 class TargetCLib(Target):
@@ -197,13 +218,29 @@ class TargetSysLib(Target):
 def do_clean(t):
     return not(isinstance(t, TargetFile) or isinstance(t, TargetSysLib))
 
+def dedup_libs(libs):
+    m = {}
+    i = 0
+    for l in libs:
+        if l not in m:
+            m[l] = i
+        i += 1
+    r = []
+    i = 0
+    for l in libs:
+        if m[l] == i:
+            r.append(l)
+        i += 1
+    return r
+
 # Walks dependency tree and collects libs.
 def walk_libs(t):
     if t.lib_deps is not None:
         return t.lib_deps
-    t.lib_deps = set(t.get_lib())
+    t.lib_deps = t.get_lib()
     for ct in t.deps:
-        t.lib_deps |= walk_libs(ct)
+        t.lib_deps += walk_libs(ct)
+    t.lib_deps = dedup_libs(t.lib_deps)
     return t.lib_deps
 
 # Walks dependency tree and collects objs.
@@ -243,6 +280,10 @@ class MakeFile:
                     file_name,
                     repl_ext(file_name, self.hxx_ext),
                     deps)
+
+    def cxx_lib(self, name, deps):
+        if not self.dup_target(name):
+            self.targets[name] = TargetCxxLib(name, deps)
 
     def cxx_test(self, file_name, deps):
         self.cxx_mod(file_name, deps)

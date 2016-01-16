@@ -177,7 +177,7 @@ bool TemplateImpl::expand_impl(
         if (nullptr == v) {
           return false;
         }
-        auto val = reinterpret_cast<ValueVector*>(v);
+        // auto val = reinterpret_cast<ValueVector*>(v);
         break;
       }
       case Instr::kSectionPop: {

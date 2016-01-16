@@ -1,7 +1,7 @@
 #ifndef IPED_IPED_HXX
 #define IPED_IPED_HXX
 
-#include "flags.hxx"
+#include "base.hxx"
 
 namespace iped {
 

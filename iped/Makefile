@@ -36,7 +36,7 @@ template.o: base.o template.hxx
 template_test.o: template.o
 	$(CXX) $(CXXFLAGS) -c template_test.cxx
 clean:
-	$(RM) iped.o base_test libgeneric.a base.o libmongoose.a iped base_test.o base_test template_test template.o template_test.o template_test
+	$(RM) *.o base_test libgeneric.a libmongoose.a iped base_test template_test template_test
 tests: base_test template_test
 	./base_test
 	./template_test

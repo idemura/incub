@@ -331,11 +331,11 @@ class MakeFile:
             t = self.targets[name]
             r = t.generate()
             m += r.code()
-            if do_clean(t):
+            if not isinstance(t, TargetCxxMod) and do_clean(t):
                 output.append(t.output())
             if name in self.tests:
                 output.append(test_name(name))
-        m += 'clean:\n\t$(RM) {0}\n'.format(' '.join(output))
+        m += 'clean:\n\t$(RM) *.o {0}\n'.format(' '.join(output))
         if len(self.tests) > 0:
             test_output = []
             for t in self.tests:

@@ -14,7 +14,6 @@
 #include <utility>
 #include <iostream>
 #include <cstdlib>
-#include <cstring>
 #include <cmath>  // Overloads for abs.
 
 using namespace std;
@@ -28,91 +27,44 @@ constexpr char kEol[] = "\n";
 constexpr int INF = 0x7fffffff;
 constexpr int MOD = 100000007;
 
-template<class T>
-string bitstr(T n) {
-  string s;
-  for (int i = 0; i < sizeof(T) * 8; i++) {
-    if (n & (1llu << i)) {
-      s.push_back('1');
-    } else {
-      s.push_back('0');
-    }
+void naive(i64 n, i64 m) {
+  i64 s = 0;
+  for (int i = 1; i <= m; i++) {
+    s += n % i;
+    cout<<n<<" % "<<i<<" = "<<(n % i)<<" q="<<(n / i)<<endl;
   }
-  return s;
+  cout<<"naive "<<s<<endl;
 }
 
-template<class T>
-string bitstr(T n, int b, int w) {
-  string s;
-  for (int i = 0; i < sizeof(T) * 8; i++) {
-    if (i == b) s.push_back('[');
-    if (i == b + w) s.push_back(']');
-    if (n & (1llu << i)) {
-      s.push_back('1');
-    } else {
-      s.push_back('0');
-    }
+void solve(i64 n, i64 m) {
+  i64 s = 0;
+  if (m > n) {
+    s += (n + 1 + m) * (m - n) / 2;
+    m = n;
   }
-  return s;
+  i64 u = m;
+  for (i64 q = 1;; q++) {
+    i64 l = n / (q + 1) + 1;
+    cout<<"u="<<u<<" l="<<l<<endl;
+    if (u - l <= 0) break;
+    cout<<"from "<<l<<" till "<<u<<" quot is "<<q<<endl;
+    s += (u + l) * (u - l + 1) / 2;
+    u = l - 1;
+  }
+  cout<<"u="<<u<<endl;
+  for (int i = 1; i <= u; i++) {
+    s += n % i;
+  }
+  cout<<s<<endl;
 }
 
-void print_bin_array(const u32 *a, int n) {
-  cout<<"Binary array:\n";
-  for (int i = 0; i < n; i++) {
-    cout<<"  #"<<i<<" "<<bitstr(a[i])<<"\n";
-  }
-  cout<<endl;
-}
-
-u64& u64_ref(u32 &r) { return *(u64*)&r; }
-
-// @n, @s are bit sizes. @b assumed to be zeroed. Both @a and @b should have
-// size aligned to 64 bits.
-void rotate_bits_left(const u32 *a, int n, int s, u32 *b) {
-  for (int si = 0, di = s; si < n; si += 32) {
-    u64 next_32b = u64(a[si >> 5]) << (di & 31);
-    cout<<"next 32 bit start "<<(di & 31)<<" "
-        <<bitstr(next_32b, di & 31, 32)<<endl;
-    u64_ref(b[di >> 5]) |= next_32b;
-    //cout<<"updated 64 bit at "<<(di >> 5)<<" "<<bitstr(x)<<endl;
-    print_bin_array(b, 3);
-    di += 32;
-    if (di >= n) {
-      cout<<"out of bounds on "<<(di - n)<<endl;
-      // If we got some bits behind the end, wrap them to the beginning. 32 bit
-      // mem access is enough.
-      next_32b >>= 32 - (di - n) + (di & 31);
-      cout<<"shifted value: "<<bitstr(next_32b)<<endl;
-      b[0] |= next_32b;
-      di -= n;
-    }
-    //if (di >= n) di -= n;
-  }
-  // Last 64 bits must have trailing zeroes.
-  u64_ref(b[n >> 5]) &= ~(~0llu << (n & 63));
-}
-
-int bitsets[10002][320];
 
 int main(int argc, char **argv) {
   ios_base::sync_with_stdio(false);
-  // int n, k;
-  // cin>>n;
-  // u32 temp[320] = {};
-  // for (int i = 0; i < n && (a[0] & 1) == 0; i++) {
-  //   cout<<"i="<<i<<endl;
-  //   cin>>k;
-  //   k %= n;
-  //   // Rotate if not first (i == 0) or shift makes sense (k != 0).
-  //   memset(b, 0, sizeof bmem);
-  //   if (i == 0 || k == 0) {
-  //   }
-  // }
-  // if (a[0] & 1) {
-  //   cout<<"possible!!!"<<endl;
-  // } else {
-  //   cout<<"0\n";
-  // }
-  cout<<"hello"<<endl;
+  i64 n, m;
+  cin>>n>>m;
+  naive(n, m);
+  solve(n, m);
   return 0;
 }
+

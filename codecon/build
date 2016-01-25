@@ -1,0 +1,10 @@
+#! /bin/sh
+
+CXX_CODEGEN='-O0 -g'
+# CXX_CODEGEN='-O3 -ffast-math -flto -DNDEBUG'
+
+g++-4.9 -std=c++14 -I. -march=native $1 -o ${1%.*} \
+    ${CXX_CODEGEN} \
+    -fdiagnostics-color=auto \
+    -Wall -Wno-unused-function -Wno-sign-compare -Wno-char-subscripts
+

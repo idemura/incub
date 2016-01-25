@@ -39,20 +39,31 @@ void naive(i64 n, i64 m) {
 void solve(i64 n, i64 m) {
   i64 s = 0;
   if (m > n) {
-    s += (n + 1 + m) * (m - n) / 2;
+    s += n * (m - n);
+    cout<<"s after n "<<s<<endl;
     m = n;
   }
-  i64 u = m;
+  i64 u = n;
   for (i64 q = 1;; q++) {
     i64 l = n / (q + 1) + 1;
+    if (m < l) continue;
+    if (m < u) u = m;
+    i64 num_members = u - l + 1;
+    cout<<"num_members="<<num_members<<endl;
     cout<<"u="<<u<<" l="<<l<<endl;
-    if (u - l <= 0) break;
+    if (num_members <= 1) break;
     cout<<"from "<<l<<" till "<<u<<" quot is "<<q<<endl;
-    s += (u + l) * (u - l + 1) / 2;
+    i64 r0 = n % u;
+    i64 r1 = n % l;
+    cout<<"r0="<<r0<<" r1="<<r1<<endl;
+    cout<<"s="<<s<<endl;
+    s += (r0 + r1) * num_members / 2;
+    cout<<"s="<<s<<endl;
     u = l - 1;
   }
   cout<<"u="<<u<<endl;
   for (int i = 1; i <= u; i++) {
+    cout<<"micro "<<i<<endl;
     s += n % i;
   }
   cout<<s<<endl;
@@ -63,6 +74,8 @@ int main(int argc, char **argv) {
   ios_base::sync_with_stdio(false);
   i64 n, m;
   cin>>n>>m;
+  n = 12;
+  m = 7;
   naive(n, m);
   solve(n, m);
   return 0;

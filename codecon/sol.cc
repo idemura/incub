@@ -27,16 +27,17 @@ constexpr char kEol[] = "\n";
 constexpr int INF = 0x7fffffff;
 constexpr int MOD = 100000007;
 
-void naive(i64 n, i64 m) {
+i64 naive(i64 n, i64 m) {
   i64 s = 0;
   for (int i = 1; i <= m; i++) {
     s += n % i;
     cout<<n<<" % "<<i<<" = "<<(n % i)<<" q="<<(n / i)<<endl;
   }
   cout<<"naive "<<s<<endl;
+  return s;
 }
 
-void solve(i64 n, i64 m) {
+i64 solve(i64 n, i64 m) {
   i64 s = 0;
   if (m > n) {
     s += n * (m - n);
@@ -67,17 +68,35 @@ void solve(i64 n, i64 m) {
     s += n % i;
   }
   cout<<s<<endl;
+  return s;
 }
 
+void full_test() {
+  int c = 0;
+  for (int n = 1; n <= 25; n++) {
+    for (int m = 1; m <= 30; m++) {
+      i64 a = naive(n, m);
+      i64 b = solve(n, m);
+      if (a != b) {
+        cerr<<"ERROR for n="<<n<<" m="<<m<<endl;
+        cerr<<"  naive: "<<a<<endl;
+        cerr<<"  solve: "<<b<<endl;
+      }
+      c++;
+    }
+  }
+  cerr<<"full test is done. c="<<c<<endl;
+}
 
 int main(int argc, char **argv) {
   ios_base::sync_with_stdio(false);
-  i64 n, m;
-  cin>>n>>m;
-  n = 12;
-  m = 7;
-  naive(n, m);
-  solve(n, m);
+  //i64 n, m;
+  //cin>>n>>m;
+  //n = 12;
+  //m = 7;
+  //naive(n, m);
+  //solve(n, m);
+  full_test();
   return 0;
 }
 

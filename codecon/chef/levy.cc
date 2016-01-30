@@ -18,7 +18,7 @@ using i64 = long long int;
 using i32 = int;
 
 constexpr int INF = 0x7fffffff;
-constexpr int MOD = 100000007;
+constexpr int MOD = 1000000007;
 
 int sqrt_int(int n) {
   return static_cast<int>(sqrt(n));

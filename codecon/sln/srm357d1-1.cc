@@ -33,7 +33,7 @@ using i32 = int;
 
 constexpr char kEol[] = "\n";
 constexpr int INF = 0x7fffffff;
-constexpr int MOD = 100000007;
+constexpr int MOD = 1000000007;
 
 class Hotel {
 public:

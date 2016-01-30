@@ -47,7 +47,7 @@ using u64 = unsigned long long int;
 
 constexpr char kEol[] = "\n";
 constexpr int INF = 0x7fffffff;
-constexpr int MOD = 100000007;
+constexpr int MOD = 1000000007;
 
 template<class T>
 unique_ptr<T> wrap_unique(T *p) {

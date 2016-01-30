@@ -25,7 +25,27 @@ using u32 = unsigned int;
 
 constexpr char kEol[] = "\n";
 constexpr int INF = 0x7fffffff;
-constexpr int MOD = 100000007;
+// constexpr int MOD = 100000007;
+constexpr int MOD = 19;
+
+constexpr int mpow(i64 a, int k, int p) {
+  i64 x = 1;
+  for (; k; k >>= 1) {
+    if (k & 1) {
+      x *= a;
+      x %= p;
+    }
+    a *= a;
+    a %= p;
+  }
+  return (int)x;
+}
+
+constexpr int minv(int a, int p) {
+  return mpow(a, p - 2, p);
+}
+
+constexpr i64 k2inv = minv(2, MOD);
 
 i64 naive(i64 n, i64 m) {
   i64 s = 0;
@@ -33,7 +53,7 @@ i64 naive(i64 n, i64 m) {
     s += n % i;
     cout<<n<<" % "<<i<<" = "<<(n % i)<<" q="<<(n / i)<<endl;
   }
-  cout<<"naive "<<s<<endl;
+  cout<<"naive "<<s<<" mod "<<MOD<<" "<<(s % MOD)<<endl;
   return s;
 }
 

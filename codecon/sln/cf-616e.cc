@@ -19,9 +19,9 @@
 using namespace std;
 
 using i64 = long long int;
-using u64 = unsigned long long int;
+using u64 = unsigned i64;
 using i32 = int;
-using u32 = unsigned int;
+using u32 = unsigned i32;
 
 constexpr char kEol[] = "\n";
 constexpr int INF = 0x7fffffff;

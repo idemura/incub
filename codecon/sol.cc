@@ -8,25 +8,15 @@
 int find_dominant(const vector<int> &a) {
   int x = 0;
   int l = 0;
-  int x_max = 0;
-  int l_max = 0;
   for (int i = 1; i < a.size(); i++) {
-    if (a[i - 1] == a[i]) {
+    if (x == a[i]) {
       l++;
-      x = a[i];
-    } else if (l > 0) {
-      if (l >= l_max) {
-        l_max = l - l_max;
-        x_max = x;
-      } else {
-        l_max -= l;
-      }
-      x = 0;
-      l = 0;
+    } else {
+      l--;
+      if (l == 0) x = a[i];
     }
   }
-  if (l >= l_max) x_max = x;
-  return x_max;
+  return x;
 }
 
 int main(int argc, char **argv) {

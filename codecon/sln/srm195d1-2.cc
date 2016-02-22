@@ -17,7 +17,7 @@
 #define NON_COPYABLE(C) \
     C(const C&) = delete; \
     C& operator=(const C&) = delete;
-#define NEW_UNIQUE(V, T) unique_ptr<T> V(new T)
+
 #define CHECK(E) \
   do { \
       if (!(E)) { \
@@ -74,15 +74,15 @@ int main(int argc, char **argv)
 {
   ios_base::sync_with_stdio(false);
   {
-    NEW_UNIQUE(sol, SimpleIO);
+    auto sol = make_unique<SimpleIO>();
     cout << sol->worstCase("BNB", 0) << endl;
   }
   {
-    NEW_UNIQUE(sol, SimpleIO);
+    auto sol = make_unique<SimpleIO>();
     cout << sol->worstCase("BNBNBNBN", 3) << endl;
   }
   {
-    NEW_UNIQUE(sol, SimpleIO);
+    auto sol = make_unique<SimpleIO>();
     cout << sol->worstCase("BBNNBNBBBBNBBBBBB", 3) << endl;
   }
   return 0;

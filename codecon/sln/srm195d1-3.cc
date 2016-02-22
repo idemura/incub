@@ -17,7 +17,7 @@
 #define NON_COPYABLE(C) \
     C(const C&) = delete; \
     C& operator=(const C&) = delete;
-#define NEW_UNIQUE(V, T) unique_ptr<T> V(new T)
+
 #define CHECK(E) \
   do { \
       if (!(E)) { \
@@ -99,13 +99,13 @@ int main(int argc, char **argv)
 {
   ios_base::sync_with_stdio(false);
   {
-    NEW_UNIQUE(sol, ChangeOptimizer);
+    auto sol = make_unique<ChangeOptimizer>();
     auto v = sol->fewestCoins({1, 10, 25}, 49);
     for (auto x : v) { cout << x << " "; }
     cout << endl;
   }
   {
-    NEW_UNIQUE(sol, ChangeOptimizer);
+    auto sol = make_unique<ChangeOptimizer>();
     auto v = sol->fewestCoins({1,3,6,2}, 11);
     for (auto x : v) { cout << x << " "; }
     cout << endl;

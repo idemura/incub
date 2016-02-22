@@ -14,6 +14,7 @@
 #include <random>
 #include <limits>
 #include <sstream>
+#include <fstream>
 #include <utility>
 #include <iostream>
 #include <cstdlib>
@@ -25,11 +26,9 @@
 #define DEFINE_COPY(C, OP) \
     C(const C&) = OP; \
     C& operator=(const C&) = OP;
-#define DELETE_COPY(C) DEFINE_COPY(C, delete)
 #define DEFAULT_COPY(C) DEFINE_COPY(C, default)
-#define NON_COPYABLE(C) DELETE_COPY(C)
+#define NON_COPYABLE(C) DEFINE_COPY(C, delete)
 
-#define NEW_UNIQUE(T) unique_ptr<T>(new T)
 #define CHECK(E) \
     do { \
       if (!(E)) { \
@@ -52,6 +51,17 @@ constexpr int MOD = 1000000007;
 template<class T>
 unique_ptr<T> wrap_unique(T *p) {
   return unique_ptr<T>(p);
+}
+
+void write_string(const string &s, const string &file_name) {
+  ofstream f(file_name);
+  if (f.is_open()) {
+    f << s;
+    f.close();
+  } else {
+    cerr << "Failed to write file: " << file_name << endl;
+    exit(1);
+  }
 }
 
 #endif // BASE_H

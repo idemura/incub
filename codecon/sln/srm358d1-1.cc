@@ -17,7 +17,7 @@
 #define NON_COPYABLE(C) \
     C(const C&) = delete; \
     C& operator=(const C&) = delete;
-#define NEW_UNIQUE(T) unique_ptr<T>(new T)
+
 #define CHECK(E) \
   do { \
       if (!(E)) { \
@@ -63,8 +63,9 @@ public:
 };
 
 int main() {
-  cout << NEW_UNIQUE(BrokenButtons)->minPresses(5457, {6, 7, 8}) << endl;
-  cout << NEW_UNIQUE(BrokenButtons)->minPresses(80000, {8, 9}) << endl;
-  cout << NEW_UNIQUE(BrokenButtons)->minPresses(0, {8, 9}) << endl;
+  ios_base::sync_with_stdio(false);
+  cout << make_unique<BrokenButtons>()->minPresses(5457, {6, 7, 8}) << endl;
+  cout << make_unique<BrokenButtons>()->minPresses(80000, {8, 9}) << endl;
+  cout << make_unique<BrokenButtons>()->minPresses(0, {8, 9}) << endl;
   return 0;
 }

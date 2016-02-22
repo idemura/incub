@@ -17,7 +17,7 @@
 #define NON_COPYABLE(C) \
     C(const C&) = delete; \
     C& operator=(const C&) = delete;
-#define NEW_UNIQUE(T) unique_ptr<T>(new T)
+
 #define CHECK(E) \
   do { \
       if (!(E)) { \
@@ -77,7 +77,7 @@ public:
 };
 
 int main() {
-  cout << NEW_UNIQUE(BalanceScale)->takeWeights({5, 4, 1, 8}) << endl;
-  cout << NEW_UNIQUE(BalanceScale)->takeWeights({2, 3, 8, 9}) << endl;
+  cout << make_unique<BalanceScale>()->takeWeights({5, 4, 1, 8}) << endl;
+  cout << make_unique<BalanceScale>()->takeWeights({2, 3, 8, 9}) << endl;
   return 0;
 }

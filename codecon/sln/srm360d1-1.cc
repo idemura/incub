@@ -17,7 +17,7 @@
 #define NON_COPYABLE(C) \
     C(const C&) = delete; \
     C& operator=(const C&) = delete;
-#define NEW_UNIQUE(T) unique_ptr<T>(new T)
+
 #define CHECK(E) \
   do { \
       if (!(E)) { \
@@ -78,12 +78,12 @@ public:
 };
 
 int main() {
-  cout << NEW_UNIQUE(SumOfSelectedCells)->hypothesis(
+  cout << make_unique<SumOfSelectedCells>()->hypothesis(
       { "11 12 13 14",
         "21 22 23 24",
         "31 32 33 34",
         "41 42 43 44" }) << endl;
-  cout << NEW_UNIQUE(SumOfSelectedCells)->hypothesis(
+  cout << make_unique<SumOfSelectedCells>()->hypothesis(
       { "3 7",
         "3 7",
         "3 7" }) << endl;

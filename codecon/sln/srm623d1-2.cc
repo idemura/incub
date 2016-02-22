@@ -71,12 +71,10 @@ public:
   }
 };
 
-#define NEW_UNIQUE(X) unique_ptr<X> sol(new X);
-
 int main(int argc, char **argv) {
   ios_base::sync_with_stdio(false);
   {
-    NEW_UNIQUE(CatchTheBeat);
+    auto sol = make_unique<CatchTheBeat>();
     cout << sol->maxCatched(10,
       999999957,
       79,

@@ -17,7 +17,7 @@
 #define NON_COPYABLE(C) \
     C(const C&) = delete; \
     C& operator=(const C&) = delete;
-#define NEW_UNIQUE(V, T) unique_ptr<T> V(new T)
+
 #define CHECK(E) \
   do { \
       if (!(E)) { \

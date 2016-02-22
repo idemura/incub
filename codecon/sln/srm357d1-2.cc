@@ -17,7 +17,7 @@
 #define NON_COPYABLE(C) \
     C(const C&) = delete; \
     C& operator=(const C&) = delete;
-#define NEW_UNIQUE(T) unique_ptr<T>(new T)
+
 #define CHECK(E) \
   do { \
       if (!(E)) { \
@@ -110,14 +110,13 @@ void print(const vector<T> &v) {
   cout << endl;
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   ios_base::sync_with_stdio(false);
-  print(NEW_UNIQUE(WebsiteRank)->countVotes(
+  print(make_unique<WebsiteRank>()->countVotes(
       {"C A B"}, "C"));
-  print(NEW_UNIQUE(WebsiteRank)->countVotes(
+  print(make_unique<WebsiteRank>()->countVotes(
       {"A B C D", "B C D", "C D"}, "A"));
-  print(NEW_UNIQUE(WebsiteRank)->countVotes(
+  print(make_unique<WebsiteRank>()->countVotes(
       {"A B C D E F", "B A", "C B", "D B"}, "A"));
   return 0;
 }

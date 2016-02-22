@@ -17,7 +17,7 @@
 #define NON_COPYABLE(C) \
     C(const C&) = delete; \
     C& operator=(const C&) = delete;
-#define NEW_UNIQUE(V, T) unique_ptr<T> V(new T)
+
 #define CHECK(E) \
   do { \
       if (!(E)) { \
@@ -79,17 +79,17 @@ int main(int argc, char **argv)
 {
   ios_base::sync_with_stdio(false);
   {
-    NEW_UNIQUE(sol, FanFailure);
+    auto sol = make_unique<FanFailure>();
     auto v = sol->getRange({1, 2, 3}, 2);
     cout << v[0] << " " << v[1] << endl;
   }
   {
-    NEW_UNIQUE(sol, FanFailure);
+    auto sol = make_unique<FanFailure>();
     auto v = sol->getRange({8, 5, 6, 7}, 22);
     cout << v[0] << " " << v[1] << endl;
   }
   {
-    NEW_UNIQUE(sol, FanFailure);
+    auto sol = make_unique<FanFailure>();
     auto v = sol->getRange({676, 11, 223, 413, 823, 122, 547, 187, 28}, 1000);
     cout << v[0] << " " << v[1] << endl;
   }

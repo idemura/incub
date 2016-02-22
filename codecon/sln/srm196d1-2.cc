@@ -17,7 +17,7 @@
 #define NON_COPYABLE(C) \
     C(const C&) = delete; \
     C& operator=(const C&) = delete;
-#define NEW_UNIQUE(V, T) unique_ptr<T> V(new T)
+
 #define CHECK(E) \
   do { \
       if (!(E)) { \
@@ -62,11 +62,11 @@ int main(int argc, char **argv)
 {
   ios_base::sync_with_stdio(false);
   {
-    NEW_UNIQUE(sol, Assemble);
+    auto sol = make_unique<Assemble>();
     cout << sol->minCost({19, 50, 10, 39}) << endl;
   }
   {
-    NEW_UNIQUE(sol, Assemble);
+    auto sol = make_unique<Assemble>();
     cout << sol->minCost({13,18,24,11,25,100,93,92,79}) << endl;
   }
   return 0;

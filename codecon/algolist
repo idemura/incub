@@ -7,7 +7,7 @@ Newton (tangents) method
 Gray code: subsets of length k
 Max common substring of strings
 MurmurHash, FNV-1/2, city hash
-Binary GCD
+* Binary GCD
 FFT / Discrete Fourier transform
 Trie
 RMQ: tree and overlapping segments
@@ -18,8 +18,9 @@ Bellman-Ford
 Min cost max flow
 Kirchhoff's theorem
 Tutte matrix (perfect matching)
-Fractional cascading
+* Fractional cascading
 LSM Tree
 Boyer–Moore
 Leftist heap
+Given set of points. Preprocess them. Query: given a rect, enum points.
 

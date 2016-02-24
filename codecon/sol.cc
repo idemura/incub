@@ -110,8 +110,8 @@ private:
            << endl;
       return;
     }
-    check_node(n, n->l, pred);
-    check_node(n, n->r, pred);
+    check_node(n->l, n, pred);
+    check_node(n->r, n, pred);
   }
 
   static void print_node(Node *n) {
@@ -133,9 +133,7 @@ int main(int argc, char **argv) {
   h.print();
   h.push("20");
   h.print();
-  cout<<"a"<<endl;
   h.check();
-  cout<<"a"<<endl;
   CHECK("10" == h.pop());
   CHECK("20" == h.pop());
   cout << "TESTS PASSED." << endl;

@@ -1,12 +1,12 @@
 #include "base.h"
 
-// @T is a movable type.
-template<class T, class Pred = less<T>>
+// @T is a movable type. @Less is assumed a stateless predicate.
+template<class T, class Less = less<T>>
 class LeftistHeap {
 public:
   using Value = T;
 
-  explicit LeftistHeap(const Pred &p = Pred()) : p_(p) {}
+  explicit LeftistHeap() {}
   LeftistHeap(LeftistHeap &&other)
       : root_(other.root_), size_(other.size_) {
     other.make_null();
@@ -21,7 +21,7 @@ public:
 
   void merge(LeftistHeap *a, LeftistHeap* b) {
     del_node(root_);
-    root_ = merge_node(a->root_, b->root_, p_);
+    root_ = merge_node(a->root_, b->root_);
     size_ = a->size_ + b->size_;
     a->make_null();
     b->make_null();
@@ -30,14 +30,14 @@ public:
   Value pop() {
     const auto v = std::move(root_->v);
     auto xroot = root_;
-    root_ = merge_node(root_->l, root_->r, p_);
+    root_ = merge_node(root_->l, root_->r);
     delete xroot;
     size_--;
     return v;  // NRVO
   }
 
   void push(T v) {
-    root_ = merge_node(root_, new Node(std::move(v)), p_);
+    root_ = merge_node(root_, new Node(std::move(v)));
     size_++;
   }
 
@@ -51,15 +51,16 @@ public:
 
   void check() {
     if (root_ != nullptr) {
-      check_node(root_->l, root_, p_);
-      check_node(root_->r, root_, p_);
+      check_node(root_->l, root_);
+      check_node(root_->r, root_);
     }
   }
 
-  void print() {
-    cout<<"LeftistHeap: root="<<root_<<" size="<<size_<<"\n";
-    if (root_ == nullptr) return;
-    print_node(root_);
+  string debug_string() {
+    stringstream ss;
+    ss<<"LeftistHeap: root="<<root_<<" size="<<size_<<"\n";
+    print_node(root_, ss);
+    return ss.str();
   }
 
 private:
@@ -81,58 +82,61 @@ private:
     del_node(n->r);
   }
 
-  static i64 s_of(Node *node) {
+  static i64 get_s(Node *node) {
     return node == nullptr ? 0 : node->s;
   }
 
-  static Node *merge_node(Node *a, Node *b, const Pred &pred) {
+  static Node *merge_node(Node *a, Node *b) {
     if (a == nullptr) return b;
     if (b == nullptr) return a;
     Node *r = nullptr;
-    if (pred(a->v, b->v)) {
-      a->r = merge_node(a->r, b, pred);
+    if (less(a->v, b->v)) {
+      a->r = merge_node(a->r, b);
       a->s = std::max(a->s, a->r->s + 1);
       r = a;
     } else {
-      b->r = merge_node(b->r, a, pred);
+      b->r = merge_node(b->r, a);
       b->s = std::max(b->s, b->r->s + 1);
       r = b;
     }
-    if (s_of(r->r) > s_of(r->l)) std::swap(r->l, r->r);
+    if (get_s(r->r) > get_s(r->l)) std::swap(r->l, r->r);
     return r;
   }
 
-  static void check_node(Node *n, Node *p, const Pred &pred) {
+  static void check_node(Node *n, Node *p) {
     if (n == nullptr) return;
-    if (!pred(p->v, n->v)) {
+    if (!less(p->v, n->v)) {
       cerr << "Heap property broken between "
            << "parent=" << p->v << " and child: " << n->v
            << endl;
       return;
     }
-    check_node(n->l, n, pred);
-    check_node(n->r, n, pred);
+    check_node(n->l, n);
+    check_node(n->r, n);
   }
 
-  static void print_node(Node *n) {
+  static void print_node(Node *n, stringstream &ss) {
     if (n == nullptr) return;
-    cout<<n<<": v="<<n->v<<" s="<<n->s<< " l="<<n->l<<" r="<<n->r<<"\n";
-    print_node(n->l);
-    print_node(n->r);
+    ss<<n<<": v="<<n->v<<" s="<<n->s<< " l="<<n->l<<" r="<<n->r<<"\n";
+    print_node(n->l, ss);
+    print_node(n->r, ss);
+  }
+
+  static bool less(const Value &a, const Value &b) {
+    return Less{}(a, b);
   }
 
   Node* root_ = nullptr;
   i64 size_ = 0;
-  const Pred p_;
   NON_COPYABLE(LeftistHeap);
 };
 
 int main(int argc, char **argv) {
   LeftistHeap<string> h;
   h.push("10");
-  h.print();
+  cout<<h.debug_string()<<endl;
   h.push("20");
-  h.print();
+  cout<<h.debug_string()<<endl;
   h.check();
   CHECK(2 == h.size());
   CHECK("10" == h.pop());
@@ -145,7 +149,7 @@ int main(int argc, char **argv) {
   g.push("20");
   g.push("40");
   g.push("50");
-  g.print();
+  cout<<g.debug_string()<<endl;
   g.check();
   LeftistHeap<string> r;
   r.merge(&h, &g);

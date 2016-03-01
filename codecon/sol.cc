@@ -122,7 +122,7 @@ private:
   }
 
   Node* root_ = nullptr;
-  i64 size_ = 1;
+  i64 size_ = 0;
   const Pred p_;
   NON_COPYABLE(LeftistHeap);
 };
@@ -134,8 +134,22 @@ int main(int argc, char **argv) {
   h.push("20");
   h.print();
   h.check();
+  CHECK(2 == h.size());
   CHECK("10" == h.pop());
   CHECK("20" == h.pop());
+  CHECK(0 == h.size());
+  h.push("10");
+  h.push("20");
+  LeftistHeap<string> g;
+  g.push("30");
+  g.push("20");
+  g.push("40");
+  g.push("50");
+  g.print();
+  g.check();
+  LeftistHeap<string> r;
+  r.merge(&h, &g);
+  CHECK(6 == r.size());
   cout << "TESTS PASSED." << endl;
   return 0;
 }

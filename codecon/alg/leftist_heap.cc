@@ -220,7 +220,7 @@ int main(int argc, char **argv) {
   test_merge();
   test_random(0, 1000);
   test_random(0, 10000);
-  test_random(32, 1000);  // Lots of dups
+  test_random(32, 1000);  // Lots of dups.
   cout << "TESTS PASSED." << endl;
   return 0;
 }

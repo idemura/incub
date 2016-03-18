@@ -29,13 +29,7 @@
 #define DEFAULT_COPY(C) DEFINE_COPY(C, default)
 #define NON_COPYABLE(C) DEFINE_COPY(C, delete)
 
-#define CHECK(E) \
-    do { \
-      if (!(E)) { \
-        cout << "CHECK failed at " << __FILE__ << "@" << __LINE__ << endl; \
-        exit(EXIT_FAILURE); \
-      } \
-    } while (false)
+#define CHECK(E) do { check_macro_fn(E, __FILE__, __LINE__); } while (false)
 
 using namespace std;
 
@@ -53,7 +47,7 @@ unique_ptr<T> wrap_unique(T *p) {
   return unique_ptr<T>(p);
 }
 
-void write_string(const string &s, const string &file_name) {
+inline void write_string(const string &s, const string &file_name) {
   ofstream f(file_name);
   if (f.is_open()) {
     f << s;
@@ -61,6 +55,13 @@ void write_string(const string &s, const string &file_name) {
   } else {
     cerr << "Failed to write file: " << file_name << endl;
     exit(1);
+  }
+}
+
+inline void check_macro_fn(bool b, const char *file, int line) {
+  if (!b) {
+    cout << "CHECK failed at " << file << "@" << line << endl;
+    exit(EXIT_FAILURE);
   }
 }
 

@@ -189,12 +189,19 @@ public:
 
   string to_string() { return ss_.str(); }
   std::stringstream &error(const string &file, int line) {
+    ok_ = false;
     ss_ << file << "@" << line << " error: ";
     return ss_;
+  }
+  bool ok() const { return ok_; }
+  void clear_error() {
+    ok_ = true;
+    // Clear ss_ as well?
   }
 
 private:
   std::stringstream ss_;
+  bool ok_ = false;
 };
 
 void check_macro_fn(bool expr, const char *file, int line);

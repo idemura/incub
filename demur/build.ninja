@@ -5,7 +5,7 @@ lnk_opt =
 
 cxx_bin = g++-4.9
 cxx_warns = -Wall -Wno-unused-function -Wno-sign-compare -Wno-char-subscripts
-cxx_flags = -std=c++14 -I. -march=native -fdiagnostics-color=auto $cxx_opt $cxx_warns
+cxx_flags = -std=c++14 -I. -march=native -fdiagnostics-color=always $cxx_opt $cxx_warns
 lnk_flags = $lnk_opt
 
 rule cxx

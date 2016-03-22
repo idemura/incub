@@ -6,6 +6,7 @@
 namespace igor {
 
 enum class TokType : i64 {
+  EndFile,
   Literal,
   Function,
   Colon,
@@ -24,43 +25,54 @@ enum class LitType : i64 {
 };
 
 struct Token {
+  Token() {}
+  Token(int line, int col, TokType type): line(line), col(col), type(type) {}
   int line = 0;
   int col = 0;
-  TokType type;
+  TokType type = TokType::EndFile;
 };
 
-struct TokLiteral {
-  LitType type;
+template<class T>
+struct TokenWithData : public Token {
+  T data;
 };
 
-// For Char as well.
-struct TokInteger : public TokLiteral {
-  i64 n = 0;
-};
-
-struct TokFloatPt : public TokLiteral {
-  double f = 0;
-};
-
-struct TokString : public TokLiteral {
-  string s;
+template<class T>
+struct LiteralData {
+  LiteralData(): val() {}
+  LitType type = LitType::Int;
+  T val;
 };
 
 class TokenStream {
 public:
-  TokenStream() = default;
-  void add(Token t);
+  class Cursor {
+  public:
+    explicit Cursor(const TokenStream *tokens);
+    void next();
+    void back();
+    bool eof();
+    Token *get() const;
+
+  private:
+    const TokenStream *const tokens_ = nullptr;
+    int ix_ = 0;
+  };
+
+  explicit TokenStream(string file_name) : file_name_(std::move(file_name)) {}
+  string file_name() const { return file_name_; }
+  void add(std::unique_ptr<Token> t);
+  Cursor get_cursor() const { return Cursor(this); }
 
 private:
-  std::string file_name;
-  std::vector<Token> tokens;
+  std::string file_name_;
+  std::vector<std::unique_ptr<Token>> tokens_;
 };
 
-bool tokenize(
+std::unique_ptr<TokenStream> tokenize(
     const std::string &file_name,
     std::string s,
-    TokenStream *tokens,
-    ErrStr &es);
+    ErrStr &err);
 
 }
 

@@ -7,6 +7,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -17,8 +18,13 @@
 #define DEFINE_COPY(C, OP) \
     C(const C&) = OP; \
     C& operator=(const C&) = OP;
-#define DELETE_COPY(C) DEFINE_COPY(C, delete)
+#define DEFINE_MOVE(C, OP) \
+    C(C&&) = OP; \
+    C& operator=(C&&) = OP;
+#define DELETE_COPY(C)  DEFINE_COPY(C, delete)
 #define DEFAULT_COPY(C) DEFINE_COPY(C, default)
+#define DELETE_MOVE(C)  DEFINE_MOVE(C, delete)
+#define DEFAULT_MOVE(C) DEFINE_MOVE(C, default)
 #define NON_COPYABLE(C) DELETE_COPY(C)
 
 #define CHECK(E) do{ check_macro_fn(E, __FILE__, __LINE__); } while (false)
@@ -173,6 +179,22 @@ class FlagSet {
   bool parse_flag(int i, int argc, char **argv, int *i_out);
 
   std::unordered_map<string, TypedPtr> flags_;
+};
+
+class ErrStr {
+public:
+  ErrStr() {}
+  DEFAULT_COPY(ErrStr);
+  DEFAULT_MOVE(ErrStr);
+
+  string to_string() { return ss_.str(); }
+  std::stringstream &error(const string &file, int line) {
+    ss_ << file << "@" << line << " error: ";
+    return ss_;
+  }
+
+private:
+  std::stringstream ss_;
 };
 
 void check_macro_fn(bool expr, const char *file, int line);

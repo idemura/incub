@@ -188,9 +188,13 @@ public:
   DEFAULT_MOVE(ErrStr);
 
   string to_string() { return ss_.str(); }
-  std::stringstream &error(const string &file, int line) {
+  std::stringstream &error(const string &file, int line, int col) {
     ok_ = false;
-    ss_ << file << "@" << line << " error: ";
+    ss_ << file << ":" << line;
+    if (col > 0) {
+      ss_ << ":" << col;
+    }
+    ss_ << " error: ";
     return ss_;
   }
   bool ok() const { return ok_; }

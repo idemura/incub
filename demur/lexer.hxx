@@ -38,10 +38,10 @@ struct TokenWithData : public Token {
 };
 
 template<class T>
-struct LiteralData {
-  LiteralData(): val() {}
+struct TokenLiteral {
+  TokenLiteral(): val() {}
   LitType type = LitType::Int;
-  T val;
+  const T val;
 };
 
 class TokenStream {
@@ -61,6 +61,7 @@ public:
 
   explicit TokenStream(string file_name) : file_name_(std::move(file_name)) {}
   string file_name() const { return file_name_; }
+  int size() const { return tokens_.size(); }
   void add(std::unique_ptr<Token> t);
   Cursor get_cursor() const { return Cursor(this); }
 

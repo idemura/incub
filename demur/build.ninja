@@ -1,0 +1,24 @@
+cxx_opt = -O0 -g
+lnk_opt =
+# cxx_opt = -O3 -ffast-math -DNDEBUG
+# lnk_opt = -flto
+
+cxx_bin = g++-4.9
+cxx_warns = -Wall -Wno-unused-function -Wno-sign-compare -Wno-char-subscripts
+cxx_flags = -std=c++14 -I. -march=native -fdiagnostics-color=auto $cxx_opt $cxx_warns
+lnk_flags = $lnk_opt
+
+rule cxx
+  command = $cxx_bin $cxx_flags -c $in
+rule lnk
+  command = $cxx_bin $lnk_flags -L. -o $out $in
+rule lib
+  command = ar rcs $out $in
+
+build base.o: cxx base.cxx
+build base_test.o: cxx base_test.cxx
+build base_test  : lnk base_test.o demur.a
+
+build demur.a: lib base.o
+build demur.o: cxx demur.cxx
+build demur  : lnk demur.o demur.a

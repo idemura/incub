@@ -71,7 +71,11 @@ private:
       }
       i_ -= 1;
     }
-    // Decimal integer or floating point literal.
+    return dec_number();
+  }
+
+  // Decimal integer or floating point literal.
+  bool dec_number() {
     auto first = i_;
     auto fp = -1;
     auto fp_e = -1;

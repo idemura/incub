@@ -9,7 +9,8 @@ cxx_flags = -std=c++14 -I. -march=native -fdiagnostics-color=always $cxx_opt $cx
 lnk_flags = $lnk_opt
 
 rule cxx
-  command = $cxx_bin $cxx_flags -c $in
+  depfile = $out.d
+  command = $cxx_bin $cxx_flags -c $in -MMD -MF $out.d
 rule lnk
   command = $cxx_bin $lnk_flags -L. -o $out $in
 rule lib
@@ -17,11 +18,11 @@ rule lib
 
 build base.o: cxx base.cxx
 build base_test.o: cxx base_test.cxx
-build base_test  : lnk base_test.o demur.a
+build base.test  : lnk base_test.o demur.a
 
 build lexer.o: cxx lexer.cxx
 build lexer_test.o: cxx lexer_test.cxx
-build lexer_test  : lnk lexer_test.o demur.a
+build lexer.test  : lnk lexer_test.o demur.a
 
 build demur.a: lib base.o lexer.o
 build demur.o: cxx demur.cxx

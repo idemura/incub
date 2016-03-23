@@ -1,6 +1,7 @@
 demur
-*_test
-lib*.a
-Makefile
 .ninja_deps
 .ninja_log
+*.test
+*.d
+*.o
+*.a

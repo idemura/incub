@@ -1,0 +1,2 @@
+#! /bin/sh
+rm -rf *.d *.o *.a *.test demur

@@ -244,12 +244,13 @@ std::ostream &Token::output(std::ostream &os) const {
     }
     case TokType::Char: {
       auto t = get_payload<i64>(*this);
-      os<<"Char("<<t;
+      os<<"Char(";
       if (' ' <= t && t < 127) {
-        os<<"Char("<<char(t)<<")";
+        os<<static_cast<char>(t);
       } else {
-        os<<"Char(#"<<t<<")";
+        os<<"#"<<t;
       }
+      os<<")";
       break;
     }
     case TokType::Name: {

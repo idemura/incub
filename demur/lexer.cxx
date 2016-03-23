@@ -71,51 +71,60 @@ private:
       }
       i_ -= 1;
     }
-    return dec_number();
+    if (like_fp()) {
+      return floating_point();
+    }
+    return dec_integer();
   }
 
-  // Decimal integer or floating point literal.
-  bool dec_number() {
+  bool like_fp() {
     auto first = i_;
-    auto fp = -1;
-    auto fp_e = -1;
+    auto fp = false;
+    while (!done()) {
+      if (is_digit(at())) {
+        next();
+      } else if (at() == '_') {
+        next();
+      } else if (at() == '.' || at() == 'e' || at() == 'E') {
+        fp = true;
+        break;
+      } else {
+        // Something else: maybe space, possibly i{N} suffix or invalid number.
+        // Will detect later.
+        break;
+      }
+    }
+    i_ = first;
+    return fp;
+  }
+
+  bool floating_point() {
+    CHECK_FAIL("floating_point");
+    return false;
+  }
+
+  bool dec_integer() {
     while (!done() && !is_space(at())) {
       if (is_digit(at())) {
         next();
       } else if (at() == '_') {
         next();
-      } else if (at() == '.') {
-        if (fp >= 0) {
-          error()<<"floating point literal: duplicated point at "
-                 <<(fp + 1)<<"\n";
-          return false;
-        }
-        if (fp_e >= 0) {
-          error()<<"floating point literal: point after exponent(E) at "
-                 <<(fp_e + 1)<<"\n";
-          return false;
-        }
-        fp = i_;
-      } else if (at() == 'e' || at() == 'E') {
-        if (fp_e >= 0) {
-          error()<<"floating point literal: duplicated exponent(E) at "
-                 <<(fp_e + 1)<<"\n";
-          return false;
-        }
-      } else {
-
       }
     }
+    CHECK_FAIL("dec_integer");
     return false;
   }
 
   bool hex_integer() {
+    CHECK_FAIL("hex_integer");
     return false;
   }
   bool oct_integer() {
+    CHECK_FAIL("oct_integer");
     return false;
   }
   bool bin_integer() {
+    CHECK_FAIL("bin_integer");
     return false;
   }
 

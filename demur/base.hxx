@@ -27,7 +27,14 @@
 #define DEFAULT_MOVE(C) DEFINE_MOVE(C, default)
 #define NON_COPYABLE(C) DELETE_COPY(C)
 
-#define CHECK(E) do{ check_macro_fn(E, __FILE__, __LINE__); } while (false)
+#define CHECK_MSG(E, T) do {\
+    if (!(E)) {\
+      check_fail_report(__FILE__, __LINE__, T);\
+    }\
+  } while (false)
+
+#define CHECK(E) CHECK_MSG(E, "check failed: " #E)
+#define CHECK_FAIL(T) CHECK_MSG(false, T)
 
 #define kI32f "%d"
 #define kI64f "%lld"
@@ -208,7 +215,7 @@ private:
   bool ok_ = false;
 };
 
-void check_macro_fn(bool expr, const char *file, int line);
+void check_fail_report(const char *file, int line, const char *text);
 }  // namespace
 
 namespace std {

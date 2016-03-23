@@ -5,11 +5,9 @@
 
 namespace igor {
 
-void check_macro_fn(bool expr, const char *file, int line) {
-  if (!expr) {
-    cout << "CHECK failed at " << __FILE__ << "@" << __LINE__ << endl;
-    std::exit(-1);
-  }
+void check_fail_report(const char *file, int line, const char *text) {
+  cerr<<file<<":"<<line<<": "<<text<<endl;
+  std::exit(-1);
 }
 
 u64 Substr::hash() const {

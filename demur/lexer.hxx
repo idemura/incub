@@ -15,12 +15,12 @@ enum class TokType : i64 {
 
 enum class LitType : i64 {
   Int,
-  Int8,
-  Int16,
-  Int32,
-  Int64,
-  Float32,
-  Float64,
+  I8,
+  I16,
+  I32,
+  I64,
+  F32,
+  F64,
   Char,
   String,
 };

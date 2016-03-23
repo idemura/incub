@@ -183,12 +183,12 @@ private:
 string to_string(LitType type) {
   switch (type) {
     case LitType::Int: return "Int";
-    case LitType::Int8: return "Int8";
-    case LitType::Int16: return "Int16";
-    case LitType::Int32: return "Int32";
-    case LitType::Int64: return "Int64";
-    case LitType::Float32: return "Float32";
-    case LitType::Float64: return "Float64";
+    case LitType::I8: return "I8";
+    case LitType::I16: return "I16";
+    case LitType::I32: return "I32";
+    case LitType::I64: return "I64";
+    case LitType::F32: return "F32";
+    case LitType::F64: return "F64";
     case LitType::Char: return "Char";
     case LitType::String: return "String";
   }

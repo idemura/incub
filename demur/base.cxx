@@ -3,15 +3,20 @@
 #include <cstdlib>
 #include <cstdio>  // sscanf
 
-namespace igor {
-
 void check_fail_report(const char *file, int line, const char *text) {
   cerr<<file<<":"<<line<<": "<<text<<endl;
   std::exit(-1);
 }
 
+int tests_passed(const char *file) {
+  cout<<"TESTS PASSED: "<<file<<endl;
+  return 0;
+}
+
+namespace igor {
+
 u64 Substr::hash() const {
-  CHECK(false);
+  CHECK_FAIL("Substr::hash");
   return -1;
 }
 

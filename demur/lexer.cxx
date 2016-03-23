@@ -14,6 +14,25 @@ bool is_digit(int c) {
   return '0' <= c && c <= '9';
 }
 
+bool is_bin_digit(int c) {
+  return '0' <= c && c <= '1';
+}
+
+bool is_oct_digit(int c) {
+  return '0' <= c && c <= '7';
+}
+
+bool is_hex_digit(int c) {
+  return ('0' <= c && c <= '9') ||
+         ('a' <= c && c <= 'f') ||
+         ('A' <= c && c <= 'F');
+}
+
+bool is_alpha(int c) {
+  return ('a' <= c && c <= 'z') ||
+         ('A' <= c && c <= 'Z');
+}
+
 class Lexer {
 public:
   Lexer(TokenStream *tokens, string s, ErrStr &err)
@@ -27,12 +46,13 @@ public:
 
 private:
   std::stringstream &error() {
-    return err_.error(tokens_->file_name(), line_ + 1, i_ + 1);
+    return err_.error(tokens_->file_name(), line_, i_ + 1);
   }
 
   int at() const { return s_[i_]; }
   bool done() const { return i_ == s_.size(); }
   void next() { i_++; }
+  void back() { i_--; }
 
   bool get_next() {
     while (!done() && is_space(at())) {
@@ -56,20 +76,20 @@ private:
 
   bool get_number() {
     if (at() == '0') {
-      i_ += 1;
+      next();
       if (!done()) {
         if (at() == 'x' || at() == 'X') {
-          i_++;
+          next();
           return hex_integer();
         } else if (at() == 'o' || at() == 'O') {
-          i_++;
+          next();
           return oct_integer();
         } else if (at() == 'b' || at() == 'B') {
-          i_++;
+          next();
           return bin_integer();
         }
       }
-      i_ -= 1;
+      back();
     }
     if (like_fp()) {
       return floating_point();
@@ -104,15 +124,35 @@ private:
   }
 
   bool dec_integer() {
-    while (!done() && !is_space(at())) {
+    // 1234[i{8,16,32,64}]
+    i64 n = 0;
+    while (!done()) {
       if (is_digit(at())) {
+        i64 d = at() - '0';
+        // TODO: Detect overflow.
+        n = 10 * n + d;
         next();
       } else if (at() == '_') {
         next();
+        if (!is_digit(at())) {
+          error()<<"digit has to follow separator _";
+          return false;
+        }
+      } else if (at() == 'i' || at() == 'I') {
+        CHECK_FAIL("i32 like suffix");
+      } else if (is_alpha(at())) {
+        error()<<"integer contains alpha character";
+        return false;
+      } else {
+        break;
       }
     }
-    CHECK_FAIL("dec_integer");
-    return false;
+    add(std::make_unique<LiteralToken<i64>>(
+          line_,
+          i_ + 1,
+          TokType::Integer,
+          Literal<i64>(LitType::Int, n)));
+    return true;
   }
 
   bool hex_integer() {
@@ -128,12 +168,71 @@ private:
     return false;
   }
 
+  void add(std::unique_ptr<Token> t) {
+    tokens_->add(std::move(t));
+  }
+
   TokenStream* const tokens_ = nullptr;
   string s_;
-  int line_ = 0;
+  int line_ = 1;
   int i_ = 0;
   ErrStr &err_;
 };
+}
+
+string to_string(LitType type) {
+  switch (type) {
+    case LitType::Int: return "Int";
+    case LitType::Int8: return "Int8";
+    case LitType::Int16: return "Int16";
+    case LitType::Int32: return "Int32";
+    case LitType::Int64: return "Int64";
+    case LitType::Float32: return "Float32";
+    case LitType::Float64: return "Float64";
+    case LitType::Char: return "Char";
+    case LitType::String: return "String";
+  }
+  return "";
+}
+
+string to_string(const Token& t) {
+  std::stringstream ss;
+  ss<<t;
+  return ss.str();
+}
+
+std::ostream &Token::output(std::ostream &os) const {
+  switch (type) {
+    case TokType::EndFile:
+      os<<"EndFile";
+      break;
+    case TokType::Integer: {
+      auto t = get_payload<Literal<i64>>(*this);
+      os<<"Integer("<<t.val<<": "<<to_string(t.type)<<")";
+      break;
+    }
+    case TokType::Float: {
+      auto t = get_payload<Literal<double>>(*this);
+      os<<"Float("<<t.val<<": "<<to_string(t.type)<<")";
+      break;
+    }
+    case TokType::String: {
+      auto t = get_payload<string>(*this);
+      os<<"String("<<t<<")";
+      break;
+    }
+    case TokType::Char: {
+      auto t = get_payload<i64>(*this);
+      os<<"Char("<<t;
+      if (' ' <= t && t < 127) {
+        os<<"Char("<<char(t)<<")";
+      } else {
+        os<<"Char(#"<<t<<")";
+      }
+      break;
+    }
+  }
+  return os;
 }
 
 void TokenStream::add(std::unique_ptr<Token> t) {

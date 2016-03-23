@@ -47,6 +47,6 @@ int main() {
   std::ios_base::sync_with_stdio(false);
   igor::test_substr();
   igor::test_flags();
-  return 0;
+  return TESTS_PASSED;
 }
 

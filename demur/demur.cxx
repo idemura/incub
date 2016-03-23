@@ -12,7 +12,7 @@ bool compile(const string &file_name, std::istream &is) {
   ErrStr err;
   auto tokens = tokenize(file_name, buffer.str(), err);
   if (!err.ok()) {
-    cerr<<err.to_string();
+    cerr<<err.str();
   }
   return err.ok();
 }

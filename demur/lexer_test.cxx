@@ -3,11 +3,53 @@
 namespace igor {
 namespace {
 
-void test_integer() {
+void print_tokens(const TokenStream &ts) {
+  for (auto c = ts.cursor(); !c.done(); c.next()) {
+    cout<<*c.at()<<endl;
+  }
+  cout<<"TokenStream: "<<ts.size()<<" tokens"<<endl;
+}
+
+void test_case_integer(string s, i64 expected) {
   ErrStr err;
-  auto ts = tokenize("", "0", err);
+  auto ts = tokenize("<test>", s, err);
+  // print_tokens(*ts);
   CHECK(err.ok());
-  CHECK(ts->size() == 1);
+  CHECK(ts->size() == 2);
+  auto c = ts->cursor();
+  CHECK(!c.done());
+  CHECK(c.at()->type == TokType::Integer);
+  auto pl = get_payload<Literal<i64>>(*c.at());
+  CHECK(pl.type == LitType::Int);
+  CHECK(pl.val == expected);
+  c.next();
+  CHECK(!c.done());
+  CHECK(c.at()->type == TokType::EndFile);
+  c.next();
+  CHECK(c.done());
+}
+
+void test_case_fail(string s) {
+  ErrStr err;
+  auto ts = tokenize("<test>", s, err);
+  CHECK(!err.ok());
+  // cerr<<err.str()<<endl;
+}
+
+void test_integer() {
+  test_case_integer("0", 0);
+  test_case_integer("00", 0);
+  test_case_integer("08", 8);
+  test_case_integer("0_9", 9);
+  test_case_fail("0_");
+  test_case_fail("0__1");
+  test_case_integer("2", 2);
+  test_case_integer("10", 10);
+  test_case_integer("12", 12);
+  test_case_integer("1_2", 12);
+  test_case_integer("1_23", 123);
+  test_case_integer("12_3", 123);
+  test_case_integer("1_2_3", 123);
 }
 }  // namespace
 }  // namespace
@@ -15,5 +57,5 @@ void test_integer() {
 int main() {
   std::ios_base::sync_with_stdio(false);
   igor::test_integer();
-  return 0;
+  return TESTS_PASSED;
 }

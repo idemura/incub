@@ -29,15 +29,22 @@
 
 #define CHECK_MSG(E, T) do {\
     if (!(E)) {\
-      check_fail_report(__FILE__, __LINE__, T);\
+      ::check_fail_report(__FILE__, __LINE__, T);\
     }\
   } while (false)
 
 #define CHECK(E) CHECK_MSG(E, "check failed: " #E)
 #define CHECK_FAIL(T) CHECK_MSG(false, T)
 
+#define TESTS_PASSED ::tests_passed(__FILE__)
+
 #define kI32f "%d"
 #define kI64f "%lld"
+
+using std::cerr;
+using std::cout;
+using std::endl;
+using std::string;
 
 namespace igor {
 
@@ -45,11 +52,6 @@ using i32 = int;
 using i64 = long long int;
 using u32 = unsigned i32;
 using u64 = unsigned i64;
-
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::string;
 
 class Substr {
 public:
@@ -194,7 +196,7 @@ public:
   DEFAULT_COPY(ErrStr);
   DEFAULT_MOVE(ErrStr);
 
-  string to_string() { return ss_.str(); }
+  string str() { return ss_.str(); }
   std::stringstream &error(const string &file, int line, int col) {
     ok_ = false;
     ss_ << file << ":" << line;
@@ -212,10 +214,8 @@ public:
 
 private:
   std::stringstream ss_;
-  bool ok_ = false;
+  bool ok_ = true;
 };
-
-void check_fail_report(const char *file, int line, const char *text);
 }  // namespace
 
 namespace std {
@@ -227,6 +227,9 @@ struct hash<igor::Substr> {
 inline string to_string(igor::Substr s) {
   return string(s.data(), s.size());
 }
-}  // namespace std (specialization)
+}  // namespace std
+
+void check_fail_report(const char *file, int line, const char *text);
+int tests_passed(const char *file);
 
 #endif

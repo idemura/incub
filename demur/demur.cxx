@@ -1,11 +1,10 @@
 #include "demur.hxx"
 
 #include <fstream>
+#include "flags.hxx"
 #include "lexer.hxx"
 
 namespace igor {
-std::unique_ptr<Flags> flags;
-
 bool compile(const string &file_name, std::istream &is) {
   std::stringstream buffer;
   buffer << is.rdbuf();
@@ -18,8 +17,7 @@ bool compile(const string &file_name, std::istream &is) {
 }
 
 int main(int argc, char **argv) {
-  flags.reset(new Flags());
-  if (!flags->parse(&argc, argv)) {
+  if (!flags_parse(&argc, argv)) {
     return -1;
   }
   auto failed = false;
@@ -37,7 +35,7 @@ int main(int argc, char **argv) {
       }
     }
   }
-  flags.reset();
+  flags_reset();
   return failed ? -1 : 0;
 }
 }  // namespace

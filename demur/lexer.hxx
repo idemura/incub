@@ -11,6 +11,7 @@ enum class TokType : i64 {
   Float,
   String,
   Char,
+  Name,
 };
 
 enum class LitType : i64 {

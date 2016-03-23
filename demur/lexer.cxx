@@ -33,6 +33,18 @@ bool is_alpha(int c) {
          ('A' <= c && c <= 'Z');
 }
 
+bool is_alnum(int c) {
+  return is_alpha(c) || is_digit(c) || c == '_';
+}
+
+bool is_upper(int c) {
+  return 'A' <= c && c <= 'Z';
+}
+
+bool is_lower(int c) {
+  return 'a' <= c && c <= 'z';
+}
+
 class Lexer {
 public:
   Lexer(TokenStream *tokens, string s, ErrStr &err)
@@ -64,14 +76,26 @@ private:
       next();
     }
     if (done()) {
-      tokens_->add(std::make_unique<Token>(line_, i_ + 1, TokType::EndFile));
+      add<Token>(TokType::EndFile);
       return false;
     }
     if (is_digit(at())) {
       return get_number();
     }
+    if (is_alpha(at())) {
+      return get_name();
+    }
     error()<<"unknown token\n";
     return false;
+  }
+
+  bool get_name() {
+    string name;
+    for (; !done(); next()) {
+      name.push_back(at());
+    }
+    add<PayloadToken<string>>(TokType::Name, name);
+    return true;
   }
 
   bool get_number() {
@@ -147,11 +171,7 @@ private:
         break;
       }
     }
-    add(std::make_unique<LiteralToken<i64>>(
-          line_,
-          i_ + 1,
-          TokType::Integer,
-          Literal<i64>(LitType::Int, n)));
+    add<LiteralToken<i64>>(TokType::Integer, Literal<i64>(LitType::Int, n));
     return true;
   }
 
@@ -168,8 +188,9 @@ private:
     return false;
   }
 
-  void add(std::unique_ptr<Token> t) {
-    tokens_->add(std::move(t));
+  template<class T, class ...ArgTs>
+  void add(TokType type, ArgTs ...args) {
+    tokens_->add(std::make_unique<T>(line_, i_ + 1, type, args...));
   }
 
   TokenStream* const tokens_ = nullptr;
@@ -229,6 +250,11 @@ std::ostream &Token::output(std::ostream &os) const {
       } else {
         os<<"Char(#"<<t<<")";
       }
+      break;
+    }
+    case TokType::Name: {
+      auto t = get_payload<string>(*this);
+      os<<"Name("<<t<<")";
       break;
     }
   }

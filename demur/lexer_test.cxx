@@ -72,6 +72,33 @@ void test_case_name(string s, const string &expected) {
 
 void test_name() {
   test_case_name("alpha", "alpha");
+  test_case_name("functionz", "functionz");
+}
+
+void test_case_simple(string s, TokType type) {
+  ErrStr err;
+  auto ts = tokenize("<test>", std::move(s), err);
+  // print_tokens(*ts);
+  CHECK(err.ok());
+  CHECK(ts->size() == 2);
+  auto c = ts->cursor();
+  CHECK(!c.done());
+  CHECK(c.at()->type == type);
+  c.next();
+  CHECK(!c.done());
+  CHECK(c.at()->type == TokType::EndFile);
+  c.next();
+  CHECK(c.done());
+}
+
+void test_keyword() {
+  test_case_simple("function", TokType::Function);
+  test_case_simple("(", TokType::LParen);
+  test_case_simple(")", TokType::RParen);
+  test_case_simple("{", TokType::LCurly);
+  test_case_simple("}", TokType::RCurly);
+  test_case_simple("[", TokType::LBracket);
+  test_case_simple("]", TokType::RBracket);
 }
 
 }  // namespace
@@ -81,5 +108,6 @@ int main() {
   std::ios_base::sync_with_stdio(false);
   igor::test_integer();
   igor::test_name();
+  igor::test_keyword();
   return TESTS_PASSED;
 }

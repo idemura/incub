@@ -12,6 +12,13 @@ enum class TokType : i64 {
   String,
   Char,
   Name,
+  LParen,
+  RParen,
+  LCurly,
+  RCurly,
+  LBracket,
+  RBracket,
+  Function,
 };
 
 enum class LitType : i64 {

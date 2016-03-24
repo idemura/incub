@@ -1,7 +1,7 @@
 #include "flags.hxx"
 
 namespace igor {
-std::unique_ptr<Flags> s_flags(new Flags);
+auto s_flags = std::make_unique<Flags>();
 
 Flags& flags() {
   return *s_flags;

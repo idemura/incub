@@ -1,5 +1,7 @@
 #include "lexer.hxx"
 
+#include <cstring>
+
 namespace igor {
 namespace {
 bool is_space(int c) {
@@ -66,6 +68,36 @@ private:
   void next() { i_++; }
   void back() { i_--; }
 
+  bool eq(int c) {
+    if (s_[i_] == c) {
+      i_++;
+      return true;
+    }
+    return false;
+  }
+
+  bool eq(int c, int d) {
+    auto first = i_;
+    if (eq(c) && i_ < s_.size() && eq(d)) {
+      return true;
+    }
+    i_ = first;
+    return false;
+  }
+
+  bool word_match(const char *s) {
+    auto first = i_;
+    auto s_len = std::strlen(s);
+    if (s_.compare(i_, s_len, s, s_len) == 0) {
+      i_ += s_len;
+      if (i_ == s_.size() || !is_alnum(s_[i_])) {
+        return true;
+      }
+    }
+    i_ = first;
+    return false;
+  }
+
   bool get_next() {
     while (!done() && is_space(at())) {
       if (!is_valid(at())) {
@@ -83,7 +115,31 @@ private:
       return get_number();
     }
     if (is_alpha(at())) {
-      return get_name();
+      if (word_match("function")) {
+        add<Token>(TokType::Function);
+        return true;
+      } else {
+        return get_name();
+      }
+    }
+    if (eq('(')) {
+      add<Token>(TokType::LParen);
+      return true;
+    } else if (eq(')')) {
+      add<Token>(TokType::RParen);
+      return true;
+    } else if (eq('{')) {
+      add<Token>(TokType::LCurly);
+      return true;
+    } else if (eq('}')) {
+      add<Token>(TokType::RCurly);
+      return true;
+    } else if (eq('[')) {
+      add<Token>(TokType::LBracket);
+      return true;
+    } else if (eq(']')) {
+      add<Token>(TokType::RBracket);
+      return true;
     }
     error()<<"unknown token\n";
     return false;
@@ -258,6 +314,13 @@ std::ostream &Token::output(std::ostream &os) const {
       os<<"Name("<<t<<")";
       break;
     }
+    case TokType::LParen: os<<"("; break;
+    case TokType::RParen: os<<")"; break;
+    case TokType::LCurly: os<<"{"; break;
+    case TokType::RCurly: os<<"}"; break;
+    case TokType::LBracket: os<<"["; break;
+    case TokType::RBracket: os<<"]"; break;
+    case TokType::Function: os<<"function"; break;
   }
   return os;
 }

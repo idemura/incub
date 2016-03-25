@@ -24,16 +24,13 @@ void test_case_integer(string s, i64 expected) {
   CHECK(err.ok());
   CHECK(ts->size() == 2);
   auto c = ts->cursor();
-  CHECK(!c.done());
   CHECK(c.at()->type == TokType::Integer);
   const auto payload = get_payload<Literal<i64>>(*c.at());
   CHECK(payload.type == LitType::Int);
   CHECK(payload.val == expected);
-  c.next();
-  CHECK(!c.done());
+  CHECK(c.next());
   CHECK(c.at()->type == TokType::EndFile);
-  c.next();
-  CHECK(c.done());
+  CHECK(c.next() && c.done());
 }
 
 void test_integer() {
@@ -55,19 +52,14 @@ void test_integer() {
 void test_case_name(string s, const string &expected) {
   ErrStr err;
   auto ts = tokenize("<test>", std::move(s), err);
-  // print_tokens(*ts);
   CHECK(err.ok());
   CHECK(ts->size() == 2);
   auto c = ts->cursor();
-  CHECK(!c.done());
   CHECK(c.at()->type == TokType::Name);
-  const auto payload = get_payload<string>(*c.at());
-  CHECK(payload == expected);
-  c.next();
-  CHECK(!c.done());
+  CHECK(get_payload<string>(*c.at()) == expected);
+  CHECK(c.next());
   CHECK(c.at()->type == TokType::EndFile);
-  c.next();
-  CHECK(c.done());
+  CHECK(c.next() && c.done());
 }
 
 void test_name() {
@@ -78,17 +70,13 @@ void test_name() {
 void test_case_simple(string s, TokType type) {
   ErrStr err;
   auto ts = tokenize("<test>", std::move(s), err);
-  // print_tokens(*ts);
   CHECK(err.ok());
   CHECK(ts->size() == 2);
   auto c = ts->cursor();
-  CHECK(!c.done());
   CHECK(c.at()->type == type);
-  c.next();
-  CHECK(!c.done());
+  CHECK(c.next());
   CHECK(c.at()->type == TokType::EndFile);
-  c.next();
-  CHECK(c.done());
+  CHECK(c.next() && c.done());
 }
 
 void test_keyword() {
@@ -101,6 +89,29 @@ void test_keyword() {
   test_case_simple("]", TokType::RBracket);
 }
 
+void test1() {
+  ErrStr err;
+  auto ts = tokenize("<test>", "function foo()\n{\n}\n", err);
+  CHECK(err.ok());
+  CHECK(ts->size() == 7);
+  auto c = ts->cursor();
+  CHECK(c.at()->type == TokType::Function);
+  CHECK(c.next());
+  CHECK(c.at()->type == TokType::Name);
+  CHECK(get_payload<string>(*c.at()) == "foo");
+  CHECK(c.next());
+  CHECK(c.at()->type == TokType::LParen);
+  CHECK(c.next());
+  CHECK(c.at()->type == TokType::RParen);
+  CHECK(c.next());
+  CHECK(c.at()->type == TokType::LCurly);
+  CHECK(c.next());
+  CHECK(c.at()->type == TokType::RCurly);
+  CHECK(c.next());
+  CHECK(c.at()->type == TokType::EndFile);
+  CHECK(c.next() && c.done());
+}
+
 }  // namespace
 }  // namespace
 
@@ -109,5 +120,6 @@ int main() {
   igor::test_integer();
   igor::test_name();
   igor::test_keyword();
+  igor::test1();
   return TESTS_PASSED;
 }

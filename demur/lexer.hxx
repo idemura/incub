@@ -80,7 +80,13 @@ public:
   public:
     explicit Cursor(const TokenStream *tokens): tokens_(&tokens->tokens_) {}
     Token *at() const { return (*tokens_)[i_].get(); }
-    void next() { if (i_ < tokens_->size()) i_++; }
+    bool next() {
+      if (i_ < tokens_->size()) {
+        i_++;
+        return true;
+      }
+      return false;
+    }
     void back() { if (i_ > 0) i_--; }
     bool done() const { return i_ == tokens_->size(); }
 

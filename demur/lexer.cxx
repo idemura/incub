@@ -146,11 +146,10 @@ private:
   }
 
   bool get_name() {
-    string name;
-    for (; !done(); next()) {
-      name.push_back(at());
+    auto first = i_;
+    for (; !done() && is_alnum(at()); next()) {
     }
-    add<PayloadToken<string>>(TokType::Name, name);
+    add<PayloadToken<string>>(TokType::Name, s_.substr(first, i_ - first));
     return true;
   }
 

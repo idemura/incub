@@ -332,23 +332,49 @@ std::unique_ptr<TokenStream> tokenize(
   return std::move(tokens);
 }
 
-bool check_name(const string &name, string *err) {
-  std::stringstream ss;
+namespace {
+bool check_name_underscores(const string &name, std::stringstream &ss) {
   for (int i = 0; i < name.size(); i++) {
-    if (is_upper(name[i])) {
-      ss<<"invalid name "<<name<<": only lower case letters allowed, found "
-        <<name[i];
-      *err = ss.str();
-      return false;
-    }
     if (name[i] == '_' && (i == 0 || name[i - 1] == '_')) {
       if (i == 0)
-        ss<<"invalid name "<<name<<": starting with _ is not allowed";
+        ss<<"invalid name "<<name<<": must not start with _";
       else
-        ss<<"invalid name "<<name<<": single _ allowed";
+        ss<<"invalid name "<<name<<": _ alongside found";
+      return false;
+    }
+  }
+  return true;
+}
+}  // namespace
+
+bool check_name(const string &name, string *err) {
+  std::stringstream ss;
+  if (!check_name_underscores(name, ss)) {
+    *err = ss.str();
+    return false;
+  }
+  for (int i = 0; i < name.size(); i++) {
+    if (is_upper(name[i])) {
+      ss<<"invalid name "<<name<<": only lower case letters allowed in "
+          "function/variable, found "<<name[i];
       *err = ss.str();
       return false;
     }
+  }
+  return true;
+}
+
+bool check_type_name(const string &name, string *err) {
+  std::stringstream ss;
+  if (!check_name_underscores(name, ss)) {
+    *err = ss.str();
+    return false;
+  }
+  if (!is_upper(name[0])) {
+    ss<<"invalid name "<<name<<": type/class/const name must start with upper "
+        "case letter";
+    *err = ss.str();
+    return false;
   }
   return true;
 }

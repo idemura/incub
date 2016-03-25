@@ -7,9 +7,11 @@ namespace igor {
 
 struct Flags: public FlagSet {
   bool check_names = true;
+  bool log_parse = false;
 
   Flags() {
     register_flag("check_names", &check_names);
+    register_flag("log_parse", &log_parse);
   }
 };
 

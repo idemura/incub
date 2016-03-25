@@ -8,7 +8,11 @@ Flags& flags() {
 }
 
 bool flags_parse(int *argc, char **argv) {
-  return s_flags->parse(argc, argv);
+  if (!s_flags->parse(argc, argv)) {
+    flags_reset();
+    return false;
+  }
+  return true;
 }
 
 void flags_reset() {

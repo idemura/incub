@@ -41,6 +41,8 @@
 #define kI32f "%d"
 #define kI64f "%lld"
 
+#define STREAM_OUT(ARG) inline std::ostream &operator<<(std::ostream &os, ARG)
+
 using std::cerr;
 using std::cout;
 using std::endl;

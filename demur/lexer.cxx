@@ -114,7 +114,7 @@ private:
     if (is_digit(at())) {
       return get_number();
     }
-    if (is_alpha(at())) {
+    if (is_alpha(at()) || at() == '_') {
       if (word_match("function")) {
         add<Token>(TokType::Function);
         return true;
@@ -271,24 +271,18 @@ string to_string(LitType type) {
   return "";
 }
 
-string to_string(const Token& t) {
-  std::stringstream ss;
-  ss<<t;
-  return ss.str();
-}
-
 std::ostream &Token::output(std::ostream &os) const {
   switch (type) {
     case TokType::EndFile:
       os<<"EndFile";
       break;
     case TokType::Integer: {
-      auto t = get_payload<Literal<i64>>(*this);
+      auto t = get_literal<i64>(*this);
       os<<"Integer("<<t.val<<": "<<to_string(t.type)<<")";
       break;
     }
     case TokType::Float: {
-      auto t = get_payload<Literal<double>>(*this);
+      auto t = get_literal<double>(*this);
       os<<"Float("<<t.val<<": "<<to_string(t.type)<<")";
       break;
     }
@@ -336,6 +330,27 @@ std::unique_ptr<TokenStream> tokenize(
   Lexer lexer(tokens.get(), std::move(s), err);
   lexer.tokenize();
   return std::move(tokens);
+}
+
+bool check_name(const string &name, string *err) {
+  std::stringstream ss;
+  for (int i = 0; i < name.size(); i++) {
+    if (is_upper(name[i])) {
+      ss<<"invalid name "<<name<<": only lower case letters allowed, found "
+        <<name[i];
+      *err = ss.str();
+      return false;
+    }
+    if (name[i] == '_' && (i == 0 || name[i - 1] == '_')) {
+      if (i == 0)
+        ss<<"invalid name "<<name<<": starting with _ is not allowed";
+      else
+        ss<<"invalid name "<<name<<": single _ allowed";
+      *err = ss.str();
+      return false;
+    }
+  }
+  return true;
 }
 
 }

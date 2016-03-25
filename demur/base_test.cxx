@@ -3,9 +3,6 @@
 namespace igor {
 namespace {
 
-void test_substr() {
-}
-
 class Flags: public FlagSet {
  public:
   string str = "/tmp";
@@ -43,10 +40,10 @@ void test_flags() {
 }  // namespace
 }  // namespace
 
-int main() {
-  std::ios_base::sync_with_stdio(false);
-  igor::test_substr();
-  igor::test_flags();
+int main(int argc, char **argv) {
+  using namespace igor;
+
+  test_flags();
+
   return TESTS_PASSED;
 }
-

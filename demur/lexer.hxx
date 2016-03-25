@@ -73,52 +73,82 @@ template<class T>
 T get_payload(const Token &t) {
   return reinterpret_cast<const PayloadToken<T>&>(t).pl;
 }
+template<class T>
+Literal<T> get_literal(const Token &t) {
+  return get_payload<Literal<T>>(t);
+}
+
+using TokenContainer = std::vector<std::unique_ptr<Token>>;
+
+class TokenCursor {
+public:
+  TokenCursor(): tokens_(nullptr) {}
+  explicit TokenCursor(const TokenContainer *tokens): tokens_(tokens) {}
+  DEFAULT_COPY(TokenCursor);
+  DEFAULT_MOVE(TokenCursor);
+  Token *at() const { return (*tokens_)[i_].get(); }
+  bool next() {
+    if (i_ < tokens_->size()) {
+      i_++;
+      return true;
+    }
+    return false;
+  }
+  void back() { if (i_  > 0) i_--; }
+  bool done() const { return i_ == tokens_->size(); }
+
+private:
+  TokenContainer const *tokens_ = nullptr;
+  int i_ = 0;
+};
 
 class TokenStream {
 public:
-  class Cursor {
-  public:
-    explicit Cursor(const TokenStream *tokens): tokens_(&tokens->tokens_) {}
-    Token *at() const { return (*tokens_)[i_].get(); }
-    bool next() {
-      if (i_ < tokens_->size()) {
-        i_++;
-        return true;
-      }
-      return false;
-    }
-    void back() { if (i_ > 0) i_--; }
-    bool done() const { return i_ == tokens_->size(); }
-
-  private:
-    const std::vector<std::unique_ptr<Token>> *const tokens_ = nullptr;
-    int i_ = 0;
-  };
-
   explicit TokenStream(string file_name) : file_name_(std::move(file_name)) {}
   string file_name() const { return file_name_; }
   int size() const { return tokens_.size(); }
   void add(std::unique_ptr<Token> t);
-  Cursor cursor() const { return Cursor(this); }
+  TokenCursor cursor() const { return TokenCursor(&tokens_); }
 
 private:
-  std::string file_name_;
-  std::vector<std::unique_ptr<Token>> tokens_;
+  const std::string file_name_;
+  TokenContainer tokens_;
 };
 
 std::unique_ptr<TokenStream> tokenize(
     const std::string &file_name,
     std::string s,
     ErrStr &err);
+bool check_name(const string &name, string *err);
 string to_string(LitType type);
-string to_string(const Token& t);
 
-inline std::ostream &operator<<(std::ostream &os, const Token &t) {
+STREAM_OUT(const Token &t) {
   return t.output(os);
 }
-inline std::ostream &operator<<(std::ostream &os, LitType type) {
+STREAM_OUT(LitType type) {
   return os<<to_string(type);
 }
+STREAM_OUT(TokenCursor cur) {
+  return os<<*cur.at();
+}
+
+class TokenErr {
+public:
+  TokenErr(string file, ErrStr &err)
+      : file_(std::move(file)), err_(err) {}
+  DEFAULT_COPY(TokenErr);
+  DEFAULT_MOVE(TokenErr);
+
+  std::stringstream &error(const TokenCursor &c) {
+    return err_.error(file_, c.at()->line, c.at()->col);
+  }
+  bool ok() const { return err_.ok(); }
+  void clear_error() { err_.clear_error(); }
+
+private:
+  const string file_;
+  ErrStr &err_;
+};
 
 }
 

@@ -42,7 +42,7 @@ bool FlagSet::parse_flag(int i, int argc, char **argv, int *i_out) {
   auto it = flags_.find(a);
   if (it == flags_.end()) {
     int l = strlen(a);
-    if (a[l - 1] == '-' || a[l - 1] == '+') {
+    if (l > 0 && (a[l - 1] == '-' || a[l - 1] == '+')) {
       it = flags_.find(string(a, l - 1));
       if (it != flags_.end() && it->second.type == Type::kBool) {
         *(bool*)it->second.p = a[l - 1] == '+';

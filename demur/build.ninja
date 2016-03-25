@@ -20,12 +20,16 @@ build base.o: cxx base.cxx
 build base_test.o: cxx base_test.cxx
 build base.test  : lnk base_test.o demur.a
 
+build ast.o: cxx ast.cxx
+build ast_test.o: cxx ast_test.cxx
+build ast.test  : lnk ast_test.o demur.a
+
 build flags.o: cxx flags.cxx
 
 build lexer.o: cxx lexer.cxx
 build lexer_test.o: cxx lexer_test.cxx
 build lexer.test  : lnk lexer_test.o demur.a
 
-build demur.a: lib base.o flags.o lexer.o
+build demur.a: lib base.o flags.o lexer.o ast.o
 build demur.o: cxx demur.cxx
 build demur  : lnk demur.o demur.a

@@ -1,4 +1,5 @@
 #include "lexer.hxx"
+#include "flags.hxx"
 
 namespace igor {
 namespace {
@@ -25,7 +26,7 @@ void test_case_integer(string s, i64 expected) {
   CHECK(ts->size() == 2);
   auto c = ts->cursor();
   CHECK(c.at()->type == TokType::Integer);
-  const auto payload = get_payload<Literal<i64>>(*c.at());
+  const auto payload = get_literal<i64>(*c.at());
   CHECK(payload.type == LitType::Int);
   CHECK(payload.val == expected);
   CHECK(c.next());
@@ -115,11 +116,18 @@ void test1() {
 }  // namespace
 }  // namespace
 
-int main() {
+int main(int argc, char **argv) {
+  using namespace igor;
   std::ios_base::sync_with_stdio(false);
-  igor::test_integer();
-  igor::test_name();
-  igor::test_keyword();
-  igor::test1();
+  if (!flags_parse(&argc, argv)) {
+    return -1;
+  }
+
+  test_integer();
+  test_name();
+  test_keyword();
+  test1();
+
+  flags_reset();
   return TESTS_PASSED;
 }

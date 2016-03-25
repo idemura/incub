@@ -1,8 +1,7 @@
 #include "demur.hxx"
 
 #include <fstream>
-#include "flags.hxx"
-#include "lexer.hxx"
+#include "ast.hxx"
 
 namespace igor {
 bool compile(const string &file_name, std::istream &is) {
@@ -13,7 +12,11 @@ bool compile(const string &file_name, std::istream &is) {
   if (!err.ok()) {
     cerr<<err.str();
   }
-  return err.ok();
+  build_ast(tokens.get(), err);
+  if (!err.ok()) {
+    cerr<<err.str();
+  }
+  return true;
 }
 
 int main(int argc, char **argv) {

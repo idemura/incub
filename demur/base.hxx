@@ -200,23 +200,24 @@ public:
 
   string str() { return ss_.str(); }
   std::stringstream &error(const string &file, int line, int col) {
-    ok_ = false;
-    ss_ << file << ":" << line;
+    err_count_++;
+    ss_<<file<<":"<<line;
     if (col > 0) {
-      ss_ << ":" << col;
+      ss_<<":"<<col;
     }
-    ss_ << " error: ";
+    ss_<<" error: ";
     return ss_;
   }
-  bool ok() const { return ok_; }
+  int err_count() const { return err_count_; }
+  bool ok() const { return err_count_ == 0; }
   void clear_error() {
-    ok_ = true;
+    err_count_ = 0;
     // Clear ss_ as well?
   }
 
 private:
   std::stringstream ss_;
-  bool ok_ = true;
+  int err_count_ = 0;
 };
 }  // namespace
 

@@ -11,19 +11,22 @@ struct NoParse {};
 struct ParseT {
   // Non-explicit for reason.
   ParseT() = default;
-  ParseT(NoMatch) {}
+  DEFAULT_MOVE(ParseT);
+  ParseT(NoMatch): parse(true) {}
   ParseT(NoParse): match(true) {}
-  ParseT(TokenCursor c): match(true), parse(true), c(c) {}
+  ParseT(TokenCursor c, std::unique_ptr<AstNode> node)
+      : match(true), parse(true), c(c), node(std::move(node)) {}
 
   bool match = false;
   bool parse = false;
   TokenCursor c;
+  std::unique_ptr<AstNode> node;
 };
 
-const auto kNoMatch = ParseT(NoMatch());
-const auto kNoParse = ParseT(NoParse());
+const auto kNoMatch = NoMatch();
+const auto kNoParse = NoParse();
 
-ParseT build_function(TokenCursor c, TokenErr &err) {
+ParseT parse_function(TokenCursor c, TokenErr &err) {
   if (c.at()->type != TokType::Function) {
     return kNoMatch;
   }
@@ -32,12 +35,10 @@ ParseT build_function(TokenCursor c, TokenErr &err) {
     err.error(c)<<"function name expected, got "<<c<<"\n";
     return kNoParse;
   }
-  const auto name = get_payload<string>(*c.at());
-  string name_err;
-  if (flags().check_names && !check_name(name, &name_err)) {
-    err.error(c)<<name_err<<"\n";
+  if (!check_name_at(c, err)) {
     return kNoParse;
   }
+  auto name = get_payload<string>(*c.at());
   c.next();
   if (c.at()->type != TokType::LParen) {
     err.error(c)<<"in function definition ( expected, got "<<c<<"\n";
@@ -60,39 +61,85 @@ ParseT build_function(TokenCursor c, TokenErr &err) {
   }
   c.next();
   if (flags().log_parse) cout<<"parse: function "<<name<<endl;
-  return c;
+  auto node = std::make_unique<AstFunction>();
+  node->name = std::move(name);
+  return {c, std::move(node)};
 }
 
-ParseT build_top(TokenCursor c, TokenErr &err) {
+ParseT parse_top(TokenCursor c, TokenErr &err) {
   if (c.at()->type == TokType::EndFile) {
     if (flags().log_parse) cout<<"parse: end of file"<<endl;
     c.next();
-    return c;
+    return {c, nullptr};
   }
   ParseT r;
-  r = build_function(c, err);
+  r = parse_function(c, err);
   if (r.match) {
     return r;
   }
   return kNoMatch;
 }
+
+ParseT parse_module(TokenCursor c, TokenErr &err) {
+  if (c.at()->type != TokType::Module) {
+    return kNoMatch;
+  }
+  c.next();
+  if (c.at()->type != TokType::Name) {
+    err.error(c)<<"module name expected, got "<<c<<"\n";
+    return kNoParse;
+  }
+  if (!check_name_at(c, err)) {
+    return kNoParse;
+  }
+  auto name = get_payload<string>(*c.at());
+  c.next();
+  if (c.at()->type != TokType::SemiColon) {
+    err.error(c)<<"module definition should with ;, got "<<c<<"\n";
+    return kNoParse;
+  }
+  auto node = std::make_unique<AstModule>();
+  node->name = std::move(name);
+  return {c, std::move(node)};
+}
+}  // namespace
+
+void AstNode::delete_children() {
+  for (auto n = first_child_; n != nullptr; n = n->next_) {
+    n->delete_children();
+    delete n;
+  }
+  first_child_ = last_ = nullptr;
 }
 
-void build_ast(TokenStream *tokens, ErrStr &err) {
+std::unique_ptr<AstNode> build_ast(TokenStream *tokens, ErrStr &err) {
   TokenErr token_err(tokens->file_name(), err);
+  std::unique_ptr<AstNode> module;
   auto c = tokens->cursor();
+  auto r_module = parse_module(c, token_err);
+  if (!r_module.parse) {
+    return nullptr;
+  }
+  if (!r_module.match) {
+    module = std::make_unique<AstModule>();
+    // With empty name by default.
+  } else {
+    module = std::move(r_module.node);
+  }
   for (;;) {
-    auto r = build_top(c, token_err);
+    auto r = parse_top(c, token_err);
     if (!r.match) {
-      token_err.error(c)<<"can't match top\n";
-      return;
+      token_err.error(c)<<"can't match top level grammar\n";
+      return nullptr;
     }
     if (!r.parse) {
       break;
     }
     c = r.c;
+    module->add(std::move(r.node));
     if (c.done()) break;
   }
+  return std::move(module);
 }
 
 }

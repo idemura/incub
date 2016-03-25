@@ -18,7 +18,12 @@ enum class TokType : i64 {
   RCurly,
   LBracket,
   RBracket,
+  SemiColon,
+  Comma,
+  Colon,
+  Period,
   Function,
+  Module,
 };
 
 enum class LitType : i64 {
@@ -115,23 +120,6 @@ private:
   TokenContainer tokens_;
 };
 
-std::unique_ptr<TokenStream> tokenize(
-    const std::string &file_name,
-    std::string s,
-    ErrStr &err);
-bool check_name(const string &name, string *err);
-string to_string(LitType type);
-
-STREAM_OUT(const Token &t) {
-  return t.output(os);
-}
-STREAM_OUT(LitType type) {
-  return os<<to_string(type);
-}
-STREAM_OUT(TokenCursor cur) {
-  return os<<*cur.at();
-}
-
 class TokenErr {
 public:
   TokenErr(string file, ErrStr &err)
@@ -149,6 +137,23 @@ private:
   const string file_;
   ErrStr &err_;
 };
+
+std::unique_ptr<TokenStream> tokenize(
+    const std::string &file_name,
+    std::string s,
+    ErrStr &err);
+bool check_name_at(TokenCursor c, TokenErr &err);
+string to_string(LitType type);
+
+STREAM_OUT(const Token &t) {
+  return t.output(os);
+}
+STREAM_OUT(LitType type) {
+  return os<<to_string(type);
+}
+STREAM_OUT(TokenCursor cur) {
+  return os<<*cur.at();
+}
 
 }
 

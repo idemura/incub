@@ -8,16 +8,23 @@ namespace igor {
 class AstNode;
 class Visitor;
 
-enum class Node {
-  Function,
+class Object {
+public:
 };
+
+// use dynamic_cast if needed.
+// enum class Node {
+//   Function,
+// };
 
 class AstNode {
 public:
   AstNode() = default;
   virtual ~AstNode() { delete_children(); }
   virtual bool accept(Visitor *visitor) = 0;
+  virtual bool generate_code(Object *object) = 0;
 
+  void add(std::unique_ptr<AstNode> node) {}
   AstNode *parent() const { return parent_; }
   AstNode *first_child() const { return first_child_; }
   AstNode *next() const { return next_; }
@@ -33,9 +40,22 @@ private:
   DELETE_COPY(AstNode);
 };
 
+class AstModule: public AstNode {
+public:
+  AstModule() = default;
+  bool accept(Visitor *visitor) override { return true; }
+  bool generate_code(Object *object) override { return true; }
+
+  string name;
+
+private:
+};
+
 class AstFunction: public AstNode {
 public:
   AstFunction() = default;
+  bool accept(Visitor *visitor) override { return true; }
+  bool generate_code(Object *object) override { return true; }
 
   string name;
 
@@ -56,7 +76,7 @@ protected:
   bool visit_children(AstNode *node);
 };
 
-void build_ast(TokenStream *tokens, ErrStr &err);
+std::unique_ptr<AstNode> build_ast(TokenStream *tokens, ErrStr &err);
 
 }
 

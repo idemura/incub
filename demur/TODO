@@ -1,1 +1,4 @@
 * Comments
+* Name check: flag into name_check. Check for __ unconditionally and type
+  capital letter.
+* Keep compiling after error

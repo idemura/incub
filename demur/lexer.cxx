@@ -1,6 +1,7 @@
 #include "lexer.hxx"
 
 #include <cstring>
+#include "flags.hxx"
 
 namespace igor {
 namespace {
@@ -118,6 +119,9 @@ private:
       if (word_match("function")) {
         add<Token>(TokType::Function);
         return true;
+      } else if (word_match("module")) {
+        add<Token>(TokType::Module);
+        return true;
       } else {
         return get_name();
       }
@@ -139,6 +143,18 @@ private:
       return true;
     } else if (eq(']')) {
       add<Token>(TokType::RBracket);
+      return true;
+    } else if (eq(';')) {
+      add<Token>(TokType::SemiColon);
+      return true;
+    } else if (eq(',')) {
+      add<Token>(TokType::Comma);
+      return true;
+    } else if (eq(':')) {
+      add<Token>(TokType::Colon);
+      return true;
+    } else if (eq('.')) {
+      add<Token>(TokType::Period);
       return true;
     }
     error()<<"unknown token\n";
@@ -214,13 +230,13 @@ private:
       } else if (at() == '_') {
         next();
         if (!is_digit(at())) {
-          error()<<"digit has to follow separator _";
+          error()<<"digit has to follow separator _\n";
           return false;
         }
       } else if (at() == 'i' || at() == 'I') {
         CHECK_FAIL("i32 like suffix");
       } else if (is_alpha(at())) {
-        error()<<"integer contains alpha character";
+        error()<<"integer contains alpha character\n";
         return false;
       } else {
         break;
@@ -313,7 +329,12 @@ std::ostream &Token::output(std::ostream &os) const {
     case TokType::RCurly: os<<"}"; break;
     case TokType::LBracket: os<<"["; break;
     case TokType::RBracket: os<<"]"; break;
+    case TokType::SemiColon: os<<";"; break;
+    case TokType::Comma: os<<","; break;
+    case TokType::Colon: os<<":"; break;
+    case TokType::Period: os<<"."; break;
     case TokType::Function: os<<"function"; break;
+    case TokType::Module: os<<"module"; break;
   }
   return os;
 }
@@ -333,13 +354,16 @@ std::unique_ptr<TokenStream> tokenize(
 }
 
 namespace {
-bool check_name_underscores(const string &name, std::stringstream &ss) {
+bool check_name_underscores(TokenCursor c, TokenErr &err) {
+  const auto& name = get_payload<string>(*c.at());
   for (int i = 0; i < name.size(); i++) {
-    if (name[i] == '_' && (i == 0 || name[i - 1] == '_')) {
-      if (i == 0)
-        ss<<"invalid name "<<name<<": must not start with _";
-      else
-        ss<<"invalid name "<<name<<": _ alongside found";
+    if (name[i] != '_') continue;
+    if (i == 0) {
+      err.error(c)<<"invalid name "<<name<<": name should not start with _\n";
+      return false;
+    }
+    if (name[i - 1] == '_') {
+      err.error(c)<<"invalid name "<<name<<": two _ side by side found\n";
       return false;
     }
   }
@@ -347,33 +371,37 @@ bool check_name_underscores(const string &name, std::stringstream &ss) {
 }
 }  // namespace
 
-bool check_name(const string &name, string *err) {
-  std::stringstream ss;
-  if (!check_name_underscores(name, ss)) {
-    *err = ss.str();
+bool check_name_at(TokenCursor c, TokenErr &err) {
+  if (!check_name_underscores(c, err)) {
     return false;
+  }
+  const auto& name = get_payload<string>(*c.at());
+  if (!is_lower(name[0])) {
+    err.error(c)<<"invalid name "<<name<<": function/variable name must start "
+                  "with lower case letter\n";
+    return false;
+  }
+  if (!flags().check_names) {
+    return true;
   }
   for (int i = 0; i < name.size(); i++) {
     if (is_upper(name[i])) {
-      ss<<"invalid name "<<name<<": only lower case letters allowed in "
-          "function/variable, found "<<name[i];
-      *err = ss.str();
+      err.error(c)<<"invalid name "<<name<<": only lower case letters allowed "
+                    "in function/variable, found "<<name[i]<<"\n";
       return false;
     }
   }
   return true;
 }
 
-bool check_type_name(const string &name, string *err) {
-  std::stringstream ss;
-  if (!check_name_underscores(name, ss)) {
-    *err = ss.str();
+bool check_type_name(TokenCursor c, TokenErr &err) {
+  if (!check_name_underscores(c, err)) {
     return false;
   }
+  const auto& name = get_payload<string>(*c.at());
   if (!is_upper(name[0])) {
-    ss<<"invalid name "<<name<<": type/class/const name must start with upper "
-        "case letter";
-    *err = ss.str();
+    err.error(c)<<"invalid name "<<name<<": type/class/const name must start "
+                  "with upper case letter\n";
     return false;
   }
   return true;

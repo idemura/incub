@@ -11,11 +11,15 @@ bool compile(const string &file_name, std::istream &is) {
   auto tokens = tokenize(file_name, buffer.str(), err);
   if (!err.ok()) {
     cerr<<err.str();
+    return false;
   }
-  build_ast(tokens.get(), err);
+  auto module = build_ast(tokens.get(), err);
   if (!err.ok()) {
     cerr<<err.str();
+    return false;
   }
+  if (module == nullptr) return false;
+  cout<<file_name<<" compiled successfully"<<endl;
   return true;
 }
 

@@ -92,6 +92,7 @@ public:
   DEFAULT_COPY(TokenCursor);
   DEFAULT_MOVE(TokenCursor);
   Token *at() const { return (*tokens_)[i_].get(); }
+  TokType type_at() const { return at()->type; }
   bool next() {
     if (i_ < tokens_->size()) {
       i_++;

@@ -51,6 +51,57 @@ public:
 private:
 };
 
+// Generic AstType: type name and possibly list of type parameters (if type
+// is a template).
+struct AstType {
+  AstType() = default;
+  explicit AstType(string name): name(std::move(name)) {}
+  AstType(const AstType &other): name(other.name) {
+    for (const auto &p : other.params) {
+      params.push_back(p->clone());
+    }
+  }
+  std::unique_ptr<AstType> clone() const {
+    return std::make_unique<AstType>(*this);
+  }
+
+  string name;
+  std::vector<std::unique_ptr<AstType>> params;
+};
+
+struct AstVarType {
+  string name;
+  std::unique_ptr<AstType> type;
+  // how we represent type? as some tree as well?
+  //string type_name;
+  //return var name, return var_type;
+};
+
+struct AstVarList {
+  std::vector<AstVarType> vars;
+};
+
+struct AstFnProto {
+  AstVarList args, result;
+};
+
+// Function type! Int[] - array.
+// fn: Int(Int, Int) function Int, Int => Int
+// how we do that if function that returns several results???
+// (Int, Int) => (Int, Int)
+// Int => Int
+// but then how we write function itself?
+// function sum(x, y: Int) => Int, Int {}
+// function sum(x, y: Int) => a: Int, b: Int {}
+// function sum(x, y: Int) =>
+//     a: Int,
+//     b: Int {
+//   a = x + y;
+//   b = x - y;
+// }
+// void function:
+// function check(x, y: Int) {}
+
 class AstFunction: public AstNode {
 public:
   AstFunction() = default;
@@ -58,6 +109,7 @@ public:
   bool generate_code(Object *object) override { return true; }
 
   string name;
+  AstFnProto proto;
 
   // name
   // args

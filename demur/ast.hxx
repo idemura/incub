@@ -51,27 +51,36 @@ public:
 private:
 };
 
-// Generic AstType: type name and possibly list of type parameters (if type
-// is a template).
+// Generic AstType: type name and possibly list of parameters (if type is a
+// generic type), which are named "instance types"
 struct AstType {
   AstType() = default;
   explicit AstType(string name): name(std::move(name)) {}
-  AstType(const AstType &other): name(other.name) {
-    for (const auto &p : other.params) {
-      params.push_back(p->clone());
-    }
+  AstType(const AstType &other)
+      : name(other.name),
+        inst_types(other.inst_types) {
+    for (auto &p : inst_types) p = p->clone();
   }
-  std::unique_ptr<AstType> clone() const {
-    return std::make_unique<AstType>(*this);
+  AstType* clone() const {
+    return new AstType(*this);
+  }
+  void destroy() {
+    for (auto p : inst_types) p->destroy();
+    delete this;
   }
 
   string name;
-  std::vector<std::unique_ptr<AstType>> params;
+  std::vector<AstType*> inst_types;
 };
 
 struct AstVarType {
+  explicit AstVarType(string name, AstType *type): name(name), type(type) {}
+  ~AstVarType() { destroy_type(type); }
+  DELETE_COPY(AstVarType);
+  DEFAULT_MOVE(AstVarType);
+
   string name;
-  std::unique_ptr<AstType> type;
+  AstType *type = nullptr;
   // how we represent type? as some tree as well?
   //string type_name;
   //return var name, return var_type;
@@ -129,6 +138,7 @@ protected:
 };
 
 std::unique_ptr<AstNode> build_ast(TokenStream *tokens, ErrStr &err);
+void destroy_type(AstType *type);
 
 }
 

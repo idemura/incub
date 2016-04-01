@@ -66,9 +66,21 @@ bool parse_arg_list(TokenCursor *c, AstVarList *vars, TokenErr &err) {
   return true;
 }
 
+AstType *parse_type(TokenCursor *c, TokenErr &err) {
+  if (c->type_at() != TokType::Name) {
+    err.error(*c)<<"type def: expected type name\n";
+    return nullptr;
+  }
+  if (!check_type_name_at(*c, err)) {
+    return nullptr;
+  }
+  auto name = get_payload<string>(*c);
+  return new AstType(name);
+}
+
 bool parse_proto(TokenCursor *c, AstFnProto *proto, TokenErr &err) {
   if (c->type_at() != TokType::LParen) {
-    err.error(*c)<<"in function definition ( expected, got "<<*c<<"\n";
+    err.error(*c)<<"expected ( as function argument list beginning\n";
     return false;
   }
   c->next();
@@ -78,11 +90,31 @@ bool parse_proto(TokenCursor *c, AstFnProto *proto, TokenErr &err) {
       break;
     }
     if (c->type_at() != TokType::Name) {
-      err.error(*c)<<"argument name expected, got "<<*c<<"\n";
+      err.error(*c)<<"expected first argument name\n";
+      return false;
+    }
+    std::vector<string> names;
+    for (;;) {
+      names.push_back(get_payload<string>(*c));
+      c->next();
+      if (c->type_at() != TokType::Comma) {
+        break;
+      }
+      c->next();
+      if (c->type_at() != TokType::Name) {
+        err.error(*c)<<"argument argument name after ,\n";
+        return false;
+      }
+    }
+    if (c->type_at() != TokType::Colon) {
+      err.error(*c)<<"expected : after argument list\n"
+      return false;
+    }
+    auto type = parse_type(c, err);
+    if (type == nullptr) {
       return false;
     }
   }
-  // c->next();
   return true;
 }
 
@@ -192,6 +224,10 @@ std::unique_ptr<AstNode> build_ast(TokenStream *tokens, ErrStr &err) {
     if (c.done()) break;
   }
   return std::move(module);
+}
+
+void destroy_type(AstType *type) {
+  if (type != nullptr) type->destroy();
 }
 
 }

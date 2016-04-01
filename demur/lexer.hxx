@@ -144,6 +144,7 @@ std::unique_ptr<TokenStream> tokenize(
     std::string s,
     ErrStr &err);
 bool check_name_at(TokenCursor c, TokenErr &err);
+bool check_type_name_at(TokenCursor c, TokenErr &err);
 string to_string(LitType type);
 
 STREAM_OUT(const Token &t) {

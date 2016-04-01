@@ -394,7 +394,7 @@ bool check_name_at(TokenCursor c, TokenErr &err) {
   return true;
 }
 
-bool check_type_name(TokenCursor c, TokenErr &err) {
+bool check_type_name_at(TokenCursor c, TokenErr &err) {
   if (!check_name_underscores(c, err)) {
     return false;
   }

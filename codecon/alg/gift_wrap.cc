@@ -51,7 +51,7 @@ vector<Pt2D> convex(vector<Pt2D> a) {
         if (a.x == 0 && b.x == 0) {
           return a.y < b.y;
         } else {
-          return a.y * b.x > a.x * b.y;
+          return i64(a.y) * b.x > i64(a.x) * b.y;
         }
       });
   vector<Pt2D> c;

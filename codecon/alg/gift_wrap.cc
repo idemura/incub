@@ -28,7 +28,7 @@ Pt2D operator+(Pt2D a, Pt2D b) {
 bool cw_right(Pt2D a, Pt2D b, Pt2D c) {
   b = b - a;
   c = c - a;
-  return (i64(b.x) * c.y - i64(b.y) * c.x) < 0;
+  return i64(b.x) * c.y - i64(b.y) * c.x < 0;
 }
 
 vector<Pt2D> convex(vector<Pt2D> a) {

@@ -96,6 +96,12 @@ int main() {
   for (auto p : m) {
     cout<<p<<endl;
   }
+  // For every tower we put index of the tower such that no monuments are
+  // outside.
   vector<int> last_index(n);
+  int j = 0;
+  for (int i = 0; i < t.size(); i++) {
+
+  }
   return 0;
 }

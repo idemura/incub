@@ -32,13 +32,12 @@ bool cw_right(Pt2D a, Pt2D b, Pt2D c) {
 }
 
 vector<Pt2D> convex(vector<Pt2D> a) {
-  using PairPt2D = pair<Pt2D, Pt2D>;
   if (a.size() <= 3) {
     return a;
   }
-  auto pivot = *min_element(a.begin(), a.end(), 
+  auto pivot = *min_element(a.begin(), a.end(),
       [](Pt2D a, Pt2D b) {
-        if (a.x == b.x) 
+        if (a.x == b.x)
           return a.y < b.y;
         else
           return a.x < b.x;
@@ -46,7 +45,7 @@ vector<Pt2D> convex(vector<Pt2D> a) {
   for (auto &p : a) {
     p = p - pivot;
   }
-  sort(a.begin(), a.end(), 
+  sort(a.begin(), a.end(),
       [](Pt2D a, Pt2D b) {
         if (a.x == 0 && b.x == 0) {
           return a.y < b.y;

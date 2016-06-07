@@ -8,18 +8,38 @@ using namespace std;
 
 using i64 = long long int;
 
-vector<int> bit_sums(vector<int> a) {
+int minor_bit(int n) {
+  return n & -n;
+}
+
+// Sum of @k elements we store at index (k - 1).
+vector<int> make_bit(vector<int> a) {
   cout<<"input: ";
   for (auto t : a) cout<<t<<" ";
   cout<<endl;
-  for (int s = 1; s < a.size(); s += s) {
+  for (int s = 2; s <= a.size(); s += s) {
     cout<<"step "<<s<<endl;
-    for (int i = s; i < a.size(); i += s) {
-      a[i] += a[i - s];
-      cout<<"update "<<i<<" a[i]="<<a[i]<<endl;
+    for (int i = s - 1; i < a.size(); i += s) {
+      cout<<"adding to "<<i<<" elem at "<<(i - s/2)
+          <<": "<<a[i]<<" + "<<a[i - s/2]<<" = ";
+      a[i] += a[i - s / 2];
+      cout<<a[i]<<endl;
     }
+    cout<<"bs: ";
+    for (auto g : a) cout<<g<<" ";
+    cout<<endl;
   }
   return move(a);  // Not sure. Probably NRVO doens't kick in.
+}
+
+// @n - number of elements.
+int bit_sum(const vector<int> &b, int n) {
+  int s = 0;
+  while (n != 0) {
+    s += b[n - 1];
+    n -= minor_bit(n);
+  }
+  return n;
 }
 
 int main() {
@@ -31,7 +51,7 @@ int main() {
   vector<int> q(qn);
   for (auto &x : q) scanf("%d", &x);
   sort(a.begin(), a.end());
-  auto bs = bit_sums(a);
+  auto bs = make_bit(a);
   cout<<"bs: ";
   for (auto g : bs) cout<<g<<" ";
   cout<<endl;

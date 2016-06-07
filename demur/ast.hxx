@@ -73,6 +73,8 @@ struct AstType {
   std::vector<AstType*> inst_types;
 };
 
+void destroy_type(AstType *type);
+
 struct AstVarType {
   explicit AstVarType(string name, AstType *type): name(name), type(type) {}
   ~AstVarType() { destroy_type(type); }
@@ -138,7 +140,7 @@ protected:
 };
 
 std::unique_ptr<AstNode> build_ast(TokenStream *tokens, ErrStr &err);
-void destroy_type(AstType *type);
+AstType *parse_type(TokenCursor *c, TokenErr &err);
 
 }
 

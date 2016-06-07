@@ -30,8 +30,9 @@ const auto kNoParse = NoParse();
 bool parse_var_list(TokenCursor *c, AstVarList *vars, TokenErr &err) {
   if (c->type_at() != TokType::Name) {
     err.error(*c)<<"var list: expected name\n";
+    return false;
   }
-  vars->vars
+  return true;
 }
 
 // Parses x[, y]*: Type.
@@ -42,10 +43,10 @@ bool parse_arg_list(TokenCursor *c, AstVarList *vars, TokenErr &err) {
       err.error(*c)<<"arguments: variable name expected, got "<<*c->at()<<"\n";
       return false;
     }
-    if (!check_name_at(c, err)) {
+    if (!check_name_at(*c, err)) {
       return false;
     }
-    names.push_back(get_payload<string>(c));
+    names.push_back(get_payload<string>(*c->at()));
     if (c->type_at() == TokType::Comma) {
       c->next();
     } else if (c->type_at() == TokType::Colon) {
@@ -60,22 +61,7 @@ bool parse_arg_list(TokenCursor *c, AstVarList *vars, TokenErr &err) {
   if (nullptr == type) {
     return false;
   }
-  for (auto s : names) {
-    vars->vars
-  }
   return true;
-}
-
-AstType *parse_type(TokenCursor *c, TokenErr &err) {
-  if (c->type_at() != TokType::Name) {
-    err.error(*c)<<"type def: expected type name\n";
-    return nullptr;
-  }
-  if (!check_type_name_at(*c, err)) {
-    return nullptr;
-  }
-  auto name = get_payload<string>(*c);
-  return new AstType(name);
 }
 
 bool parse_proto(TokenCursor *c, AstFnProto *proto, TokenErr &err) {
@@ -95,19 +81,19 @@ bool parse_proto(TokenCursor *c, AstFnProto *proto, TokenErr &err) {
     }
     std::vector<string> names;
     for (;;) {
-      names.push_back(get_payload<string>(*c));
+      names.push_back(get_payload<string>(*c->at()));
       c->next();
       if (c->type_at() != TokType::Comma) {
         break;
       }
       c->next();
       if (c->type_at() != TokType::Name) {
-        err.error(*c)<<"argument argument name after ,\n";
+        err.error(*c)<<"expected argument name after ,\n";
         return false;
       }
     }
     if (c->type_at() != TokType::Colon) {
-      err.error(*c)<<"expected : after argument list\n"
+      err.error(*c)<<"expected : after argument list\n";
       return false;
     }
     auto type = parse_type(c, err);
@@ -146,7 +132,7 @@ ParseT<AstNode> parse_function(TokenCursor c, TokenErr &err) {
     return kNoParse;
   }
   c.next();
-  if (flags().log_parse) cout<<"parse: function "<<name<<endl;
+  if (flags().log_parse) cout<<"parse: function "<<node->name<<endl;
   return {c, std::move(node)};
 }
 
@@ -226,8 +212,20 @@ std::unique_ptr<AstNode> build_ast(TokenStream *tokens, ErrStr &err) {
   return std::move(module);
 }
 
+AstType *parse_type(TokenCursor *c, TokenErr &err) {
+  if (c->type_at() != TokType::Name) {
+    err.error(*c)<<"type def: expected type name\n";
+    return nullptr;
+  }
+  if (!check_type_name_at(*c, err)) {
+    return nullptr;
+  }
+  auto name = get_payload<string>(*c->at());
+  return new AstType(name);
+}
+
 void destroy_type(AstType *type) {
   if (type != nullptr) type->destroy();
 }
 
-}
+}  // namespace

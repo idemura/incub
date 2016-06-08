@@ -1,5 +1,9 @@
 #include "base.h"
 
+int minor_bit(int n) {
+  return n & -n;
+}
+
 // Indices are 1..n (inclusive).
 template<class Num>
 class BIT {
@@ -11,7 +15,7 @@ public:
     a_[i] += x;
     while (i < v_.size()) {
       v_[i] += x;
-      i += i & (-i);
+      i += i & -i;
     }
   }
 
@@ -31,7 +35,7 @@ public:
     auto a = Num();
     while (i != 0) {
       a += v_[i];
-      i -= i & (-i);
+      i -= i & -i;
     }
     return a;
   }
@@ -39,6 +43,36 @@ public:
 private:
   vector<Num> v_, a_;
 };
+
+// Sum of @k elements we store at index (k - 1).
+// O(n log(n))
+template<class T>
+vector<T> make_bit(vector<T> a) {
+  for (int s = 2; s <= a.size(); s += s) {
+    for (int i = s - 1; i < a.size(); i += s) {
+      a[i] += a[i - s / 2];
+    }
+  }
+  return move(a);  // Not sure. Probably NRVO doens't kick in.
+}
+
+// @n - number of elements.
+// O(log(n))
+template<class T>
+T bit_sum(const vector<T> &b, int n) {
+  T s = 0;
+  while (n != 0) {
+    s += b[n - 1];
+    n -= minor_bit(n);
+  }
+  return s;
+}
+
+// Sum of (last-first) elements starting @first.
+template<class T>
+T bit_sum_range(const vector<T> &b, int first, int last) {
+  return bit_sum(b, last) - bit_sum(b, first);
+}
 
 void test1() {
   BIT<double> bit(11);
@@ -94,12 +128,30 @@ void test1() {
   CHECK(bit.get(8) == 2);
   CHECK(bit.get(10) == 0);
   CHECK(bit.get(9) == 0);
-  cout << "TEST1 passed" << endl;
+}
+
+void test2() {
+  const vector<int> a{1, 0, 2, 3, -1, 4, -3, 0, 1 };
+  auto b = make_bit(a);
+  for (int i = 0; i < a.size(); i++) {
+    for (int j = i; j < a.size(); j++) {
+      auto s1 = 0;
+      for (int k = i; k < j; k++) {
+        s1 += a[k];
+      }
+      auto s2 = bit_sum_range(b, i, j);
+      if (s1 != s2) {
+        cout<<"TEST FAIL: range "<<i<<","<<j<<" sum is "<<s2
+            <<" expected "<<s1<<endl;
+      }
+    }
+  }
 }
 
 int main(int argc, char **argv) {
   ios_base::sync_with_stdio(false);
   test1();
+  test2();
   cout << "TESTS PASSED." << endl;
   return 0;
 }

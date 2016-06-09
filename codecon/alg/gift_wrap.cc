@@ -65,7 +65,7 @@ vector<Pt2D> convex(vector<Pt2D> a) {
     }
     if (b) {
       c.push_back(a[i]);
-      i += 1;
+      i++;
     }
   }
   for (auto &p : c) {

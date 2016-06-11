@@ -4,15 +4,16 @@
 #include <string>
 #include <cstdio>
 #include <map>
+#include <iostream>
 
 using namespace std;
 
 using i64 = long long int;
 
 struct Sum {
-  int s = 0, n = 0;
+  i64 s = 0, n = 0;
   Sum() {}
-  Sum(int s, int n): s(s), n(n) {}
+  Sum(i64 s, i64 n): s(s), n(n) {}
 };
 
 Sum operator-(Sum a, Sum b) {
@@ -26,6 +27,10 @@ Sum operator+(Sum a, Sum b) {
   return a;
 }
 
+ostream &operator<<(ostream &os, Sum s) {
+  return os<<"s="<<s.s<<" n="<<s.n;
+}
+
 struct SumMap {
   map<int, Sum> m;
   Sum total;
@@ -34,9 +39,9 @@ struct SumMap {
 SumMap sums(vector<int> &a) {
   SumMap sm;
   sort(a.begin(), a.end());
-  int s = 0;
+  i64 s = 0;
   for (int i = 0; i < a.size(); i++) {
-    sm.m[a[i]] = Sum(s, i);
+    sm.m.emplace(a[i], Sum(s, i));
     s += a[i];
   }
   sm.total = Sum(s, a.size());
@@ -45,7 +50,7 @@ SumMap sums(vector<int> &a) {
 
 // os - opposite sign
 // ss - same sign
-int query(const SumMap &os, const SumMap &ss, int q) {
+i64 query(const SumMap &os, const SumMap &ss, i64 q) {
   auto r = ss.total.s + ss.total.n * q;
   auto lb = os.m.lower_bound(q);
   if (lb == os.m.end()) {
@@ -55,6 +60,21 @@ int query(const SumMap &os, const SumMap &ss, int q) {
     r += q * sum.n - sum.s;  // 0 to lower bound
     sum = os.total - sum;
     r += sum.s - q * sum.n;  // lower bound till the end
+  }
+  return r;
+}
+
+void print_sums(const SumMap &sm) {
+  for (auto m : sm.m) {
+    cout<<"key "<<m.first<<" sum is "<<m.second<<endl;
+  }
+  cout<<"total: "<<sm.total<<endl;
+}
+
+i64 naive(const vector<int> &a, i64 q) {
+  i64 r = 0;
+  for (auto k : a) {
+    r += abs(k + q);
   }
   return r;
 }
@@ -74,15 +94,15 @@ int main() {
   auto nsm = sums(neg);
   auto psm = sums(pos);
   scanf("%d", &qn);
-  int acc = 0;
+  i64 acc = 0;
   for (int i = 0; i < qn; i++) {
     int q = 0;
     scanf("%d", &q);
     acc += q;
     if (acc < 0) {
-      printf("%d\n", query(nsm, psm, -acc));
+      printf("%lld\n", query(psm, nsm, -acc));
     } else {
-      printf("%d\n", query(psm, nsm, acc));
+      printf("%lld\n", query(nsm, psm, acc));
     }
   }
   return 0;

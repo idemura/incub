@@ -1,2 +1,3 @@
 #! /bin/sh
-rm -rf *.d *.o *.a *.test demur
+rm -rf *.d *.o *.a *.yy.cxx *.test demur lex
+

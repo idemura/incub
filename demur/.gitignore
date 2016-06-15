@@ -5,3 +5,5 @@ demur
 *.d
 *.o
 *.a
+*.yy.cxx
+

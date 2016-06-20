@@ -7,19 +7,18 @@ namespace {
 
 void test1() {
   std::stringstream ss;
-  ss<<"1 10_0 0.5\n"
+  ss<<"10 1_0 0o1_7 0o1_7 0x19af 0x19_af\n"
+      "0.5 0.2f 0.6d\n"
       "TypeName T Underscore_Type_Name\n"
-      "igor hello x my_id\n";
+      "igor hello x my_id\n"
+      "# comment till eol\n"
+      "# comment";
 
-  cout<<"version 1"<<endl;
   yyFlexLexer lexer;
   lexer.switch_streams(&ss);
-  int r = 0;
-  while ((r = lexer.yylex()) != 0) {
-    cout<<"r="<<r<<endl;
+  while (lexer.yylex()) {
+    // Empty
   }
-  // // Lex through the input:
-  // auto r = lexer.yylex();
 }
 
 }  // namespace

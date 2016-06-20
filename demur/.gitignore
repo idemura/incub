@@ -6,4 +6,6 @@ demur
 *.o
 *.a
 *.yy.cxx
+*.tab.cxx
+*.tab.hxx
 

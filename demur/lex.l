@@ -1,35 +1,70 @@
-%option c++
-%option noyywrap
+%option c++ full nodefault nounput noyywrap yylineno
 
 %{
+#include <string>
+#include "grammar.tab.hxx"
+
+#if 1  // For debug puposes.
+#define IGOR_IO 1
 #include <iostream>
+using std::cerr;
+using std::cout;
+using std::endl;
+#else
+#define IGOR_IO 0
+#endif
+
+using std::string;
 %}
 
+S       [ \t\r\f]
 L       [a-zA-Z0-9_]
+O       [0-7]
 D       [0-9]
 H       [0-9a-fA-F]
 NF      [a-z]
 TF      [A-Z]
 
 %%
+  /*Spaces*/
+{S}|\n ;
+  /*Comment till end of line or EOF*/
+#.* ;
 
-[ \t\r\f\n] ;
-{D}+\.{D}+ {
-  //std::cout << "floating-point: " << yytext << std::endl;
+  /*Floating point*/
+{D}+\.{D}+(f|d)? {
+  //cout<<"floating-point: "<<yytext<<endl;
+}
+  /*Integers: oct, decimal, hex*/
+0o{O}+(_{O}+)* {
+  cout<<"oct integer: "<<yytext<<endl;
 }
 {D}+(_{D}+)* {
-  std::cout << "integer: " << yytext << std::endl;
+  cout<<"dec integer: "<<yytext<<endl;
 }
+0x{H}+(_{H}+)* {
+  cout<<"hex integer: "<<yytext<<endl;
+}
+
 {NF}{L}* {
-  //std::cout << "name: " << yytext << std::endl;
+  //cout<<"name: "<<yytext<<endl;
   return 12;
 }
 {TF}{L}* {
-  //std::cout << "type_name: " << yytext << std::endl;
+  //cout<<"type_name: "<<yytext<<endl;
+  // cout<<"line #"<<yylineno<<endl;
   return 11;
 }
 _ {
-  //std::cout<< "wildcard:"<<yytext<<std::endl;
+  //cout<<"wildcard: "<<yytext<<endl;
+}
+. {
+  // Treat control characters as spaces, other - error.
+  if (*yytext >= 32) {
+    cerr<<yylineno<<endl;
+    cerr<<"invalid character: "<<*yytext<<endl;
+    yyterminate();
+  }
 }
 
 %%

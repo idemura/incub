@@ -17,6 +17,8 @@ rule lib
   command = ar rcs $out $in
 rule lex
   command = flex -o $out $in
+rule bison
+  command = bison -d $in
 
 build base.o:       cxx base.cxx
 build base_test.o:  cxx base_test.cxx
@@ -34,8 +36,10 @@ build demur.a:      lib base.o lexer.o ast.o
 build demur.o:      cxx demur.cxx
 build demur:        lnk demur.o demur.a
 
-build lex.yy.cxx:   lex lex.l
+build lex.yy.cxx:   lex lex.l | grammar.tab.cxx
 build lex.yy.o:     cxx lex.yy.cxx
 build lex.yy.a:     lib lex.yy.o
 build lex_test.o:   cxx lex_test.cxx
 build lex.test:     lnk lex_test.o base.o lex.yy.a
+
+build grammar.tab.cxx:  bison grammar.yxx

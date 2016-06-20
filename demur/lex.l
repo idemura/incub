@@ -1,11 +1,8 @@
+%option c++
 %option noyywrap
+
 %{
 #include <iostream>
-using namespace std;
-
-namespace {
-int line_num = 1;
-}  // namespace
 %}
 
 L       [a-zA-Z0-9_]
@@ -18,30 +15,21 @@ TF      [A-Z]
 
 [ \t\r\f\n] ;
 {D}+\.{D}+ {
-  cout << "floating-point: " << yytext << endl;
+  //std::cout << "floating-point: " << yytext << std::endl;
 }
-{D}+ {
-  cout << "integer: " << yytext << endl;
+{D}+(_{D}+)* {
+  std::cout << "integer: " << yytext << std::endl;
 }
 {NF}{L}* {
-  cout << "name: " << yytext << endl;
-  return 100;
+  //std::cout << "name: " << yytext << std::endl;
+  return 12;
 }
 {TF}{L}* {
-  cout << "type_name: " << yytext << endl;
+  //std::cout << "type_name: " << yytext << std::endl;
+  return 11;
 }
 _ {
-  cout<< "wildcard:"<<yytext<<endl;
+  //std::cout<< "wildcard:"<<yytext<<std::endl;
 }
 
 %%
-
-int main(int argc, char** argv) {
-  cout<<"version 1"<<endl;
-  yyFlexLexer lex;
-  // Lex through the input:
-  auto r = lex.yylex();
-  cout<<"r="<<r<<endl;
-  cout<<"once more:\n";
-  cout<<lex.yylex()<<endl;
-}

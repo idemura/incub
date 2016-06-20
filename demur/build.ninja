@@ -16,7 +16,7 @@ rule lnk
 rule lib
   command = ar rcs $out $in
 rule lex
-  command = flex --c++ -o $out $in
+  command = flex -o $out $in
 
 build base.o:       cxx base.cxx
 build base_test.o:  cxx base_test.cxx
@@ -26,18 +26,16 @@ build ast.o:        cxx ast.cxx
 build ast_test.o:   cxx ast_test.cxx
 build ast.test:     lnk ast_test.o demur.a
 
-build flags.o:      cxx flags.cxx
-
 build lexer.o:      cxx lexer.cxx
 build lexer_test.o: cxx lexer_test.cxx
 build lexer.test:   lnk lexer_test.o demur.a
 
-build demur.a:      lib base.o flags.o lexer.o ast.o
+build demur.a:      lib base.o lexer.o ast.o
 build demur.o:      cxx demur.cxx
 build demur:        lnk demur.o demur.a
 
 build lex.yy.cxx:   lex lex.l
 build lex.yy.o:     cxx lex.yy.cxx
 build lex.yy.a:     lib lex.yy.o
-build lex:          lnk lex.yy.a
-
+build lex_test.o:   cxx lex_test.cxx
+build lex.test:     lnk lex_test.o base.o lex.yy.a

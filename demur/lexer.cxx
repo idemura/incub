@@ -1,7 +1,8 @@
 #include "lexer.hxx"
 
 #include <cstring>
-#include "flags.hxx"
+
+FLAG_bool(check_names, false);
 
 namespace igor {
 namespace {
@@ -381,7 +382,7 @@ bool check_name_at(TokenCursor c, TokenErr &err) {
                   "with lower case letter\n";
     return false;
   }
-  if (!flags().check_names) {
+  if (!flag_check_names) {
     return true;
   }
   for (int i = 0; i < name.size(); i++) {

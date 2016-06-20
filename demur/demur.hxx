@@ -1,7 +1,7 @@
 #ifndef IGOR_DEMUR_HXX
 #define IGOR_DEMUR_HXX
 
-#include "flags.hxx"
+#include "base.hxx"
 
 namespace igor {
 }  // namespace

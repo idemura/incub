@@ -3,22 +3,11 @@
 namespace igor {
 namespace {
 
-class Flags: public FlagSet {
- public:
-  string str = "/tmp";
-  i32 n32 = 32;
-  i64 n64 = 64;
-  bool b = false;
-  double dbl = 0.5;
-
-  Flags() {
-    register_flag("str", &str);
-    register_flag("n32", &n32);
-    register_flag("n64", &n64);
-    register_flag("b", &b);
-    register_flag("dbl", &dbl);
-  }
-};
+FLAG_string(str, "/tmp");
+FLAG_i32(n32, 32);
+FLAG_i64(n64, 64);
+FLAG_bool(b, false);
+FLAG_double(dbl, 0.5);
 
 void test_flags() {
   char p0[] = "test_main";
@@ -29,12 +18,13 @@ void test_flags() {
   char* argv[] = {
     p0, p1, p2, p3, p4, nullptr
   };
-  Flags flags;
   int argc = ARRAY_SIZEOF(argv) - 1;
-  CHECK(flags.parse(&argc, argv));
+  CHECK(flags_parse(&argc, argv));
   CHECK(argc == 1);
-  CHECK(flags.n32 == 132);
-  CHECK(flags.str == "xyz");
+  CHECK(flag_n32 == 132);
+  CHECK(flag_str == "xyz");
+  CHECK(flag_dbl == 0.5);
+  flags_reset();
 }
 
 }  // namespace
@@ -45,5 +35,5 @@ int main(int argc, char **argv) {
 
   test_flags();
 
-  return TESTS_PASSED;
+  return TESTS_PASSED();
 }

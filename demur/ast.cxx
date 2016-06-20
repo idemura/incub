@@ -1,6 +1,6 @@
 #include "ast.hxx"
 
-#include "flags.hxx"
+FLAG_bool(log_parse, false);
 
 namespace igor {
 namespace {
@@ -132,13 +132,13 @@ ParseT<AstNode> parse_function(TokenCursor c, TokenErr &err) {
     return kNoParse;
   }
   c.next();
-  if (flags().log_parse) cout<<"parse: function "<<node->name<<endl;
+  if (flag_log_parse) cout<<"parse: function "<<node->name<<endl;
   return {c, std::move(node)};
 }
 
 ParseT<AstNode> parse_top(TokenCursor c, TokenErr &err) {
   if (c.type_at() == TokType::EndFile) {
-    if (flags().log_parse) cout<<"parse: end of file"<<endl;
+    if (flag_log_parse) cout<<"parse: end of file"<<endl;
     c.next();
     return {c, nullptr};
   }

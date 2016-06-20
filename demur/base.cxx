@@ -26,96 +26,192 @@ bool hyphen(char *s) {
 }
 }  // namespace
 
-void FlagSet::insert(const string &name, Type type, void *p) {
-  if (flags_.find(name) != flags_.end()) {
-    cerr<<"Duplicate flag "<<name<<endl;
-    exit(-1);
-  }
-  flags_[name] = {type, p};
-}
-
-bool FlagSet::parse_flag(int i, int argc, char **argv, int *i_out) {
-  auto a = argv[i];
-  if (*a == '-') a++;
-  if (*a == '-') a++;
-  if (*a == 0) return false;
-  auto it = flags_.find(a);
-  if (it == flags_.end()) {
-    int l = strlen(a);
-    if (l > 0 && (a[l - 1] == '-' || a[l - 1] == '+')) {
-      it = flags_.find(string(a, l - 1));
-      if (it != flags_.end() && it->second.type == Type::kBool) {
-        *(bool*)it->second.p = a[l - 1] == '+';
-        *i_out = i + 1;
-        return true;
+namespace {
+class Flags {
+ public:
+  Flags() = default;
+  // Delete copy and move constructor becase of way we destroy objects.
+  DELETE_COPY(Flags);
+  DELETE_MOVE(Flags);
+  ~Flags() {
+    // Let's release all memory of strings to be good on detecting leaks.
+    for (auto &p : flags_) {
+      if (p.second.type == Type::kString) {
+        *reinterpret_cast<string*>(p.second.p) = string();
       }
     }
-    cerr<<"Invalid flag: "<<a<<endl;
-    return false;
   }
-  auto tp = it->second;
-  if (tp.type == Type::kBool) {
-    *(bool*)tp.p = true;
-    *i_out = i + 1;
-    return true;
-  }
-  i++;
-  auto allow_hyphen = false;
-  if (i < argc && hyphen(argv[i])) {
-    i++;
-    allow_hyphen = true;
-  }
-  if (i >= argc || (!allow_hyphen && argv[i][0] == '-')) {
-    cerr<<"Missing value for: "<<a<<endl;
-    return false;
-  }
-  if (it->second.type == Type::kString) {
-    ((string*)tp.p)->assign(argv[i]);
-    *i_out = i + 1;
-    return true;
-  }
-  int n = 0, sr = 0;
-  switch (tp.type) {
-    case Type::kInt32:
-      sr = std::sscanf(argv[i], kI32f "%n", (i32*)tp.p, &n);
-      break;
-    case Type::kInt64:
-      sr = std::sscanf(argv[i], kI64f "%n", (i64*)tp.p, &n);
-      break;
-    case Type::kDouble:
-      sr = std::sscanf(argv[i], "%lf%n", (double*)tp.p, &n);
-      break;
-    default: break;
-  }
-  if (sr != 1 || n != strlen(argv[i])) {
-    cerr<<"Invalid format: "<<a<<endl;
-    return false;
-  }
-  *i_out = i + 1;
-  return true;
-}
 
-bool FlagSet::parse(int *argc, char **argv) {
-  auto k = 1, i = 1;
-  while (i < *argc) {
-    auto a = argv[i];
-    if (hyphen(a)) {
-      i++;
-      if (i < *argc) {
+  bool parse(int *argc, char **argv) {
+    auto k = 1, i = 1;
+    while (i < *argc) {
+      auto a = argv[i];
+      if (hyphen(a)) {
+        i++;
+        if (i < *argc) {
+          argv[k++] = argv[i++];
+        }
+      } else if (*a == '-') {
+        if (!parse_flag(i, *argc, argv, &i)) {
+          return false;
+        }
+      } else {
         argv[k++] = argv[i++];
       }
-    } else if (*a == '-') {
-      if (!parse_flag(i, *argc, argv, &i)) {
-        return false;
-      }
-    } else {
-      argv[k++] = argv[i++];
+    }
+    *argc = k;
+    for (; k < *argc; k++) {
+      argv[k] = nullptr;
+    }
+    return true;
+  }
+
+  void register_flag(const char* name, i32 *f) {
+    insert(name, f, Type::kInt32);
+  }
+  void register_flag(const char* name, i64 *f) {
+    insert(name, f, Type::kInt64);
+  }
+  void register_flag(const char* name, bool *f) {
+    insert(name, f, Type::kBool);
+  }
+  void register_flag(const char* name, string *f) {
+    insert(name, f, Type::kString);
+  }
+  void register_flag(const char* name, double *f) {
+    insert(name, f, Type::kDouble);
+  }
+
+ private:
+  enum class Type {
+    kNull,
+    kInt32,
+    kInt64,
+    kBool,
+    kString,
+    kDouble,
+  };
+
+  struct TypedPtr {
+    Type type = Type::kNull;
+    void *p = nullptr;
+
+    TypedPtr() = default;
+    TypedPtr(Type type, void *p): type(type), p(p) {}
+  };
+
+  void insert(const char *name, void *p, Type type) {
+    auto res = flags_.emplace(string(name), TypedPtr(type, p));
+    if (not res.second) {
+      cerr<<"Duplicate flag "<<name<<endl;
+      std::exit(-1);
     }
   }
-  *argc = k;
-  for (; k < *argc; k++) {
-    argv[k] = nullptr;
+
+  bool parse_flag(int i, int argc, char **argv, int *i_out) {
+    auto a = argv[i];
+    if (*a == '-') a++;
+    if (*a == '-') a++;
+    if (*a == 0) return false;
+    auto it = flags_.find(a);
+    if (it == flags_.end()) {
+      int l = strlen(a);
+      if (l > 0 && (a[l - 1] == '-' || a[l - 1] == '+')) {
+        it = flags_.find(string(a, l - 1));
+        if (it != flags_.end() && it->second.type == Type::kBool) {
+          *(bool*)it->second.p = a[l - 1] == '+';
+          *i_out = i + 1;
+          return true;
+        }
+      }
+      cerr<<"Invalid flag: "<<a<<endl;
+      return false;
+    }
+    auto tp = it->second;
+    if (tp.type == Type::kBool) {
+      *(bool*)tp.p = true;
+      *i_out = i + 1;
+      return true;
+    }
+    i++;
+    auto allow_hyphen = false;
+    if (i < argc && hyphen(argv[i])) {
+      i++;
+      allow_hyphen = true;
+    }
+    if (i >= argc || (!allow_hyphen && argv[i][0] == '-')) {
+      cerr<<"Missing flag value: "<<a<<endl;
+      return false;
+    }
+    if (it->second.type == Type::kString) {
+      ((string*)tp.p)->assign(argv[i]);
+      *i_out = i + 1;
+      return true;
+    }
+    auto n = 0, sr = 0;
+    switch (tp.type) {
+      case Type::kInt32:
+        sr = std::sscanf(argv[i], kI32f "%n", (i32*)tp.p, &n);
+        break;
+      case Type::kInt64:
+        sr = std::sscanf(argv[i], kI64f "%n", (i64*)tp.p, &n);
+        break;
+      case Type::kDouble:
+        sr = std::sscanf(argv[i], "%lf%n", (double*)tp.p, &n);
+        break;
+      default: break;
+    }
+    if (sr != 1 || n != strlen(argv[i])) {
+      cerr<<"Invalid flag format: "<<a<<endl;
+      return false;
+    }
+    *i_out = i + 1;
+    return true;
   }
-  return true;
+
+  std::unordered_map<string, TypedPtr> flags_;
+};
+
+static Flags *flags_instance;
+
+static Flags *flags() {
+  // std::once didn't work, throws std::system_error.
+  static bool first = true;
+  if (first) {
+    flags_instance = new Flags;
+    first = false;
+  }
+  return flags_instance;
 }
+}  // namespace
+
+bool flags_parse(int *argc, char **argv) {
+  return flags()->parse(argc, argv);
+}
+
+void flags_reset() {
+  delete flags_instance;
+  flags_instance = nullptr;
+}
+
+void flags_register(const char *name, i32 *f) {
+  flags()->register_flag(name, f);
+}
+
+void flags_register(const char* name, i64 *f) {
+  flags()->register_flag(name, f);
+}
+
+void flags_register(const char* name, bool *f) {
+  flags()->register_flag(name, f);
+}
+
+void flags_register(const char* name, string *f) {
+  flags()->register_flag(name, f);
+}
+
+void flags_register(const char* name, double *f) {
+  flags()->register_flag(name, f);
+}
+
 }  // namespace

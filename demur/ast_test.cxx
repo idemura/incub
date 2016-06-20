@@ -1,5 +1,4 @@
 #include "ast.hxx"
-#include "flags.hxx"
 
 namespace igor {
 namespace {
@@ -26,5 +25,5 @@ int main(int argc, char **argv) {
   test1();
 
   flags_reset();
-  return TESTS_PASSED;
+  return TESTS_PASSED();
 }

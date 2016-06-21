@@ -1,18 +1,13 @@
+%require "3.0"
 %skeleton "lalr1.cc"
 
 %{
 #include "base.hxx"
 
-#include <cstdio>
-#include <iostream>
-using namespace std;
+// For yylex function below.
+#include "grammar.tab.hxx"
 
-// stuff from flex that bison needs to know about:
-//extern "C" int yylex();
-//extern "C" int yyparse();
-//extern "C" FILE *yyin;
-
-void yyerror(const char *s);
+int yylex(yy::parser::semantic_type *data);
 %}
 
 // Bison fundamentally works by asking flex to get the next token, which it
@@ -25,6 +20,8 @@ void yyerror(const char *s);
   float fval;
   char *sval;
 }
+
+//%parse-param {MyCtx ctx}
 
 // define the "terminal symbol" token types I'm going to use (in CAPS
 // by convention), and associate each with a field of the union:
@@ -46,26 +43,35 @@ snazzle:
   ;
 %%
 
-int main(int, char**) {
-  // open a file handle to a particular file:
-  FILE *myfile = fopen("a.snazzle.file", "r");
-  // make sure it is valid:
-  if (!myfile) {
-    cout << "I can't open a.snazzle.file!" << endl;
-    return -1;
-  }
-  // set flex to read from it instead of defaulting to STDIN:
-  yyin = myfile;
-
-  // parse through the input until there is no more:
-  do {
-    yyparse();
-  } while (!feof(yyin));
-
-}
-
-void yyerror(const char *s) {
-  cout << "EEK, parse error!  Message: " << s << endl;
+namespace yy {
+void parser::error(const std::string &msg) {
+  cout << "EEK, parse error!  Message: " << msg << endl;
   // might as well halt now:
   exit(-1);
 }
+}  // namespace
+
+int main(int, char**) {
+  cout<<"yeah!"<<endl;
+  // open a file handle to a particular file:
+  //FILE *myfile = fopen("a.snazzle.file", "r");
+  // make sure it is valid:
+  //if (!myfile) {
+  //  cout << "I can't open a.snazzle.file!" << endl;
+  //  return -1;
+  //}
+  // set flex to read from it instead of defaulting to STDIN:
+  //yyin = myfile;
+
+  // parse through the input until there is no more:
+  //do {
+  //  yyparse();
+  //} while (!feof(yyin));
+  return 0;
+}
+
+int yylex(yy::parser::semantic_type *data) {
+  cout<<"yylex"<<endl;
+  return 0;
+}
+

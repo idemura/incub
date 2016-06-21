@@ -8,4 +8,5 @@ demur
 *.yy.cxx
 *.tab.cxx
 *.tab.hxx
+stack.hh
 

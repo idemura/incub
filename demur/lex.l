@@ -24,23 +24,27 @@ D       [0-9]
 H       [0-9a-fA-F]
 NF      [a-z]
 TF      [A-Z]
+IS      (i8|i16|i32|i64)?
 
 %%
   /*Spaces, comment till end of line or EOF*/
 {S}|\n|#.*
 
-  /*Floating point*/
-{D}+\.{D}+(f|d)?/[^a-zA-Z0-9_] {
+  /*Floating point. Our grammar doesn't allow word to follow float. This means
+    we don't need anything special to check non-letter follows floating point.
+    It will be some parsing error instead. Same for integers.
+  */
+{D}+\.{D}+(f|d)? {
   //cout<<"floating-point: "<<yytext<<endl;
 }
   /*Integers: oct, decimal, hex*/
-0o{O}+(_{O}+)* {
+0o{O}+(_{O}+)*{IS} {
   cout<<"oct integer: "<<yytext<<endl;
 }
-{D}+(_{D}+)* {
+{D}+(_{D}+)*{IS} {
   cout<<"dec integer: "<<yytext<<endl;
 }
-0x{H}+(_{H}+)* {
+0x{H}+(_{H}+)*{IS} {
   cout<<"hex integer: "<<yytext<<endl;
 }
 

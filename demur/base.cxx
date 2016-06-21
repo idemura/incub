@@ -1,23 +1,18 @@
 #include "base.hxx"
 
 #include <cstdlib>
+#include <cstring>
 #include <cstdio>  // sscanf
-
-void check_fail_report(const char *file, int line, const char *text) {
-  cerr<<file<<":"<<line<<": "<<text<<endl;
-  std::exit(-1);
-}
-
-int tests_passed(const char *file) {
-  cout<<"TESTS PASSED: "<<file<<endl;
-  return 0;
-}
 
 namespace igor {
 
-u64 Substr::hash() const {
-  CHECK_FAIL("Substr::hash");
-  return -1;
+void check_failed(const char *file, int line, const char *text) {
+  cerr<<"CHECK FAILED: "<<file<<":"<<line<<": "<<text<<endl;
+  std::exit(-1);
+}
+
+void tests_passed(const char *file) {
+  cout<<"TESTS PASSED: "<<file<<endl;
 }
 
 namespace {
@@ -85,9 +80,9 @@ class Flags {
  private:
   enum class Type {
     kNull,
+    kBool,
     kInt32,
     kInt64,
-    kBool,
     kString,
     kDouble,
   };
@@ -115,7 +110,7 @@ class Flags {
     if (*a == 0) return false;
     auto it = flags_.find(a);
     if (it == flags_.end()) {
-      int l = strlen(a);
+      int l = std::strlen(a);
       if (l > 0 && (a[l - 1] == '-' || a[l - 1] == '+')) {
         it = flags_.find(string(a, l - 1));
         if (it != flags_.end() && it->second.type == Type::kBool) {
@@ -161,7 +156,7 @@ class Flags {
         break;
       default: break;
     }
-    if (sr != 1 || n != strlen(argv[i])) {
+    if (sr != 1 || n != std::strlen(argv[i])) {
       cerr<<"Invalid flag format: "<<a<<endl;
       return false;
     }

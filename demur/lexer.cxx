@@ -215,7 +215,7 @@ private:
   }
 
   bool floating_point() {
-    CHECK_FAIL("floating_point");
+    FATAL("floating_point");
     return false;
   }
 
@@ -235,7 +235,7 @@ private:
           return false;
         }
       } else if (at() == 'i' || at() == 'I') {
-        CHECK_FAIL("i32 like suffix");
+        FATAL("i32 like suffix");
       } else if (is_alpha(at())) {
         error()<<"integer contains alpha character\n";
         return false;
@@ -248,15 +248,15 @@ private:
   }
 
   bool hex_integer() {
-    CHECK_FAIL("hex_integer");
+    FATAL("hex_integer");
     return false;
   }
   bool oct_integer() {
-    CHECK_FAIL("oct_integer");
+    FATAL("oct_integer");
     return false;
   }
   bool bin_integer() {
-    CHECK_FAIL("bin_integer");
+    FATAL("bin_integer");
     return false;
   }
 

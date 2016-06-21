@@ -128,5 +128,5 @@ int main(int argc, char **argv) {
   test1();
 
   flags_reset();
-  return TESTS_PASSED();
+  RETURN_TESTS_PASSED();
 }

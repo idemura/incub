@@ -43,3 +43,5 @@ build lex_test.o:   cxx lex_test.cxx
 build lex.test:     lnk lex_test.o base.o lex.yy.a
 
 build grammar.tab.cxx:  bison grammar.yxx
+build grammar.tab.o:    cxx grammar.tab.cxx
+build grammar.test:     lnk grammar.tab.o lex.yy.o base.o

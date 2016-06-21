@@ -26,13 +26,11 @@ NF      [a-z]
 TF      [A-Z]
 
 %%
-  /*Spaces*/
-{S}|\n ;
-  /*Comment till end of line or EOF*/
-#.* ;
+  /*Spaces, comment till end of line or EOF*/
+{S}|\n|#.*
 
   /*Floating point*/
-{D}+\.{D}+(f|d)? {
+{D}+\.{D}+(f|d)?/[^a-zA-Z0-9_] {
   //cout<<"floating-point: "<<yytext<<endl;
 }
   /*Integers: oct, decimal, hex*/
@@ -62,7 +60,7 @@ _ {
   // Treat control characters as spaces, other - error.
   if (*yytext >= 32) {
     cerr<<yylineno<<endl;
-    cerr<<"invalid character: "<<*yytext<<endl;
+    cerr<<"Invalid character: "<<*yytext<<endl;
     yyterminate();
   }
 }

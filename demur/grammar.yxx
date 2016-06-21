@@ -1,4 +1,6 @@
 %{
+#include "base.hxx"
+
 #include <cstdio>
 #include <iostream>
 using namespace std;

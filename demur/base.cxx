@@ -47,7 +47,7 @@ class Flags {
           argv[k++] = argv[i++];
         }
       } else if (*a == '-') {
-        if (!parse_flag(i, *argc, argv, &i)) {
+        if (!parse_flag(*argc, argv, i, &i)) {
           return false;
         }
       } else {
@@ -103,32 +103,39 @@ class Flags {
     }
   }
 
-  bool parse_flag(int i, int argc, char **argv, int *i_out) {
+  bool parse_flag(int argc, char **argv, int i, int *i_out) {
     auto a = argv[i];
     if (*a == '-') a++;
     if (*a == '-') a++;
     if (*a == 0) return false;
     auto it = flags_.find(a);
-    if (it == flags_.end()) {
-      int l = std::strlen(a);
-      if (l > 0 && (a[l - 1] == '-' || a[l - 1] == '+')) {
-        it = flags_.find(string(a, l - 1));
-        if (it != flags_.end() && it->second.type == Type::kBool) {
-          *(bool*)it->second.p = a[l - 1] == '+';
-          *i_out = i + 1;
-          return true;
+    if (flags_.end() == it) {
+      int a_len = std::strlen(a);
+      if (a_len > 0 && (a[a_len - 1] == '-' || a[a_len - 1] == '+')) {
+        auto a_short = string(a, a_len - 1);
+        it = flags_.find(a_short);
+        if (flags_.end() != it) {
+          auto typed_ptr = it->second;
+          if (typed_ptr.type == Type::kBool) {
+            *(bool*)typed_ptr.p = a[a_len - 1] == '+';
+            *i_out = i + 1;
+            return true;
+          }
+          cerr<<"Non-bool flag "<<a_short<<" assigned to bool value"<<endl;
+          return false;
         }
       }
-      cerr<<"Invalid flag: "<<a<<endl;
+      cerr<<"Unknown flag: "<<a<<endl;
       return false;
     }
-    auto tp = it->second;
-    if (tp.type == Type::kBool) {
-      *(bool*)tp.p = true;
+    auto typed_ptr = it->second;
+    if (typed_ptr.type == Type::kBool) {
+      *(bool*)typed_ptr.p = true;
       *i_out = i + 1;
       return true;
     }
     i++;
+    // Hyphen means next @argv value treated "as-is" without check for -/--.
     auto allow_hyphen = false;
     if (i < argc && hyphen(argv[i])) {
       i++;
@@ -139,20 +146,20 @@ class Flags {
       return false;
     }
     if (it->second.type == Type::kString) {
-      ((string*)tp.p)->assign(argv[i]);
+      *(string*)typed_ptr.p = argv[i];
       *i_out = i + 1;
       return true;
     }
     auto n = 0, sr = 0;
-    switch (tp.type) {
+    switch (typed_ptr.type) {
       case Type::kInt32:
-        sr = std::sscanf(argv[i], kI32f "%n", (i32*)tp.p, &n);
+        sr = std::sscanf(argv[i], kI32f "%n", (i32*)typed_ptr.p, &n);
         break;
       case Type::kInt64:
-        sr = std::sscanf(argv[i], kI64f "%n", (i64*)tp.p, &n);
+        sr = std::sscanf(argv[i], kI64f "%n", (i64*)typed_ptr.p, &n);
         break;
       case Type::kDouble:
-        sr = std::sscanf(argv[i], "%lf%n", (double*)tp.p, &n);
+        sr = std::sscanf(argv[i], "%lf%n", (double*)typed_ptr.p, &n);
         break;
       default: break;
     }

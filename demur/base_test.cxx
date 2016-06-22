@@ -16,14 +16,18 @@ void test_flags() {
   char p3[] = "-str";
   char p4[] = "xyz";
   char p5[] = "-b+";
+  char p6[] = "-n64";
+  char p7[] = "-";
+  char p8[] = "-10";
   char* argv[] = {
-    p0, p1, p2, p3, p4, p5, nullptr
+    p0, p1, p2, p3, p4, p5, p6, p7, p8, nullptr
   };
   int argc = ARRAY_SIZEOF(argv) - 1;
   CHECK(flags_parse(&argc, argv));
   CHECK(argc == 1);
   CHECK(flag_n32 == 132);
   CHECK(flag_str == "xyz");
+  CHECK(flag_n64 == -10);
   CHECK(flag_b);
   flags_reset();
   CHECK(flag_str.empty());

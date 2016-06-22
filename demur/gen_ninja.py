@@ -81,7 +81,7 @@ if optimize:
 else:
   w.variable('cxx_opt', ['-O0', '-g'])
   w.variable('lnk_opt', [])
-  w.variable('bison_opt', ['-t'])
+  w.variable('bison_opt', ['-t', '-v'])
 
 w.variable('cxx_bin', 'g++-4.9')
 w.variable('cxx_warnings',

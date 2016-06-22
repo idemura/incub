@@ -1,5 +1,5 @@
 %require "3.0"
-%skeleton "lalr1.cc"
+%skeleton "lalr1.cc"  // C++ skeleton
 
 %code requires {
 #include "base.hxx"
@@ -19,11 +19,8 @@ int yylex(parser::semantic_type *data, FlexLexer *lexer);
 #include <FlexLexer.h>
 %}
 
-// Bison fundamentally works by asking flex to get the next token, which it
-// returns as an object of type "yystype".  But tokens could be of any
-// arbitrary data type!  So we deal with that in Bison by defining a C union
-// holding each of the types of tokens that Flex could return, and have Bison
-// use that union instead of "int" for the definition of "yystype":
+%start top
+
 %union {
   igor::Constant *constant;
   igor::Name *name;
@@ -44,7 +41,8 @@ int yylex(parser::semantic_type *data, FlexLexer *lexer);
 %token            RC
 
 %%
-top_fn:   FN NAME LP params RP LC RC ;
+top:      fn | NAME ;
+fn:       FN NAME LP params RP LC RC ;
 params:   NAME ;
 %%
 

@@ -9,4 +9,5 @@ demur
 *.tab.cxx
 *.tab.hxx
 stack.hh
+grammar.output
 

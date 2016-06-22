@@ -1,13 +1,21 @@
 %require "3.0"
 %skeleton "lalr1.cc"
 
+%code requires {
+#include "grammar_node.hxx"
+
+class yyFlexLexer;
+}  // %code
+
+%code provides {
+namespace yy {
+int yylex(parser::semantic_type *data, yyFlexLexer *lexer);
+}  // namespace
+}  // %code
+
 %{
-#include "base.hxx"
-
-// For yylex function below.
-#include "grammar.tab.hxx"
-
-int yylex(yy::parser::semantic_type *data);
+// If I put it into header, macro redifinition error will appear.
+#include <FlexLexer.h>
 %}
 
 // Bison fundamentally works by asking flex to get the next token, which it
@@ -16,62 +24,60 @@ int yylex(yy::parser::semantic_type *data);
 // holding each of the types of tokens that Flex could return, and have Bison
 // use that union instead of "int" for the definition of "yystype":
 %union {
-  int ival;
-  float fval;
-  char *sval;
+  igor::Constant *constant;
+  igor::Name *name;
 }
 
-//%parse-param {MyCtx ctx}
+%param {yyFlexLexer *ctx}
 
-// define the "terminal symbol" token types I'm going to use (in CAPS
-// by convention), and associate each with a field of the union:
-%token <ival> INT
-%token <fval> FLOAT
-%token <sval> STRING
+// Terminal symbols are in CAPS by convention.
+%token <constant> CONSTANT
+%token <name>     NAME
+%token            WILDCARD
 
 %%
-// this is the actual grammar that bison will parse, but for right now it's just
-// something silly to echo to the screen what bison gets from flex.  We'll
-// make a real one shortly:
-snazzle:
-  INT snazzle      { cout << "bison found an int: " << $1 << endl; }
-  | FLOAT snazzle  { cout << "bison found a float: " << $1 << endl; }
-  | STRING snazzle { cout << "bison found a string: " << $1 << endl; }
-  | INT            { cout << "bison found an int: " << $1 << endl; }
-  | FLOAT          { cout << "bison found a float: " << $1 << endl; }
-  | STRING         { cout << "bison found a string: " << $1 << endl; }
+test:
+  CONSTANT test         { cout << "bison found an int: " << $1->s << endl; }
+  | NAME test           { cout << "bison found a string: " << $1->s << endl; }
+  | CONSTANT            { cout << "bison found an int: " << $1->s << endl; }
+  | NAME                { cout << "bison found a string: " << $1->s << endl; }
   ;
 %%
 
 namespace yy {
-void parser::error(const std::string &msg) {
-  cout << "EEK, parse error!  Message: " << msg << endl;
-  // might as well halt now:
-  exit(-1);
+void parser::error(const string &msg) {
+  cerr<<"Parse error: "<<msg<<endl;
+  //std::exit(-1);
+}
+
+namespace {
+string lexer_str(yyFlexLexer *lexer) {
+  return {lexer->YYText(), lexer->YYLeng()};
 }
 }  // namespace
 
-int main(int, char**) {
-  cout<<"yeah!"<<endl;
-  // open a file handle to a particular file:
-  //FILE *myfile = fopen("a.snazzle.file", "r");
-  // make sure it is valid:
-  //if (!myfile) {
-  //  cout << "I can't open a.snazzle.file!" << endl;
-  //  return -1;
-  //}
-  // set flex to read from it instead of defaulting to STDIN:
-  //yyin = myfile;
-
-  // parse through the input until there is no more:
-  //do {
-  //  yyparse();
-  //} while (!feof(yyin));
-  return 0;
+int yylex(parser::semantic_type *data, yyFlexLexer *lexer) {
+  using token = parser::token;
+  const auto tok_type = lexer->yylex();
+  switch (tok_type) {
+    case 0: break;  // EOF
+    case token::CONSTANT: {
+      data->constant = new igor::Constant();
+      data->constant->s = lexer_str(lexer);
+      break;
+    }
+    case token::NAME: {
+      data->name = new igor::Name();
+      data->name->s = lexer_str(lexer);
+      break;
+    }
+    case token::WILDCARD:
+      break;
+    default: {
+      cerr<<"Wrong token type "<<tok_type<<endl;
+      std::exit(-1);
+    }
+  }
+  return tok_type;
 }
-
-int yylex(yy::parser::semantic_type *data) {
-  cout<<"yylex"<<endl;
-  return 0;
-}
-
+}  // namespace

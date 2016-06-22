@@ -26,6 +26,7 @@ void test_flags() {
   CHECK(flag_str == "xyz");
   CHECK(flag_b);
   flags_reset();
+  CHECK(flag_str.empty());
 }
 
 }  // namespace

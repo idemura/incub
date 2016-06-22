@@ -21,27 +21,27 @@ rule bison
   command = bison -d $in
 
 build base.o:       cxx base.cxx
+build base.a:       lib base.o
 build base_test.o:  cxx base_test.cxx
-build base.test:    lnk base_test.o demur.a
-
-build ast.o:        cxx ast.cxx
-build ast_test.o:   cxx ast_test.cxx
-build ast.test:     lnk ast_test.o demur.a
-
-build lexer.o:      cxx lexer.cxx
-build lexer_test.o: cxx lexer_test.cxx
-build lexer.test:   lnk lexer_test.o demur.a
-
-build demur.a:      lib base.o lexer.o ast.o
-build demur.o:      cxx demur.cxx
-build demur:        lnk demur.o demur.a
+build base.test:    lnk base_test.o base.a
 
 build lex.yy.cxx:   lex lex.l | grammar.tab.cxx
 build lex.yy.o:     cxx lex.yy.cxx
-build lex.yy.a:     lib lex.yy.o
+build lex.yy.a:     lib lex.yy.o base.o
 build lex_test.o:   cxx lex_test.cxx
-build lex.test:     lnk lex_test.o base.o lex.yy.a
+build lex.test:     lnk lex_test.o lex.yy.a
+
+build grammar_node.o:   cxx grammar_node.cxx
 
 build grammar.tab.cxx:  bison grammar.yxx
 build grammar.tab.o:    cxx grammar.tab.cxx
-build grammar.test:     lnk grammar.tab.o lex.yy.o base.o
+build grammar.tab.a:    lib grammar.tab.o lex.yy.o
+
+build parser.o:         cxx parser.cxx
+build parser.a:         lib parser.o $
+                            grammar_node.o $
+                            grammar.tab.o $
+                            lex.yy.o $
+                            base.o
+build parser_test.o:    cxx parser_test.cxx
+build parser.test:      lnk parser_test.o parser.a

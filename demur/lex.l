@@ -1,20 +1,10 @@
 %option c++ full nodefault nounput noyywrap yylineno
 
 %{
-#include <string>
+#include "base.hxx"
 #include "grammar.tab.hxx"
 
-#if 1  // For debug puposes.
-#define IGOR_IO 1
-#include <iostream>
-using std::cerr;
-using std::cout;
-using std::endl;
-#else
-#define IGOR_IO 0
-#endif
-
-using std::string;
+using token = yy::parser::token;
 %}
 
 S       [ \t\r\f]
@@ -27,6 +17,7 @@ TF      [A-Z]
 IS      (i8|i16|i32|i64)?
 
 %%
+
   /*Spaces, comment till end of line or EOF*/
 {S}|\n|#.*
 
@@ -35,30 +26,27 @@ IS      (i8|i16|i32|i64)?
     It will be some parsing error instead. Same for integers.
   */
 {D}+\.{D}+(f|d)? {
-  //cout<<"floating-point: "<<yytext<<endl;
+  return token::CONSTANT;
 }
   /*Integers: oct, decimal, hex*/
 0o{O}+(_{O}+)*{IS} {
-  cout<<"oct integer: "<<yytext<<endl;
+  return token::CONSTANT;
 }
 {D}+(_{D}+)*{IS} {
-  cout<<"dec integer: "<<yytext<<endl;
+  return token::CONSTANT;
 }
 0x{H}+(_{H}+)*{IS} {
-  cout<<"hex integer: "<<yytext<<endl;
+  return token::CONSTANT;
 }
 
 {NF}{L}* {
-  //cout<<"name: "<<yytext<<endl;
-  return 12;
+  return token::NAME;
 }
 {TF}{L}* {
-  //cout<<"type_name: "<<yytext<<endl;
-  // cout<<"line #"<<yylineno<<endl;
-  return 11;
+  return token::NAME;
 }
 _ {
-  //cout<<"wildcard: "<<yytext<<endl;
+  return token::WILDCARD;
 }
 . {
   // Treat control characters as spaces, other - error.

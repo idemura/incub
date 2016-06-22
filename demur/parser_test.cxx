@@ -1,6 +1,4 @@
-#include "base.hxx"
-
-#include <FlexLexer.h>
+#include "parser.hxx"
 
 namespace igor {
 namespace {
@@ -14,10 +12,12 @@ void test1() {
       "# comment till eol\n"
       "# comment";
 
-  yyFlexLexer lexer(&ss);
-  while (lexer.yylex()) {
-    // Empty
-  }
+  CHECK(parse(&ss));
+}
+
+void test2() {
+  // std::stringstream ss;
+  // CHECK(parse(&ss));
 }
 
 }  // namespace
@@ -31,6 +31,7 @@ int main(int argc, char **argv) {
   }
 
   test1();
+  test2();
 
   flags_reset();
   RETURN_TESTS_PASSED();

@@ -1,7 +1,7 @@
 demur
 .ninja_deps
 .ninja_log
-*.test
+*_test
 *.d
 *.o
 *.a

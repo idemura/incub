@@ -52,7 +52,7 @@ void parser::error(const string &msg) {
 
 namespace {
 string lexer_str(yyFlexLexer *lexer) {
-  return {lexer->YYText(), lexer->YYLeng()};
+  return {lexer->YYText(), static_cast<size_t>(lexer->YYLeng())};
 }
 }  // namespace
 

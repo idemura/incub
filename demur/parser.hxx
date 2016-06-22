@@ -4,7 +4,7 @@
 #include "base.hxx"
 
 namespace igor {
-bool parse(std::stringstream *ss);
+bool parse(std::istream *in, std::function<void(const string&)> error_fn);
 }  // namespace
 
 #endif

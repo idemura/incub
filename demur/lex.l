@@ -21,33 +21,27 @@ IS      (i8|i16|i32|i64)?
   /*Spaces, comment till end of line or EOF*/
 {S}|\n|#.*
 
+"fn" { return token::FN; }
+"(" { return token::LP; }
+")" { return token::RP; }
+"{" { return token::LC; }
+"}" { return token::RC; }
+"_" { return token::WILDCARD; }
+
   /*Floating point. Our grammar doesn't allow word to follow float. This means
     we don't need anything special to check non-letter follows floating point.
     It will be some parsing error instead. Same for integers.
   */
-{D}+\.{D}+(f|d)? {
-  return token::CONSTANT;
-}
-  /*Integers: oct, decimal, hex*/
-0o{O}+(_{O}+)*{IS} {
-  return token::CONSTANT;
-}
-{D}+(_{D}+)*{IS} {
-  return token::CONSTANT;
-}
-0x{H}+(_{H}+)*{IS} {
-  return token::CONSTANT;
-}
+{D}+\.{D}+(f|d)? { return token::CONSTANT; }
 
-{NF}{L}* {
-  return token::NAME;
-}
-{TF}{L}* {
-  return token::NAME;
-}
-_ {
-  return token::WILDCARD;
-}
+  /*Integers: oct, decimal, hex*/
+0o{O}+(_{O}+)*{IS}  { return token::CONSTANT; }
+{D}+(_{D}+)*{IS}    { return token::CONSTANT; }
+0x{H}+(_{H}+)*{IS}  { return token::CONSTANT; }
+
+{NF}{L}* { return token::NAME; }
+{TF}{L}* { return token::TYPE; }
+
 . {
   // Treat control characters as spaces, other - error.
   if (*yytext >= 32) {

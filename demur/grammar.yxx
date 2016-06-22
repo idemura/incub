@@ -2,14 +2,15 @@
 %skeleton "lalr1.cc"
 
 %code requires {
+#include "base.hxx"
 #include "grammar_node.hxx"
 
-class yyFlexLexer;
+class FlexLexer;
 }  // %code
 
 %code provides {
 namespace yy {
-int yylex(parser::semantic_type *data, yyFlexLexer *lexer);
+int yylex(parser::semantic_type *data, FlexLexer *lexer);
 }  // namespace
 }  // %code
 
@@ -28,35 +29,37 @@ int yylex(parser::semantic_type *data, yyFlexLexer *lexer);
   igor::Name *name;
 }
 
-%param {yyFlexLexer *ctx}
+%param {FlexLexer *ctx}
+%parse-param {std::function<void(const string&)> error_fn}
 
 // Terminal symbols are in CAPS by convention.
 %token <constant> CONSTANT
 %token <name>     NAME
+%token <name>     TYPE
 %token            WILDCARD
+%token            FN
+%token            LP
+%token            RP
+%token            LC
+%token            RC
 
 %%
-test:
-  CONSTANT test         { cout << "bison found an int: " << $1->s << endl; }
-  | NAME test           { cout << "bison found a string: " << $1->s << endl; }
-  | CONSTANT            { cout << "bison found an int: " << $1->s << endl; }
-  | NAME                { cout << "bison found a string: " << $1->s << endl; }
-  ;
+top_fn:   FN NAME LP params RP LC RC ;
+params:   NAME ;
 %%
 
 namespace yy {
 void parser::error(const string &msg) {
-  cerr<<"Parse error: "<<msg<<endl;
-  //std::exit(-1);
+  error_fn(msg);
 }
 
 namespace {
-string lexer_str(yyFlexLexer *lexer) {
+string lexer_str(FlexLexer *lexer) {
   return {lexer->YYText(), static_cast<size_t>(lexer->YYLeng())};
 }
 }  // namespace
 
-int yylex(parser::semantic_type *data, yyFlexLexer *lexer) {
+int yylex(parser::semantic_type *data, FlexLexer *lexer) {
   using token = parser::token;
   const auto tok_type = lexer->yylex();
   switch (tok_type) {

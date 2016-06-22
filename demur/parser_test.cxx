@@ -3,6 +3,13 @@
 namespace igor {
 namespace {
 
+std::function<void(const string&)> error_h(int *counter) {
+  return [counter](const string &msg) {
+    cerr<<"Parser error: "<<msg<<endl;
+    *counter += 1;
+  };
+}
+
 void test1() {
   std::stringstream ss;
   ss<<"10 1_0 0o1_7 0o1_7 0x19af 0x19_af\n"
@@ -12,12 +19,18 @@ void test1() {
       "# comment till eol\n"
       "# comment";
 
-  CHECK(parse(&ss));
+  int ec = 0;
+  CHECK(parse(&ss, error_h(&ec)));
+  CHECK(ec == 0);
 }
 
 void test2() {
-  // std::stringstream ss;
-  // CHECK(parse(&ss));
+  std::stringstream ss;
+  ss<<"# first sample\n"
+      "fn foo(n) {}\n";
+  int ec = 0;
+  CHECK(parse(&ss, error_h(&ec)));
+  CHECK(ec == 0);
 }
 
 }  // namespace
@@ -30,7 +43,7 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  test1();
+  // test1();
   test2();
 
   flags_reset();

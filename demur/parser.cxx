@@ -17,8 +17,9 @@ bool parse(
       ctx.error_fn = std::move(error_fn);
       yyset_extra(&ctx, yyscanner);
       yyset_in(f, yyscanner);
+#if YYDEBUG
       yydebug = flag_debug_bison;
-
+#endif
       // Grammar accepts input till EOF.
       res = yyparse(yyscanner) == 0;
     } else {

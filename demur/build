@@ -1,0 +1,23 @@
+#!/bin/bash
+set -e
+
+if [[ $1 == '' ]]
+then
+  new_mode='dbg'
+else
+  new_mode=$1
+fi
+
+if [ ! -e build.ninja ]
+then
+  python gen_ninja.py $new_mode > build.ninja
+else
+  mode=`sed -n '1p' build.ninja | awk '{ print $3 }'`
+  if [[ $new_mode != $mode ]]
+  then
+    python gen_ninja.py $new_mode > build.ninja
+    echo 'build.ninja updated'
+  fi
+fi
+ninja
+# [[ $new_mode == 'OPT' ]] && stip -s demur

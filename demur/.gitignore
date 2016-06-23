@@ -11,3 +11,5 @@ demur
 *.tab.hxx
 stack.hh
 grammar.output
+build.ninja
+

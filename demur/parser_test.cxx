@@ -3,42 +3,37 @@
 namespace igor {
 namespace {
 
-std::function<void(const string&)> error_h(int *counter) {
-  return [counter](const string &msg) {
-    cerr<<"Parser error: "<<msg<<endl;
-    *counter += 1;
-  };
+int parse_test(string s) {
+  TempFile temp(s);
+  int err_count = 0;
+  parse(temp.get_name(),
+      [&err_count](const string &msg) {
+        cerr<<"Parser error: "<<msg<<endl;
+        err_count += 1;
+      });
+  return err_count;
 }
 
 void test_comment() {
-  TempFile temp(
+  CHECK(0 == parse_test(
       "# comment till eol\n"
       "# comment"
-  );
-  int ec = 0;
-  CHECK(parse(temp.get_name(), error_h(&ec)));
-  CHECK(ec == 0);
+  ));
 }
 
 void test_fn() {
-  TempFile temp(
+  CHECK(0 == parse_test(
       "fn foo() {}\n"
       "fn foo(n: Int) {}\n"
       "fn bar(x, y, z: Int) {}\n"
       "fn bar(x, y: Int, s: String) {}\n"
-  );
-  int ec = 0;
-  CHECK(parse(temp.get_name(), error_h(&ec)));
-  CHECK(ec == 0);
-}
-
-void test_fn_na() {
-  TempFile temp(
+  ));
+  CHECK(1 == parse_test(
       "fn foo(n: Int,) {}\n"
-  );
-  int ec = 0;
-  CHECK(!parse(temp.get_name(), error_h(&ec)));
-  CHECK(ec == 1);
+  ));
+  CHECK(1 == parse_test(
+      "fn foo(n,: Int) {}\n"
+  ));
 }
 
 }  // namespace
@@ -53,7 +48,6 @@ int main(int argc, char **argv) {
 
   test_comment();
   test_fn();
-  test_fn_na();
 
   flags_reset();
   RETURN_TESTS_PASSED();

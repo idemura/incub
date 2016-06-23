@@ -3,7 +3,7 @@
 gcc_opt = -O0 -g
 lnk_opt = 
 bison_opt = -t -v
-cxx_bin = g++-4.9
+cxx_bin = g++
 cxx_warnings = -Wall -Wno-unused-function -Wno-sign-compare -Wno-char-subscripts
 cxx_flags = -std=c++14 -I. -march=native -fdiagnostics-color=always $gcc_opt $
     $cxx_warnings

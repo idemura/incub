@@ -1,7 +1,7 @@
 #include "parser.hxx"
 #include "grammar.tab.hxx"
 
-FLAG_i32(debug_bison, 0);
+FLAG_bool(debug_bison, false);
 
 namespace igor {
 

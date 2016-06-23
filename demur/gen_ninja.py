@@ -83,7 +83,7 @@ else:
   w.variable('lnk_opt', [])
   w.variable('bison_opt', ['-t', '-v'])
 
-w.variable('cxx_bin', 'g++-4.9')
+w.variable('cxx_bin', 'g++')
 w.variable('cxx_warnings',
   [ '-Wall',
     '-Wno-unused-function',

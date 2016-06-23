@@ -8,7 +8,7 @@ int parse_test(string s) {
   int err_count = 0;
   parse(temp.get_name(),
       [&err_count](const string &msg) {
-        cerr<<"Parser error: "<<msg<<endl;
+        // cerr<<"Parser error: "<<msg<<endl;
         err_count += 1;
       });
   return err_count;

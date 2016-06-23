@@ -4,7 +4,8 @@
 #include "base.hxx"
 
 namespace igor {
-bool parse(std::istream *in, std::function<void(const string&)> error_fn);
+bool parse(const string &file_name,
+           std::function<void(const string&)> error_fn);
 }  // namespace
 
 #endif

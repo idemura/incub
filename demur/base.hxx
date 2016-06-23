@@ -125,6 +125,18 @@ private:
 void check_failed(const char *file, int line, const char *text);
 void tests_passed(const char *file);
 
+class TempFile {
+public:
+  explicit TempFile(const string &str);
+  DEFAULT_COPY(TempFile);
+  DEFAULT_MOVE(TempFile);
+  ~TempFile();
+  string get_name() const { return name_; }
+
+private:
+  string name_;
+};
+
 }  // namespace
 
 #endif

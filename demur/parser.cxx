@@ -1,22 +1,34 @@
 #include "parser.hxx"
 #include "grammar.tab.hxx"
-#include <FlexLexer.h>
 
-FLAG_i32(bison_debug, 0);
+FLAG_i32(debug_bison, 0);
 
 namespace igor {
 
-bool parse(std::istream *in, std::function<void(const string&)> error_fn) {
-  yyFlexLexer lexer(in);
-  yy::parser parser(&lexer, std::move(error_fn));
-  if (flag_bison_debug > 0) {
-    parser.set_debug_level(flag_bison_debug);
+bool parse(
+    const string &file_name,
+    std::function<void(const string&)> error_fn) {
+  auto res = false;
+  auto f = fopen(file_name.c_str(), "rt");
+  if (nullptr != f) {
+    yyscan_t yyscanner;
+    if (0 == yylex_init(&yyscanner)) {
+      ScannerCtx ctx;
+      ctx.error_fn = std::move(error_fn);
+      yyset_extra(&ctx, yyscanner);
+      yyset_in(f, yyscanner);
+      yydebug = flag_debug_bison;
+
+      // Grammar accepts input till EOF.
+      res = yyparse(yyscanner) == 0;
+    } else {
+      error_fn("Scanner init");
+    }
+    fclose(f);
+  } else {
+    error_fn("Open file " + file_name);
   }
-  int r = 0;
-  while (!in->eof() && r == 0) {
-    r = parser.parse();
-  }
-  return r == 0;
+  return res;
 }
 
 }  // namespace

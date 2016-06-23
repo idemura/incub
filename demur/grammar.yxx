@@ -1,84 +1,66 @@
 %require "3.0"
-%skeleton "lalr1.cc"  // C++ skeleton
+%define api.token.prefix {TOK_}
+%pure-parser
 
 %code requires {
-#include "base.hxx"
 #include "grammar_node.hxx"
+#include <stdio.h>
 
-class FlexLexer;
+typedef void *yyscan_t;
+
+namespace igor {
+struct ScannerCtx {
+  std::function<void(const string&)> error_fn;
+};
+} // namespace
 }  // %code
 
 %code provides {
-namespace yy {
-int yylex(parser::semantic_type *data, FlexLexer *lexer);
-}  // namespace
+int yylex_init(yyscan_t *yyscanner);
+int yylex_destroy(yyscan_t yyscanner);
+int yylex(YYSTYPE *yylval, yyscan_t yyscanner);
+void *yyget_extra(yyscan_t yyscanner);
+void  yyset_extra(void *user_defined, yyscan_t yyscanner);
+void yyset_in(FILE *in, yyscan_t yyscanner);
+void yyerror(yyscan_t yyscanner, const char *msg);
 }  // %code
 
 %{
-// If I put it into header, macro redifinition error will appear.
-#include <FlexLexer.h>
+// Very top of the .tab.cxx file only.
 %}
-
-%start top
 
 %union {
   igor::Constant *constant;
   igor::Name *name;
 }
 
-%param {FlexLexer *ctx}
-%parse-param {std::function<void(const string&)> error_fn}
+%param {yyscan_t yyscanner}
 
 // Terminal symbols are in CAPS by convention.
 %token <constant> CONSTANT
 %token <name>     NAME
 %token <name>     TYPE
-%token            WILDCARD
-%token            FN
-%token            LP
-%token            RP
-%token            LC
-%token            RC
+%token            WILDCARD  // _
+%token            FN  // fn
+%token            LP  // (
+%token            RP  // )
+%token            LC  // {
+%token            RC  // }
+%token            COMMA  // ,
+%token            COLON  // :
+%token            INVALID_CHAR
+
+%start top
 
 %%
-top:      fn | NAME ;
-fn:       FN NAME LP params RP LC RC ;
-params:   NAME ;
+
+top:      fn | NAME;
+fn:       FN NAME LP params RP LC RC;
+params:   NAME;
+
 %%
 
-namespace yy {
-void parser::error(const string &msg) {
-  error_fn(msg);
+void yyerror(yyscan_t yyscanner, const char *msg) {
+  auto se = reinterpret_cast<igor::ScannerCtx*>(yyget_extra(yyscanner));
+  se->error_fn(msg);
 }
-
-namespace {
-string lexer_str(FlexLexer *lexer) {
-  return {lexer->YYText(), static_cast<size_t>(lexer->YYLeng())};
-}
-}  // namespace
-
-int yylex(parser::semantic_type *data, FlexLexer *lexer) {
-  using token = parser::token;
-  const auto tok_type = lexer->yylex();
-  switch (tok_type) {
-    case 0: break;  // EOF
-    case token::CONSTANT: {
-      data->constant = new igor::Constant();
-      data->constant->s = lexer_str(lexer);
-      break;
-    }
-    case token::NAME: {
-      data->name = new igor::Name();
-      data->name->s = lexer_str(lexer);
-      break;
-    }
-    case token::WILDCARD:
-      break;
-    default: {
-      cerr<<"Wrong token type "<<tok_type<<endl;
-      std::exit(-1);
-    }
-  }
-  return tok_type;
-}
-}  // namespace

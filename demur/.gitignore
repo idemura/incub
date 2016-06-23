@@ -6,8 +6,8 @@ demur
 *.o
 *.a
 *.yy.cxx
+*.yy.hxx
 *.tab.cxx
 *.tab.hxx
 stack.hh
 grammar.output
-

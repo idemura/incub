@@ -75,11 +75,11 @@ def build_bison(base_name):
           [base_name + '.yxx'])
 
 if optimize:
-  w.variable('cxx_opt', ['-O3', '-ffast-math', '-DNDEBUG'])
+  w.variable('gcc_opt', ['-O3', '-ffast-math', '-DNDEBUG'])
   w.variable('lnk_opt', ['-flto'])
   w.variable('bison_opt', [])
 else:
-  w.variable('cxx_opt', ['-O0', '-g'])
+  w.variable('gcc_opt', ['-O0', '-g'])
   w.variable('lnk_opt', [])
   w.variable('bison_opt', ['-t', '-v'])
 
@@ -94,7 +94,7 @@ w.variable('cxx_flags',
     '-I.',
     '-march=native',
     '-fdiagnostics-color=always',
-    '$cxx_opt',
+    '$gcc_opt',
     '$cxx_warnings' ])
 w.variable('lnk_flags', '$lnk_opt')
 
@@ -111,12 +111,11 @@ build_cxx('base')
 build_bin('base_test', ['base'])
 
 build_lex('lex', bison='grammar')
-build_cxx('lex.yy', ['base'])
-build_bin('lex_test', ['lex.yy'])
+build_cxx('lex.yy', ['grammar_node'])
 
 build_cxx('grammar_node', ['base'])
 
 build_bison('grammar')
-build_cxx('grammar.tab', ['lex.yy'])
+build_cxx('grammar.tab', ['lex.yy', 'grammar_node'])
 build_cxx('parser', ['grammar_node', 'grammar.tab'])
 build_bin('parser_test', ['parser'])

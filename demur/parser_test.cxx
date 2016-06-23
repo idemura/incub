@@ -11,25 +11,26 @@ std::function<void(const string&)> error_h(int *counter) {
 }
 
 void test1() {
-  std::stringstream ss;
-  ss<<"10 1_0 0o1_7 0o1_7 0x19af 0x19_af\n"
+  TempFile temp(
+      "10 1_0 0o1_7 0o1_7 0x19af 0x19_af\n"
       "0.5 0.2f 0.6d\n"
       "TypeName T Underscore_Type_Name\n"
       "igor hello x my_id\n"
       "# comment till eol\n"
-      "# comment";
-
+      "# comment"
+  );
   int ec = 0;
-  CHECK(parse(&ss, error_h(&ec)));
+  CHECK(parse(temp.get_name(), error_h(&ec)));
   CHECK(ec == 0);
 }
 
 void test2() {
-  std::stringstream ss;
-  ss<<"# first sample\n"
-      "fn foo(n) {}\n";
+  TempFile temp(
+      "# first sample\n"
+      "fn foo(n) {}\n"
+  );
   int ec = 0;
-  CHECK(parse(&ss, error_h(&ec)));
+  CHECK(parse(temp.get_name(), error_h(&ec)));
   CHECK(ec == 0);
 }
 

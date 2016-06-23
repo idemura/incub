@@ -1,0 +1,2 @@
+#!/bin/sh
+find . -name '*_test' -executable -type f -exec {} \;

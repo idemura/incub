@@ -2,7 +2,8 @@
 
 #include <cstdlib>
 #include <cstring>
-#include <cstdio>  // sscanf
+#include <cstdio>
+#include <unistd.h>
 
 namespace igor {
 
@@ -214,6 +215,23 @@ void flags_register(const char* name, string *f) {
 
 void flags_register(const char* name, double *f) {
   flags()->register_flag(name, f);
+}
+
+TempFile::TempFile(const string &str) {
+  char temp_name[] = "/tmp/igor.XXXXXX";
+  const auto fd = mkostemp(temp_name, 0600);
+  if (fd < 0) {
+    return;
+  }
+  write(fd, str.data(), str.size());
+  close(fd);
+  name_ = temp_name;
+}
+
+TempFile::~TempFile() {
+  if (!name_.empty()) {
+    unlink(name_.c_str());
+  }
 }
 
 }  // namespace

@@ -20,13 +20,17 @@ IS      (i8|i16|i32|i64)?
 
 "fn" { return TOK_FN; }
 
-":" { return TOK_COLON; }
-"," { return TOK_COMMA; }
-"(" { return TOK_LP; }
-")" { return TOK_RP; }
-"{" { return TOK_LC; }
-"}" { return TOK_RC; }
-"_" { return TOK_WILDCARD; }
+"=>"  { return TOK_ARROW; }
+":"   { return TOK_COLON; }
+","   { return TOK_COMMA; }
+"."   { return TOK_DOT; }
+"["   { return TOK_LB; }
+"]"   { return TOK_RB; }
+"("   { return TOK_LP; }
+")"   { return TOK_RP; }
+"{"   { return TOK_LC; }
+"}"   { return TOK_RC; }
+"_"   { return TOK_WILDCARD; }
 
   /*Floating point. Our grammar doesn't allow word to follow float. This means
     we don't need anything special to check non-letter follows floating point.

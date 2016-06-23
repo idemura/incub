@@ -22,6 +22,7 @@ bool parse(
 #endif
       // Grammar accepts input till EOF.
       res = yyparse(yyscanner) == 0;
+      yylex_destroy(yyscanner);
     } else {
       error_fn("Scanner init");
     }

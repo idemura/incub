@@ -1,6 +1,8 @@
 %require "3.0"
+%define api.pure full
 %define api.token.prefix {TOK_}
-%pure-parser
+%define parse.error verbose
+%define parse.lac full
 
 %code requires {
 #include "grammar_node.hxx"
@@ -12,7 +14,7 @@ namespace igor {
 struct ScannerCtx {
   std::function<void(const string&)> error_fn;
 };
-} // namespace
+}  // namespace
 }  // %code
 
 %code provides {
@@ -24,10 +26,6 @@ void  yyset_extra(void *user_defined, yyscan_t yyscanner);
 void yyset_in(FILE *in, yyscan_t yyscanner);
 void yyerror(yyscan_t yyscanner, const char *msg);
 }  // %code
-
-%{
-// Very top of the .tab.cxx file only.
-%}
 
 %union {
   igor::Constant *constant;
@@ -54,9 +52,24 @@ void yyerror(yyscan_t yyscanner, const char *msg);
 
 %%
 
-top:      fn | NAME;
-fn:       FN NAME LP params RP LC RC;
-params:   NAME;
+top:
+    %empty
+  | named_fn top;
+
+named_fn:     FN NAME fn_param body;
+body:         LC RC
+
+fn_param:
+    LP RP
+  | LP args RP
+
+arg_tuple:
+    NAME COLON TYPE
+  | NAME COMMA arg_tuple;
+
+args:
+    arg_tuple
+  | arg_tuple COMMA args;
 
 %%
 

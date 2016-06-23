@@ -10,12 +10,8 @@ std::function<void(const string&)> error_h(int *counter) {
   };
 }
 
-void test1() {
+void test_comment() {
   TempFile temp(
-      "10 1_0 0o1_7 0o1_7 0x19af 0x19_af\n"
-      "0.5 0.2f 0.6d\n"
-      "TypeName T Underscore_Type_Name\n"
-      "igor hello x my_id\n"
       "# comment till eol\n"
       "# comment"
   );
@@ -24,14 +20,25 @@ void test1() {
   CHECK(ec == 0);
 }
 
-void test2() {
+void test_fn() {
   TempFile temp(
-      "# first sample\n"
-      "fn foo(n) {}\n"
+      "fn foo() {}\n"
+      "fn foo(n: Int) {}\n"
+      "fn bar(x, y, z: Int) {}\n"
+      "fn bar(x, y: Int, s: String) {}\n"
   );
   int ec = 0;
   CHECK(parse(temp.get_name(), error_h(&ec)));
   CHECK(ec == 0);
+}
+
+void test_fn_na() {
+  TempFile temp(
+      "fn foo(n: Int,) {}\n"
+  );
+  int ec = 0;
+  CHECK(!parse(temp.get_name(), error_h(&ec)));
+  CHECK(ec == 1);
 }
 
 }  // namespace
@@ -44,8 +51,9 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  // test1();
-  test2();
+  test_comment();
+  test_fn();
+  test_fn_na();
 
   flags_reset();
   RETURN_TESTS_PASSED();

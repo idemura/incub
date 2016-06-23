@@ -19,6 +19,9 @@ IS      (i8|i16|i32|i64)?
 {S}|\n|#.*
 
 "fn" { return TOK_FN; }
+
+":" { return TOK_COLON; }
+"," { return TOK_COMMA; }
 "(" { return TOK_LP; }
 ")" { return TOK_RP; }
 "{" { return TOK_LC; }
@@ -43,7 +46,7 @@ IS      (i8|i16|i32|i64)?
 
 {TF}{L}* {
   yylval->name = new igor::Name(string(yytext, yyleng));
-  return TOK_NAME;
+  return TOK_TYPE;
 }
 
 . {

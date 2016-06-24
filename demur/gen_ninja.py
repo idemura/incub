@@ -48,7 +48,7 @@ def link_closure(root):
       r.append(l + '.o')
   return r
 
-def build_cxx(base_name, link=[]):
+def build_cxx(base_name, link):
   w.build(base_name + '.o',
           CXX,
           base_name + '.cxx')
@@ -110,15 +110,17 @@ w.rule(BISON, command='bison $bison_opt -d $in')
 
 ## Build Rules:
 
-build_cxx('base')
+build_cxx('base', [])
 build_bin('base_test', ['base'])
+build_cxx('util', ['base'])
+build_bin('util_test', ['util'])
+
+build_cxx('ast', ['util'])
 
 build_lex('lex', bison='grammar')
-build_cxx('lex.yy', ['grammar_node'])
-
-build_cxx('grammar_node', ['base'])
+build_cxx('lex.yy', ['ast'])
 
 build_bison('grammar')
-build_cxx('grammar.tab', ['lex.yy', 'grammar_node'])
-build_cxx('parser', ['grammar_node', 'grammar.tab'])
+build_cxx('grammar.tab', ['lex.yy', 'ast'])
+build_cxx('parser', ['ast', 'grammar.tab'])
 build_bin('parser_test', ['parser'])

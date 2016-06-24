@@ -2,6 +2,10 @@
 
 %{
 #include "grammar.tab.hxx"
+
+igor::AST *yyget_ast(yyscan_t yyscanner) {
+  return reinterpret_cast<igor::AST*>(yyget_extra(yyscanner));
+}
 %}
 
 S       [ \t\r\f]
@@ -44,12 +48,12 @@ IS      (i8|i16|i32|i64)?
 0x{H}+(_{H}+)*{IS}  { return TOK_CONSTANT; }
 
 {NF}{L}* {
-  //yylval->name = new igor::Name(string(yytext, yyleng));
+  yylval->name = yyget_ast(yyscanner)->intern(string(yytext, yyleng));
   return TOK_NAME;
 }
 
 {TF}{L}* {
-  //yylval->name = new igor::Name(string(yytext, yyleng));
+  yylval->name = yyget_ast(yyscanner)->intern(string(yytext, yyleng));
   return TOK_TYPE;
 }
 

@@ -5,16 +5,10 @@
 %define parse.lac full
 
 %code requires {
-#include "grammar_node.hxx"
+#include "ast.hxx"
 #include <stdio.h>
 
 typedef void *yyscan_t;
-
-namespace igor {
-struct ScannerCtx {
-  std::function<void(const string&)> error_fn;
-};
-}  // namespace
 }  // %code
 
 %code provides {
@@ -24,15 +18,19 @@ int yylex(YYSTYPE *yylval, yyscan_t yyscanner);
 void *yyget_extra(yyscan_t yyscanner);
 void  yyset_extra(void *user_defined, yyscan_t yyscanner);
 void yyset_in(FILE *in, yyscan_t yyscanner);
-void yyerror(yyscan_t yyscanner, const char *msg);
+void yyerror(yyscan_t yyscanner, igor::AST *ast, const char *msg);
 }  // %code
+
+%expect 0
 
 %union {
   igor::Constant *constant;
-  igor::Name *name;
+  igor::Function *function;
+  string *name;
 }
 
 %param {yyscan_t yyscanner}
+%parse-param {igor::AST *ast}
 
 // Terminal symbols are in CAPS by convention.
 %token <constant> CONSTANT
@@ -52,15 +50,26 @@ void yyerror(yyscan_t yyscanner, const char *msg);
 %token            WILDCARD  // _
 %token            INVALID_CHAR
 
-%start top
+%type <function>  function
+
+%start module
 
 %%
 
-top:
+module:
     %empty
-  | named_fn top
+  | function module
 
-named_fn:     FN NAME arg_spec ret_spec body
+function:
+    FN NAME arg_spec ret_spec body
+{
+  $$ = new igor::Function;
+  $$->name = *$2;
+  if (!ast->add_function($$)) {
+    YYABORT;
+  }
+}
+
 body:         LC RC
 
 arg_spec:
@@ -102,13 +111,13 @@ type_spec:
     base_type
   | base_type ARROW type_spec
 
-type_ref:
+qualified_type:
     TYPE
   | qualifier TYPE
 
 base_type:
-    type_ref
-  | type_ref LP type_list RP  // Generic inst
+    qualified_type
+  | qualified_type LP type_list RP  // Generic inst
   | LP type_spec RP
   | base_type LB RB  // Otherwise we get shit/reduce warning.
   | LB type_list RB
@@ -119,7 +128,7 @@ base_type:
 
 %%
 
-void yyerror(yyscan_t yyscanner, const char *msg) {
-  auto se = reinterpret_cast<igor::ScannerCtx*>(yyget_extra(yyscanner));
-  se->error_fn(msg);
+void yyerror(yyscan_t yyscanner, igor::AST *ast, const char *msg) {
+  string s;
+  ast->error(s.append("Parse error: ").append(msg));
 }

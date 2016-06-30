@@ -2,7 +2,6 @@
 #define IGOR_UTIL_HXX
 
 #include "base.hxx"
-#include <type_traits>
 #include <unordered_set>
 
 namespace igor {

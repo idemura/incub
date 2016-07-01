@@ -53,6 +53,8 @@ void test_type_spec() {
   // Use that function grammar accepts just type_spec.
   CHECK(0 == parse_test(
       "fn f10(T) {}\n"
+      "fn f10(module.T) {}\n"
+      // "fn f10(module.sub.T) {}\n"
       "fn f11((T)) {}\n"
       "fn f12([T, T]) {}\n"
       "fn f13(([T, T])) {}\n"
@@ -70,6 +72,12 @@ void test_type_spec() {
   ));
 }
 
+void test() {
+  CHECK(0 == parse_test(
+      "fn f10(x: T) {}\n"
+  ));
+}
+
 }  // namespace
 }  // namespace
 
@@ -83,6 +91,7 @@ int main(int argc, char **argv) {
   test_comment();
   test_fn();
   test_type_spec();
+  // test();
 
   flags_reset();
   RETURN_TESTS_PASSED();

@@ -18,13 +18,12 @@ void AST::error(const string& msg) {
   }
 }
 
-bool AST::add_function(Function *function) {
-  auto function_up = wrap_unique(function);
-  if (function_map_.find(function->name) == function_map_.end()) {
-    function_map_.emplace(function->name, std::move(function_up));
+bool AST::add_function(AstFunction *f) {
+  if (function_map_.end() == function_map_.find(f->name)) {
+    function_map_.emplace(f->name, wrap_unique(f));
     return true;
   }
-  error("Function " + function->name + " already defined");
+  error("Function " + f->name + " already defined");
   return false;
 }
 

@@ -8,7 +8,7 @@
 #include "ast.hxx"
 #include <stdio.h>
 
-typedef void *yyscan_t;
+using yyscan_t = void*;
 }  // %code
 
 %code provides {
@@ -24,8 +24,8 @@ void yyerror(yyscan_t yyscanner, igor::AST *ast, const char *msg);
 %expect 0
 
 %union {
-  igor::Constant *constant;
-  igor::Function *function;
+  igor::AstConstant *constant;
+  igor::AstFunction *function;
   string *name;
 }
 
@@ -51,6 +51,10 @@ void yyerror(yyscan_t yyscanner, igor::AST *ast, const char *msg);
 %token            INVALID_CHAR
 
 %type <function>  function
+%type <name>      qualifier
+%type <name>      qualified_type
+
+%destructor { delete $$; } <*>
 
 %start module
 
@@ -63,14 +67,16 @@ module:
 function:
     FN NAME arg_spec ret_spec body
 {
-  $$ = new igor::Function;
-  $$->name = *$2;
+  $$ = new igor::AstFunction;
+  $$->move_name(*$2);
   if (!ast->add_function($$)) {
     YYABORT;
   }
+  delete $2;
 }
 
-body:         LC RC
+body:
+    LC RC
 
 arg_spec:
     LP RP
@@ -79,7 +85,13 @@ arg_spec:
 arg:
     type_spec
   | NAME COLON type_spec
+{
+  delete $1;
+}
   | NAME COMMA arg
+{
+  delete $1;
+}
 
 arg_list:
     arg
@@ -91,7 +103,16 @@ ret_spec:
 
 qualifier:
     NAME DOT
+{
+  $$ = new string("/" + *$1 + "/");
+  delete $1;
+}
   | NAME DOT qualifier
+{
+  $$ = new string("/" + *$1 + *$3);
+  delete $1;
+  delete $3;
+}
 
 // Notation for array: Type[]. Suffix applied to the last shortest type.
 // Notation for tuple: [Type1, Type2]
@@ -113,11 +134,26 @@ type_spec:
 
 qualified_type:
     TYPE
+{
+  $$ = $1;
+}
   | qualifier TYPE
+{
+  $$ = new string(*$1 + *$2);
+  cout<<"qtype "<<*$$<<endl;
+  delete $1;
+  delete $2;
+  cout<<"__1"<<endl;
+}
 
 base_type:
-    qualified_type
-  | qualified_type LP type_list RP  // Generic inst
+    qualified_type { cout<<"__2"<<endl; delete $1; cout<<"__3"<<endl; }
+  | qualified_type LP type_list RP  // Generic instance
+{
+  cout<<"__4"<<endl;
+  delete $1;
+  cout<<"__5"<<endl;
+}
   | LP type_spec RP
   | base_type LB RB  // Otherwise we get shit/reduce warning.
   | LB type_list RB

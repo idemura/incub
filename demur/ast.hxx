@@ -5,7 +5,17 @@
 
 namespace igor {
 
-struct Constant {
+struct AstBase {
+public:
+  virtual ~AstBase() = default;
+};
+
+template<class T>
+T* node_cast(std::shared_ptr<AstBase> base) {
+  return dynamic_cast<T*>(base.get());
+}
+
+struct AstConstant: public AstBase {
   enum Type {
     kNull,
     kBool,
@@ -22,8 +32,10 @@ struct Constant {
   string value;
 };
 
-struct Function {
+struct AstFunction: public AstBase {
   string name;
+
+  void move_name(string &name) { this->name = std::move(name); }
 };
 
 class AST {
@@ -33,13 +45,14 @@ public:
   DEFAULT_MOVE(AST);
   ~AST();
   void error(const string &msg);
-  bool add_function(Function *function);
-  string *intern(string s);
+  // Takes ownership on success.
+  bool add_function(AstFunction *f);
   void clear_intern();
+  string *intern(string s);
 
 private:
   std::function<void(const string&)> error_;
-  std::unordered_map<string, std::unique_ptr<Function>> function_map_;
+  std::unordered_map<string, std::unique_ptr<AstFunction>> function_map_;
   PtrUnorderedSet<string> name_intern_;
 };
 

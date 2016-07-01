@@ -48,12 +48,12 @@ IS      (i8|i16|i32|i64)?
 0x{H}+(_{H}+)*{IS}  { return TOK_CONSTANT; }
 
 {NF}{L}* {
-  yylval->name = yyget_ast(yyscanner)->intern(string(yytext, yyleng));
+  yylval->name = new string(yytext, yyleng);
   return TOK_NAME;
 }
 
 {TF}{L}* {
-  yylval->name = yyget_ast(yyscanner)->intern(string(yytext, yyleng));
+  yylval->name = new string(yytext, yyleng);
   return TOK_TYPE;
 }
 

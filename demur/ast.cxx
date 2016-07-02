@@ -8,6 +8,13 @@ AST::AST(std::function<void(const string&)> error_handler)
 
 AST::~AST() {
   clear_intern();
+  for (auto p : function_map_) {
+    delete p.second;
+  }
+}
+
+void AST::reset() {
+  function_map_.clear();
 }
 
 void AST::error(const string& msg) {
@@ -20,7 +27,7 @@ void AST::error(const string& msg) {
 
 bool AST::add_function(AstFunction *f) {
   if (function_map_.end() == function_map_.find(f->name)) {
-    function_map_.emplace(f->name, wrap_unique(f));
+    function_map_.emplace(f->name, f);
     return true;
   }
   error("Function " + f->name + " already defined");

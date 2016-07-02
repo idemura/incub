@@ -44,6 +44,8 @@ public:
   DELETE_COPY(AST);
   DEFAULT_MOVE(AST);
   ~AST();
+  // Reset and do not delete the objects. For YYABORT.
+  void reset();
   void error(const string &msg);
   // Takes ownership on success.
   bool add_function(AstFunction *f);
@@ -52,7 +54,7 @@ public:
 
 private:
   std::function<void(const string&)> error_;
-  std::unordered_map<string, std::unique_ptr<AstFunction>> function_map_;
+  std::unordered_map<string, AstFunction*> function_map_;
   PtrUnorderedSet<string> name_intern_;
 };
 

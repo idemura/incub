@@ -69,10 +69,12 @@ function:
 {
   $$ = new igor::AstFunction;
   $$->move_name(*$2);
+  delete $2;
   if (!ast->add_function($$)) {
+    delete $$;
+    ast->reset();
     YYABORT;
   }
-  delete $2;
 }
 
 body:
@@ -143,16 +145,13 @@ qualified_type:
   cout<<"qtype "<<*$$<<endl;
   delete $1;
   delete $2;
-  cout<<"__1"<<endl;
 }
 
 base_type:
-    qualified_type { cout<<"__2"<<endl; delete $1; cout<<"__3"<<endl; }
+    qualified_type { delete $1; }
   | qualified_type LP type_list RP  // Generic instance
 {
-  cout<<"__4"<<endl;
   delete $1;
-  cout<<"__5"<<endl;
 }
   | LP type_spec RP
   | base_type LB RB  // Otherwise we get shit/reduce warning.

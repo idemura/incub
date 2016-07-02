@@ -47,14 +47,16 @@ void test_fn() {
   CHECK(1 == parse_test("fn foo(n: int) {}\n"));
   CHECK(1 == parse_test("fn foo(n:) {}\n"));
   CHECK(1 == parse_test("fn foo(n: Int): {}\n"));
+  CHECK(1 == parse_test(
+      "fn f10(T) {}\n"
+      "fn f10(T) {}\n"
+  ));
 }
 
 void test_type_spec() {
   // Use that function grammar accepts just type_spec.
   CHECK(0 == parse_test(
       "fn f10(T) {}\n"
-      "fn f10(module.T) {}\n"
-      // "fn f10(module.sub.T) {}\n"
       "fn f11((T)) {}\n"
       "fn f12([T, T]) {}\n"
       "fn f13(([T, T])) {}\n"
@@ -65,8 +67,11 @@ void test_type_spec() {
       "fn f18([T, T] => T[]) {}\n"
       "fn f19(T => [T, T] => T[]) {}\n"
       "fn f20(T => (T => T)[] => (T => [T, T])) {}\n"
+      "fn f21(module.T) {}\n"
+      "fn f22(module.sub.T) {}\n"
+      "\n"
       "# big sample:\n"
-      "fn f21(f: T => (T => T)[] => (T => [T, T]), n: T):\n"
+      "fn foo(f: T => (T => T)[] => (T => [T, T]), n: T):\n"
       "    [T, T, T]\n {"
       "}\n"
   ));
@@ -91,7 +96,7 @@ int main(int argc, char **argv) {
   test_comment();
   test_fn();
   test_type_spec();
-  // test();
+  test();
 
   flags_reset();
   RETURN_TESTS_PASSED();

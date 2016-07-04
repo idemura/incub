@@ -8,12 +8,14 @@
 namespace igor {
 
 void check_failed(const char *file, int line, const char *text) {
-  cerr<<"CHECK FAILED: "<<file<<":"<<line<<": "<<text<<endl;
+  cerr<<TermColor::Red<<"CHECK FAILED: "<<file<<":"<<line<<": "<<text
+      <<TermColor::Reset<<endl;
   std::exit(-1);
 }
 
 void tests_passed(const char *file) {
-  cout<<"TESTS PASSED: "<<file<<endl;
+  cout<<TermColor::Grn<<"TESTS PASSED: "<<file
+      <<TermColor::Reset<<endl;
 }
 
 namespace {
@@ -79,8 +81,7 @@ class Flags {
   }
 
  private:
-  enum class Type {
-    kNull,
+  enum class Type { kNull,
     kBool,
     kInt32,
     kInt64,
@@ -232,6 +233,25 @@ TempFile::~TempFile() {
   if (!name_.empty()) {
     unlink(name_.c_str());
   }
+}
+
+const TermColor TermColor::Red("\x1B[31m");
+const TermColor TermColor::Grn("\x1B[32m");
+const TermColor TermColor::Yel("\x1B[33m");
+const TermColor TermColor::Blu("\x1B[34m");
+const TermColor TermColor::Mag("\x1B[35m");
+const TermColor TermColor::Cyn("\x1B[36m");
+const TermColor TermColor::Wht("\x1B[37m");
+const TermColor TermColor::Reset("\x1B[0m");
+
+STREAM_OUT(TermColor tc) {
+  if (&os == &std::cout && isatty(1)) {
+    return os<<tc.code();
+  }
+  if (&os == &std::cerr && isatty(2)) {
+    return os<<tc.code();
+  }
+  return os;
 }
 
 }  // namespace

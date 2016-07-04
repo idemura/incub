@@ -142,7 +142,6 @@ qualified_type:
   | qualifier TYPE
 {
   $$ = new string(*$1 + *$2);
-  cout<<"qtype "<<*$$<<endl;
   delete $1;
   delete $2;
 }

@@ -137,6 +137,26 @@ private:
   string name_;
 };
 
+class TermColor {
+public:
+  static const TermColor Red;
+  static const TermColor Grn;
+  static const TermColor Yel;
+  static const TermColor Blu;
+  static const TermColor Mag;
+  static const TermColor Cyn;
+  static const TermColor Wht;
+  static const TermColor Reset;
+
+  const char *code() const { return code_; }
+
+private:
+  explicit TermColor(const char *code): code_(code) {}
+  const char *code_ = nullptr;
+};
+
+STREAM_OUT(TermColor tc);
+
 }  // namespace
 
 #endif

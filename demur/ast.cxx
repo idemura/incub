@@ -4,6 +4,11 @@ namespace igor {
 
 AST::AST(std::function<void(const string&)> error_handler)
   : error_(std::move(error_handler)) {
+  if (!error_) {
+    error_ = [](const string& msg) {
+      cerr<<msg<<endl;
+    };
+  };
 }
 
 AST::~AST() {
@@ -18,11 +23,7 @@ void AST::reset() {
 }
 
 void AST::error(const string& msg) {
-  if (error_) {
-    error_(msg);
-  } else {
-    cerr<<msg<<endl;
-  }
+  error_(msg);
 }
 
 bool AST::add_function(AstFunction *f) {
@@ -46,6 +47,20 @@ string *AST::intern(string s) {
 void AST::clear_intern() {
   for (auto p : name_intern_) delete p;
   name_intern_.clear();
+}
+
+string AstType::to_string() const {
+  std::stringstream ss;
+  ss<<name;
+  if (!args.empty()) {
+    ss<<"(";
+    for (size_t i = args.size(); i-- > 0;) {
+      ss<<args[i]->to_string();
+      if (i > 0) ss<<", ";
+    }
+    ss<<")";
+  }
+  return ss.str();
 }
 
 }  // namespace

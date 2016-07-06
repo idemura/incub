@@ -26,6 +26,7 @@ void yyerror(yyscan_t yyscanner, igor::AST *ast, const char *msg);
 %union {
   igor::AstConstant *constant;
   igor::AstFunction *function;
+  igor::AstType *type;
   string *name;
 }
 
@@ -52,7 +53,11 @@ void yyerror(yyscan_t yyscanner, igor::AST *ast, const char *msg);
 
 %type <function>  function
 %type <name>      qualifier
-%type <name>      qualified_type
+%type <type>      type
+%type <type>      base_type
+%type <type>      qualified_type
+%type <type>      type_spec
+%type <type>      type_list
 
 %destructor { delete $$; } <*>
 
@@ -67,12 +72,10 @@ module:
 function:
     FN NAME arg_spec ret_spec body
 {
-  $$ = new igor::AstFunction;
-  $$->move_name(*$2);
+  $$ = new igor::AstFunction(std::move(*$2));
   delete $2;
   if (!ast->add_function($$)) {
     delete $$;
-    ast->reset();
     YYABORT;
   }
 }
@@ -85,8 +88,8 @@ arg_spec:
   | LP arg_list RP
 
 arg:
-    type_spec
-  | NAME COLON type_spec
+    type
+  | NAME COLON type
 {
   delete $1;
 }
@@ -116,6 +119,8 @@ qualifier:
   delete $3;
 }
 
+// Type spec grammar:
+
 // Notation for array: Type[]. Suffix applied to the last shortest type.
 // Notation for tuple: [Type1, Type2]
 //
@@ -126,39 +131,93 @@ qualifier:
 //
 // Use parenthesis to group:
 //   T1 => (T2 => T3)[] => (T4 => T5)
-// This function takes T1 and array of functions T2=>T3 and returns function
+// This function takes T1 and array of functions T2=>T3 and returns a function
 // T4=>T5.
 //
 // Generic instantiation uses parens: Templ(T1, T2).
+type:
+    type_spec
+{
+  $$ = $1;
+
+  // DEBUG:
+  // cout<<"__ type: "<<$$->to_string()<<endl;
+  delete $$;
+  $$ = nullptr;
+}
+
 type_spec:
-    base_type
+    base_type { $$ = $1; }
   | base_type ARROW type_spec
+{
+  if ($3->name == "/std/Function" && $3->carry) {
+    $$ = $3;
+    $$->args.push_back($1);
+  } else {
+    $$ = new igor::AstType("/std/Function");
+    $$->args.push_back($3);
+    $$->args.push_back($1);
+  }
+}
 
 qualified_type:
     TYPE
 {
-  $$ = $1;
+  $$ = new igor::AstType(std::move(*$1));
+  delete $1;
 }
   | qualifier TYPE
 {
-  $$ = new string(*$1 + *$2);
+  $$ = new igor::AstType(*$1 + *$2);
   delete $1;
   delete $2;
 }
 
 base_type:
-    qualified_type { delete $1; }
+    qualified_type { $$ = $1; }
   | qualified_type LP type_list RP  // Generic instance
 {
+  $$ = $3;
+  if (!$$->name.empty()) {
+    cerr<<"Internal error: type_list name is not empty"<<endl;
+    YYABORT;
+  }
+  $$->name = std::move($1->name);
   delete $1;
 }
-  | LP type_spec RP
-  | base_type LB RB  // Otherwise we get shit/reduce warning.
-  | LB type_list RB
+  | LP type_spec RP  // Parens around type
+{
+  $$ = $2;
+  if ($$->name == "/std/Function") {
+    $$->carry = false;
+  }
+}
+  | base_type LB RB  // Array, /std/Array
+{
+  $$ = new igor::AstType("/std/Array");
+  $$->args.push_back($1);
+}
+  | LB type_list RB  // Tuple, /std/Tuple
+{
+  $$ = $2;
+  if (!$$->name.empty()) {
+    cerr<<"Internal error: type_list name is not empty"<<endl;
+    YYABORT;
+  }
+  $$->name = "/std/Tuple";
+}
 
  type_list:
      type_spec
+{
+  $$ = new igor::AstType("");
+  $$->args.push_back($1);
+}
    | type_spec COMMA type_list
+{
+  $$ = $3;
+  $$->args.push_back($1);
+}
 
 %%
 

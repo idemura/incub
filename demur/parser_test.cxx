@@ -23,18 +23,16 @@ void test_comment() {
 }
 
 void test_fn() {
-  CHECK(0 == parse_test(
-      "fn f10() {}\n"
-      "fn f11(n: Int) {}\n"
-      "fn f12(x, y, z: Int) {}\n"
-      "fn f13(x, y: Int, s: String) {}\n"
-      "fn f14(): Int {}\n"
-      "fn f15(x: Int): Int {}\n"
-      "fn f16(x: Int): x: Int {}\n"
-      "fn f17(x: Int): x, y: Int {}\n"
-      "fn f18(x: Int): x: Int, y: Int {}\n"
-      "fn f19(x: Int): Int, Int {}\n"
-  ));
+  CHECK(0 == parse_test("fn foo() {}"));
+  CHECK(0 == parse_test("fn foo(n: Int) {}"));
+  CHECK(0 == parse_test("fn foo(x, y, z: Int) {}"));
+  CHECK(0 == parse_test("fn foo(x, y: Int, s: String) {}"));
+  CHECK(0 == parse_test("fn foo(): Int {}"));
+  CHECK(0 == parse_test("fn foo(x: Int): Int {}"));
+  CHECK(0 == parse_test("fn foo(x: Int): x: Int {}"));
+  CHECK(0 == parse_test("fn foo(x: Int): x, y: Int {}"));
+  CHECK(0 == parse_test("fn foo(x: Int): x: Int, y: Int {}"));
+  CHECK(0 == parse_test("fn foo(x: Int): Int, Int {}"));
   // This kind of arg list is accepted by grammar, but possibly should be
   // rejected by semantic analyzer.
   CHECK(0 == parse_test(
@@ -48,29 +46,28 @@ void test_fn() {
   CHECK(1 == parse_test("fn foo(n:) {}\n"));
   CHECK(1 == parse_test("fn foo(n: Int): {}\n"));
   CHECK(1 == parse_test(
-      "fn f10(T) {}\n"
-      "fn f10(T) {}\n"
+      "fn foo(T) {}\n"
+      "fn foo(T) {}\n"
   ));
 }
 
 void test_type_spec() {
   // Use that function grammar accepts just type_spec.
-  CHECK(0 == parse_test(
-      "fn f10(T) {}\n"
-      "fn f11((T)) {}\n"
-      "fn f12([T, T]) {}\n"
-      "fn f13(([T, T])) {}\n"
-      "fn f14(T => T) {}\n"
-      "fn f15(T[]) {}\n"
-      "fn f16(T => T[]) {}\n"
-      "fn f17(T[] => T) {}\n"
-      "fn f18([T, T] => T[]) {}\n"
-      "fn f19(T => [T, T] => T[]) {}\n"
-      "fn f20(T => (T => T)[] => (T => [T, T])) {}\n"
-      "fn f21(module.T) {}\n"
-      "fn f22(module.sub.T) {}\n"
-      "\n"
-      "# big sample:\n"
+  CHECK(0 == parse_test("fn foo(T) {}"));
+  CHECK(0 == parse_test("fn foo((T)) {}"));
+  CHECK(0 == parse_test("fn foo([T]) {}"));
+  CHECK(0 == parse_test("fn foo([T1, T2]) {}"));
+  CHECK(0 == parse_test("fn foo(([T1, T2])) {}"));
+  CHECK(0 == parse_test("fn foo(T1 => T2) {}"));
+  CHECK(0 == parse_test("fn foo(T[]) {}"));
+  CHECK(0 == parse_test("fn foo(T1 => T2[]) {}"));
+  CHECK(0 == parse_test("fn foo(T1[] => T2) {}"));
+  CHECK(0 == parse_test("fn foo([T1, T2] => T[]) {}"));
+  CHECK(0 == parse_test("fn foo(T => [T, T] => T[]) {}"));
+  CHECK(0 == parse_test("fn foo(T1 => (T2 => T2)[] => (T3 => [T, T])) {}"));
+  CHECK(0 == parse_test("fn foo(module.T) {}"));
+  CHECK(0 == parse_test("fn foo(module.sub.T) {}"));
+  CHECK(0 == parse_test("# big sample:\n"
       "fn foo(f: T => (T => T)[] => (T => [T, T]), n: T):\n"
       "    [T, T, T]\n {"
       "}\n"

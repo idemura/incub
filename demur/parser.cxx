@@ -26,6 +26,7 @@ bool parse(const string &file_name, AST *ast) {
   } else {
     ast->error("Open file error: " + file_name);
   }
+  if (!res) ast->reset();
   return res;
 }
 

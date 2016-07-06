@@ -90,9 +90,31 @@ void flags_register(const char *name, string *f);
 void flags_register(const char *name, double *f);
 
 // Generally, shouldn't be used, but sometimes convenient.
-template<class T>
+template<typename T>
 std::unique_ptr<T> wrap_unique(T *p) {
   return std::unique_ptr<T>(p);
+}
+
+template<typename T>
+void delete_all(std::vector<T*> &c) {
+  for (auto p : c) delete p;
+  c.clear();
+}
+template<typename K, typename T>
+void delete_all(std::map<K, T*> &c) {
+  for (auto p : c) delete p.second;
+  c.clear();
+}
+template<typename K, typename T>
+void delete_all(std::unordered_map<K, T*> &c) {
+  for (auto p : c) delete p.second;
+  c.clear();
+}
+
+// Borrowed from boost.
+template<typename T>
+void hash_combine(size_t &seed, T const &v) {
+  seed ^= std::hash<T>()(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
 
 class ErrStr {

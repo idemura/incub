@@ -6,19 +6,19 @@
 
 namespace igor {
 
-template<class T>
+template<typename T>
 struct DerefEqual {
   bool operator()(T *a, T *b) const {
     return *a == *b;
   }
 };
 
-template<class T>
+template<typename T>
 struct DerefHash {
   size_t operator()(T *a) const { return std::hash<T>()(*a); }
 };
 
-template<class T>
+template<typename T>
 using PtrUnorderedSet = std::unordered_set<T*, DerefHash<T>, DerefEqual<T>>;
 
 }  // namespace

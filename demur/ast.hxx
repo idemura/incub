@@ -8,9 +8,10 @@ namespace igor {
 struct AstBase {
 public:
   virtual ~AstBase() = default;
+  // virtual string to_string() const = 0;
 };
 
-template<class T>
+template<typename T>
 T* node_cast(std::shared_ptr<AstBase> base) {
   return dynamic_cast<T*>(base.get());
 }
@@ -34,8 +35,21 @@ struct AstConstant: public AstBase {
 
 struct AstFunction: public AstBase {
   string name;
+  explicit AstFunction(string name): name(std::move(name)) {}
+};
 
-  void move_name(string &name) { this->name = std::move(name); }
+// In general, type is GenericTypeName (@name) and @args.
+struct AstType: public AstBase {
+  string name;
+  bool carry = true;
+  // Parameters are in reverse order. Otherwise insertion will take O(N^2) time,
+  // because grammar is tail recursive (<list_item> COMMA <list>).
+  std::vector<AstType*> args;
+
+  explicit AstType(string name): name(std::move(name)) {}
+  DELETE_COPY(AstType);
+  ~AstType() override { delete_all(args); }
+  string to_string() const;
 };
 
 class AST {

@@ -31,6 +31,9 @@ struct AstConstant: public AstBase {
 // In general, type is GenericTypeName (@name) and @args.
 struct AstType: public AstBase {
   string name;
+  // True if type represents T1 => T2 in T => T1 => T2, false if cannot be
+  // carried into a bigger function type like T1 => T2 in T => (T1 => T2).
+  // Another solution?
   bool carry = true;
   // Args are in reverse order. Otherwise insertion will take O(N^2) time,
   // because grammar is tail recursive (<list_item> COMMA <list>).

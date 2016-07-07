@@ -1,0 +1,3 @@
+#! /bin/bash
+python gen_ninja.py > build.ninja
+

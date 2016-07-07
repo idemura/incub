@@ -23,6 +23,10 @@ void test_comment() {
 }
 
 void test_fn() {
+  // Grammar accepts this. But semantic checker should error on it.
+  CHECK(0 == parse_test("fn foo(x) {}"));
+  CHECK(0 == parse_test("fn foo(x, y, z) {}"));
+
   CHECK(0 == parse_test("fn foo() {}"));
   CHECK(0 == parse_test("fn foo(n: Int) {}"));
   CHECK(0 == parse_test("fn foo(x, y, z: Int) {}"));
@@ -33,41 +37,43 @@ void test_fn() {
   CHECK(0 == parse_test("fn foo(x: Int): x, y: Int {}"));
   CHECK(0 == parse_test("fn foo(x: Int): x: Int, y: Int {}"));
   CHECK(0 == parse_test("fn foo(x: Int): Int, Int {}"));
-  // This kind of arg list is accepted by grammar, but possibly should be
-  // rejected by semantic analyzer.
-  CHECK(0 == parse_test(
-      "fn f10(Int) {}\n"
-      "fn f11(Int, Int) {}\n"
-  ));
+  // Type only in args:
+  CHECK(0 == parse_test("fn foo(Int) {}\n"));
+  CHECK(0 == parse_test("fn foo(Int, Int) {}\n"));
+  CHECK(0 == parse_test("fn foo(Int => Int) {}\n"));
+  CHECK(0 == parse_test("fn foo((Int)) {}\n"));
+
   CHECK(1 == parse_test("fn foo(: Int) {}\n"));
   CHECK(1 == parse_test("fn foo(n: Int,) {}\n"));
   CHECK(1 == parse_test("fn foo(n,: Int) {}\n"));
   CHECK(1 == parse_test("fn foo(n: int) {}\n"));
   CHECK(1 == parse_test("fn foo(n:) {}\n"));
   CHECK(1 == parse_test("fn foo(n: Int): {}\n"));
-  CHECK(1 == parse_test(
+  // Grammar accepts same function names.
+  CHECK(0 == parse_test(
       "fn foo(T) {}\n"
       "fn foo(T) {}\n"
   ));
 }
 
-void test_type_spec() {
+void test_type() {
   // Use that function grammar accepts just type_spec.
-  CHECK(0 == parse_test("fn foo(T) {}"));
-  CHECK(0 == parse_test("fn foo((T)) {}"));
-  CHECK(0 == parse_test("fn foo([T]) {}"));
-  CHECK(0 == parse_test("fn foo([T1, T2]) {}"));
-  CHECK(0 == parse_test("fn foo(([T1, T2])) {}"));
-  CHECK(0 == parse_test("fn foo(T1 => T2) {}"));
-  CHECK(0 == parse_test("fn foo(T[]) {}"));
-  CHECK(0 == parse_test("fn foo(T1 => T2[]) {}"));
-  CHECK(0 == parse_test("fn foo(T1[] => T2) {}"));
-  CHECK(0 == parse_test("fn foo([T1, T2] => T[]) {}"));
-  CHECK(0 == parse_test("fn foo(T => [T, T] => T[]) {}"));
-  CHECK(0 == parse_test("fn foo(T1 => (T2 => T2)[] => (T3 => [T, T])) {}"));
-  CHECK(0 == parse_test("fn foo(module.T) {}"));
-  CHECK(0 == parse_test("fn foo(module.sub.T) {}"));
-  CHECK(0 == parse_test("# big sample:\n"
+  CHECK(0 == parse_test("fn foo(x: T) {}"));
+  CHECK(0 == parse_test("fn foo(x: (T)) {}"));
+  CHECK(0 == parse_test("fn foo(x: [T]) {}"));
+  CHECK(0 == parse_test("fn foo(x: [T1, T2]) {}"));
+  CHECK(0 == parse_test("fn foo(x: ([T1, T2])) {}"));
+  CHECK(0 == parse_test("fn foo(x: T1 => T2) {}"));
+  CHECK(0 == parse_test("fn foo(x: T[]) {}"));
+  CHECK(0 == parse_test("fn foo(x: T1 => T2[]) {}"));
+  CHECK(0 == parse_test("fn foo(x: T1[] => T2) {}"));
+  CHECK(0 == parse_test("fn foo(x: [T1, T2] => T[]) {}"));
+  CHECK(0 == parse_test("fn foo(x: T => [T, T] => T[]) {}"));
+  CHECK(0 == parse_test("fn foo(x: T1 => (T2 => T2)[] => (T3 => [T, T])) {}"));
+  CHECK(0 == parse_test("fn foo(x: module.T) {}"));
+  CHECK(0 == parse_test("fn foo(x: module.sub.T) {}"));
+  CHECK(0 == parse_test(
+      "# big sample:\n"
       "fn foo(f: T => (T => T)[] => (T => [T, T]), n: T):\n"
       "    [T, T, T]\n {"
       "}\n"
@@ -76,7 +82,7 @@ void test_type_spec() {
 
 void test() {
   CHECK(0 == parse_test(
-      "fn f10(x: T) {}\n"
+      "fn foo(x) {}\n"
   ));
 }
 
@@ -92,7 +98,7 @@ int main(int argc, char **argv) {
 
   test_comment();
   test_fn();
-  test_type_spec();
+  test_type();
   test();
 
   flags_reset();

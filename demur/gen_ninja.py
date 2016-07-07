@@ -108,7 +108,7 @@ w.rule(LIB, command='ar rcs $out $in')
 w.rule(LEX, command='flex -o $out $in')
 w.rule(BISON, command='bison $bison_opt -d $in')
 
-## Build Rules:
+### Build Rules:
 
 build_cxx('base', [])
 build_bin('base_test', ['base'])
@@ -116,6 +116,7 @@ build_cxx('util', ['base'])
 build_bin('util_test', ['util'])
 
 build_cxx('ast', ['util'])
+build_cxx('ast_test', ['ast'])
 
 build_lex('lex', bison='grammar')
 build_cxx('lex.yy', ['ast'])

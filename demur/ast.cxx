@@ -12,41 +12,19 @@ AST::AST(std::function<void(const string&)> error_handler)
 }
 
 AST::~AST() {
-  clear_intern();
-  for (auto p : function_map_) {
-    delete p.second;
-  }
+  reset();
 }
 
 void AST::reset() {
-  function_map_.clear();
+  functions_.clear();
 }
 
 void AST::error(const string& msg) {
   error_(msg);
 }
 
-bool AST::add_function(AstFunction *f) {
-  if (function_map_.end() == function_map_.find(f->name)) {
-    function_map_.emplace(f->name, f);
-    return true;
-  }
-  error("Function " + f->name + " already defined");
-  return false;
-}
-
-// With const string& I have compiler errors about const/non-const.
-string *AST::intern(string s) {
-  const auto i = name_intern_.find(&s);
-  if (i == name_intern_.end()) {
-    return *name_intern_.insert(new string(std::move(s))).first;
-  }
-  return *i;
-}
-
-void AST::clear_intern() {
-  for (auto p : name_intern_) delete p;
-  name_intern_.clear();
+void AST::add_function(std::unique_ptr<AstFunction> f) {
+  functions_.push_back(std::move(f));
 }
 
 string AstType::to_string() const {

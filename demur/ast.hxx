@@ -33,38 +33,34 @@ struct AstConstant: public AstBase {
   string value;
 };
 
-struct AstFunction: public AstBase {
-  string name;
-  explicit AstFunction(string name): name(std::move(name)) {}
-};
-
 // In general, type is GenericTypeName (@name) and @args.
 struct AstType: public AstBase {
   string name;
   bool carry = true;
-  // Parameters are in reverse order. Otherwise insertion will take O(N^2) time,
+  // Args are in reverse order. Otherwise insertion will take O(N^2) time,
   // because grammar is tail recursive (<list_item> COMMA <list>).
-  std::vector<AstType*> args;
+  std::vector<std::unique_ptr<AstType>> args;
 
-  explicit AstType(string name): name(std::move(name)) {}
-  DELETE_COPY(AstType);
-  ~AstType() override { delete_all(args); }
   string to_string() const;
 };
 
 struct AstArg: public AstBase {
   string name;
-  AstType* type = nullptr;
-
-  explicit AstArg(string name): name(std::move(name)) {}
-  DELETE_COPY(AstArg);
-  ~AstArg() override { delete type; }
+  std::unique_ptr<AstType> type;
 };
 
 struct AstArgList: public AstBase {
-  std::vector<AstArg*> args;
+  // Args are in reverse order.
+  std::vector<std::unique_ptr<AstArg>> args;
 };
 
+struct AstFunction: public AstBase {
+  string name;
+  std::unique_ptr<AstArgList> arg_list = nullptr;
+  std::unique_ptr<AstArgList> ret_list = nullptr;
+};
+
+// Ast is a grammar parse tree. It is a subject to semantic analysis.
 class AST {
 public:
   explicit AST(std::function<void(const string&)> error_handler);
@@ -74,15 +70,11 @@ public:
   // Reset and do not delete the objects. For YYABORT.
   void reset();
   void error(const string &msg);
-  // Takes ownership on success.
-  bool add_function(AstFunction *f);
-  void clear_intern();
-  string *intern(string s);
+  void add_function(std::unique_ptr<AstFunction> f);
 
 private:
   std::function<void(const string&)> error_;
-  std::unordered_map<string, AstFunction*> function_map_;
-  PtrUnorderedSet<string> name_intern_;
+  std::vector<std::unique_ptr<AstFunction>> functions_;
 };
 
 }  // namespace

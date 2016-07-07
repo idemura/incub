@@ -21,6 +21,18 @@ void yyset_in(FILE *in, yyscan_t yyscanner);
 void yyerror(yyscan_t yyscanner, igor::AST *ast, const char *msg);
 }  // %code
 
+%code {
+using igor::wrap_unique;
+
+namespace {
+inline string move_string(string *s) {
+  auto v = std::move(*s);
+  delete s;
+  return v;
+}
+}  // namespace
+}
+
 %expect 0
 
 %union {
@@ -62,7 +74,8 @@ void yyerror(yyscan_t yyscanner, igor::AST *ast, const char *msg);
 %type <type>      type_list
 %type <arg>       arg
 %type <arg_list>  arg_list
-%type <arg_spec>  arg_spec
+%type <arg_list>  arg_spec
+%type <arg_list>  ret_spec
 
 %destructor { delete $$; } <*>
 
@@ -77,51 +90,65 @@ module:
 function:
     FN NAME arg_spec ret_spec body
 {
-  $$ = new igor::AstFunction(std::move(*$2));
-  delete $2;
-  if (!ast->add_function($$)) {
-    delete $$;
-    YYABORT;
-  }
+  $$ = new igor::AstFunction;
+  $$->name = move_string($2);
+  $$->arg_list = wrap_unique($3);
+  $$->ret_list = wrap_unique($4);
+  ast->add_function(wrap_unique($$));
 }
 
 body:
     LC RC
 
 arg_spec:
-    LP RP
-  | LP arg_list RP
+    LP RP { $$ = new igor::AstArgList; }
+  | LP arg_list RP { $$ = $2; }
 
 arg:
-    type
+    // For declaration like x, y: Int. First x is just a name.
+    NAME
+{
+  $$ = new igor::AstArg;
+  $$->name = move_string($1);
+}
+  // No name declaration allowed by grammar. Should be rejected for arg list,
+  // but allowed for return spec.
+  | type
+{
+  $$ = new igor::AstArg;
+  $$->type = wrap_unique($1);
+}
   | NAME COLON type
 {
-  delete $1;
-}
-  | NAME COMMA arg
-{
-  delete $1;
+  $$ = new igor::AstArg;
+  $$->name = move_string($1);
+  $$->type = wrap_unique($3);
 }
 
 arg_list:
-    args
+    arg
+{
+  $$ = new igor::AstArgList();
+  $$->args.push_back(wrap_unique($1));
+}
   | arg COMMA arg_list
+{
+  $$ = $3;
+  $$->args.push_back(wrap_unique($1));
+}
 
 ret_spec:
-    %empty
-  | COLON arg_list
+    %empty { $$ = nullptr; }
+  | COLON arg_list { $$ = $2; }
 
 qualifier:
     NAME DOT
 {
-  $$ = new string("/" + *$1 + "/");
-  delete $1;
+  $$ = new string("/" + move_string($1) + "/");
 }
   | NAME DOT qualifier
 {
-  $$ = new string("/" + *$1 + *$3);
-  delete $1;
-  delete $3;
+  $$ = new string("/" + move_string($1) + move_string($3));
 }
 
 // Type spec grammar:
@@ -140,16 +167,7 @@ qualifier:
 // T4=>T5.
 //
 // Generic instantiation uses parens: Templ(T1, T2).
-type:
-    type_spec
-{
-  $$ = $1;
-
-  // DEBUG:
-  // cout<<"__ type: "<<$$->to_string()<<endl;
-  delete $$;
-  $$ = nullptr;
-}
+type: type_spec { $$ = $1; }
 
 type_spec:
     base_type { $$ = $1; }
@@ -157,25 +175,25 @@ type_spec:
 {
   if ($3->name == "/std/Function" && $3->carry) {
     $$ = $3;
-    $$->args.push_back($1);
+    $$->args.push_back(wrap_unique($1));
   } else {
-    $$ = new igor::AstType("/std/Function");
-    $$->args.push_back($3);
-    $$->args.push_back($1);
+    $$ = new igor::AstType;
+    $$->name = "/std/Function";
+    $$->args.push_back(wrap_unique($3));
+    $$->args.push_back(wrap_unique($1));
   }
 }
 
 qualified_type:
     TYPE
 {
-  $$ = new igor::AstType(std::move(*$1));
-  delete $1;
+  $$ = new igor::AstType;
+  $$->name = move_string($1);
 }
   | qualifier TYPE
 {
-  $$ = new igor::AstType(*$1 + *$2);
-  delete $1;
-  delete $2;
+  $$ = new igor::AstType;
+  $$->name = move_string($1) + move_string($2);
 }
 
 base_type:
@@ -199,8 +217,9 @@ base_type:
 }
   | base_type LB RB  // Array, /std/Array
 {
-  $$ = new igor::AstType("/std/Array");
-  $$->args.push_back($1);
+  $$ = new igor::AstType;
+  $$->name = "/std/Array";
+  $$->args.push_back(wrap_unique($1));
 }
   | LB type_list RB  // Tuple, /std/Tuple
 {
@@ -215,13 +234,13 @@ base_type:
  type_list:
      type_spec
 {
-  $$ = new igor::AstType("");
-  $$->args.push_back($1);
+  $$ = new igor::AstType;
+  $$->args.push_back(wrap_unique($1));
 }
    | type_spec COMMA type_list
 {
   $$ = $3;
-  $$->args.push_back($1);
+  $$->args.push_back(wrap_unique($1));
 }
 
 %%

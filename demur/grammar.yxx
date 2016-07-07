@@ -4,6 +4,9 @@
 %define parse.error verbose
 %define parse.lac full
 
+%expect 0  // warnings
+%locations
+
 %code requires {
 #include "ast.hxx"
 #include <stdio.h>
@@ -14,11 +17,12 @@ using yyscan_t = void*;
 %code provides {
 int yylex_init(yyscan_t *yyscanner);
 int yylex_destroy(yyscan_t yyscanner);
-int yylex(YYSTYPE *yylval, yyscan_t yyscanner);
+int yylex(YYSTYPE *yylval, YYLTYPE *yylloc, yyscan_t yyscanner);
 void *yyget_extra(yyscan_t yyscanner);
 void  yyset_extra(void *user_defined, yyscan_t yyscanner);
 void yyset_in(FILE *in, yyscan_t yyscanner);
-void yyerror(yyscan_t yyscanner, igor::AST *ast, const char *msg);
+void yyerror(YYLTYPE *yylloc, yyscan_t yyscanner, igor::AST *ast,
+             const char *msg);
 }  // %code
 
 %code {
@@ -32,8 +36,6 @@ inline string move_string(string *s) {
 }
 }  // namespace
 }
-
-%expect 0
 
 %union {
   igor::AstConstant *constant;
@@ -245,7 +247,8 @@ base_type:
 
 %%
 
-void yyerror(yyscan_t yyscanner, igor::AST *ast, const char *msg) {
-  string s;
-  ast->error(s.append("Parse error: ").append(msg));
+void yyerror(YYLTYPE *yylloc, yyscan_t yyscanner,
+             igor::AST *ast,
+             const char *msg) {
+  ast->error(yylloc->first_line, yylloc->first_column, string(msg));
 }

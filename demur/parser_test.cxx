@@ -4,15 +4,12 @@ namespace igor {
 namespace {
 
 int parse_test(string s) {
-  int err_count = 0;
-  AST ast([&err_count](const string &msg) {
-    // cerr<<"Parser error: "<<msg<<endl;
-    err_count += 1;
-  });
+  ErrorSink es({});
+  AST ast(&es);
 
   TempFile temp(s);
   parse(temp.get_name(), &ast);
-  return err_count;
+  return es.err_count();
 }
 
 void test_comment() {
@@ -80,10 +77,20 @@ void test_type() {
   ));
 }
 
-void test() {
-  CHECK(0 == parse_test(
-      "fn foo(x) {}\n"
-  ));
+void semantic_fn() {
+  string s = "fn foo(x) {}";
+  std::stringstream ss;
+  ErrorSink::Args args;
+  args.report_location = false;
+  args.stream = &ss;
+  ErrorSink es(args);
+  AST ast(&es);
+
+  TempFile temp(s);
+  CHECK(parse(temp.get_name(), &ast));
+  CHECK(0 == es.err_count());
+  CHECK(ast.analyze_semantic());
+  CHECK(0 == es.err_count());
 }
 
 }  // namespace
@@ -99,7 +106,14 @@ int main(int argc, char **argv) {
   test_comment();
   test_fn();
   test_type();
-  test();
+
+  semantic_fn();
+
+  {
+    CHECK(0 == parse_test(
+        "fn foo(x) {}\n"
+    ));
+  }
 
   flags_reset();
   RETURN_TESTS_PASSED();

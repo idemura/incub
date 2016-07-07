@@ -1,4 +1,4 @@
-%option bison-bridge full nodefault nounput noyywrap reentrant yylineno
+%option bison-bridge bison-locations full nodefault nounput noyywrap reentrant yylineno
 
 %{
 #include "grammar.tab.hxx"

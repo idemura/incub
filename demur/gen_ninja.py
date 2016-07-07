@@ -26,7 +26,7 @@ def dfs(node):
   if node in dfs_result_cache:
     return dfs_result_cache[node]
   if node not in obj_link:
-    raise Exception('Link not found: ' + l)
+    raise Exception('Link not found: ' + node)
   closure = []
   for t in obj_link[node]:
     closure += [t] + dfs(t)
@@ -116,7 +116,7 @@ build_cxx('util', ['base'])
 build_bin('util_test', ['util'])
 
 build_cxx('ast', ['util'])
-build_cxx('ast_test', ['ast'])
+build_bin('ast_test', ['ast'])
 
 build_lex('lex', bison='grammar')
 build_cxx('lex.yy', ['ast'])

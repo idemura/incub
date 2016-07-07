@@ -58,20 +58,44 @@ struct AstFunction: public AstBase {
   std::unique_ptr<AstArgList> ret_list = nullptr;
 };
 
+using ErrorFn = std::function<void(int line, int column, const string &msg)>;
+
+class ErrorSink {
+public:
+  struct Args {
+    std::ostream *stream = nullptr;  // required
+    string file;
+    bool report_location = true;
+    ErrorFn on_error;
+  };
+
+  explicit ErrorSink(Args args);
+  void error(int line, int column, const string &msg);
+  int err_count() const { return err_count_; }
+
+private:
+  std::ostream *const stream_;
+  const string file_;
+  const bool report_location_;
+  const ErrorFn on_error_;
+  int err_count_ = 0;
+};
+
 // Ast is a grammar parse tree. It is a subject to semantic analysis.
 class AST {
 public:
-  explicit AST(std::function<void(const string&)> error_handler);
+  explicit AST(ErrorSink *es);
   DELETE_COPY(AST);
   DEFAULT_MOVE(AST);
   ~AST();
   // Reset and do not delete the objects. For YYABORT.
   void reset();
-  void error(const string &msg);
+  void error(int line, int column, const string &msg);
   void add_function(std::unique_ptr<AstFunction> f);
+  bool analyze_semantic();
 
 private:
-  std::function<void(const string&)> error_;
+  ErrorSink *const es_ = nullptr;
   std::vector<std::unique_ptr<AstFunction>> functions_;
 };
 

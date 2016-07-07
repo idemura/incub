@@ -27,6 +27,8 @@ void yyerror(yyscan_t yyscanner, igor::AST *ast, const char *msg);
   igor::AstConstant *constant;
   igor::AstFunction *function;
   igor::AstType *type;
+  igor::AstArg *arg;
+  igor::AstArgList *arg_list;
   string *name;
 }
 
@@ -58,6 +60,9 @@ void yyerror(yyscan_t yyscanner, igor::AST *ast, const char *msg);
 %type <type>      qualified_type
 %type <type>      type_spec
 %type <type>      type_list
+%type <arg>       arg
+%type <arg_list>  arg_list
+%type <arg_spec>  arg_spec
 
 %destructor { delete $$; } <*>
 
@@ -99,7 +104,7 @@ arg:
 }
 
 arg_list:
-    arg
+    args
   | arg COMMA arg_list
 
 ret_spec:

@@ -52,6 +52,19 @@ struct AstType: public AstBase {
   string to_string() const;
 };
 
+struct AstArg: public AstBase {
+  string name;
+  AstType* type = nullptr;
+
+  explicit AstArg(string name): name(std::move(name)) {}
+  DELETE_COPY(AstArg);
+  ~AstArg() override { delete type; }
+};
+
+struct AstArgList: public AstBase {
+  std::vector<AstArg*> args;
+};
+
 class AST {
 public:
   explicit AST(std::function<void(const string&)> error_handler);

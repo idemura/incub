@@ -11,11 +11,6 @@ public:
   // virtual string to_string() const = 0;
 };
 
-template<typename T>
-T* node_cast(std::shared_ptr<AstBase> base) {
-  return dynamic_cast<T*>(base.get());
-}
-
 struct AstConstant: public AstBase {
   enum Type {
     kNull,

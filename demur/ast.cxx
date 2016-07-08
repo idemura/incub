@@ -2,47 +2,23 @@
 
 namespace igor {
 
-ErrorSink::ErrorSink(Args args)
-  : stream_(args.stream),
-    file_(args.file.empty()? "<unknown>": args.file),
-    report_location_(args.report_location),
-    on_error_(std::move(args.on_error)) {
+ErrorSink::Formatter::Formatter(ErrorSink *sink, int line, int column)
+  : sink_(sink),
+    line_(line),
+    column_(column),
+    ss_(new std::stringstream()) {
 }
 
-void ErrorSink::error(int line, int column, const string &msg) {
-  err_count_++;
-  if (stream_ != nullptr) {
-    if (report_location_) {
-      if (!file_.empty()) *stream_<<file_<<":";
-      *stream_<<line;
-      if (column > 0) *stream_<<"@"<<column;
-      *stream_<<": ";
+void ErrorSink::print_to_stderr(bool locations) const {
+  auto &os = cerr;
+  for (const auto &e : errors_) {
+    if (locations) {
+      os<<file_<<":"<<e->line;
+      if (e->column > 0) os<<"@"<<e->column;
+      os<<": ";
     }
-    *stream_<<msg<<endl;
+    os<<e->msg<<endl;
   }
-  if (on_error_) on_error_(line, column, msg);
-}
-
-AST::AST(ErrorSink *es): es_(es) {}
-
-AST::~AST() {
-  reset();
-}
-
-void AST::reset() {
-  functions_.clear();
-}
-
-void AST::error(int line, int column, const string& msg) {
-  es_->error(line, column, msg);
-}
-
-void AST::add_function(std::unique_ptr<AstFunction> f) {
-  functions_.push_back(std::move(f));
-}
-
-bool AST::analyze_semantic() {
-  return true;
 }
 
 string AstType::to_string() const {
@@ -57,6 +33,65 @@ string AstType::to_string() const {
     ss<<")";
   }
   return ss.str();
+}
+
+std::unique_ptr<AstType> AstType::clone() const {
+  auto p = std::make_unique<AstType>();
+  p->name = name;
+  p->carry = carry;
+  for (const auto &a : args) {
+    p->args.push_back(a->clone());
+  }
+  return p;
+}
+
+void AST::reset() {
+  functions_.clear();
+}
+
+void AST::error(int line, int column, const string& msg) {
+  *es_->format_err(line, column)<<msg;
+}
+
+void AST::add_function(std::unique_ptr<AstFunction> f) {
+  functions_.push_back(std::move(f));
+}
+
+bool AST::analyze_semantic() {
+  std::unordered_set<string> fn_map;
+  for (const auto &f : functions_) {
+    if (!fn_map.insert(f->name).second) {
+      *es_->format_err(0, 0)<<"function '"<<f->name<<"' duplicated";
+    }
+    analyze_function(f.get());
+  }
+  return es_->err_count() == 0;
+}
+
+void AST::analyze_function(AstFunction *f) {
+  // Analyze args.
+  if (!f->arg_list->args.empty()) {
+    // Remember, args are stores in reverse order.
+    auto a_last = f->arg_list->args[0].get();
+    if (a_last->type == nullptr) {
+      *es_->format_err(0, 0)<<"in function '"<<f->name<<"': argument '"
+                            <<a_last->name<<"' missing type spec";
+    } else {
+      int arg_pos = f->arg_list->args.size();
+      for (auto &a : f->arg_list->args) {
+        if (a->type == nullptr) {
+          a->type = a_last->type->clone();
+        } else {
+          a_last = a.get();
+        }
+        if (a->name.empty()) {
+          *es_->format_err(0, 0)<<"in function '"<<f->name<<"': "
+                                <<"unnamed argment in position "<<arg_pos;
+        }
+        arg_pos--;
+      }
+    }
+  }
 }
 
 }  // namespace

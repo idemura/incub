@@ -8,14 +8,14 @@
 namespace igor {
 
 void check_failed(const char *file, int line, const char *text) {
-  cerr<<TermColor::Red<<"CHECK FAILED: "<<file<<":"<<line<<": "<<text
-      <<TermColor::Reset<<endl;
+  cerr<<TermColor::Red<<"CHECK FAILED: "<<TermColor::Reset
+      <<file<<":"<<line<<": "<<text<<endl;
   std::exit(-1);
 }
 
 void tests_passed(const char *file) {
-  cout<<TermColor::Grn<<"TESTS PASSED: "<<file
-      <<TermColor::Reset<<endl;
+  cout<<TermColor::Grn<<"TESTS PASSED: "<<TermColor::Reset
+      <<file<<endl;
 }
 
 namespace {

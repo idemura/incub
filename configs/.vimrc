@@ -7,13 +7,13 @@ syntax on
 " Case insensitive search
 set ic
 " Highlight search
-" set hls
+" set hlsearch
 set tabstop=2
 set shiftwidth=2
 set expandtab
 set cc=80
 set incsearch
-set nu
+set number
 set hidden
 set nowrap
 set noswapfile

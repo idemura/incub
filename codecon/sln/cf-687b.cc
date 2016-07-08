@@ -29,17 +29,18 @@ vector<int> sieve(int n) {
 
 bool can_find_remainder() {
   int n, k;
-  cin>>n>>k;
+  scanf("%d%d", &n, &k);
   vector<int> c(n);
-  auto c_max = 0;
+  auto c_max = k;
   for (auto &m : c) {
-    cin>>m;
+    scanf("%d", &m);
     if (m > c_max) c_max = m;
   }
   if (k == 1) return true;
   const auto sv = sieve(c_max);
   // LCM of @c in form of a map factor=>degree.
-  unordered_map<int, int> lcm;
+  vector<int> lcm(c_max + 1);
+  vector<int> factors;
   for (auto n : c) {
     while (n != 1) {
       auto f = sv[n];
@@ -48,32 +49,27 @@ bool can_find_remainder() {
         n /= f;
         d++;
       } while (n % f == 0);
-      const auto i = lcm.find(f);
-      if (i == lcm.end()) {
-        lcm[f] = d;
-      } else if (i->second < d) {
-        i->second = d;
-      }
+      if (lcm[f] < d) lcm[f] = d;
+      factors.push_back(f);
     }
   }
   // First, check LCM is no less than k. After check LCM divisable by k. Later
   // check modifies lcm and k.
   i64 p = 1;
-  for (auto fd : lcm) {
-    for (int i = 0; i < fd.second && p < k; i++) {
-      p *= fd.first;
+  for (auto f : factors) {
+    for (int i = 0; i < lcm[f] && p < k; i++) {
+      p *= f;
     }
     if (!(p < k)) break;
   }
   if (p < k) return false;
 
-  // Check if divisale by k.
-  for (int k1 = k; k1 != 1;) {
-    const auto i = lcm.find(sv[k1]);
-    if (i == lcm.end()) return false;
-    if (i->second == 0) return false;
-    i->second--;
-    k1 /= sv[k1];
+  // Check if divisable by k.
+  for (int t = k; t != 1;) {
+    auto f = sv[t];
+    if (lcm[f] == 0) return false;
+    lcm[f]--;
+    t /= f;
   }
   return true;
 }
@@ -86,4 +82,3 @@ int main() {
   }
   return 0;
 }
-

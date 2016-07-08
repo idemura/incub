@@ -1,5 +1,5 @@
 set nocompatible
-" filetype off
+filetype off
 filetype indent on
 set autoread
 set autoindent
@@ -13,11 +13,12 @@ set shiftwidth=2
 set expandtab
 set cc=80
 set incsearch
-" Show line numbers
-set number
+set nu
 set hidden
 set nowrap
 set noswapfile
+" Do not expand tab to spaces in make files.
+autocmd FileType make setlocal noexpandtab
 
 let mapleader=" "
 nnoremap <leader>o :CtrlP<CR>
@@ -29,9 +30,9 @@ nnoremap <C-K> <C-W><C-K>
 nnoremap <C-L> <C-W><C-L>
 nnoremap <C-H> <C-W><C-H>
 
-colorscheme delek
-
 command TT TrailerTrim
+
+" filetype plugin on
 
 " Set the runtime path to include Vundle and initialize
 set rtp+=~/.vim/bundle/Vundle.vim
@@ -45,19 +46,9 @@ Plugin 'VundleVim/Vundle.vim'
 
 Bundle 'kien/ctrlp.vim'
 Bundle 'Valloric/YouCompleteMe'
-" Bundle 'tpope/vim-commentary'
 Bundle 'scrooloose/nerdcommenter'
 Bundle 'csexton/trailertrash.vim'
-Bundle 'jiangmiao/auto-pairs'
-Bundle 'rking/ag.vim'
+" Bundle 'jiangmiao/auto-pairs'
 
 " All of your Plugins must be added before the following line
 call vundle#end()
-
-" noremap i k
-" noremap k j
-" noremap j h
-" noremap h i
-
-set wildignore+=*/build-out/*,*/build-dbg/*,*/build-opt/*,*.so,*.swp,*.zip
-

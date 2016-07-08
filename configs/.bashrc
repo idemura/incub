@@ -112,5 +112,6 @@ export PATH=$HOME/bin:$PATH
 
 alias ff='find -name'
 alias ll='ls -l'
-alias r='./run'
+alias l1='ls -1'
 alias b='./build'
+

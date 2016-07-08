@@ -17,6 +17,7 @@ set nu
 set hidden
 set nowrap
 set noswapfile
+set wildignore+=*.o,*.a,*.o.d,*_test
 " Do not expand tab to spaces in make files.
 autocmd FileType make setlocal noexpandtab
 

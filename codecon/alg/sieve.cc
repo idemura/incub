@@ -1,14 +1,10 @@
 #include "base.h"
 
-int sqrt_int(int n) {
-  return int(sqrt(n));
-}
-
 // Result[i] means minimal divisor of i. Use it in `factorize`.
 vector<int> sieve(int n) {
   vector<int> factor(n + 1);
   factor[1] = 1;
-  auto i = 2, imax = sqrt_int(n);
+  auto i = 2, imax = (int)sqrt(n);
   for (; i <= imax; i++) {
     if (factor[i] != 0) continue;
     factor[i] = i;
@@ -45,7 +41,7 @@ vector<pair<int, int>> factorize(const vector<int> &factor, int n) {
 
 vector<int> primes(int n) {
   vector<int> sieve(n + 1), result;
-  auto i = 2, imax = sqrt_int(n);
+  auto i = 2, imax = (int)sqrt(n);
   for (; i <= imax; i++) {
     if (sieve[i] != 0) continue;
     result.push_back(i);
@@ -61,7 +57,7 @@ vector<int> primes(int n) {
 
 void test0() {
   for (volatile int i = 0; i < 46340; i++) {
-    CHECK(i == sqrt_int(i * i));
+    CHECK(i == (int)sqrt(i * i));
   }
 }
 

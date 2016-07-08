@@ -1,0 +1,24 @@
+[user]
+  email = igor.demura@gmail.com
+  name = Igor Demura
+[alias]
+  br = branch
+  ci = commit
+  co = checkout
+  cp = cherry-pick
+  last = log -1
+  meld = !/home/igor/bin/git-mel.pl
+  pr = pull -r
+  pm = push origin HEAD:refs/for/master
+  re = rebase -i
+  sh = stash
+  st = status -s
+  rc = rebase --continue
+  ra = rebase --abort
+  aa = add -u
+[push]
+  default = simple
+[diff]
+  tool = tkdiff
+[core]
+  editor = vim

@@ -1,4 +1,8 @@
 #! /bin/sh
 find . -name '*_test' -executable -type f -exec rm -rf {} \;
-rm -f *.d *.o *.a *.yy.cxx *.tab.cxx *.tab.hxx stack.hh build.ninja
+rm -f *.d *.o *.a *.yy.cxx *.tab.cxx *.tab.hxx build.ninja .ninja_* \
+    *.pyc \
+    owlc.stdout \
+    owlc.stderr \
+    owlc
 

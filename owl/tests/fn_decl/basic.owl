@@ -1,0 +1,14 @@
+fn f00() {}
+fn f01(n: Int) {}
+fn f02(x, y, z: Int) {}
+fn f03(x, y: Int, z: Int) {}
+fn f04(): Int {}
+fn f05(x: Int): Int {}
+fn f06(x: Int): x: Int {}
+fn f07(x: Int): x, y: Int {}
+fn f08(x: Int): x: Int, y: Int {}
+fn f09(x: Int): Int, Int {}
+fn f10(_: Int) {}
+fn f11(_, y: Int) {}
+fn f12(y, _: Int) {}
+

@@ -1,0 +1,7 @@
+fn foo(x: T) {
+  return;
+  x;
+  return x;
+  x = y;
+  return x, x = y;
+}

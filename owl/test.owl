@@ -1,3 +1,0 @@
-fn foo(x, y: Int): String {
-  return a;
-}

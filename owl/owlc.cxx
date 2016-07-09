@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
 
   auto err_count = 0;
   for (int i = 1; i < argc; i++) {
-    err_count += compile(argv[i]);
+    if (!compile(argv[i])) err_count++;
   }
   return err_count == 0? 0: -1;
 }

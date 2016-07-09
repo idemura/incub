@@ -1,0 +1,20 @@
+fn f00(x: T) {}
+fn f01(x: (T)) {}
+fn f02(x: [T]) {}
+fn f03(x: [T1, T2]) {}
+fn f04(x: ([T1, T2])) {}
+fn f05(x: T1 => T2) {}
+fn f06(x: T[]) {}
+fn f07(x: T1 => T2[]) {}
+fn f08(x: T1[] => T2) {}
+fn f09(x: [T1, T2] => T[]) {}
+fn f10(x: T => [T, T] => T[]) {}
+fn f11(x: T1 => (T2 => T2)[] => (T3 => [T, T])) {}
+fn f12(x: module.T) {}
+fn f13(x: module.sub.T) {}
+
+# big sample:
+fn foo(f: T => (T => T)[] => (T => [T, T]), n: T)
+    : [T, T, T] {
+}
+

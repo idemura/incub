@@ -1,0 +1,139 @@
+
+INPUT: tests/fn_decl/0.owl
+fn foo(y, _1: Int) {}
+tests/fn_decl/0.owl:1,10: invalid wildcard token; alpha/digit/_ should not follow _
+tests/fn_decl/0.owl:1,10: syntax error, unexpected $end
+EXIT CODE: 255
+
+INPUT: tests/fn_decl/10.owl
+fn foo(x, y) {}
+tests/fn_decl/10.owl: in function 'foo': argument 'y' missing type spec
+EXIT CODE: 255
+
+INPUT: tests/fn_decl/11.owl
+fn foo(x, y: Int, z) {}
+tests/fn_decl/11.owl: in function 'foo': argument 'z' missing type spec
+EXIT CODE: 255
+
+INPUT: tests/fn_decl/12.owl
+fn foo(Int) {}
+tests/fn_decl/12.owl: in function 'foo': unnamed argment in position 1
+EXIT CODE: 255
+
+INPUT: tests/fn_decl/13.owl
+fn foo((Int)) {}
+tests/fn_decl/13.owl: in function 'foo': unnamed argment in position 1
+EXIT CODE: 255
+
+INPUT: tests/fn_decl/14.owl
+fn foo(T1 => T2) {}
+tests/fn_decl/14.owl: in function 'foo': unnamed argment in position 1
+EXIT CODE: 255
+
+INPUT: tests/fn_decl/15.owl
+fn foo(x: Int, T1 => T2) {}
+tests/fn_decl/15.owl: in function 'foo': unnamed argment in position 2
+EXIT CODE: 255
+
+INPUT: tests/fn_decl/1.owl
+fn foo(y, _a: Int) {}
+tests/fn_decl/1.owl:1,10: invalid wildcard token; alpha/digit/_ should not follow _
+tests/fn_decl/1.owl:1,10: syntax error, unexpected $end
+EXIT CODE: 255
+
+INPUT: tests/fn_decl/2.owl
+fn foo(: Int) {}
+tests/fn_decl/2.owl:1,7: syntax error, unexpected COLON
+EXIT CODE: 255
+
+INPUT: tests/fn_decl/3.owl
+fn foo(n: Int,) {}
+tests/fn_decl/3.owl:1,14: syntax error, unexpected RP
+EXIT CODE: 255
+
+INPUT: tests/fn_decl/4.owl
+fn foo(n,: Int) {}
+tests/fn_decl/4.owl:1,9: syntax error, unexpected COLON
+EXIT CODE: 255
+
+INPUT: tests/fn_decl/5.owl
+fn foo(n: int) {}
+tests/fn_decl/5.owl:1,13: syntax error, unexpected RP, expecting DOT
+EXIT CODE: 255
+
+INPUT: tests/fn_decl/6.owl
+fn foo(n:) {}
+tests/fn_decl/6.owl:1,9: syntax error, unexpected RP, expecting NAME or TYPE or LB or LP
+EXIT CODE: 255
+
+INPUT: tests/fn_decl/7.owl
+fn foo(n: Int): {}
+tests/fn_decl/7.owl:1,16: syntax error, unexpected LC
+EXIT CODE: 255
+
+INPUT: tests/fn_decl/8.owl
+fn foo() {}
+fn foo() {}
+tests/fn_decl/8.owl: function 'foo' duplicated
+EXIT CODE: 255
+
+INPUT: tests/fn_decl/9.owl
+fn foo(x) {}
+tests/fn_decl/9.owl: in function 'foo': argument 'x' missing type spec
+EXIT CODE: 255
+
+INPUT: tests/fn_decl/basic.owl
+fn f00() {}
+fn f01(n: Int) {}
+fn f02(x, y, z: Int) {}
+fn f03(x, y: Int, z: Int) {}
+fn f04(): Int {}
+fn f05(x: Int): Int {}
+fn f06(x: Int): x: Int {}
+fn f07(x: Int): x, y: Int {}
+fn f08(x: Int): x: Int, y: Int {}
+fn f09(x: Int): Int, Int {}
+fn f10(_: Int) {}
+fn f11(_, y: Int) {}
+fn f12(y, _: Int) {}
+
+EXIT CODE: 0
+
+INPUT: tests/misc/basic.owl
+# comment till eol
+# comment
+EXIT CODE: 0
+
+INPUT: tests/stmt/basic.owl
+fn foo(x: T) {
+  return;
+  x;
+  return x;
+  x = y;
+  return x, x = y;
+}
+EXIT CODE: 0
+
+INPUT: tests/type_decl/basic.owl
+fn f00(x: T) {}
+fn f01(x: (T)) {}
+fn f02(x: [T]) {}
+fn f03(x: [T1, T2]) {}
+fn f04(x: ([T1, T2])) {}
+fn f05(x: T1 => T2) {}
+fn f06(x: T[]) {}
+fn f07(x: T1 => T2[]) {}
+fn f08(x: T1[] => T2) {}
+fn f09(x: [T1, T2] => T[]) {}
+fn f10(x: T => [T, T] => T[]) {}
+fn f11(x: T1 => (T2 => T2)[] => (T3 => [T, T])) {}
+fn f12(x: module.T) {}
+fn f13(x: module.sub.T) {}
+
+# big sample:
+fn foo(f: T => (T => T)[] => (T => [T, T]), n: T)
+    : [T, T, T] {
+}
+
+EXIT CODE: 0
+

@@ -15,12 +15,13 @@ bool parse_test(int expected_errors, const string &code) {
   if (parse(temp.get_name(), &ast)) {
     ast.analyze_semantic();
   }
+  const auto locations = true;
   if (expected_errors != es.err_count()) {
     if (flag_print >= 0) {
       cerr<<"Test code:\n"<<code
           <<"\nexpected errors: "<<expected_errors
           <<"\nactual: "<<es.err_count()<<"\n";
-      es.print_to_stderr(false /*locations*/);
+      es.print_to_stderr(locations);
     }
     return false;
   }
@@ -29,7 +30,7 @@ bool parse_test(int expected_errors, const string &code) {
     if (!code.empty() && code.back() != '\n') {
       cerr<<"\n";
     }
-    es.print_to_stderr(false /*locations*/);
+    es.print_to_stderr(locations);
   }
   return true;
 }

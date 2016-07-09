@@ -6,6 +6,18 @@
 igor::AST *yyget_ast(yyscan_t yyscanner) {
   return reinterpret_cast<igor::AST*>(yyget_extra(yyscanner));
 }
+
+void yyset_locaton(YYLTYPE *yylloc, int line, int column) {
+  yylloc->first_line = line;
+  yylloc->first_column = column;
+  yylloc->last_line = 0;
+  yylloc->last_column = 0;
+}
+
+#define YY_USER_ACTION \
+  yyset_locaton(yylloc, yylineno, yycolumn); \
+  yycolumn += yyleng;
+
 %}
 
 S       [ \t\r\f]
@@ -48,29 +60,29 @@ IS      (i8|i16|i32|i64)?
     It will be some parsing error instead. Same for integers.
   */
 {D}+\.{D}+(f|d)? {
-  yylval->constant = new igor::AstConstant;
-  yylval->constant->type = igor::AstConstant::kF64;
-  yylval->constant->value = string(yytext, yyleng);
+  auto c = yylval->constant = new igor::AstConstant;
+  c->type = igor::AstConstant::kF64;
+  c->value = string(yytext, yyleng);
   return TOK_CONSTANT;
 }
 
   /*Integers: oct, decimal, hex*/
 0o{O}+(_{O}+)*{IS}  {
-  yylval->constant = new igor::AstConstant;
-  yylval->constant->type = igor::AstConstant::kI32;
-  yylval->constant->value = string(yytext, yyleng);
+  auto c = yylval->constant = new igor::AstConstant;
+  c->type = igor::AstConstant::kI32;
+  c->value = string(yytext, yyleng);
   return TOK_CONSTANT;
 }
 {D}+(_{D}+)*{IS}    {
-  yylval->constant = new igor::AstConstant;
-  yylval->constant->type = igor::AstConstant::kI32;
-  yylval->constant->value = string(yytext, yyleng);
+  auto c = yylval->constant = new igor::AstConstant;
+  c->type = igor::AstConstant::kI32;
+  c->value = string(yytext, yyleng);
   return TOK_CONSTANT;
 }
 0x{H}+(_{H}+)*{IS}  {
-  yylval->constant = new igor::AstConstant;
-  yylval->constant->type = igor::AstConstant::kI32;
-  yylval->constant->value = string(yytext, yyleng);
+  auto c = yylval->constant = new igor::AstConstant;
+  c->type = igor::AstConstant::kI32;
+  c->value = string(yytext, yyleng);
   return TOK_CONSTANT;
 }
 

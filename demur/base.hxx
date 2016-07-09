@@ -32,15 +32,8 @@
 #define DEFAULT_MOVE(C) DEFINE_MOVE(C, default)
 #define NON_COPYABLE(C) DELETE_COPY(C)
 
-#define CHECK_MSG(E, T) \
-    do {\
-      if (!(E)) {\
-        igor::check_failed(__FILE__, __LINE__, T);\
-      }\
-    } while (false)
-
-#define CHECK(E) CHECK_MSG(E, "check failed: " #E)
-#define FATAL(T) CHECK_MSG(false, T)
+#define CHECK(E) \
+    if (!(E)) ::igor::internal::CheckFailStream(__FILE__, __LINE__).stream()
 
 #define RETURN_TESTS_PASSED() \
     do {\
@@ -51,7 +44,7 @@
 #define kI32f "%d"
 #define kI64f "%lld"
 
-#define STREAM_OUT(ARG) inline std::ostream &operator<<(std::ostream &os, ARG)
+#define STREAM_OUT(ARG) std::ostream &operator<<(std::ostream &os, ARG)
 
 // DEFINE_FLAG should be in the global namespace.
 #define DEFINE_FLAG(NAME, VALUE, TYPE) \
@@ -144,7 +137,6 @@ private:
   int err_count_ = 0;
 };
 
-void check_failed(const char *file, int line, const char *text);
 void tests_passed(const char *file);
 
 class TempFile {
@@ -178,6 +170,21 @@ private:
 };
 
 STREAM_OUT(TermColor tc);
+
+namespace internal {
+class CheckFailStream {
+public:
+  CheckFailStream(const char *file, int line) {
+    stream()<<TermColor::Red<<"CHECK FAILED: "<<TermColor::Reset
+            <<file<<":"<<line<<": ";
+  }
+  ~CheckFailStream() {
+    stream()<<endl;
+    std::exit(-1);
+  }
+  std::ostream &stream() const { return cerr; }
+};
+}  // namespace
 
 }  // namespace
 

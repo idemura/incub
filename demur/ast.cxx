@@ -16,7 +16,7 @@ void ErrorSink::print_to_stderr(bool locations) const {
       os<<file_;
       if (e->line > 0) {
         os<<":"<<e->line;
-        if (e->column > 0) os<<"@"<<e->column;
+        if (e->column > 0) os<<","<<e->column;
       }
       os<<": ";
     }

@@ -20,12 +20,14 @@ bool parse(const string &file_name, AST *ast) {
       res = yyparse(yyscanner, ast) == 0;
       yylex_destroy(yyscanner);
     } else {
-      cerr<<"internal error: scanner init"<<endl;
+      *ast->err_sink()->format_err(0, 0)
+          <<"internal error: scanner init";
       return false;
     }
     fclose(f);
   } else {
-    cerr<<"open file error: "<<file_name<<endl;
+    *ast->err_sink()->format_err(0, 0)
+        <<"open file error: "<<file_name;
   }
   if (!res) ast->reset();
   return res;

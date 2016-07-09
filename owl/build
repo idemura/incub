@@ -20,4 +20,4 @@ else
   fi
 fi
 ninja
-# [[ $new_mode == 'OPT' ]] && stip -s demur
+# [[ $new_mode == 'OPT' ]] && stip -s owlc

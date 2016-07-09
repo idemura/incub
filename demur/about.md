@@ -1,1 +1,0 @@
-Demur language.

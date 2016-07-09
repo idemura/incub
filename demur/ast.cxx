@@ -13,8 +13,11 @@ void ErrorSink::print_to_stderr(bool locations) const {
   auto &os = cerr;
   for (const auto &e : errors_) {
     if (locations) {
-      os<<file_<<":"<<e->line;
-      if (e->column > 0) os<<"@"<<e->column;
+      os<<file_;
+      if (e->line > 0) {
+        os<<":"<<e->line;
+        if (e->column > 0) os<<"@"<<e->column;
+      }
       os<<": ";
     }
     os<<e->msg<<endl;
@@ -77,7 +80,7 @@ void AST::analyze_function(AstFunction *f) {
       *es_->format_err(0, 0)<<"in function '"<<f->name<<"': argument '"
                             <<a_last->name<<"' missing type spec";
     } else {
-      int arg_pos = f->arg_list->args.size();
+      auto arg_pos = f->arg_list->args.size();
       for (auto &a : f->arg_list->args) {
         if (a->type == nullptr) {
           a->type = a_last->type->clone();
@@ -88,6 +91,39 @@ void AST::analyze_function(AstFunction *f) {
           *es_->format_err(0, 0)<<"in function '"<<f->name<<"': "
                                 <<"unnamed argment in position "<<arg_pos;
         }
+        arg_pos--;
+      }
+    }
+  }
+  if (!f->ret_list->args.empty()) {
+    // Remember, args are stores in reverse order.
+    auto a_last = f->ret_list->args[0].get();
+    if (a_last->type == nullptr) {
+      *es_->format_err(0, 0)<<"in function '"<<f->name<<"': return variable '"
+                            <<a_last->name<<"' missing type spec";
+    } else {
+      auto arg_pos = f->ret_list->args.size();
+      for (auto &a : f->ret_list->args) {
+        if (a->type == nullptr) {
+          a->type = a_last->type->clone();
+        } else {
+          a_last = a.get();
+        }
+        // Empty name is allowed in return spec. In this case, return works
+        // pretty much as function with named (with defaults) args.
+        //
+        // For example:
+        // fn foo(): Int, s: String, Int {
+        //   s = "hello";  // Assigned to default("") if no explicit.
+        //   return 10, 20;
+        // }
+        //
+        // Another extreme of this is all named:
+        // fn foo(): x: Int, y: Int {
+        //   x = 10;
+        //   y = 20;
+        //   return;  // Empty, no positional returns.
+        // }
         arg_pos--;
       }
     }

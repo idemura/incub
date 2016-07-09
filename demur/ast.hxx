@@ -95,7 +95,7 @@ public:
   }
   int err_count() const { return errors_.size(); }
   void print_to_stderr(bool locations) const;
-  const string &get_err_msg(int i) const { return errors_[i]->msg; }
+  const string &err_msg_at(int i) const { return errors_[i]->msg; }
 
 private:
   void push(std::unique_ptr<Error> e) {
@@ -112,6 +112,7 @@ public:
   explicit AST(ErrorSink *es): es_(es) {}
   DELETE_COPY(AST);
   DEFAULT_MOVE(AST);
+  ErrorSink *err_sink() const { return es_; }
   // Reset and do not delete the objects. For YYABORT.
   void reset();
   void error(int line, int column, const string &msg);

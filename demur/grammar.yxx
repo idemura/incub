@@ -53,22 +53,30 @@ inline string move_string(string *s) {
 %token <constant> CONSTANT
 %token <name>     NAME
 %token <name>     TYPE
+%token <name>     WILD      // _
+%token            ELIF      // elif
+%token            ELSE      // else
 %token            FN        // fn
+%token            IF        // if
+%token            RETURN    // return
 %token            ARROW     // =>
 %token            COLON     // :
 %token            COMMA     // ,
 %token            DOT       // .
+%token            LET       // =
+%token            LET_PLS   // +=
+%token            LET_MNS   // -=
+%token            SEMI      // ;
 %token            LB        // [
 %token            RB        // ]
 %token            LC        // {
 %token            RC        // }
 %token            LP        // (
 %token            RP        // )
-%token            WILDCARD  // _
-%token            INVALID_CHAR
 
+%type <name>      name
+%type <name>      qualified_name
 %type <function>  function
-%type <name>      qualifier
 %type <type>      type
 %type <type>      base_type
 %type <type>      qualified_type
@@ -89,6 +97,18 @@ module:
     %empty
   | function module
 
+name:
+    NAME { $$ = $1; }
+  | WILD { $$ = $1; }
+
+qualified_name:
+    name { $$ = $1; }
+  | NAME DOT qualified_name
+{
+  $$ = new string(move_string($1) + "/" + move_string($3));
+}
+
+// *** Function grammar:
 function:
     FN NAME arg_spec ret_spec body
 {
@@ -99,16 +119,13 @@ function:
   ast->add_function(wrap_unique($$));
 }
 
-body:
-    LC RC
-
 arg_spec:
     LP RP { $$ = new igor::AstArgList; }
   | LP arg_list RP { $$ = $2; }
 
 arg:
     // For declaration like x, y: Int. First x is just a name.
-    NAME
+    name
 {
   $$ = new igor::AstArg;
   $$->name = move_string($1);
@@ -120,7 +137,7 @@ arg:
   $$ = new igor::AstArg;
   $$->type = wrap_unique($1);
 }
-  | NAME COLON type
+  | name COLON type
 {
   $$ = new igor::AstArg;
   $$->name = move_string($1);
@@ -130,7 +147,7 @@ arg:
 arg_list:
     arg
 {
-  $$ = new igor::AstArgList();
+  $$ = new igor::AstArgList;
   $$->args.push_back(wrap_unique($1));
 }
   | arg COMMA arg_list
@@ -140,21 +157,10 @@ arg_list:
 }
 
 ret_spec:
-    %empty { $$ = nullptr; }
+    %empty { $$ = new igor::AstArgList; }
   | COLON arg_list { $$ = $2; }
 
-qualifier:
-    NAME DOT
-{
-  $$ = new string("/" + move_string($1) + "/");
-}
-  | NAME DOT qualifier
-{
-  $$ = new string("/" + move_string($1) + move_string($3));
-}
-
-// Type spec grammar:
-
+// *** Type spec grammar:
 // Notation for array: Type[]. Suffix applied to the last shortest type.
 // Notation for tuple: [Type1, Type2]
 //
@@ -192,10 +198,10 @@ qualified_type:
   $$ = new igor::AstType;
   $$->name = move_string($1);
 }
-  | qualifier TYPE
+  | NAME DOT qualified_type
 {
-  $$ = new igor::AstType;
-  $$->name = move_string($1) + move_string($2);
+  $$ = $3;
+  $$->name = move_string($1) + "/" + $$->name;
 }
 
 base_type:
@@ -244,6 +250,36 @@ base_type:
   $$ = $3;
   $$->args.push_back(wrap_unique($1));
 }
+
+// *** Body grammar:
+body:
+  LC stmt_list RC
+
+stmt_list:
+    %empty
+  | stmt stmt_list
+
+stmt:
+    RETURN SEMI
+  | RETURN expr_list SEMI
+  | expr SEMI
+
+// *** Expression grammar:
+expr_list:
+    expr
+  | expr COMMA expr_list
+
+expr:
+    val_expr
+  | val_expr assign val_expr
+
+assign:
+    LET
+  | LET_PLS
+  | LET_MNS
+
+val_expr:
+    qualified_name
 
 %%
 

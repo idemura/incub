@@ -11,11 +11,12 @@ keycode 112 = Home
 keycode 115 = Next
 keycode 110 = Prior
 
+! Swap alt/control
 clear control
 clear mod1
-keycode 37 = Alt_L Meta_L
+keycode 37 = Alt_L
 keycode 64 = Control_L
-keycode 105 = Alt_R Meta_R
+keycode 105 = Alt_R
 keycode 108 = Control_R
 add control = Control_L Control_R
 add mod1 = Alt_L Alt_R

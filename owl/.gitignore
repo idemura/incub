@@ -1,6 +1,4 @@
-demur
-.ninja_deps
-.ninja_log
+.ninja_*
 *_test
 *.d
 *.o
@@ -12,4 +10,5 @@ demur
 stack.hh
 grammar.output
 build.ninja
+owlc
 

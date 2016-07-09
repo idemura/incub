@@ -125,3 +125,5 @@ build_bison('grammar')
 build_cxx('grammar.tab', ['lex.yy', 'ast'])
 build_cxx('parser', ['ast', 'grammar.tab'])
 build_bin('parser_test', ['parser'])
+
+build_bin('owlc', ['parser'])

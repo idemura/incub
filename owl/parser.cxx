@@ -25,6 +25,7 @@ bool parse(const string &file_name, AST *ast, ErrorLog *elog) {
     }
     fclose(f);
   } else {
+    cout<<"__ 2"<<endl;
     elog->error(0, 0).os()<<"open file error: "<<file_name;
   }
   return res;

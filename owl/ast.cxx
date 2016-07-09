@@ -2,26 +2,19 @@
 
 namespace igor {
 
-ErrorSink::Formatter::Formatter(ErrorSink *sink, int line, int column)
-  : sink_(sink),
-    line_(line),
-    column_(column),
-    ss_(new std::stringstream()) {
+ErrorMsg::ErrorMsg(std::ostream *os, const string &file, int line, int column)
+    : os_(os) {
+  *os_<<file;
+  if (line > 0) {
+    *os_<<":"<<line;
+    if (column > 0) *os_<<","<<column;
+  }
+  *os_<<": ";
 }
 
-void ErrorSink::print_to_stderr(bool locations) const {
-  auto &os = cerr;
-  for (const auto &e : errors_) {
-    if (locations) {
-      os<<file_;
-      if (e->line > 0) {
-        os<<":"<<e->line;
-        if (e->column > 0) os<<","<<e->column;
-      }
-      os<<": ";
-    }
-    os<<e->msg<<endl;
-  }
+ErrorMsg ErrorLog::error(int line, int column) {
+  count_++;
+  return ErrorMsg(os_, file_, line, column);
 }
 
 string AstType::to_string() const {
@@ -48,36 +41,32 @@ std::unique_ptr<AstType> AstType::clone() const {
   return p;
 }
 
-void AST::reset() {
-  functions_.clear();
-}
-
-void AST::error(int line, int column, const string& msg) {
-  *es_->format_err(line, column)<<msg;
-}
-
 void AST::add_function(std::unique_ptr<AstFunction> f) {
   functions_.push_back(std::move(f));
 }
 
-bool AST::analyze_semantic() {
+bool AST::analyze(ErrorLog *elog) {
   std::unordered_set<string> fn_map;
   for (const auto &f : functions_) {
     if (!fn_map.insert(f->name).second) {
-      *es_->format_err(0, 0)<<"function '"<<f->name<<"' duplicated";
+      elog->error(0, 0).os()<<"function '"<<f->name<<"' duplicated";
     }
-    analyze_function(f.get());
+    analyze_function(f.get(), elog);
   }
-  return es_->err_count() == 0;
+  if (elog->count() != 0) {
+    functions_.clear();
+    return false;
+  }
+  return true;
 }
 
-void AST::analyze_function(AstFunction *f) {
+void AST::analyze_function(AstFunction *f, ErrorLog *elog) {
   // Analyze args.
   if (!f->arg_list->args.empty()) {
     // Remember, args are stores in reverse order.
     auto a_last = f->arg_list->args[0].get();
     if (a_last->type == nullptr) {
-      *es_->format_err(0, 0)<<"in function '"<<f->name<<"': argument '"
+      elog->error(0, 0).os()<<"in function '"<<f->name<<"': argument '"
                             <<a_last->name<<"' missing type spec";
     } else {
       auto arg_pos = f->arg_list->args.size();
@@ -88,7 +77,7 @@ void AST::analyze_function(AstFunction *f) {
           a_last = a.get();
         }
         if (a->name.empty()) {
-          *es_->format_err(0, 0)<<"in function '"<<f->name<<"': "
+          elog->error(0, 0).os()<<"in function '"<<f->name<<"': "
                                 <<"unnamed argment in position "<<arg_pos;
         }
         arg_pos--;
@@ -99,7 +88,7 @@ void AST::analyze_function(AstFunction *f) {
     // Remember, args are stores in reverse order.
     auto a_last = f->ret_list->args[0].get();
     if (a_last->type == nullptr) {
-      *es_->format_err(0, 0)<<"in function '"<<f->name<<"': return variable '"
+      elog->error(0, 0).os()<<"in function '"<<f->name<<"': return variable '"
                             <<a_last->name<<"' missing type spec";
     } else {
       auto arg_pos = f->ret_list->args.size();

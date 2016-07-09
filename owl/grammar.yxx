@@ -21,7 +21,9 @@ int yylex(YYSTYPE *yylval, YYLTYPE *yylloc, yyscan_t yyscanner);
 void *yyget_extra(yyscan_t yyscanner);
 void  yyset_extra(void *user_defined, yyscan_t yyscanner);
 void yyset_in(FILE *in, yyscan_t yyscanner);
-void yyerror(YYLTYPE *yylloc, yyscan_t yyscanner, igor::AST *ast,
+void yyerror(YYLTYPE *yylloc, yyscan_t yyscanner,
+             igor::AST *ast,
+             igor::ErrorLog *elog,
              const char *msg);
 }  // %code
 
@@ -48,6 +50,7 @@ inline string move_string(string *s) {
 
 %param {yyscan_t yyscanner}
 %parse-param {igor::AST *ast}
+%parse-param {igor::ErrorLog *elog}
 
 // Terminal symbols are in CAPS by convention.
 %token <constant> CONSTANT
@@ -210,7 +213,7 @@ base_type:
 {
   $$ = $3;
   if (!$$->name.empty()) {
-    cerr<<"Internal error: type_list name is not empty"<<endl;
+    elog->error(0, 0).os()<<"internal error: <type_list> name is not empty";
     YYABORT;
   }
   $$->name = std::move($1->name);
@@ -233,7 +236,7 @@ base_type:
 {
   $$ = $2;
   if (!$$->name.empty()) {
-    cerr<<"Internal error: type_list name is not empty"<<endl;
+    elog->error(0, 0).os()<<"internal error: <type_list> name is not empty";
     YYABORT;
   }
   $$->name = "/std/Tuple";
@@ -279,12 +282,13 @@ assign:
   | LET_MNS
 
 val_expr:
-    qualified_name
+    qualified_name { delete $1; }
 
 %%
 
 void yyerror(YYLTYPE *yylloc, yyscan_t yyscanner,
              igor::AST *ast,
+             igor::ErrorLog *elog,
              const char *msg) {
-  ast->error(yylloc->first_line, yylloc->first_column, string(msg));
+  elog->error(yylloc->first_line, yylloc->first_column).os()<<msg;
 }

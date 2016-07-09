@@ -59,70 +59,43 @@ struct AstFunction: public AstBase {
   std::unique_ptr<AstArgList> ret_list = nullptr;
 };
 
-struct Error {
-  Error(int line, int column, string msg)
-    : line(line), column(column), msg(std::move(msg)) {}
-  DEFAULT_COPY(Error);
-
-  const int line;
-  const int column;
-  const string msg;
-};
-
-class ErrorSink {
+class ErrorMsg {
 public:
-  class Formatter {
-  public:
-    Formatter(ErrorSink *sink, int line, int column);
-    DEFAULT_COPY(Formatter);
-    DEFAULT_MOVE(Formatter);
-    ~Formatter() {
-      sink_->push(std::make_unique<Error>(line_, column_, ss_->str()));
-    }
-    std::ostream &operator*() const { return *ss_; }
-
-  private:
-    ErrorSink *sink_ = nullptr;
-    const int line_;
-    const int column_;
-    std::unique_ptr<Error> e_;
-    std::unique_ptr<std::stringstream> ss_;
-  };
-
-  explicit ErrorSink(string file): file_(std::move(file)) {}
-  Formatter format_err(int line, int column) {
-    return Formatter(this, line, column);
-  }
-  int err_count() const { return errors_.size(); }
-  void print_to_stderr(bool locations) const;
-  const string &err_msg_at(int i) const { return errors_[i]->msg; }
+  ErrorMsg(std::ostream *os, const string &file, int line, int column);
+  DEFAULT_COPY(ErrorMsg);
+  ~ErrorMsg() { *os_<<endl; }
+  std::ostream &os() const { return *os_; }
 
 private:
-  void push(std::unique_ptr<Error> e) {
-    errors_.push_back(std::move(e));
-  }
+  std::ostream *const os_ = nullptr;
+};
 
-  std::vector<std::unique_ptr<Error>> errors_;
+class ErrorLog {
+public:
+  explicit ErrorLog(string file, std::ostream &os = cerr)
+      : file_(std::move(file)), os_(&os) {
+  }
+  DEFAULT_COPY(ErrorLog);
+  ErrorMsg error(int line, int column);
+  int count() const { return count_; }
+
+private:
   const string file_;
+  std::ostream *const os_ = nullptr;
+  int count_ = 0;
 };
 
 // Ast is a grammar parse tree. It is a subject to semantic analysis.
 class AST {
 public:
-  explicit AST(ErrorSink *es): es_(es) {}
+  AST() = default;
   DELETE_COPY(AST);
-  DEFAULT_MOVE(AST);
-  ErrorSink *err_sink() const { return es_; }
-  // Reset and do not delete the objects. For YYABORT.
-  void reset();
-  void error(int line, int column, const string &msg);
   void add_function(std::unique_ptr<AstFunction> f);
-  bool analyze_semantic();
+  bool analyze(ErrorLog *elog);
 
 private:
-  void analyze_function(AstFunction *f);
+  void analyze_function(AstFunction *f, ErrorLog *elog);
 
-  ErrorSink *const es_ = nullptr;
   std::vector<std::unique_ptr<AstFunction>> functions_;
 };
 

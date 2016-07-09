@@ -3,8 +3,8 @@
 %{
 #include "grammar.tab.hxx"
 
-igor::AST *yyget_ast(yyscan_t yyscanner) {
-  return reinterpret_cast<igor::AST*>(yyget_extra(yyscanner));
+igor::ErrorLog *yyget_elog(yyscan_t yyscanner) {
+  return reinterpret_cast<igor::ErrorLog*>(yyget_extra(yyscanner));
 }
 
 void yyset_locaton(YYLTYPE *yylloc, int line, int column) {
@@ -17,6 +17,9 @@ void yyset_locaton(YYLTYPE *yylloc, int line, int column) {
 #define YY_USER_ACTION \
   yyset_locaton(yylloc, yylineno, yycolumn); \
   yycolumn += yyleng;
+
+#define IGOR_LEX_ERROR \
+  yyget_elog(yyscanner)->error(yylineno, yycolumn - 1).os()
 
 %}
 
@@ -92,15 +95,16 @@ IS      (i8|i16|i32|i64)?
 }
 
 _ {
-  yylval->name = new string(yytext, yyleng);
   auto c = yyinput(yyscanner);
   if (c == '_' ||
       ('a' <= c && c <= 'z') ||
       ('A' <= c && c <= 'Z') ||
       ('0' <= c && c <= '9')) {
+    IGOR_LEX_ERROR<<"invalid wildcard token; alpha/digit/_ should not follow _";
     yyterminate();
   }
   unput(c);
+  yylval->name = new string(yytext, yyleng);
   return TOK_WILD;
 }
 
@@ -112,6 +116,7 @@ _ {
 . {
   // Treat control characters as spaces, other - error.
   if (*yytext >= 32) {
+    IGOR_LEX_ERROR<<"invalid character "<<yytext;
     yyterminate();
   }
 }

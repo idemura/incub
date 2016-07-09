@@ -4,7 +4,7 @@
 #include "ast.hxx"
 
 namespace igor {
-bool parse(const string &file_name, AST *ast);
+bool parse(const string &file_name, AST *ast, ErrorLog *elog);
 }  // namespace
 
 #endif

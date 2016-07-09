@@ -9,28 +9,28 @@ namespace igor {
 namespace {
 
 bool parse_test(int expected_errors, const string &code) {
-  ErrorSink es("<test>");
-  AST ast(&es);
+  std::stringstream ss;
+  ErrorLog elog("<test>", ss);
+  AST ast;
   TempFile temp(code);
-  if (parse(temp.get_name(), &ast)) {
-    ast.analyze_semantic();
+  if (parse(temp.get_name(), &ast, &elog)) {
+    ast.analyze(&elog);
   }
-  const auto locations = true;
-  if (expected_errors != es.err_count()) {
+  if (expected_errors != elog.count()) {
     if (flag_print >= 0) {
       cerr<<"Test code:\n"<<code
           <<"\nexpected errors: "<<expected_errors
-          <<"\nactual: "<<es.err_count()<<"\n";
-      es.print_to_stderr(locations);
+          <<"\nactual: "<<elog.count()<<"\n";
+      cerr<<ss.str();
     }
     return false;
   }
-  if (flag_print >= 2 || (flag_print >= 1 && es.err_count() > 0)) {
+  if (flag_print >= 2 || (flag_print >= 1 && elog.count() > 0)) {
     cerr<<"Test code:\n"<<code;
     if (!code.empty() && code.back() != '\n') {
       cerr<<"\n";
     }
-    es.print_to_stderr(locations);
+    cerr<<ss.str();
   }
   return true;
 }
@@ -56,8 +56,8 @@ void test_fn_spec() {
   CHECK(parse_test(0, "fn foo(_: Int) {}"));
   CHECK(parse_test(0, "fn foo(_, y: Int) {}"));
   CHECK(parse_test(0, "fn foo(y, _: Int) {}"));
-  CHECK(parse_test(1, "fn foo(y, _1: Int) {}"));
-  CHECK(parse_test(1, "fn foo(y, _a: Int) {}"));
+  CHECK(parse_test(2, "fn foo(y, _1: Int) {}"));
+  CHECK(parse_test(2, "fn foo(y, _a: Int) {}"));
 
   CHECK(parse_test(1, "fn foo(: Int) {}\n"));
   CHECK(parse_test(1, "fn foo(n: Int,) {}\n"));
@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
   test_type();
   test_expr();
 
-  {
+  if (1) {
     CHECK(parse_test(0,
         "fn foo() {\n"
         "  return;\n"

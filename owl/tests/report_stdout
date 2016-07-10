@@ -1,61 +1,21 @@
 
 INPUT: tests/fn_decl/0.owl
-EXIT CODE: 255
-
 INPUT: tests/fn_decl/10.owl
-EXIT CODE: 255
-
 INPUT: tests/fn_decl/11.owl
-EXIT CODE: 255
-
 INPUT: tests/fn_decl/12.owl
-EXIT CODE: 255
-
 INPUT: tests/fn_decl/13.owl
-EXIT CODE: 255
-
 INPUT: tests/fn_decl/14.owl
-EXIT CODE: 255
-
 INPUT: tests/fn_decl/15.owl
-EXIT CODE: 255
-
 INPUT: tests/fn_decl/1.owl
-EXIT CODE: 255
-
 INPUT: tests/fn_decl/2.owl
-EXIT CODE: 255
-
 INPUT: tests/fn_decl/3.owl
-EXIT CODE: 255
-
 INPUT: tests/fn_decl/4.owl
-EXIT CODE: 255
-
 INPUT: tests/fn_decl/5.owl
-EXIT CODE: 255
-
 INPUT: tests/fn_decl/6.owl
-EXIT CODE: 255
-
 INPUT: tests/fn_decl/7.owl
-EXIT CODE: 255
-
 INPUT: tests/fn_decl/8.owl
-EXIT CODE: 255
-
 INPUT: tests/fn_decl/9.owl
-EXIT CODE: 255
-
 INPUT: tests/fn_decl/basic.owl
-EXIT CODE: 0
-
 INPUT: tests/misc/basic.owl
-EXIT CODE: 0
-
 INPUT: tests/stmt/basic.owl
-EXIT CODE: 0
-
 INPUT: tests/type_decl/basic.owl
-EXIT CODE: 0
-

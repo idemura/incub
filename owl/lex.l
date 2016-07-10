@@ -43,14 +43,33 @@ IS      (i8|i16|i32|i64)?
 "if" { return TOK_IF; }
 "return" { return TOK_RETURN; }
 
+  /*Modify & Assign*/
+"+="  { return TOK_LET_PLS; }
+"-="  { return TOK_LET_MNS; }
+
+  /*Logical*/
+"!"   { return TOK_NOT; }
+"&&"  { return TOK_AND; }
+"||"  { return TOK_OR; }
+"^^"  { return TOK_XOR; }
+
+  /*Separators*/
 "=>"  { return TOK_ARROW; }
 ":"   { return TOK_COLON; }
 ","   { return TOK_COMMA; }
 "."   { return TOK_DOT; }
-"="   { return TOK_LET; }
-"=+"  { return TOK_LET_PLS; }
-"=-"  { return TOK_LET_MNS; }
 ";"   { return TOK_SEMI; }
+
+"=="  { return TOK_CMP_EQ; }
+"!="  { return TOK_CMP_NE; }
+"<="  { return TOK_CMP_LE; }
+">="  { return TOK_CMP_GE; }
+
+">"   { return TOK_CMP_GT; }
+"<"   { return TOK_CMP_LT; }
+"="   { return TOK_LET; }
+
+  /*Tokens with pairs*/
 "["   { return TOK_LB; }
 "]"   { return TOK_RB; }
 "("   { return TOK_LP; }

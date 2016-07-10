@@ -53,29 +53,43 @@ inline string move_string(string *s) {
 %parse-param {igor::ErrorLog *elog}
 
 // Terminal symbols are in CAPS by convention.
+%token            AND         "&&"
+%token            ARROW       "=>"
+%token            CMP_EQ      "=="
+%token            CMP_NE      "!="
+%token            CMP_LT      "<"
+%token            CMP_LE      "<="
+%token            CMP_GT      ">"
+%token            CMP_GE      ">="
 %token <constant> CONSTANT
+%token            ELIF
+%token            ELSE
+%token            FN
+%token            IF
+%token            COLON       ":"
+%token            COMMA       ","
+%token            DOT         "."
+%token            LET         "="
+%token            LET_PLS     "+="
+%token            LET_MNS     "-="
 %token <name>     NAME
+%token            OR          "||"
+%token            RETURN
+%token            SEMI        ";"
 %token <name>     TYPE
-%token <name>     WILD      // _
-%token            ELIF      // elif
-%token            ELSE      // else
-%token            FN        // fn
-%token            IF        // if
-%token            RETURN    // return
-%token            ARROW     // =>
-%token            COLON     // :
-%token            COMMA     // ,
-%token            DOT       // .
-%token            LET       // =
-%token            LET_PLS   // +=
-%token            LET_MNS   // -=
-%token            SEMI      // ;
-%token            LB        // [
-%token            RB        // ]
-%token            LC        // {
-%token            RC        // }
-%token            LP        // (
-%token            RP        // )
+%token <name>     WILD        "_"
+%token            XOR         "^^"
+
+%token            LB          "["
+%token            RB          "]"
+%token            LC          "{"
+%token            RC          "}"
+%token            LP          "("
+%token            RP          ")"
+
+%left OR XOR
+%left AND
+%left NOT
 
 %type <name>      name
 %type <name>      qualified_name
@@ -263,26 +277,40 @@ stmt_list:
   | stmt stmt_list
 
 stmt:
-    RETURN SEMI
-  | RETURN expr_list SEMI
+    RETURN expr_list SEMI
+  | expr assign expr SEMI
   | expr SEMI
-
-// *** Expression grammar:
-expr_list:
-    expr
-  | expr COMMA expr_list
-
-expr:
-    val_expr
-  | val_expr assign val_expr
 
 assign:
     LET
   | LET_PLS
   | LET_MNS
 
-val_expr:
+// *** Expression grammar:
+expr_list:
+    %empty
+  | expr
+  | expr COMMA expr_list
+
+expr:
+    NOT expr
+  | expr AND expr
+  | expr OR expr
+  | expr XOR expr
+  | LP expr RP
+  | fn_call
+
+fn_call:
+    prime
+  | prime LP expr_list RP
+
+prime:
+    index
+  | CONSTANT { delete $1; }
+
+index:
     qualified_name { delete $1; }
+  | index LB expr RB
 
 %%
 

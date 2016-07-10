@@ -1,19 +1,19 @@
 #!/bin/sh
 find . -name '*_test' -executable -type f -exec {} \;
 
-stdout=report_stdout
 stderr=report_stderr
+stdout=report_stdout
 echo > $stdout
 echo > $stderr
 for owl in $(find tests/ -name '*.owl' | sort); do
-  echo 'INPUT:' $owl >> $stdout
   echo 'INPUT:' $owl >> $stderr
+  echo 'INPUT:' $owl >> $stdout
   cat $owl >> $stderr
-  ./owlc $owl 1>>$stdout 2>>$stderr
-  ec=$?
-  echo "EXIT CODE: $ec\n" >> $stdout
-  echo "EXIT CODE: $ec\n" >> $stderr
+  ./owlc $owl 1>> $stdout 2>> $stderr
+  echo "EXIT CODE: $?\n" >> $stderr
 done
-cmp -s tests/$stdout $stdout || { echo "$stdout diff" && exit 1; }
-cmp -s tests/$stderr $stderr || { echo "$stderr diff" && exit 1; }
-echo 'TEST SUITE TESTS PASSED'
+
+ec=true
+cmp -s tests/$stderr $stderr || { echo "$stderr diff"; ec=false; }
+cmp -s tests/$stdout $stdout || { echo "$stdout diff"; ec=false; }
+$ec && echo 'TEST SUITE TESTS PASSED'

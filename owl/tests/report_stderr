@@ -43,32 +43,32 @@ EXIT CODE: 255
 
 INPUT: tests/fn_decl/2.owl
 fn foo(: Int) {}
-tests/fn_decl/2.owl:1,7: syntax error, unexpected COLON
+tests/fn_decl/2.owl:1,7: syntax error, unexpected :
 EXIT CODE: 255
 
 INPUT: tests/fn_decl/3.owl
 fn foo(n: Int,) {}
-tests/fn_decl/3.owl:1,14: syntax error, unexpected RP
+tests/fn_decl/3.owl:1,14: syntax error, unexpected )
 EXIT CODE: 255
 
 INPUT: tests/fn_decl/4.owl
 fn foo(n,: Int) {}
-tests/fn_decl/4.owl:1,9: syntax error, unexpected COLON
+tests/fn_decl/4.owl:1,9: syntax error, unexpected :
 EXIT CODE: 255
 
 INPUT: tests/fn_decl/5.owl
 fn foo(n: int) {}
-tests/fn_decl/5.owl:1,13: syntax error, unexpected RP, expecting DOT
+tests/fn_decl/5.owl:1,13: syntax error, unexpected ), expecting .
 EXIT CODE: 255
 
 INPUT: tests/fn_decl/6.owl
 fn foo(n:) {}
-tests/fn_decl/6.owl:1,9: syntax error, unexpected RP, expecting NAME or TYPE or LB or LP
+tests/fn_decl/6.owl:1,9: syntax error, unexpected ), expecting NAME or TYPE or [ or (
 EXIT CODE: 255
 
 INPUT: tests/fn_decl/7.owl
 fn foo(n: Int): {}
-tests/fn_decl/7.owl:1,16: syntax error, unexpected LC
+tests/fn_decl/7.owl:1,16: syntax error, unexpected {
 EXIT CODE: 255
 
 INPUT: tests/fn_decl/8.owl
@@ -105,12 +105,35 @@ INPUT: tests/misc/basic.owl
 EXIT CODE: 0
 
 INPUT: tests/stmt/basic.owl
-fn foo(x: T) {
-  return;
+fn foo(x, y, z: Bool) {
   x;
-  return x;
+  x || y;
+  x || y && z;
+  !x && !y || z;
+  x ^^ y && z;
+  x || y ^^ z;
+
   x = y;
-  return x, x = y;
+  x += y;
+  x -= !y || z;
+
+  x = 0o76;
+  x = 100;
+  x = 0xfa;
+
+  x = a[10];
+  x = a[10][b[0]];
+
+  f();
+  f(10);
+  f(10, 20);
+  f(x, 10 && 20);
+  a[0](40, 50);
+  a[f()];
+
+  return;
+  return x;
+  return x, !y && z;
 }
 EXIT CODE: 0
 

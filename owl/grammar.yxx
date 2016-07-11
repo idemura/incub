@@ -248,7 +248,7 @@ base_type:
   $$->name = "/std/Tuple";
 }
 
- type_list:
+type_list:
      type_spec
 {
   $$ = new igor::AstType;

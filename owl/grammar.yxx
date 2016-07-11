@@ -94,7 +94,7 @@ inline T *ast_cast(igor::AstBase* b) {
 
 %left OR XOR
 %left AND
-%left NOT
+%right NOT
 
 %type <name>      name
 %type <name>      qualified_name

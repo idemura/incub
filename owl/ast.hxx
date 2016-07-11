@@ -44,6 +44,10 @@ struct AstFunction: public AstBase {
 struct AstExpr: public AstBase {
 };
 
+struct AstExprList: public AstBase {
+  std::vector<std::unique_ptr<AstExpr>> exprs;
+};
+
 struct AstConstant: public AstExpr {
   enum Type {
     kNull,

@@ -47,6 +47,7 @@ inline T *ast_cast(igor::AstBase* b) {
 
 %union {
   igor::AstExpr *expr;
+  igor::AstExprList *expr_list;
   igor::AstType *type;
   igor::AstArg *arg;
   igor::AstArgList *arg_list;
@@ -107,6 +108,8 @@ inline T *ast_cast(igor::AstBase* b) {
 %type <arg_list>  arg_list
 %type <arg_list>  arg_spec
 %type <arg_list>  ret_spec
+%type <expr_list> expr_list
+%type <expr>      expr
 
 %destructor { delete $$; } <*>
 
@@ -269,9 +272,9 @@ stmt_list:
   | stmt stmt_list
 
 stmt:
-    RETURN expr_list SEMI
-  | expr assign expr SEMI
-  | expr SEMI
+    RETURN expr_list SEMI { delete $2; }
+  | expr assign expr SEMI { delete $1; delete $3; }
+  | expr SEMI { delete $1; }
 
 assign:
     LET
@@ -280,9 +283,17 @@ assign:
 
 // *** Expression grammar:
 expr_list:
-    %empty
+    %empty { $$ = new igor::AstExprList; }
   | expr
+{
+  $$ = new igor::AstExprList;
+  $$->push_back(wrap_unique($1));
+}
   | expr COMMA expr_list
+{
+  $$ = $3;
+  $$->push_back(wrap_unique($1));
+}
 
 expr:
     NOT expr

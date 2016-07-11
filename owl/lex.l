@@ -14,6 +14,8 @@ void yyset_locaton(YYLTYPE *yylloc, int line, int column) {
   yylloc->last_column = 0;
 }
 
+#define YY_STRING string(yytext, yyleng)
+
 #define YY_USER_ACTION \
   yyset_locaton(yylloc, yylineno, yycolumn); \
   yycolumn += yyleng;
@@ -82,34 +84,26 @@ IS      (i8|i16|i32|i64)?
     It will be some parsing error instead. Same for integers.
   */
 {D}+\.{D}+(f|d)? {
-  auto c = yylval->constant = new igor::AstConstant;
-  c->type = igor::AstConstant::kF64;
-  c->value = string(yytext, yyleng);
+  yylval->expr = new igor::AstConstant(igor::AstConstant::kF64, YY_STRING);
   return TOK_CONSTANT;
 }
 
   /*Integers: oct, decimal, hex*/
 0o{O}+(_{O}+)*{IS}  {
-  auto c = yylval->constant = new igor::AstConstant;
-  c->type = igor::AstConstant::kI32;
-  c->value = string(yytext, yyleng);
+  yylval->expr = new igor::AstConstant(igor::AstConstant::kI32, YY_STRING);
   return TOK_CONSTANT;
 }
 {D}+(_{D}+)*{IS}    {
-  auto c = yylval->constant = new igor::AstConstant;
-  c->type = igor::AstConstant::kI32;
-  c->value = string(yytext, yyleng);
+  yylval->expr = new igor::AstConstant(igor::AstConstant::kI32, YY_STRING);
   return TOK_CONSTANT;
 }
 0x{H}+(_{H}+)*{IS}  {
-  auto c = yylval->constant = new igor::AstConstant;
-  c->type = igor::AstConstant::kI32;
-  c->value = string(yytext, yyleng);
+  yylval->expr = new igor::AstConstant(igor::AstConstant::kI32, YY_STRING);
   return TOK_CONSTANT;
 }
 
 {NF}{L}* {
-  yylval->name = new string(yytext, yyleng);
+  yylval->name = new YY_STRING;
   return TOK_NAME;
 }
 
@@ -123,12 +117,12 @@ _ {
     yyterminate();
   }
   unput(c);
-  yylval->name = new string(yytext, yyleng);
+  yylval->name = new YY_STRING;
   return TOK_WILD;
 }
 
 {TF}{L}* {
-  yylval->name = new string(yytext, yyleng);
+  yylval->name = new YY_STRING;
   return TOK_TYPE;
 }
 

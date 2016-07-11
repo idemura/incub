@@ -36,12 +36,17 @@ inline string move_string(string *s) {
   delete s;
   return v;
 }
+
+template<typename T>
+inline T *ast_cast(igor::AstBase* b) {
+  // When I'm 100% confident no bug there, should be static_cast.
+  return dynamic_cast<T*>(b);
+}
 }  // namespace
 }
 
 %union {
-  igor::AstConstant *constant;
-  igor::AstFunction *function;
+  igor::AstExpr *expr;
   igor::AstType *type;
   igor::AstArg *arg;
   igor::AstArgList *arg_list;
@@ -61,7 +66,7 @@ inline string move_string(string *s) {
 %token            CMP_LE      "<="
 %token            CMP_GT      ">"
 %token            CMP_GE      ">="
-%token <constant> CONSTANT
+%token <expr>     CONSTANT
 %token            ELIF
 %token            ELSE
 %token            FN
@@ -93,10 +98,9 @@ inline string move_string(string *s) {
 
 %type <name>      name
 %type <name>      qualified_name
-%type <function>  function
 %type <type>      type
 %type <type>      base_type
-%type <type>      qualified_type
+%type <name>      qualified_type
 %type <type>      type_spec
 %type <type>      type_list
 %type <arg>       arg
@@ -129,11 +133,11 @@ qualified_name:
 function:
     FN NAME arg_spec ret_spec body
 {
-  $$ = new igor::AstFunction;
-  $$->name = move_string($2);
-  $$->arg_list = wrap_unique($3);
-  $$->ret_list = wrap_unique($4);
-  ast->add_function(wrap_unique($$));
+  auto f = std::make_unique<igor::AstFunction>();
+  f->name = move_string($2);
+  f->arg_list = wrap_unique($3);
+  f->ret_list = wrap_unique($4);
+  ast->add_function(std::move(f));
 }
 
 arg_spec:
@@ -210,35 +214,27 @@ type_spec:
 }
 
 qualified_type:
-    TYPE
+    TYPE { $$ = $1; }
+  | NAME DOT qualified_type
+{
+  $$ = new string(move_string($1) + "/" + move_string($3));
+}
+
+base_type:
+    qualified_type
 {
   $$ = new igor::AstType;
   $$->name = move_string($1);
 }
-  | NAME DOT qualified_type
-{
-  $$ = $3;
-  $$->name = move_string($1) + "/" + $$->name;
-}
-
-base_type:
-    qualified_type { $$ = $1; }
   | qualified_type LP type_list RP  // Generic instance
 {
   $$ = $3;
-  if (!$$->name.empty()) {
-    elog->error(0, 0).os()<<"internal error: <type_list> name is not empty";
-    YYABORT;
-  }
-  $$->name = std::move($1->name);
-  delete $1;
+  $$->name = move_string($1);
 }
   | LP type_spec RP  // Parens around type
 {
   $$ = $2;
-  if ($$->name == "/std/Function") {
-    $$->carry = false;
-  }
+  if ($$->name == "/std/Function") $$->carry = false;
 }
   | base_type LB RB  // Array, /std/Array
 {
@@ -249,10 +245,6 @@ base_type:
   | LB type_list RB  // Tuple, /std/Tuple
 {
   $$ = $2;
-  if (!$$->name.empty()) {
-    elog->error(0, 0).os()<<"internal error: <type_list> name is not empty";
-    YYABORT;
-  }
   $$->name = "/std/Tuple";
 }
 

@@ -6,26 +6,8 @@
 namespace igor {
 
 struct AstBase {
-public:
   virtual ~AstBase() = default;
   // virtual string to_string() const = 0;
-};
-
-struct AstConstant: public AstBase {
-  enum Type {
-    kNull,
-    kBool,
-    kI8,
-    kI16,
-    kI32,
-    kI64,
-    kF32,
-    kF64,
-    kChar,
-    kString,
-  };
-  Type type = kNull;
-  string value;
 };
 
 // In general, type is GenericTypeName (@name) and @args.
@@ -59,6 +41,31 @@ struct AstFunction: public AstBase {
   std::unique_ptr<AstArgList> ret_list = nullptr;
 };
 
+struct AstExpr: public AstBase {
+};
+
+struct AstConstant: public AstExpr {
+  enum Type {
+    kNull,
+    kBool,
+    kI8,
+    kI16,
+    kI32,
+    kI64,
+    kF32,
+    kF64,
+    kChar,
+    kString,
+  };
+
+  Type type = kNull;
+  string value;
+
+  AstConstant() = default;
+  AstConstant(Type type, string value): type(type), value(std::move(value)) {}
+};
+
+// *** AST
 class ErrorMsg {
 public:
   ErrorMsg(std::ostream *os, const string &file, int line, int column);

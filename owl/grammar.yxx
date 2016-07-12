@@ -51,6 +51,8 @@ inline T *ast_cast(igor::AstBase* b) {
   igor::AstType *type;
   igor::AstArg *arg;
   igor::AstArgList *arg_list;
+  igor::AstStmt *stmt;
+  igor::AstStmtList *stmt_list;
   string *name;
 }
 
@@ -111,6 +113,9 @@ inline T *ast_cast(igor::AstBase* b) {
 %type <expr>      expr
 %type <expr>      prime
 %type <expr>      call
+%type <stmt>      stmt
+%type <stmt_list> stmt_list
+%type <stmt_list> body
 
 %destructor { delete $$; } <*>
 
@@ -139,6 +144,7 @@ FN NAME arg_spec ret_spec body {
   f->name = move_string($2);
   f->arg_list = wrap_unique($3);
   f->ret_list = wrap_unique($4);
+  f->body = wrap_unique($5);
   ast->add_function(std::move(f));
 }
 
@@ -256,21 +262,33 @@ type COMMA type_list {
 
 // *** Body grammar:
 body:
-LC stmt_list RC
+LC stmt_list RC { $$ = $2; }
 
 stmt_list:
-%empty |
-stmt stmt_list
+%empty {
+  $$ = new igor::AstStmtList;
+} |
+stmt_list stmt {
+  $$ = $1;
+  $$->stmts.push_back(wrap_unique($2));
+}
 
 stmt:
-RETURN expr_list SEMI { delete $2; } |
-expr assign expr SEMI { delete $1; delete $3; } |
-expr SEMI { delete $1; }
-
-assign:
-LET |
-LET_PLS |
-LET_MNS
+RETURN expr_list SEMI {
+  $$ = new igor::AstStmtReturn(wrap_unique($2));
+} |
+expr LET expr SEMI {
+  $$ = new igor::AstStmtLet(wrap_unique($1), wrap_unique($3));
+} |
+expr LET_PLS expr SEMI {
+  $$ = new igor::AstStmtLet(wrap_unique($1), wrap_unique($3));
+} |
+expr LET_MNS expr SEMI {
+  $$ = new igor::AstStmtLet(wrap_unique($1), wrap_unique($3));
+} |
+expr SEMI {
+  $$ = new igor::AstStmtExpr(wrap_unique($1));
+}
 
 // *** Expression grammar:
 expr_list:

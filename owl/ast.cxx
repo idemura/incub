@@ -17,8 +17,7 @@ ErrorMsg ErrorLog::error(int line, int column) {
   return ErrorMsg(os_, file_, line, column);
 }
 
-string AstType::to_string() const {
-  std::stringstream ss;
+void AstType::to_string(std::ostream &ss) const {
   ss<<name;
   if (!args.empty()) {
     ss<<"(";
@@ -28,7 +27,14 @@ string AstType::to_string() const {
     }
     ss<<")";
   }
-  return ss.str();
+}
+
+void AstFunction::to_string(std::ostream &ss) const override {
+  ss<<"(Function "<<name<<
+      "\n  "<<arg_list->to_string()<<
+      "\n  "<<ret_list->to_string()<<
+      "\n  "<<body.to_string()
+      ")\n";
 }
 
 std::unique_ptr<AstType> AstType::clone() const {

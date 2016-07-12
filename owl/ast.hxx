@@ -7,7 +7,7 @@ namespace igor {
 
 struct AstBase {
   virtual ~AstBase() = default;
-  // virtual string to_string() const = 0;
+  virtual void to_string(std::ostream &ss) const { ss<<"(AstBase)"; }
 };
 
 // In general, type is GenericTypeName (@name) and @args.
@@ -21,26 +21,35 @@ struct AstType: public AstBase {
   // because grammar is tail recursive (<list_item> COMMA <list>).
   std::vector<std::unique_ptr<AstType>> args;
 
-  string to_string() const;
+  void to_string(std::ostream &ss) const override;
   std::unique_ptr<AstType> clone() const;
 };
 
 struct AstArg: public AstBase {
   string name;
   std::unique_ptr<AstType> type;
+
+  void to_string(std::ostream &ss) const override {
+    ss<<"(Arg "<<name<<" ";
+    type->to_string(ss);
+    ss<<")";
 };
 
 struct AstArgList: public AstBase {
   // Args are in reverse order.
   std::vector<std::unique_ptr<AstArg>> args;
+
+  void to_string(std::ostream &ss) const override {
+    ss<<"(ArgList";
+    for (auto &a : args) {
+      ss<<" ";
+      a.to_string(ss);
+    }
+    ss<<")\n";
+  }
 };
 
-struct AstFunction: public AstBase {
-  string name;
-  std::unique_ptr<AstArgList> arg_list = nullptr;
-  std::unique_ptr<AstArgList> ret_list = nullptr;
-};
-
+// *** Expression
 struct AstExpr: public AstBase {
 };
 
@@ -113,6 +122,40 @@ struct AstExprAt: public AstExpr {
       : l(std::move(l)),
         r(std::move(r)) {}
   std::unique_ptr<AstExpr> l, r;
+};
+
+// *** Statement
+struct AstStmt: public AstBase {
+};
+
+struct AstStmtReturn: public AstStmt {
+  AstStmtReturn(std::unique_ptr<AstExprList> e): e(std::move(e)) {}
+  std::unique_ptr<AstExprList> e;
+};
+
+struct AstStmtLet: public AstStmt {
+  AstStmtLet(std::unique_ptr<AstExpr> l, std::unique_ptr<AstExpr>(r))
+      : l(std::move(l)),
+        r(std::move(r)) {}
+  std::unique_ptr<AstExpr> l, r;
+};
+
+struct AstStmtExpr: public AstStmt {
+  AstStmtExpr(std::unique_ptr<AstExpr> e): e(std::move(e)) {}
+  std::unique_ptr<AstExpr> e;
+};
+
+struct AstStmtList: public AstStmt {
+  std::vector<std::unique_ptr<AstStmt>> stmts;
+};
+
+struct AstFunction: public AstBase {
+  string name;
+  std::unique_ptr<AstArgList> arg_list;
+  std::unique_ptr<AstArgList> ret_list;
+  std::unique_ptr<AstStmtList> body;
+
+  void to_string(std::ostream &ss) const override;
 };
 
 // *** AST

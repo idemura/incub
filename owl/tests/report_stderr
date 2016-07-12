@@ -131,6 +131,7 @@ fn foo(x, y, z: Bool) {
   f(x, 10 && 20);
   a[0](40, 50);
   a[f()];
+  f()[module.g(10)];
 
   return;
   return x;

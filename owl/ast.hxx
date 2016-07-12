@@ -69,6 +69,52 @@ struct AstConstant: public AstExpr {
   AstConstant(Type type, string value): type(type), value(std::move(value)) {}
 };
 
+struct AstExprNot: public AstExpr {
+  AstExprNot(std::unique_ptr<AstExpr> e): e(std::move(e)) {}
+  std::unique_ptr<AstExpr> e;
+};
+
+struct AstExprAnd: public AstExpr {
+  AstExprAnd(std::unique_ptr<AstExpr> l, std::unique_ptr<AstExpr> r)
+      : l(std::move(l)),
+        r(std::move(r)) {}
+  std::unique_ptr<AstExpr> l, r;
+};
+
+struct AstExprOr: public AstExpr {
+  AstExprOr(std::unique_ptr<AstExpr> l, std::unique_ptr<AstExpr> r)
+      : l(std::move(l)),
+        r(std::move(r)) {}
+  std::unique_ptr<AstExpr> l, r;
+};
+
+struct AstExprXor: public AstExpr  {
+  AstExprXor(std::unique_ptr<AstExpr> l, std::unique_ptr<AstExpr> r)
+      : l(std::move(l)),
+        r(std::move(r)) {}
+  std::unique_ptr<AstExpr> l, r;
+};
+
+struct AstExprCall: public AstExpr {
+  AstExprCall(std::unique_ptr<AstExpr> f, std::unique_ptr<AstExprList> args)
+      : f(std::move(f)),
+        args(std::move(args)) {}
+  std::unique_ptr<AstExpr> f;
+  std::unique_ptr<AstExprList> args;
+};
+
+struct AstExprVar: public AstExpr {
+  AstExprVar(string name): name(std::move(name)) {}
+  string name;
+};
+
+struct AstExprAt: public AstExpr {
+  AstExprAt(std::unique_ptr<AstExpr> l, std::unique_ptr<AstExpr> r)
+      : l(std::move(l)),
+        r(std::move(r)) {}
+  std::unique_ptr<AstExpr> l, r;
+};
+
 // *** AST
 class ErrorMsg {
 public:

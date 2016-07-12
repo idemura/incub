@@ -102,7 +102,6 @@ inline T *ast_cast(igor::AstBase* b) {
 %type <type>      type
 %type <type>      base_type
 %type <name>      qualified_type
-%type <type>      type_spec
 %type <type>      type_list
 %type <arg>       arg
 %type <arg_list>  arg_list
@@ -110,6 +109,8 @@ inline T *ast_cast(igor::AstBase* b) {
 %type <arg_list>  ret_spec
 %type <expr_list> expr_list
 %type <expr>      expr
+%type <expr>      prime
+%type <expr>      call
 
 %destructor { delete $$; } <*>
 
@@ -118,24 +119,22 @@ inline T *ast_cast(igor::AstBase* b) {
 %%
 
 module:
-    %empty
-  | function module
+%empty |
+function module
 
 name:
-    NAME { $$ = $1; }
-  | WILD { $$ = $1; }
+NAME { $$ = $1; } |
+WILD { $$ = $1; }
 
 qualified_name:
-    name { $$ = $1; }
-  | NAME DOT qualified_name
-{
+name { $$ = $1; } |
+NAME DOT qualified_name {
   $$ = new string(move_string($1) + "/" + move_string($3));
 }
 
 // *** Function grammar:
 function:
-    FN NAME arg_spec ret_spec body
-{
+FN NAME arg_spec ret_spec body {
   auto f = std::make_unique<igor::AstFunction>();
   f->name = move_string($2);
   f->arg_list = wrap_unique($3);
@@ -144,45 +143,44 @@ function:
 }
 
 arg_spec:
-    LP RP { $$ = new igor::AstArgList; }
-  | LP arg_list RP { $$ = $2; }
+LP RP {
+  $$ = new igor::AstArgList;
+} |
+LP arg_list RP { $$ = $2; }
 
 arg:
-    // For declaration like x, y: Int. First x is just a name.
-    name
-{
+// For declaration like x, y: Int. First x is just a name.
+name {
   $$ = new igor::AstArg;
   $$->name = move_string($1);
-}
-  // No name declaration allowed by grammar. Should be rejected for arg list,
-  // but allowed for return spec.
-  | type
-{
+} |
+// No name declaration allowed by grammar. Should be rejected for arg list,
+// but allowed for return spec.
+type {
   $$ = new igor::AstArg;
   $$->type = wrap_unique($1);
-}
-  | name COLON type
-{
+} |
+name COLON type {
   $$ = new igor::AstArg;
   $$->name = move_string($1);
   $$->type = wrap_unique($3);
 }
 
 arg_list:
-    arg
-{
+arg {
   $$ = new igor::AstArgList;
   $$->args.push_back(wrap_unique($1));
-}
-  | arg COMMA arg_list
-{
+} |
+arg COMMA arg_list {
   $$ = $3;
   $$->args.push_back(wrap_unique($1));
 }
 
 ret_spec:
-    %empty { $$ = new igor::AstArgList; }
-  | COLON arg_list { $$ = $2; }
+%empty {
+  $$ = new igor::AstArgList;
+} |
+COLON arg_list { $$ = $2; }
 
 // *** Type spec grammar:
 // Notation for array: Type[]. Suffix applied to the last shortest type.
@@ -199,12 +197,9 @@ ret_spec:
 // T4=>T5.
 //
 // Generic instantiation uses parens: Templ(T1, T2).
-type: type_spec { $$ = $1; }
-
-type_spec:
-    base_type { $$ = $1; }
-  | base_type ARROW type_spec
-{
+type:
+base_type { $$ = $1; } |
+base_type ARROW type {
   if ($3->name == "/std/Function" && $3->carry) {
     $$ = $3;
     $$->args.push_back(wrap_unique($1));
@@ -217,103 +212,112 @@ type_spec:
 }
 
 qualified_type:
-    TYPE { $$ = $1; }
-  | NAME DOT qualified_type
-{
+TYPE { $$ = $1; } |
+NAME DOT qualified_type {
   $$ = new string(move_string($1) + "/" + move_string($3));
 }
 
 base_type:
-    qualified_type
-{
+qualified_type {
   $$ = new igor::AstType;
   $$->name = move_string($1);
-}
-  | qualified_type LP type_list RP  // Generic instance
-{
+} |
+// Generic instance
+qualified_type LP type_list RP {
   $$ = $3;
   $$->name = move_string($1);
-}
-  | LP type_spec RP  // Parens around type
-{
+} |
+// Parens around type
+LP type RP {
   $$ = $2;
   if ($$->name == "/std/Function") $$->carry = false;
-}
-  | base_type LB RB  // Array, /std/Array
-{
+} |
+// Array, /std/Array
+base_type LB RB {
   $$ = new igor::AstType;
   $$->name = "/std/Array";
   $$->args.push_back(wrap_unique($1));
-}
-  | LB type_list RB  // Tuple, /std/Tuple
-{
+} |
+// Tuple, /std/Tuple
+LB type_list RB {
   $$ = $2;
   $$->name = "/std/Tuple";
 }
 
 type_list:
-     type_spec
-{
+type {
   $$ = new igor::AstType;
   $$->args.push_back(wrap_unique($1));
-}
-   | type_spec COMMA type_list
-{
+} |
+type COMMA type_list {
   $$ = $3;
   $$->args.push_back(wrap_unique($1));
 }
 
 // *** Body grammar:
 body:
-  LC stmt_list RC
+LC stmt_list RC
 
 stmt_list:
-    %empty
-  | stmt stmt_list
+%empty |
+stmt stmt_list
 
 stmt:
-    RETURN expr_list SEMI { delete $2; }
-  | expr assign expr SEMI { delete $1; delete $3; }
-  | expr SEMI { delete $1; }
+RETURN expr_list SEMI { delete $2; } |
+expr assign expr SEMI { delete $1; delete $3; } |
+expr SEMI { delete $1; }
 
 assign:
-    LET
-  | LET_PLS
-  | LET_MNS
+LET |
+LET_PLS |
+LET_MNS
 
 // *** Expression grammar:
 expr_list:
-    %empty { $$ = new igor::AstExprList; }
-  | expr
-{
+%empty {
   $$ = new igor::AstExprList;
-  $$->push_back(wrap_unique($1));
-}
-  | expr COMMA expr_list
-{
+} |
+expr {
+  $$ = new igor::AstExprList;
+  $$->exprs.push_back(wrap_unique($1));
+} |
+expr COMMA expr_list {
   $$ = $3;
-  $$->push_back(wrap_unique($1));
+  $$->exprs.push_back(wrap_unique($1));
 }
 
 expr:
-    NOT expr
-  | expr AND expr
-  | expr OR expr
-  | expr XOR expr
-  | LP expr RP
-  | fn_call
+NOT expr {
+  $$ = new igor::AstExprNot(wrap_unique($2));
+} |
+expr AND expr {
+  $$ = new igor::AstExprAnd(wrap_unique($1), wrap_unique($3));
+} |
+expr OR expr {
+  $$ = new igor::AstExprOr(wrap_unique($1), wrap_unique($3));
+} |
+expr XOR expr {
+  $$ = new igor::AstExprXor(wrap_unique($1), wrap_unique($3));
+} |
+call {
+  $$ = $1;
+}
 
-fn_call:
-    prime
-  | prime LP expr_list RP
+call:
+prime { $$ = $1; } |
+call LB expr RB {
+  $$ = new igor::AstExprAt(wrap_unique($1), wrap_unique($3));
+} |
+call LP expr_list RP {
+  $$ = new igor::AstExprCall(wrap_unique($1), wrap_unique($3));
+}
 
 prime:
-    index
-  | CONSTANT { delete $1; }
-
-index:
-    qualified_name { delete $1; }
-  | index LB expr RB
+qualified_name {
+  $$ = new igor::AstExprVar(move_string($1));
+} |
+LP expr RP { $$ = $2; } |
+CONSTANT { $$ = $1; }
 
 %%
 

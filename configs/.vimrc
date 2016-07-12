@@ -1,9 +1,12 @@
-set nocompatible
 filetype off
 filetype indent on
+" filetype plugin on
+
+syntax on
+
+set nocompatible
 set autoread
 set autoindent
-syntax on
 " Case insensitive search
 set ic
 " Highlight search
@@ -18,8 +21,12 @@ set hidden
 set nowrap
 set noswapfile
 set wildignore+=*.o,*.a,*.o.d,*_test
+" Set the runtime path to include Vundle and initialize
+set rtp+=~/.vim/bundle/Vundle.vim
+
 " Do not expand tab to spaces in make files.
 autocmd FileType make setlocal noexpandtab
+autocmd BufWritePre * TrailerTrim
 
 let mapleader=" "
 nnoremap <leader>o :CtrlP<CR>
@@ -30,13 +37,6 @@ nnoremap <C-J> <C-W><C-J>
 nnoremap <C-K> <C-W><C-K>
 nnoremap <C-L> <C-W><C-L>
 nnoremap <C-H> <C-W><C-H>
-
-command TT TrailerTrim
-
-" filetype plugin on
-
-" Set the runtime path to include Vundle and initialize
-set rtp+=~/.vim/bundle/Vundle.vim
 
 call vundle#begin()
 " Alternatively, pass a path where Vundle should install plugins
@@ -53,3 +53,4 @@ Bundle 'csexton/trailertrash.vim'
 
 " All of your Plugins must be added before the following line
 call vundle#end()
+

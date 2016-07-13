@@ -7,7 +7,7 @@ namespace igor {
 
 struct AstBase {
   virtual ~AstBase() = default;
-  virtual void to_string(std::ostream &ss) const { ss<<"(AstBase)"; }
+  virtual void to_string(std::ostream &os) const { ss<<"(AstBase)"; }
 };
 
 // In general, type is GenericTypeName (@name) and @args.
@@ -21,7 +21,7 @@ struct AstType: public AstBase {
   // because grammar is tail recursive (<list_item> COMMA <list>).
   std::vector<std::unique_ptr<AstType>> args;
 
-  void to_string(std::ostream &ss) const override;
+  void to_string(std::ostream &os) const override;
   std::unique_ptr<AstType> clone() const;
 };
 
@@ -29,23 +29,24 @@ struct AstArg: public AstBase {
   string name;
   std::unique_ptr<AstType> type;
 
-  void to_string(std::ostream &ss) const override {
+  void to_string(std::ostream &os) const override {
     ss<<"(Arg "<<name<<" ";
-    type->to_string(ss);
+    type->to_string(os);
     ss<<")";
+  }
 };
 
 struct AstArgList: public AstBase {
   // Args are in reverse order.
   std::vector<std::unique_ptr<AstArg>> args;
 
-  void to_string(std::ostream &ss) const override {
+  void to_string(std::ostream &os) const override {
     ss<<"(ArgList";
     for (auto &a : args) {
       ss<<" ";
-      a.to_string(ss);
+      a.to_string(os);
     }
-    ss<<")\n";
+    ss<<")";
   }
 };
 
@@ -55,6 +56,15 @@ struct AstExpr: public AstBase {
 
 struct AstExprList: public AstBase {
   std::vector<std::unique_ptr<AstExpr>> exprs;
+
+  void to_string(std::ostream &os) const override {
+    ss<<"(ArgExprList";
+    for (auto &a : exprs) {
+      ss<<" ";
+      a.to_string(ss);
+    }
+    ss<<")";
+  }
 };
 
 struct AstConstant: public AstExpr {
@@ -76,10 +86,18 @@ struct AstConstant: public AstExpr {
 
   AstConstant() = default;
   AstConstant(Type type, string value): type(type), value(std::move(value)) {}
+
+  void to_string(std::ostream &os) const override {
+    ss<<"(Constant "<<value<<")";
+  }
 };
 
 struct AstExprNot: public AstExpr {
   AstExprNot(std::unique_ptr<AstExpr> e): e(std::move(e)) {}
+  void to_string(std::ostream &os) const override {
+    os<<"(Not ";
+    e->
+
   std::unique_ptr<AstExpr> e;
 };
 

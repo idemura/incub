@@ -17,13 +17,12 @@ ErrorMsg ErrorLog::error(int line, int column) {
   return ErrorMsg(os_, file_, line, column);
 }
 
-void AstType::to_string(std::ostream &ss) const {
-  ss<<name;
+void AstType::to_string(std::ostream &os) const {
+  ss<<"(Type "<<name;
   if (!args.empty()) {
-    ss<<"(";
     for (size_t i = args.size(); i-- > 0;) {
-      ss<<args[i]->to_string();
-      if (i > 0) ss<<", ";
+      ss<<" ";
+      args[i]->to_string(os);
     }
     ss<<")";
   }

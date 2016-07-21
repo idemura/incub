@@ -1,144 +1,108 @@
-#include <algorithm>
-#include <map>
-#include <string>
-#include <vector>
-#include <utility>
-#include <assert.h>
-#include <ctype.h>
-#include <math.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/time.h>
-
-#define ARRAY_SIZEOF(A) (sizeof(A) / sizeof(A[0]))
-#define NON_COPYABLE(C) \
-    C(const C&) = default; \
-    C& operator=(const C&) = default;
-
-using i64 = long long int;
+#include "base.h"
 
 class Set {
 public:
-  Set(): bm_() {}
+  Set() = default;
 
-  Set add(int i)
-  {
+  Set add(int i) {
     return Set(bm_ | (1u << i));
   }
-  Set rem(int i)
-  {
+  Set rem(int i) {
     return Set(bm_ & ~(1u << i));
   }
-  Set isect(Set other) const
-  {
+  Set isect(Set other) const {
     return Set(bm_ & other.bm_);
   }
-  Set unite(Set other) const
-  {
+  Set unite(Set other) const {
     return Set(bm_ | other.bm_);
   }
-  bool in(int i) const
-  {
+  bool in(int i) const {
     return (bm_ & (1u << i)) != 0;
   }
-  bool empty() const
-  {
+  bool empty() const {
     return bm_ == 0;
   }
-  void print() const
-  {
-    printf("{ ");
+  void print(ostream &os) const {
+    os<<"{ ";
     for (int i = 0; i < 30; i++) {
       if (in(i)) {
-        printf("%d ", i + 1);
+        os<<i + 1<<" ";
       }
     }
-    printf("}\n");
+    os<<"}";
   }
 
 private:
   explicit Set(unsigned int bm): bm_(bm) {}
-  unsigned int bm_;
+  unsigned int bm_ = 0;
 };
 
-void rprintf(int d, const char *fmt, ...)
-{
-  char tab[120] = {};
-  int j = 0;
-  for (int i = 0; i < d; i++) {
-    tab[j++] = ' ';
-    tab[j++] = ' ';
-  }
-  printf("%s", tab);
-  va_list va;
-  va_start(va, fmt);
-  vprintf(fmt, va);
-  va_end(va);
+ostream &operator<<(ostream &os, Set s) {
+  s.print(os);
+  return os;
 }
 
-void bronKerboschRec(int d, Set *am, int n, Set r, Set c, Set x)
-{
-  // rprintf(d, "bronKolchRec:\n");
-  // rprintf(d, "c: ");
-  // c.print();
-  // rprintf(d, "r: ");
-  // r.print();
-  // rprintf(d, "x: ");
-  // x.print();
+struct Tab {
+  explicit Tab(int t): t(t) {}
+  int t = 0;
+};
+
+ostream &operator<<(ostream& os, Tab t) {
+  for (int i = 0; i < t.t; i++) {
+    cout<<"  ";
+  }
+  return os;
+}
+
+void bron_kerbosch_rec(int d, const vector<Set> &am, Set r, Set c, Set x) {
+  //cout<<Tab(d)<<"bronKolchRec:\n";
+  //cout<<Tab(d)<<"c: "<<c<<"\n";
+  //cout<<Tab(d)<<"r: "<<r<<"\n";
+  //cout<<Tab(d)<<"x: "<<x<<"\n";
   if (c.empty()) {
     if (x.empty()) {
-      r.print();
+      cout<<r<<"\n";
     }
-    // rprintf(d, "no more candidates\n");
+    //cout<<Tab(d)<<"no more candidates\n";
     return;
   }
   // Actually, go through `c`s elements. No pivoting.
-  for (int i = 0; i < n; i++) {
+  for (int i = 0; i < am.size(); i++) {
     if (!c.in(i)) continue;
-    // rprintf(d, "vertex %d\n", i + 1);
-    bronKerboschRec(d + 1, am, n, r.add(i), c.isect(am[i]), x.isect(am[i]));
+    //cout<<Tab(d)<<"vertex "<<i + 1<<"\n";
+    bron_kerbosch_rec(d + 1, am, r.add(i), c.isect(am[i]), x.isect(am[i]));
     x = x.add(i);
     c = c.rem(i);
-    // rprintf(d, "new x: ");
-    // x.print();
-    // rprintf(d, "new c: ");
-    // c.print();
+    //cout<<Tab(d)<<"new x: "<<x<<"\n";
+    //cout<<Tab(d)<<"new c: "<<c<<"\n";
   }
-  // rprintf(d, "end.\n");
+  //cout<<Tab(d)<<"end\n";
 }
 
-void bronKerbosch(Set *am, int n)
-{
+void bron_kerbosch(const vector<Set> &am) {
   Set c;
-  for (int i = 0; i < n; i++) {
+  for (int i = 0; i < am.size(); i++) {
     c = c.add(i);
   }
-  bronKerboschRec(0, am, n, Set(), c, Set());
+  bron_kerbosch_rec(0, am, Set(), c, Set());
 }
 
-void addEdge(Set *am, int a, int b)
-{
+void add_edge(vector<Set> &am, int a, int b) {
   a--; b--;  // Zero based.
   am[a] = am[a].add(b);
   am[b] = am[b].add(a);
 }
 
-int main(int argc, char **argv)
-{
-#ifndef ONLINE_JUDGE
-  freopen("in", "r", stdin);
-#endif
-  Set am[6];
-  const int n = ARRAY_SIZEOF(am);
-  addEdge(am, 1, 2);
-  addEdge(am, 1, 5);
-  addEdge(am, 2, 3);
-  addEdge(am, 2, 5);
-  addEdge(am, 3, 4);
-  addEdge(am, 4, 5);
-  addEdge(am, 4, 6);
-  bronKerbosch(am, n);
+int main() {
+  vector<Set> am(6);
+  add_edge(am, 1, 2);
+  add_edge(am, 1, 5);
+  add_edge(am, 2, 3);
+  add_edge(am, 2, 5);
+  add_edge(am, 3, 4);
+  add_edge(am, 4, 5);
+  add_edge(am, 4, 6);
+  bron_kerbosch(am);
   return 0;
 }
+

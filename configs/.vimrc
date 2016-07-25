@@ -1,6 +1,6 @@
 filetype off
 filetype indent on
-" filetype plugin on
+filetype plugin on
 
 syntax on
 
@@ -22,7 +22,14 @@ set nowrap
 set noswapfile
 set wildignore+=*.o,*.a,*.o.d,*_test
 " Set the runtime path to include Vundle and initialize
-set rtp+=~/.vim/bundle/Vundle.vim
+set runtimepath+=~/.vim/bundle/Vundle.vim
+
+" Clear filetype flags before changing runtimepath to force Vim to reload
+" them.
+filetype off
+filetype plugin indent off
+set runtimepath+=$GOROOT/misc/vim
+filetype plugin indent on
 
 " Do not expand tab to spaces in make files.
 autocmd FileType make setlocal noexpandtab
@@ -50,6 +57,7 @@ Bundle 'Valloric/YouCompleteMe'
 Bundle 'scrooloose/nerdcommenter'
 Bundle 'csexton/trailertrash.vim'
 " Bundle 'jiangmiao/auto-pairs'
+" Bundle 'fatih/vim-go'
 
 " All of your Plugins must be added before the following line
 call vundle#end()

@@ -36,10 +36,14 @@ autocmd FileType make setlocal noexpandtab
 autocmd BufWritePre * TrailerTrim
 
 let mapleader=" "
+
 nnoremap <leader>o :CtrlP<CR>
 nnoremap <leader>w :w<CR>
 nnoremap <leader>q :q<CR>
 nnoremap <leader>s :sh<CR>
+nnoremap <leader><Up>     :bn<CR>
+nnoremap <leader><Down>   :bp<CR>
+
 nnoremap <C-J> <C-W><C-J>
 nnoremap <C-K> <C-W><C-K>
 nnoremap <C-L> <C-W><C-L>
@@ -61,4 +65,3 @@ Bundle 'csexton/trailertrash.vim'
 
 " All of your Plugins must be added before the following line
 call vundle#end()
-

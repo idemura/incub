@@ -2,6 +2,7 @@
   meld = !/home/igor/bin/git-meld.pl
   sh = stash
   co = checkout
+  cp = cherry-pick
   br = branch
   st = status -s
   ci = commit
@@ -12,7 +13,7 @@
   ra = rebase --abort
   last = log -1
   aa = add -u
-  ps = push
+  ps = push  
 [user]
   name = Igor Demura
   email = igor.demura@gmail.com

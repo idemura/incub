@@ -13,9 +13,11 @@
   ra = rebase --abort
   last = log -1
   aa = add -u
-  ps = push  
+  ps = push
 [user]
   name = Igor Demura
   email = igor.demura@gmail.com
 [push]
   default = simple
+[credential]
+	helper = cache --timeout=3600

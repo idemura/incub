@@ -1,16 +1,4 @@
-#include <algorithm>
-#include <functional>
-#include <list>
-#include <map>
-#include <memory>
-#include <random>
-#include <string>
-#include <unordered_map>
-#include <vector>
-#include <sstream>
-#include <utility>
-#include <iostream>
-#include <cmath>  // Overloads for abs.
+#include <bits/stdc++.h>
 
 using namespace std;
 
@@ -64,4 +52,3 @@ int main(int argc, char **argv) {
   cout<<c<<endl;
   return 0;
 }
-

@@ -35,6 +35,9 @@ filetype plugin indent on
 autocmd FileType make setlocal noexpandtab
 autocmd BufWritePre * TrailerTrim
 
+let g:ycm_confirm_extra_conf=0
+let g:ycm_enable_diagnostic_signs=0
+
 let mapleader=" "
 
 nnoremap <leader>o :CtrlP<CR>
@@ -65,3 +68,4 @@ Bundle 'csexton/trailertrash.vim'
 
 " All of your Plugins must be added before the following line
 call vundle#end()
+

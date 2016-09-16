@@ -1,3 +1,8 @@
+export JAVA_HOME=/usr/local/java/jdk1.8.0_102
+
+if [ -d "$JAVA_HOME" ]; then
+  export PATH=$JAVA_HOME/bin:$PATH
+fi
 export PATH=$HOME/bin:$PATH
 
 # Color version:

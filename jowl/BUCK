@@ -10,7 +10,9 @@ prebuilt_jar(
 
 java_library(
   name = 'owl_lang',
-  srcs = glob(['src/owl/lang/**/*[!Test].java']),
+  srcs = [
+    'src/owl/lang/Main.java',
+  ],
   deps = [
     # TBD
   ],
@@ -18,7 +20,9 @@ java_library(
 
 java_test(
   name = 'owl_lang_test',
-  srcs = glob(['src/owl/lang/**/*Test.java']),
+  srcs = [
+    'src/owl/lang/MainTest.java',
+  ],
   deps = [
     ':owl_lang',
     ':lib_hamcrest_all',

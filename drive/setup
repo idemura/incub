@@ -1,0 +1,8 @@
+#! /bin/bash
+
+set -e
+pip install --upgrade google-api-python-client
+pip install --upgrade httplib2
+if [ ! -e 'client_id.json' ]; then
+  gpg client_id.json.gpg
+fi

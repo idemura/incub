@@ -1,3 +1,4 @@
 *.kdbx
+*.kdbx.lock
 client_id.json
 

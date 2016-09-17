@@ -1,25 +1,25 @@
 from __future__ import print_function
 import httplib2
 import json
+import logging
 import os
 import pprint
+import pyinotify
+import rfc3339
 import sys
 import time
 
-from apiclient import discovery
+import apiclient
 import oauth2client
-from oauth2client import client
-from oauth2client import tools
-import rfc3339
 from googleapiclient.http import MediaFileUpload
 
 try:
     import argparse
-    parser = argparse.ArgumentParser(parents=[tools.argparser])
-    parser.add_argument("-s", "--silent",
+    parser = argparse.ArgumentParser(parents=[oauth2client.tools.argparser])
+    parser.add_argument('-s', '--silent',
             default=False,
-            help="no output to stdout",
-            action="store_true")
+            help='no output to stdout',
+            action='store_true')
     flags = parser.parse_args()
 except ImportError:
     flags = None
@@ -32,6 +32,37 @@ FILE_NAME = 'igor.kdbx'
 MIME_TYPE = 'application/octet-stream'
 # FILE_NAME = 'test.txt'
 # MIME_TYPE = 'text/plain'
+
+def local_file(file_name):
+    return os.path.join(os.path.dirname(__file__), file_name)
+
+def make_logger():
+    """Creates a logger object.
+
+    Log all into file with script's name .log and errors to the
+    terminal.
+
+    Returns:
+        Logger object
+    """
+    logger = logging.getLogger('jdrive')
+    logger.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s %(levelname)s] %(message)s')
+
+    if flags is not None and not flags.silent:
+        log_file_name = os.path.splitext(__file__)[0] + '.log'
+        fh = logging.FileHandler(log_file_name)
+        fh.setFormatter(formatter)
+        fh.setLevel(logging.DEBUG)
+        logger.addHandler(fh)
+
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.ERROR)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+    return logger
+
+logger = make_logger()
 
 def get_credentials():
     """Gets valid user credentials from storage.
@@ -46,19 +77,20 @@ def get_credentials():
     credential_dir = os.path.join(home_dir, '.credentials')
     if not os.path.exists(credential_dir):
         os.makedirs(credential_dir)
-    credential_path = os.path.join(credential_dir,
-                                   'drive-python-quickstart.json')
+    credential_path = os.path.join(credential_dir, 'jdrive.json')
 
     store = oauth2client.file.Storage(credential_path)
     credentials = store.get()
     if not credentials or credentials.invalid:
-        flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
+        flow = oauth2client.client.flow_from_clientsecrets(
+                CLIENT_SECRET_FILE,
+                SCOPES)
         flow.user_agent = 'jdrive'
         if flags:
-            credentials = tools.run_flow(flow, store, flags)
+            credentials = oauth2client.tools.run_flow(flow, store, flags)
         else: # Needed only for compatibility with Python 2.6
-            credentials = tools.run(flow, store)
-        print('Storing credentials to ' + credential_path)
+            credentials = oauth2client.tools.run(flow, store)
+        logger.info('Storing credentials to ' + credential_path)
     return credentials
 
 def find_keepass(files):
@@ -69,11 +101,8 @@ def find_keepass(files):
             return f
     return None
 
-def output(msg):
-    if not flags.silent:
-        print(msg)
-
 def sync(service, drive_md, local_file):
+    logger.info('Sync ' + local_file)
     exists = os.path.isfile(local_file)
     try:
         local_tf = int(os.path.getmtime(local_file))
@@ -83,14 +112,14 @@ def sync(service, drive_md, local_file):
     if drive_md is not None:
         drive_tf = int(rfc3339.tf_from_timestamp(drive_md['modifiedDate']))
         if local_tf == drive_tf:
-            output('Up-to-date')
+            logger.info('Up-to-date')
             return
         if local_tf is None or drive_tf > local_tf:
             body = service.files().get_media(
                     fileId=drive_md['id']).execute()
             with open(local_file, 'wb') as f:
                 f.write(body)
-            output('Download ok')
+            logger.info('Download ok')
             return
 
     if local_tf is None:
@@ -107,7 +136,7 @@ def sync(service, drive_md, local_file):
         upload_md['originalFilename'] = local_file
         upload_md['title'] = local_file
         r = service.files().insert(body=upload_md, media_body=f)
-        output('Insert ok')
+        logger.info('Insert ok')
     else:
         upload_md['id'] = drive_md['id']
         r = service.files().update(
@@ -115,9 +144,9 @@ def sync(service, drive_md, local_file):
             body=upload_md,
             media_body=f,
             modifiedDateBehavior='fromBody')
-        output('Update ok')
+        logger.info('Update ok')
     resp = r.execute()
-    # pprint.pprint(resp, indent=2)
+    # logger.debug(pprint.pformat(resp, indent=2))
 
 def main():
     """Shows basic usage of the Google Drive API.
@@ -127,17 +156,18 @@ def main():
     """
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
-    service = discovery.build('drive', 'v2', http=http)
+    service = apiclient.discovery.build('drive', 'v2', http=http)
 
-    output('Loading files...')
+    logger.info('Loading files...')
     results = service.files().list().execute()
     items = results.get('items', [])
     if not items:
-        output('No files found')
+        logger.info('No files found')
         return False
-    sync(service, find_keepass(items), FILE_NAME)
+    sync(service, find_keepass(items), local_file(FILE_NAME))
     return True
 
 if __name__ == '__main__':
     if not main():
         sys.exit(1)
+

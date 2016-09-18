@@ -1,0 +1,35 @@
+options
+{
+  BUILD_TOKEN_MANAGER = false;
+  JDK_VERSION = "1.8";
+  STATIC = false;
+  SUPPORT_CLASS_VISIBILITY_PUBLIC = false;
+  USER_CHAR_STREAM = true;
+}
+
+PARSER_BEGIN(Parser)
+package owl.lang;
+
+public class Parser {
+  //
+}
+PARSER_END(Parser)
+
+SKIP: { " " | "\r" | "\n" | "\t" }
+
+TOKEN:
+{
+  <DIGIT_DEC: ["0"-"9"]>
+| <DIGIT_HEX: ["0"-"9", "a"-"f", "A"-"F"]>
+}
+
+long number():
+{
+  Token t = null;
+}
+{
+  t = <DIGIT_DEC>
+  {
+    return Double.parseDouble(t.toString());
+  }
+}

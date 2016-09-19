@@ -4,7 +4,7 @@ import json
 import logging
 import os
 import pprint
-import pyinotify
+# import pyinotify
 import rfc3339
 import sys
 import time

@@ -1,3 +1,17 @@
+genrule(
+    name = 'parser_jar',
+    srcs = [
+        'Parser.jj',
+    ],
+    out = 'lib/parser.jar',
+    cmd = '`(dirname $SRCS)`/javacc_jar $SRCS $OUT',
+)
+
+prebuilt_jar(
+    name = 'lib_parser',
+    binary_jar = ':parser_jar'
+)
+
 prebuilt_jar(
   name = 'lib_junit',
   binary_jar = 'lib/junit-4.12.jar',
@@ -8,30 +22,13 @@ prebuilt_jar(
   binary_jar = 'lib/hamcrest-all-1.3.jar',
 )
 
-genrule(
-  name = 'parser_jj',
-  srcs = [
-    'Parser.jj'
-  ],
-  cmd = 'javacc $SRCS',
-  out = [
-    'CharStream.java',
-    'ParseException.java',
-    'Parser.java',
-    'ParserConstants.java',
-    'Token.java',
-    'TokenMgrError.java',
-  ],
-)
-
 java_library(
   name = 'owl_lang',
   srcs = [
-    ':parser_jj',
     'src/owl/lang/Main.java',
   ],
   deps = [
-    # TBD
+    ':lib_parser',
   ],
 )
 

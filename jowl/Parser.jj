@@ -1,6 +1,6 @@
 options
 {
-  BUILD_TOKEN_MANAGER = false;
+  //BUILD_TOKEN_MANAGER = false;
   JDK_VERSION = "1.8";
   STATIC = false;
   SUPPORT_CLASS_VISIBILITY_PUBLIC = false;
@@ -30,6 +30,6 @@ long number():
 {
   t = <DIGIT_DEC>
   {
-    return Double.parseDouble(t.toString());
+    return Long.parseLong(t.toString());
   }
 }

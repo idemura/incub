@@ -1,0 +1,17 @@
+#! /bin/bash
+# Usage: javacc_jar <input file jj> <output jar name>
+set -e
+
+TEMP=/tmp
+JAVA=owl/lang
+
+mkdir -p $TEMP/$JAVA
+rm $TEMP/$JAVA/*
+javacc -OUTPUT_DIRECTORY=$TEMP/$JAVA $1
+cd $TEMP
+javac owl/lang/*.java
+JAR=$(mktemp).jar
+jar cf $JAR $JAVA/*.class
+cd - > /dev/null
+mkdir -p $(dirname $2)
+mv $JAR $2

@@ -5,8 +5,8 @@ set -e
 TEMP=/tmp
 JAVA=owl/lang
 
+[ -d $TEMP/$JAVA ] && rm -r $TEMP/$JAVA
 mkdir -p $TEMP/$JAVA
-rm $TEMP/$JAVA/*
 javacc -OUTPUT_DIRECTORY=$TEMP/$JAVA $1
 cd $TEMP
 javac owl/lang/*.java

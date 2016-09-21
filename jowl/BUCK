@@ -23,10 +23,10 @@ prebuilt_jar(
 )
 
 java_library(
-  name = 'owl_lang_main',
-  srcs = [
-    'src/main/owl/lang/Main.java',
-  ],
+  name = 'owl_lang',
+  srcs = glob([
+    'src/main/owl/lang/*.java',
+  ]),
   deps = [
     ':lib_parser',
   ],
@@ -34,9 +34,9 @@ java_library(
 
 java_test(
   name = 'owl_lang_test',
-  srcs = [
-    'src/test/owl/lang/MainTest.java',
-  ],
+  srcs = glob([
+    'src/test/owl/lang/*.java',
+  ]),
   deps = [
     ':owl_lang',
     ':lib_hamcrest_all',

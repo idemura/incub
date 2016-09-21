@@ -23,9 +23,9 @@ prebuilt_jar(
 )
 
 java_library(
-  name = 'owl_lang',
+  name = 'owl_lang_main',
   srcs = [
-    'src/owl/lang/Main.java',
+    'src/main/owl/lang/Main.java',
   ],
   deps = [
     ':lib_parser',
@@ -35,7 +35,7 @@ java_library(
 java_test(
   name = 'owl_lang_test',
   srcs = [
-    'src/owl/lang/MainTest.java',
+    'src/test/owl/lang/MainTest.java',
   ],
   deps = [
     ':owl_lang',
@@ -45,16 +45,10 @@ java_test(
 )
 
 java_binary(
-  name = 'owl_lang_main',
+  name = 'owl_lang_cli',
   main_class = 'owl.lang.Main',
   deps = [
     ':owl_lang',
   ],
 )
 
-project_config(
-  src_target = ':owl_lang',
-  src_roots = ['src'],
-  test_target = ':owl_lang_test',
-  test_roots = ['src'],
-)

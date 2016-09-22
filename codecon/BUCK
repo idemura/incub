@@ -1,5 +1,0 @@
-cxx_binary(
-  name='sol',
-  srcs=['sol.cc']
-)
-

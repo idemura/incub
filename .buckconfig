@@ -1,5 +1,0 @@
-[cxx]
-  cxxflags = -std=c++14 -I. -O0 -g -march=native -fdiagnostics-color=always -Wall -Wno-unused-function -Wno-sign-compare -Wno-char-subscripts
-[java]
-  source_level = 8
-  target_level = 8

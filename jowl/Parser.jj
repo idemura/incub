@@ -19,18 +19,18 @@ SKIP: { " " | "\r" | "\n" | "\t" }
 
 TOKEN:
 {
-  <DIGIT_DEC: ["0"-"9"]>
-| <DIGIT_HEX: ["0"-"9", "a"-"f", "A"-"F"]>
+  <NUM_DEC: (["0"-"9"])+>
 }
 
 long number():
 {
-  long sum = 0;
   Token t = null;
+  long sum = 0;
 }
 {
-  (t = <DIGIT_DEC>)*
+  (t = <NUM_DEC> { sum += Long.parseLong(t.toString()); })* <EOF>
   {
-    return Long.parseLong(t.toString());
+    return sum;
   }
 }
+

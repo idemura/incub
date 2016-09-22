@@ -26,6 +26,7 @@ long number():
 {
   Token t = null;
   long sum = 0;
+  Testik tt = null;
 }
 {
   (t = <NUM_DEC> { sum += Long.parseLong(t.toString()); })* <EOF>

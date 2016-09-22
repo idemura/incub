@@ -1,17 +1,3 @@
-genrule(
-    name = 'parser_jar',
-    srcs = [
-        'Parser.jj',
-    ],
-    out = 'lib/parser.jar',
-    cmd = '`(dirname $SRCS)`/javacc_jar $SRCS $OUT',
-)
-
-prebuilt_jar(
-    name = 'lib_parser',
-    binary_jar = ':parser_jar'
-)
-
 prebuilt_jar(
   name = 'lib_junit',
   binary_jar = 'lib/junit-4.12.jar',
@@ -25,11 +11,9 @@ prebuilt_jar(
 java_library(
   name = 'owl_lang',
   srcs = glob([
+    'src/main/owl/lang/parser/*.java',
     'src/main/owl/lang/*.java',
   ]),
-  deps = [
-    ':lib_parser',
-  ],
 )
 
 java_test(
@@ -46,7 +30,7 @@ java_test(
 
 java_binary(
   name = 'owl_lang_cli',
-  main_class = 'owl.lang.Main',
+  main_class = 'owl.lang.CliMain',
   deps = [
     ':owl_lang',
   ],

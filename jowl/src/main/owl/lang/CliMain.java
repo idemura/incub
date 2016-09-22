@@ -2,7 +2,11 @@ package owl.lang;
 
 import java.io.*;
 
-public class Main {
+class Testik {
+  public long res = 0;
+}
+
+public class CliMain {
   public static void main(String[] args) {
     boolean failed = false;
     for (String file_name : args) {
@@ -10,7 +14,7 @@ public class Main {
         failed = true;
       }
     }
-    System.exit(failed? 1: 0);
+    System.exit(failed ? 1 : 0);
   }
 
   private static boolean compileFile(String file_name) {

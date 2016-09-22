@@ -1,11 +1,5 @@
 #! /bin/bash
-mkdir -p src/main/owl/lang/parser
-rm src/main/owl/lang/ParseException.java
-rm src/main/owl/lang/Parser.java
-rm src/main/owl/lang/ParserConstants.java
-rm src/main/owl/lang/ParserTokenManager.java
-rm src/main/owl/lang/SimpleCharStream.java
-rm src/main/owl/lang/Token.java
-rm src/main/owl/lang/TokenMgrError.java
+[ -d src/main/owl/lang/parser ] || mkdir -p src/main/owl/lang/parser
+rm src/main/owl/lang/parser/*
 java -cp javacc-6.0.jar javacc -output_directory=src/main/owl/lang/parser Parser.jj
 

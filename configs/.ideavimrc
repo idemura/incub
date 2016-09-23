@@ -1,0 +1,12 @@
+set hls
+set ic
+set is
+set gd
+
+let mapleader=" "
+
+nnoremap <leader>K diw
+nnoremap <leader>Q di"
+
+noremap <CR> :
+

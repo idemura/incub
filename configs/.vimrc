@@ -38,6 +38,12 @@ autocmd BufWritePre * TrailerTrim
 let g:ycm_confirm_extra_conf=0
 let g:ycm_enable_diagnostic_signs=0
 
+nnoremap <CR> :
+nnoremap <C-J> <C-W><C-J>
+nnoremap <C-K> <C-W><C-K>
+nnoremap <C-L> <C-W><C-L>
+nnoremap <C-H> <C-W><C-H>
+
 let mapleader=" "
 
 nnoremap <leader>o :CtrlP<CR>
@@ -47,10 +53,8 @@ nnoremap <leader>s :sh<CR>
 nnoremap <leader><Up>     :bn<CR>
 nnoremap <leader><Down>   :bp<CR>
 
-nnoremap <C-J> <C-W><C-J>
-nnoremap <C-K> <C-W><C-K>
-nnoremap <C-L> <C-W><C-L>
-nnoremap <C-H> <C-W><C-H>
+nnoremap <leader>K diw
+nnoremap <leader>Q di"
 
 call vundle#begin()
 " Alternatively, pass a path where Vundle should install plugins

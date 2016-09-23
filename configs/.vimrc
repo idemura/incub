@@ -19,6 +19,7 @@ set incsearch
 set number
 set hidden
 set nowrap
+set gdefault
 set noswapfile
 set wildignore+=*.o,*.a,*.o.d,*_test
 " Set the runtime path to include Vundle and initialize

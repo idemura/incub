@@ -2,10 +2,6 @@ package owl.lang;
 
 import java.io.*;
 
-class Testik {
-  public long res = 0;
-}
-
 public class CliMain {
   public static void main(String[] args) {
     boolean failed = false;
@@ -33,7 +29,9 @@ public class CliMain {
   private static boolean compile(InputStream in) {
     Parser parser = new Parser(new ParserTokenManager(new SimpleCharStream(in)));
     try {
-      System.out.println(parser.number());
+      AstNode root = parser.module();
+      root.printTreeDebug();
+      System.out.println("Compiled!");
     } catch (ParseException e) {
       e.printStackTrace();
       return false;

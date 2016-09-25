@@ -19,19 +19,30 @@ SKIP: { " " | "\r" | "\n" | "\t" }
 
 TOKEN:
 {
-  <NUM_DEC: (["0"-"9"])+>
+    <L: ["a"-"z", "A"-"Z", "0"-"9", "_"]>
+|   <O: ["0"-"7"]>
+|   <D: ["0"-"9"]>
+|   <H: ["0"-"9", "a"-"f", "A"-"F"]>
+|   <NF: ["a"-"z"]>
+|   <TF: ["A"-"Z"]>
+|   <NUM_DEC: (<D>)+>
+|   <NUM_HEX: "0x" (<H>)+>
+|   <NUM_OCT: "0o" (<D>)+>
+|   <NAME: (<NF>)(<L>)*>
+|   "."
 }
 
-long number():
-{
-  Token t = null;
-  long sum = 0;
-  Testik tt = null;
+AstNode module(): {
+  Token t;
+  AstNode nodeModule = null;
 }
 {
-  (t = <NUM_DEC> { sum += Long.parseLong(t.toString()); })* <EOF>
+  (t = <NAME>) (nodeModule = module())
   {
-    return sum;
+    nodeModule.addChild(new NameNode(t.toString()));
+    return nodeModule;
   }
+| <EOF> {
+    return new ModuleNode();
 }
-
+}

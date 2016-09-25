@@ -8,22 +8,76 @@ package owl.lang;
  */
 interface ParserConstants {
 
-  /** End of File. */
+  /**
+   * End of File.
+   */
   int EOF = 0;
-  /** RegularExpression Id. */
-  int NUM_DEC = 5;
+  /**
+   * RegularExpression Id.
+   */
+  int L = 5;
+  /**
+   * RegularExpression Id.
+   */
+  int O = 6;
+  /**
+   * RegularExpression Id.
+   */
+  int D = 7;
+  /**
+   * RegularExpression Id.
+   */
+  int H = 8;
+  /**
+   * RegularExpression Id.
+   */
+  int NF = 9;
+  /**
+   * RegularExpression Id.
+   */
+  int TF = 10;
+  /**
+   * RegularExpression Id.
+   */
+  int NUM_DEC = 11;
+  /**
+   * RegularExpression Id.
+   */
+  int NUM_HEX = 12;
+  /**
+   * RegularExpression Id.
+   */
+  int NUM_OCT = 13;
+  /**
+   * RegularExpression Id.
+   */
+  int NAME = 14;
 
-  /** Lexical state. */
+  /**
+   * Lexical state.
+   */
   int DEFAULT = 0;
 
-  /** Literal token values. */
+  /**
+   * Literal token values.
+   */
   String[] tokenImage = {
-    "<EOF>",
-    "\" \"",
-    "\"\\r\"",
-    "\"\\n\"",
-    "\"\\t\"",
-    "<NUM_DEC>",
+      "<EOF>",
+      "\" \"",
+      "\"\\r\"",
+      "\"\\n\"",
+      "\"\\t\"",
+      "<L>",
+      "<O>",
+      "<D>",
+      "<H>",
+      "<NF>",
+      "<TF>",
+      "<NUM_DEC>",
+      "<NUM_HEX>",
+      "<NUM_OCT>",
+      "<NAME>",
+      "\".\"",
   };
 
 }

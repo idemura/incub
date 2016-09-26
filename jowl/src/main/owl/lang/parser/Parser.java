@@ -4,8 +4,8 @@ package owl.lang;
 
 public class Parser implements ParserConstants {
 
-  final public AstModule module() throws ParseException {AstModule astModule = new AstModule();
-  AstFunction astFunction;
+  final public AstModule module() throws ParseException {AstModule module = new AstModule();
+  AstFunction f;
     label_1:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -17,19 +17,19 @@ public class Parser implements ParserConstants {
         jj_la1[0] = jj_gen;
         break label_1;
       }
-      astFunction = function();
-astModule.addFunction(astFunction);
+      f = function();
+module.addFunction(f);
     }
-{if ("" != null) return astModule;}
+{if ("" != null) return module;}
     throw new Error("Missing return statement in function");
   }
 
-  final public AstNode qualifiedName() throws ParseException {Token tok;
-  AstName astName;
+  final public AstName qualifiedName() throws ParseException {AstName name = new AstName();
+  Token tok;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case NAME:{
       tok = jj_consume_token(NAME);
-astName = new AstName(tok.toString());
+name.name = tok.image;
       label_2:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -43,13 +43,13 @@ astName = new AstName(tok.toString());
         }
         jj_consume_token(7);
         tok = jj_consume_token(NAME);
-astName.join(tok.toString());
+name.name += "." + tok.image;
       }
-{if ("" != null) return astName;}
+{if ("" != null) return name;}
       break;
       }
-    case 8:{
-      jj_consume_token(8);
+    case 9:{
+      jj_consume_token(9);
 {if ("" != null) return AstName.WILDCARD;}
       break;
       }
@@ -61,14 +61,56 @@ astName.join(tok.toString());
     throw new Error("Missing return statement in function");
   }
 
-  final public AstFunction function() throws ParseException {Token tok;
+  final public AstFunction function() throws ParseException {AstFunction function = new AstFunction();
+  Token tok;
     jj_consume_token(6);
     tok = jj_consume_token(NAME);
-    jj_consume_token(9);
-    jj_consume_token(10);
-    jj_consume_token(11);
+function.name = tok.image;
     jj_consume_token(12);
-{if ("" != null) return new AstFunction(tok.toString());}
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case NAME:{
+      function.arguments = argumentList();
+      break;
+      }
+    default:
+      jj_la1[3] = jj_gen;
+      ;
+    }
+    jj_consume_token(13);
+    jj_consume_token(14);
+    jj_consume_token(15);
+{if ("" != null) return function;}
+    throw new Error("Missing return statement in function");
+  }
+
+  final public AstArgumentList argumentList() throws ParseException {AstArgumentList argList = new AstArgumentList();
+  AstArgument a;
+    a = argument();
+argList.addArgument(a);
+    label_3:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case 8:{
+        ;
+        break;
+        }
+      default:
+        jj_la1[4] = jj_gen;
+        break label_3;
+      }
+      jj_consume_token(8);
+      a = argument();
+argList.addArgument(a);
+    }
+{if ("" != null) return argList;}
+    throw new Error("Missing return statement in function");
+  }
+
+  final public AstArgument argument() throws ParseException {AstArgument argument = new AstArgument();
+  Token tok;
+    tok = jj_consume_token(NAME);
+argument.name = tok.image;
+{if ("" != null) return argument;}
     throw new Error("Missing return statement in function");
   }
 
@@ -81,13 +123,13 @@ astName.join(tok.toString());
   public Token jj_nt;
   private int jj_ntk;
   private int jj_gen;
-  final private int[] jj_la1 = new int[3];
+  final private int[] jj_la1 = new int[5];
   static private int[] jj_la1_0;
   static {
       jj_la1_init_0();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x40,0x80,0x1000100,};
+      jj_la1_0 = new int[] {0x40,0x80,0x8000200,0x8000000,0x100,};
    }
 
   /** Constructor with InputStream. */
@@ -101,7 +143,7 @@ astName.join(tok.toString());
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 5; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -115,7 +157,7 @@ astName.join(tok.toString());
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 5; i++) jj_la1[i] = -1;
   }
 
   /** Constructor. */
@@ -125,7 +167,7 @@ astName.join(tok.toString());
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 5; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -135,7 +177,7 @@ astName.join(tok.toString());
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 5; i++) jj_la1[i] = -1;
   }
 
   /** Constructor with generated Token Manager. */
@@ -144,7 +186,7 @@ astName.join(tok.toString());
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 5; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -153,7 +195,7 @@ astName.join(tok.toString());
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 5; i++) jj_la1[i] = -1;
   }
 
   private Token jj_consume_token(int kind) throws ParseException {
@@ -204,12 +246,12 @@ astName.join(tok.toString());
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[25];
+    boolean[] la1tokens = new boolean[29];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 5; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
@@ -218,7 +260,7 @@ astName.join(tok.toString());
         }
       }
     }
-    for (int i = 0; i < 25; i++) {
+    for (int i = 0; i < 29; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

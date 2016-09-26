@@ -11,25 +11,27 @@ interface ParserConstants {
   /** End of File. */
   int EOF = 0;
   /** RegularExpression Id. */
-  int O = 15;
+  int O = 18;
   /** RegularExpression Id. */
-  int D = 16;
+  int D = 19;
   /** RegularExpression Id. */
-  int H = 17;
+  int H = 20;
   /** RegularExpression Id. */
-  int NF = 18;
+  int NF = 21;
   /** RegularExpression Id. */
-  int TF = 19;
+  int TF = 22;
   /** RegularExpression Id. */
-  int L = 20;
+  int L = 23;
   /** RegularExpression Id. */
-  int NUM_DEC = 21;
+  int NUM_DEC = 24;
   /** RegularExpression Id. */
-  int NUM_HEX = 22;
+  int NUM_HEX = 25;
   /** RegularExpression Id. */
-  int NUM_OCT = 23;
+  int NUM_OCT = 26;
   /** RegularExpression Id. */
-  int NAME = 24;
+  int NAME = 27;
+  /** RegularExpression Id. */
+  int TYPE_NAME = 28;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -44,7 +46,10 @@ interface ParserConstants {
     "\"as\"",
     "\"fn\"",
     "\".\"",
+    "\",\"",
     "\"_\"",
+    "\":\"",
+    "\";\"",
     "\"(\"",
     "\")\"",
     "\"{\"",
@@ -61,6 +66,7 @@ interface ParserConstants {
     "<NUM_HEX>",
     "<NUM_OCT>",
     "<NAME>",
+    "<TYPE_NAME>",
   };
 
 }

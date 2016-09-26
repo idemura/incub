@@ -21,7 +21,8 @@ TOKEN:
 {
   "as"
 | "fn"
-| "." | "_"
+| "." | "," | "_"
+| ":" | ";"
 | "(" | ")"
 | "{" | "}"
 | "[" | "]"
@@ -35,39 +36,76 @@ TOKEN:
 | <NUM_HEX: "0x" (<H>)+>
 | <NUM_OCT: "0o" (<D>)+>
 | <NAME: (<NF>)(<L>)*>
+| <TYPE_NAME: (<TF>)(<L>)*>
 }
 
 AstModule module(): {
-  AstModule astModule = new AstModule();
-  AstFunction astFunction;
+  AstModule module = new AstModule();
+  AstFunction f;
 }
 {
-  (astFunction = function() {
-      astModule.addFunction(astFunction);
-    })*
+  (f = function() { module.addFunction(f); })*
   {
-    return astModule;
+    return module;
   }
 }
 
-AstNode qualifiedName(): {
+AstName qualifiedName(): {
+  AstName name = new AstName();
   Token tok;
-  AstName astName;
 }
 {
-    (tok = <NAME>) { astName = new AstName(tok.toString()); }
-    ("." tok = <NAME> { astName.join(tok.toString()); })*
-    {
-      return astName;
-    }
-|   "_" { return AstName.WILDCARD; }
+  tok = <NAME> { name.name = tok.image; }
+  ("." tok = <NAME> { name.name += "." + tok.image; })*
+  {
+    return name;
+  }
+| "_" { return AstName.WILDCARD; }
 }
 
 AstFunction function(): {
+  AstFunction function = new AstFunction();
   Token tok;
 }
 {
-  "fn" (tok = <NAME>) "(" ")" "{" "}" {
-    return new AstFunction(tok.toString());
+  "fn" (tok = <NAME> { function.name = tok.image; })
+  "(" (function.arguments = argumentList())? ")"
+  "{" "}"
+  {
+    return function;
   }
 }
+
+AstArgumentList argumentList(): {
+  AstArgumentList argList = new AstArgumentList();
+  AstArgument a;
+}
+{
+  a = argument() { argList.addArgument(a); }
+  ("," a = argument() { argList.addArgument(a); })*
+  {
+    return argList;
+  }
+}
+
+AstArgument argument(): {
+  AstArgument argument = new AstArgument();
+  Token tok;
+}
+{
+  tok = <NAME> { argument.name = tok.image; }
+  {
+    return argument;
+  }
+}
+
+// AstType type(): {
+//   Token tok;
+//   String name;
+// }
+// {
+//   tok = <TYPE_NAME> { name = tok.image; }
+//   {
+//     return new AstType(name);
+//   }
+// }

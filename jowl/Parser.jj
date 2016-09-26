@@ -19,30 +19,55 @@ SKIP: { " " | "\r" | "\n" | "\t" }
 
 TOKEN:
 {
-    <L: ["a"-"z", "A"-"Z", "0"-"9", "_"]>
-|   <O: ["0"-"7"]>
-|   <D: ["0"-"9"]>
-|   <H: ["0"-"9", "a"-"f", "A"-"F"]>
-|   <NF: ["a"-"z"]>
-|   <TF: ["A"-"Z"]>
-|   <NUM_DEC: (<D>)+>
-|   <NUM_HEX: "0x" (<H>)+>
-|   <NUM_OCT: "0o" (<D>)+>
-|   <NAME: (<NF>)(<L>)*>
-|   "."
+  "as"
+| "fn"
+| "." | "_"
+| "(" | ")"
+| "{" | "}"
+| "[" | "]"
+| <O: ["0"-"7"]>
+| <D: ["0"-"9"]>
+| <H: ["0"-"9", "a"-"f", "A"-"F"]>
+| <NF: ["a"-"z"]>
+| <TF: ["A"-"Z"]>
+| <L: ["a"-"z", "A"-"Z", "0"-"9", "_"]>
+| <NUM_DEC: (<D>)+>
+| <NUM_HEX: "0x" (<H>)+>
+| <NUM_OCT: "0o" (<D>)+>
+| <NAME: (<NF>)(<L>)*>
 }
 
-AstNode module(): {
-  Token t;
-  AstNode nodeModule = null;
+AstModule module(): {
+  AstModule astModule = new AstModule();
+  AstFunction astFunction;
 }
 {
-  (t = <NAME>) (nodeModule = module())
+  (astFunction = function() {
+      astModule.addFunction(astFunction);
+    })*
   {
-    nodeModule.addChild(new NameNode(t.toString()));
-    return nodeModule;
+    return astModule;
   }
-| <EOF> {
-    return new ModuleNode();
 }
+
+AstNode qualifiedName(): {
+  Token tok;
+  AstName astName;
+}
+{
+    (tok = <NAME>) { astName = new AstName(tok.toString()); }
+    ("." tok = <NAME> { astName.join(tok.toString()); })*
+    {
+      return astName;
+    }
+|   "_" { return AstName.WILDCARD; }
+}
+
+AstFunction function(): {
+  Token tok;
+}
+{
+  "fn" (tok = <NAME>) "(" ")" "{" "}" {
+    return new AstFunction(tok.toString());
+  }
 }

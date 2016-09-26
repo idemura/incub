@@ -30,7 +30,7 @@ public class CliMain {
     Parser parser = new Parser(new ParserTokenManager(new SimpleCharStream(in)));
     try {
       AstNode root = parser.module();
-      root.printTreeDebug();
+      root.debugPrint();
       System.out.println("Compiled!");
     } catch (ParseException e) {
       e.printStackTrace();

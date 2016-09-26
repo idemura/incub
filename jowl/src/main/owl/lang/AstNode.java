@@ -1,26 +1,28 @@
 package owl.lang;
 
+import java.lang.Iterable;
 import java.util.ArrayList;
 import java.util.List;
 
 public interface AstNode {
-  public void addChild(AstNode node);
+  // public void addChild(AstNode node);
+  public Iterable<AstNode> getChildren();
   public String getClassName();
   public String debugString();
-  public void printTreeDebug();
+  public void debugPrint();
 }
 
-abstract class BaseNode
-    implements AstNode {
-  private List<AstNode> child;
 
-  @Override
-  public void addChild(AstNode node) {
-    if (child == null) {
-      child = new ArrayList<AstNode>();
-    }
-    child.add(node);
-  }
+abstract class AstBaseNode
+    implements AstNode {
+  // private List<AstNode> child;
+  //
+  // public void addChild(AstNode node) {
+  //   if (child == null) {
+  //     child = new ArrayList<AstNode>();
+  //   }
+  //   child.add(node);
+  // }
 
   @Override
   public String getClassName() {
@@ -29,16 +31,25 @@ abstract class BaseNode
   }
 
   @Override
-  public void printTreeDebug() {
+  public void debugPrint() {
     printDebugStep(this, 0);
   }
 
   @Override
   public String debugString() {
-    return getClassName();
+    String details = debugStringDetail();
+    if (details != null) {
+      return getClassName() + "(" + details + ")";
+    } else {
+      return getClassName();
+    }
   }
 
-  private static void printDebugStep(BaseNode node, int tab) {
+  protected String debugStringDetail() {
+    return null;
+  }
+
+  private static void printDebugStep(AstBaseNode node, int tab) {
     printTabs(tab);
     System.out.print(node.debugString());
     if (node.child == null) {
@@ -46,7 +57,7 @@ abstract class BaseNode
     } else {
       System.out.println(" {");
       for (AstNode c : node.child) {
-        printDebugStep((BaseNode) c, tab + 1);
+        printDebugStep((AstBaseNode) c, tab + 1);
       }
       printTabs(tab);
       System.out.println("}");
@@ -60,18 +71,56 @@ abstract class BaseNode
   }
 }
 
-class NameNode extends BaseNode {
+
+class AstName extends AstBaseNode {
+  static AstName WILDCARD = new AstName("_");
+
   private String name;
 
-  public NameNode(String name) {
+  AstName(String name) {
     this.name = name;
   }
 
   @Override
-  public String debugString() {
-    return getClassName() + "(" + name + ")";
+  Iterable<AstNode> getChildren() {
+    return null;
+  }
+
+  @Override
+  protected String debugStringDetail() {
+    return name;
+  }
+
+  final void join(String subname) {
+    name += "." + subname;
+  }
+
+  final boolean isWildCard() {
+    return this == WILDCARD;
   }
 }
 
-class ModuleNode extends BaseNode {
+
+class AstFunction extends AstBaseNode {
+  private String name;
+
+  AstFunction(String name) {
+    this.name = name;
+  }
+
+  @Override
+  protected String debugStringDetail() {
+    return name;
+  }
+}
+
+class AstModule extends AstBaseNode {
+  private List<AstFunction> functions = new ArrayList<AstFunction>();
+
+  final void addFunction(AstFunction fn) {
+    functions.add(fn);
+  }
+
+  @Override
+  String debugStringDetail() {}
 }

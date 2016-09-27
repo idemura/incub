@@ -33,6 +33,7 @@ class AstName extends AstBaseNode {
 
 
 class AstType extends AstBaseNode {
+  static final AstType EMPTY = new AstType();
   String name;
 
   @Override
@@ -47,11 +48,9 @@ class AstType extends AstBaseNode {
 
 
 class AstFunction extends AstBaseNode {
-  static private final AstArgumentList EMPTY = new AstArgumentList();
-
   String name;
-  AstArgumentList arguments = EMPTY;
-  AstArgumentList outputs = EMPTY;
+  AstArgumentList arguments = AstArgumentList.EMPTY;
+  AstType type = AstType.EMPTY;
   AstBlock block;
 
   @Override
@@ -73,6 +72,7 @@ class AstArgument extends AstBaseNode {
 
 
 class AstArgumentList extends AstBaseNode {
+  static final AstArgumentList EMPTY = new AstArgumentList();
   List<AstArgument> arguments = new ArrayList<>();
 
   @Override

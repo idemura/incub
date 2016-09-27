@@ -8,69 +8,101 @@ package owl.lang;
  */
 interface ParserConstants {
 
-  /** End of File. */
+  /**
+   * End of File.
+   */
   int EOF = 0;
-  /** RegularExpression Id. */
+  /**
+   * RegularExpression Id.
+   */
   int AS = 5;
-  /** RegularExpression Id. */
+  /**
+   * RegularExpression Id.
+   */
   int FN = 6;
-  /** RegularExpression Id. */
+  /**
+   * RegularExpression Id.
+   */
   int O = 18;
-  /** RegularExpression Id. */
+  /**
+   * RegularExpression Id.
+   */
   int D = 19;
-  /** RegularExpression Id. */
+  /**
+   * RegularExpression Id.
+   */
   int H = 20;
-  /** RegularExpression Id. */
+  /**
+   * RegularExpression Id.
+   */
   int NF = 21;
-  /** RegularExpression Id. */
+  /**
+   * RegularExpression Id.
+   */
   int TF = 22;
-  /** RegularExpression Id. */
+  /**
+   * RegularExpression Id.
+   */
   int L = 23;
-  /** RegularExpression Id. */
+  /**
+   * RegularExpression Id.
+   */
   int NUM_DEC = 24;
-  /** RegularExpression Id. */
+  /**
+   * RegularExpression Id.
+   */
   int NUM_HEX = 25;
-  /** RegularExpression Id. */
+  /**
+   * RegularExpression Id.
+   */
   int NUM_OCT = 26;
-  /** RegularExpression Id. */
+  /**
+   * RegularExpression Id.
+   */
   int NAME = 27;
-  /** RegularExpression Id. */
+  /**
+   * RegularExpression Id.
+   */
   int TYPE_NAME = 28;
 
-  /** Lexical state. */
+  /**
+   * Lexical state.
+   */
   int DEFAULT = 0;
 
-  /** Literal token values. */
+  /**
+   * Literal token values.
+   */
   String[] tokenImage = {
-    "<EOF>",
-    "\" \"",
-    "\"\\r\"",
-    "\"\\n\"",
-    "\"\\t\"",
-    "\"as\"",
-    "\"fn\"",
-    "\".\"",
-    "\",\"",
-    "\"_\"",
-    "\":\"",
-    "\";\"",
-    "\"(\"",
-    "\")\"",
-    "\"{\"",
-    "\"}\"",
-    "\"[\"",
-    "\"]\"",
-    "<O>",
-    "<D>",
-    "<H>",
-    "<NF>",
-    "<TF>",
-    "<L>",
-    "<NUM_DEC>",
-    "<NUM_HEX>",
-    "<NUM_OCT>",
-    "<NAME>",
-    "<TYPE_NAME>",
+      "<EOF>",
+      "\" \"",
+      "\"\\r\"",
+      "\"\\n\"",
+      "\"\\t\"",
+      "\"as\"",
+      "\"fn\"",
+      "\".\"",
+      "\",\"",
+      "\"_\"",
+      "\":\"",
+      "\";\"",
+      "\"(\"",
+      "\")\"",
+      "\"{\"",
+      "\"}\"",
+      "\"[\"",
+      "\"]\"",
+      "<O>",
+      "<D>",
+      "<H>",
+      "<NF>",
+      "<TF>",
+      "<L>",
+      "<NUM_DEC>",
+      "<NUM_HEX>",
+      "<NUM_OCT>",
+      "<NAME>",
+      "<TYPE_NAME>",
   };
 
 }

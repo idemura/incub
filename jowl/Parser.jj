@@ -72,7 +72,7 @@ AstFunction function(): {
   "("
     (function.arguments = argumentList())?
   ")"
-  (":" function.type = type())?
+  (":" function.outputType = type())?
   function.block = block()
   { return function; }
 }

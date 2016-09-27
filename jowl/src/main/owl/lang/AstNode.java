@@ -50,7 +50,7 @@ class AstType extends AstBaseNode {
 class AstFunction extends AstBaseNode {
   String name;
   AstArgumentList arguments = AstArgumentList.EMPTY;
-  AstType type = AstType.EMPTY;
+  AstType outputType = AstType.EMPTY;
   AstBlock block;
 
   @Override

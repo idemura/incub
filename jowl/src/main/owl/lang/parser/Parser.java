@@ -79,7 +79,7 @@ name.name += "." + tok.image;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case 10:{
       jj_consume_token(10);
-      function.type = type();
+      function.outputType = type();
       break;
       }
     default:

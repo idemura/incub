@@ -33,7 +33,7 @@ class DebugPrintVisitor
   public void visit(AstFunction n) {
     node(n);
     prop("name", n.name);
-    prop("type", n.outputType.getReadableName());
+    prop("outputType", n.outputType.getReadableName());
     n.arguments.accept(this);
     n.block.accept(this);
     nodeDone();

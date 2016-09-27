@@ -6,6 +6,7 @@ public interface AstVisitor {
   void visit(AstFunction node);
   void visit(AstArgument node);
   void visit(AstArgumentList node);
+  void visit(AstBlock node);
   void visit(AstType node);
 }
 
@@ -32,15 +33,22 @@ class DebugPrintVisitor
   public void visit(AstFunction n) {
     node(n);
     prop("name", n.name);
-    if (n.arguments != null) {
-      n.arguments.accept(this);      
-    }
+    n.arguments.accept(this);
+    n.outputs.accept(this);
+    n.block.accept(this);
     nodeDone();
   }
 
   @Override
   public void visit(AstArgument n) {
-    leaf(n, n.name);
+    node(n);
+    if (n.name != null) {
+      prop("name", n.name);
+    }
+    if (n.type != null) {
+      prop("type", n.type.getReadableName());
+    }
+    nodeDone();
   }
 
   @Override
@@ -50,6 +58,11 @@ class DebugPrintVisitor
       a.accept(this);
     }
     nodeDone();
+  }
+
+  @Override
+  public void visit(AstBlock n) {
+    leaf(n, null);
   }
 
   @Override

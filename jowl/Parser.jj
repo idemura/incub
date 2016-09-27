@@ -19,8 +19,8 @@ SKIP: { " " | "\r" | "\n" | "\t" }
 
 TOKEN:
 {
-  "as"
-| "fn"
+  <AS: "as">
+| <FN: "fn">
 | "." | "," | "_"
 | ":" | ";"
 | "(" | ")"
@@ -44,10 +44,10 @@ AstModule module(): {
   AstFunction f;
 }
 {
-  (f = function() { module.addFunction(f); })*
-  {
-    return module;
-  }
+  (
+    f = function() { module.addFunction(f); }
+  )*
+  { return module; }
 }
 
 AstName qualifiedName(): {
@@ -56,24 +56,25 @@ AstName qualifiedName(): {
 }
 {
   tok = <NAME> { name.name = tok.image; }
-  ("." tok = <NAME> { name.name += "." + tok.image; })*
-  {
-    return name;
-  }
-| "_" { return AstName.WILDCARD; }
+  (
+    "." tok = <NAME> { name.name += "." + tok.image; }
+  )*
+  { return name; }
+| "_"
+  { return AstName.WILDCARD; }
 }
 
 AstFunction function(): {
   AstFunction function = new AstFunction();
-  Token tok;
 }
 {
-  "fn" (tok = <NAME> { function.name = tok.image; })
-  "(" (function.arguments = argumentList())? ")"
-  "{" "}"
-  {
-    return function;
-  }
+  <FN> function.name = <NAME>.image
+  "("
+    (function.arguments = argumentList())?
+  ")"
+  (":" function.outputs = argumentList())?
+  function.block = block()
+  { return function; }
 }
 
 AstArgumentList argumentList(): {
@@ -81,11 +82,11 @@ AstArgumentList argumentList(): {
   AstArgument a;
 }
 {
-  a = argument() { argList.addArgument(a); }
-  ("," a = argument() { argList.addArgument(a); })*
-  {
-    return argList;
-  }
+  a = argument() { argList.add(a); }
+  (
+    "," a = argument() { argList.add(a); }
+  )*
+  { return argList; }
 }
 
 AstArgument argument(): {
@@ -93,19 +94,24 @@ AstArgument argument(): {
   Token tok;
 }
 {
-  tok = <NAME> { argument.name = tok.image; }
-  {
-    return argument;
-  }
+  tok = <NAME> { argument.name = tok.image; } (":" argument.type = type())?
+  { return argument; }
+| argument.type = type()
+  { return argument; }
 }
 
-// AstType type(): {
-//   Token tok;
-//   String name;
-// }
-// {
-//   tok = <TYPE_NAME> { name = tok.image; }
-//   {
-//     return new AstType(name);
-//   }
-// }
+AstBlock block(): {
+}
+{
+  "{" "}"
+  { return new AstBlock(); }
+}
+
+AstType type(): {
+  AstType type = new AstType();
+  Token tok;
+}
+{
+  tok = <TYPE_NAME> { type.name = tok.image; }
+  { return type; }
+}

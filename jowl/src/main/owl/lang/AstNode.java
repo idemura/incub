@@ -18,7 +18,7 @@ class AstName extends AstBaseNode {
   static {
     WILDCARD.name = "_";
   }
-  
+
   String name;
 
   @Override
@@ -39,12 +39,20 @@ class AstType extends AstBaseNode {
   public void accept(AstVisitor visitor) {
     visitor.visit(this);
   }
+
+  String getReadableName() {
+    return name;
+  }
 }
 
 
 class AstFunction extends AstBaseNode {
+  static private final AstArgumentList EMPTY = new AstArgumentList();
+
   String name;
-  AstArgumentList arguments;
+  AstArgumentList arguments = EMPTY;
+  AstArgumentList outputs = EMPTY;
+  AstBlock block;
 
   @Override
   public void accept(AstVisitor visitor) {
@@ -55,6 +63,7 @@ class AstFunction extends AstBaseNode {
 
 class AstArgument extends AstBaseNode {
   String name;
+  AstType type;
 
   @Override
   public void accept(AstVisitor visitor) {
@@ -71,8 +80,16 @@ class AstArgumentList extends AstBaseNode {
     visitor.visit(this);
   }
 
-  void addArgument(AstArgument a) {
+  void add(AstArgument a) {
     arguments.add(a);
+  }
+}
+
+
+class AstBlock extends AstBaseNode {
+  @Override
+  public void accept(AstVisitor visitor) {
+    visitor.visit(this);
   }
 }
 

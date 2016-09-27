@@ -11,6 +11,10 @@ interface ParserConstants {
   /** End of File. */
   int EOF = 0;
   /** RegularExpression Id. */
+  int AS = 5;
+  /** RegularExpression Id. */
+  int FN = 6;
+  /** RegularExpression Id. */
   int O = 18;
   /** RegularExpression Id. */
   int D = 19;

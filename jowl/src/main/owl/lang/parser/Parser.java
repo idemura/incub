@@ -9,7 +9,7 @@ public class Parser implements ParserConstants {
     label_1:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-      case 6:{
+      case FN:{
         ;
         break;
         }
@@ -62,13 +62,12 @@ name.name += "." + tok.image;
   }
 
   final public AstFunction function() throws ParseException {AstFunction function = new AstFunction();
-  Token tok;
-    jj_consume_token(6);
-    tok = jj_consume_token(NAME);
-function.name = tok.image;
+    jj_consume_token(FN);
+    function.name = jj_consume_token(NAME).image;
     jj_consume_token(12);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case NAME:{
+    case NAME:
+    case TYPE_NAME:{
       function.arguments = argumentList();
       break;
       }
@@ -77,8 +76,17 @@ function.name = tok.image;
       ;
     }
     jj_consume_token(13);
-    jj_consume_token(14);
-    jj_consume_token(15);
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case 10:{
+      jj_consume_token(10);
+      function.outputs = argumentList();
+      break;
+      }
+    default:
+      jj_la1[4] = jj_gen;
+      ;
+    }
+    function.block = block();
 {if ("" != null) return function;}
     throw new Error("Missing return statement in function");
   }
@@ -86,7 +94,7 @@ function.name = tok.image;
   final public AstArgumentList argumentList() throws ParseException {AstArgumentList argList = new AstArgumentList();
   AstArgument a;
     a = argument();
-argList.addArgument(a);
+argList.add(a);
     label_3:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -95,12 +103,12 @@ argList.addArgument(a);
         break;
         }
       default:
-        jj_la1[4] = jj_gen;
+        jj_la1[5] = jj_gen;
         break label_3;
       }
       jj_consume_token(8);
       a = argument();
-argList.addArgument(a);
+argList.add(a);
     }
 {if ("" != null) return argList;}
     throw new Error("Missing return statement in function");
@@ -108,9 +116,48 @@ argList.addArgument(a);
 
   final public AstArgument argument() throws ParseException {AstArgument argument = new AstArgument();
   Token tok;
-    tok = jj_consume_token(NAME);
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case NAME:{
+      tok = jj_consume_token(NAME);
 argument.name = tok.image;
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case 10:{
+        jj_consume_token(10);
+        argument.type = type();
+        break;
+        }
+      default:
+        jj_la1[6] = jj_gen;
+        ;
+      }
 {if ("" != null) return argument;}
+      break;
+      }
+    case TYPE_NAME:{
+      argument.type = type();
+{if ("" != null) return argument;}
+      break;
+      }
+    default:
+      jj_la1[7] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+    throw new Error("Missing return statement in function");
+  }
+
+  final public AstBlock block() throws ParseException {
+    jj_consume_token(14);
+    jj_consume_token(15);
+{if ("" != null) return new AstBlock();}
+    throw new Error("Missing return statement in function");
+  }
+
+  final public AstType type() throws ParseException {AstType type = new AstType();
+  Token tok;
+    tok = jj_consume_token(TYPE_NAME);
+type.name = tok.image;
+{if ("" != null) return type;}
     throw new Error("Missing return statement in function");
   }
 
@@ -123,13 +170,13 @@ argument.name = tok.image;
   public Token jj_nt;
   private int jj_ntk;
   private int jj_gen;
-  final private int[] jj_la1 = new int[5];
+  final private int[] jj_la1 = new int[8];
   static private int[] jj_la1_0;
   static {
       jj_la1_init_0();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x40,0x80,0x8000200,0x8000000,0x100,};
+      jj_la1_0 = new int[] {0x40,0x80,0x8000200,0x18000000,0x400,0x100,0x400,0x18000000,};
    }
 
   /** Constructor with InputStream. */
@@ -143,7 +190,7 @@ argument.name = tok.image;
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 5; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 8; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -157,7 +204,7 @@ argument.name = tok.image;
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 5; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 8; i++) jj_la1[i] = -1;
   }
 
   /** Constructor. */
@@ -167,7 +214,7 @@ argument.name = tok.image;
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 5; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 8; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -177,7 +224,7 @@ argument.name = tok.image;
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 5; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 8; i++) jj_la1[i] = -1;
   }
 
   /** Constructor with generated Token Manager. */
@@ -186,7 +233,7 @@ argument.name = tok.image;
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 5; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 8; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -195,7 +242,7 @@ argument.name = tok.image;
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 5; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 8; i++) jj_la1[i] = -1;
   }
 
   private Token jj_consume_token(int kind) throws ParseException {
@@ -251,7 +298,7 @@ argument.name = tok.image;
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 8; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {

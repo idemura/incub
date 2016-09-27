@@ -64,18 +64,26 @@ name.name += "." + tok.image;
   final public AstFunction function() throws ParseException {AstFunction function = new AstFunction();
     jj_consume_token(FN);
     function.name = jj_consume_token(NAME).image;
-    jj_consume_token(12);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case NAME:
-    case TYPE_NAME:{
-      function.arguments = argumentList();
+    case 12:{
+      jj_consume_token(12);
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case NAME:
+      case TYPE_NAME:{
+        function.arguments = argumentList();
+        break;
+        }
+      default:
+        jj_la1[3] = jj_gen;
+        ;
+      }
+      jj_consume_token(13);
       break;
       }
     default:
-      jj_la1[3] = jj_gen;
+      jj_la1[4] = jj_gen;
       ;
     }
-    jj_consume_token(13);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case 10:{
       jj_consume_token(10);
@@ -83,7 +91,7 @@ name.name += "." + tok.image;
       break;
       }
     default:
-      jj_la1[4] = jj_gen;
+      jj_la1[5] = jj_gen;
       ;
     }
     function.block = block();
@@ -103,7 +111,7 @@ argList.add(a);
         break;
         }
       default:
-        jj_la1[5] = jj_gen;
+        jj_la1[6] = jj_gen;
         break label_3;
       }
       jj_consume_token(8);
@@ -127,7 +135,7 @@ argument.name = tok.image;
         break;
         }
       default:
-        jj_la1[6] = jj_gen;
+        jj_la1[7] = jj_gen;
         ;
       }
 {if ("" != null) return argument;}
@@ -139,7 +147,7 @@ argument.name = tok.image;
       break;
       }
     default:
-      jj_la1[7] = jj_gen;
+      jj_la1[8] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -170,13 +178,13 @@ type.name = tok.image;
   public Token jj_nt;
   private int jj_ntk;
   private int jj_gen;
-  final private int[] jj_la1 = new int[8];
+  final private int[] jj_la1 = new int[9];
   static private int[] jj_la1_0;
   static {
       jj_la1_init_0();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x40,0x80,0x8000200,0x18000000,0x400,0x100,0x400,0x18000000,};
+      jj_la1_0 = new int[] {0x40,0x80,0x8000200,0x18000000,0x1000,0x400,0x100,0x400,0x18000000,};
    }
 
   /** Constructor with InputStream. */
@@ -190,7 +198,7 @@ type.name = tok.image;
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 8; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 9; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -204,7 +212,7 @@ type.name = tok.image;
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 8; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 9; i++) jj_la1[i] = -1;
   }
 
   /** Constructor. */
@@ -214,7 +222,7 @@ type.name = tok.image;
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 8; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 9; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -224,7 +232,7 @@ type.name = tok.image;
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 8; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 9; i++) jj_la1[i] = -1;
   }
 
   /** Constructor with generated Token Manager. */
@@ -233,7 +241,7 @@ type.name = tok.image;
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 8; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 9; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -242,7 +250,7 @@ type.name = tok.image;
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 8; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 9; i++) jj_la1[i] = -1;
   }
 
   private Token jj_consume_token(int kind) throws ParseException {
@@ -298,7 +306,7 @@ type.name = tok.image;
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 9; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {

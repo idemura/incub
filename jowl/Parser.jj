@@ -69,9 +69,7 @@ AstFunction function(): {
 }
 {
   <FN> function.name = <NAME>.image
-  "("
-    (function.arguments = argumentList())?
-  ")"
+  ("(" (function.arguments = argumentList())? ")")?
   (":" function.outputType = type())?
   function.block = block()
   { return function; }

@@ -8,101 +8,70 @@ package owl.lang;
  */
 interface ParserConstants {
 
-  /**
-   * End of File.
-   */
+  /** End of File. */
   int EOF = 0;
-  /**
-   * RegularExpression Id.
-   */
+  /** RegularExpression Id. */
   int AS = 5;
-  /**
-   * RegularExpression Id.
-   */
+  /** RegularExpression Id. */
   int FN = 6;
-  /**
-   * RegularExpression Id.
-   */
-  int O = 18;
-  /**
-   * RegularExpression Id.
-   */
-  int D = 19;
-  /**
-   * RegularExpression Id.
-   */
-  int H = 20;
-  /**
-   * RegularExpression Id.
-   */
-  int NF = 21;
-  /**
-   * RegularExpression Id.
-   */
-  int TF = 22;
-  /**
-   * RegularExpression Id.
-   */
-  int L = 23;
-  /**
-   * RegularExpression Id.
-   */
-  int NUM_DEC = 24;
-  /**
-   * RegularExpression Id.
-   */
-  int NUM_HEX = 25;
-  /**
-   * RegularExpression Id.
-   */
-  int NUM_OCT = 26;
-  /**
-   * RegularExpression Id.
-   */
-  int NAME = 27;
-  /**
-   * RegularExpression Id.
-   */
-  int TYPE_NAME = 28;
+  /** RegularExpression Id. */
+  int O = 19;
+  /** RegularExpression Id. */
+  int D = 20;
+  /** RegularExpression Id. */
+  int H = 21;
+  /** RegularExpression Id. */
+  int NAME_FIRST = 22;
+  /** RegularExpression Id. */
+  int META_FIRST = 23;
+  /** RegularExpression Id. */
+  int L = 24;
+  /** RegularExpression Id. */
+  int NUM_DEC = 25;
+  /** RegularExpression Id. */
+  int NUM_HEX = 26;
+  /** RegularExpression Id. */
+  int NUM_OCT = 27;
+  /** RegularExpression Id. */
+  int NAME = 28;
+  /** RegularExpression Id. */
+  int META = 29;
 
-  /**
-   * Lexical state.
-   */
+  /** Lexical state. */
   int DEFAULT = 0;
 
-  /**
-   * Literal token values.
-   */
+  /** Literal token values. */
   String[] tokenImage = {
-      "<EOF>",
-      "\" \"",
-      "\"\\r\"",
-      "\"\\n\"",
-      "\"\\t\"",
-      "\"as\"",
-      "\"fn\"",
-      "\".\"",
-      "\",\"",
-      "\"_\"",
-      "\":\"",
-      "\";\"",
-      "\"(\"",
-      "\")\"",
-      "\"{\"",
-      "\"}\"",
-      "\"[\"",
-      "\"]\"",
-      "<O>",
-      "<D>",
-      "<H>",
-      "<NF>",
-      "<TF>",
-      "<L>",
-      "<NUM_DEC>",
-      "<NUM_HEX>",
-      "<NUM_OCT>",
-      "<NAME>",
-      "<TYPE_NAME>",
+    "<EOF>",
+    "\" \"",
+    "\"\\r\"",
+    "\"\\n\"",
+    "\"\\t\"",
+    "\"as\"",
+    "\"fn\"",
+    "\".\"",
+    "\",\"",
+    "\"_\"",
+    "\":\"",
+    "\";\"",
+    "\"(\"",
+    "\")\"",
+    "\"{\"",
+    "\"}\"",
+    "\"[\"",
+    "\"]\"",
+    "\"=>\"",
+    "<O>",
+    "<D>",
+    "<H>",
+    "<NAME_FIRST>",
+    "<META_FIRST>",
+    "<L>",
+    "<NUM_DEC>",
+    "<NUM_HEX>",
+    "<NUM_OCT>",
+    "<NAME>",
+    "<META>",
   };
 
 }

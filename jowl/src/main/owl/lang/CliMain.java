@@ -27,7 +27,8 @@ public class CliMain {
   }
 
   private static boolean compile(InputStream in) {
-    Parser parser = new Parser(new ParserTokenManager(new SimpleCharStream(in)));
+    Parser parser = new Parser(new ParserTokenManager(
+        new SimpleCharStream(in)));
     try {
       AstNode root = parser.module();
       root.accept(new DebugPrintVisitor());

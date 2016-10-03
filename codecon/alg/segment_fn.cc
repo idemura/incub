@@ -23,13 +23,13 @@ public:
   }
 
   int get_value_on(int il, int ir) const {
-    T r = T();
-    int step = 1;
-    int j = 0;
+    auto r = T();
+    auto step = 1;
+    auto j = 0;
     // Increase phase.
     // Invariant: @il % @step == 0 and step fits.
     while (ir - il >= step) {
-      if ((il & step) != 0 || ir - il < 2 * step) {
+      if ((il & step) != 0) {
         r = fn(r, cascade[j][il / step]);
         il += step;
       }

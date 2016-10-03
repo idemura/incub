@@ -5,14 +5,18 @@ options
   STATIC = false;
   SUPPORT_CLASS_VISIBILITY_PUBLIC = false;
   //USER_CHAR_STREAM = true;
+  LOOKAHEAD = 2;
 }
 
 PARSER_BEGIN(Parser)
 package owl.lang;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Parser {
-  //
 }
+
 PARSER_END(Parser)
 
 SKIP: { " " | "\r" | "\n" | "\t" }
@@ -26,17 +30,18 @@ TOKEN:
 | "(" | ")"
 | "{" | "}"
 | "[" | "]"
+| "=>"
 | <O: ["0"-"7"]>
 | <D: ["0"-"9"]>
 | <H: ["0"-"9", "a"-"f", "A"-"F"]>
-| <NF: ["a"-"z"]>
-| <TF: ["A"-"Z"]>
+| <NAME_FIRST: ["a"-"z"]>
+| <META_FIRST: ["A"-"Z"]>
 | <L: ["a"-"z", "A"-"Z", "0"-"9", "_"]>
 | <NUM_DEC: (<D>)+>
 | <NUM_HEX: "0x" (<H>)+>
 | <NUM_OCT: "0o" (<D>)+>
-| <NAME: (<NF>)(<L>)*>
-| <TYPE_NAME: (<TF>)(<L>)*>
+| <NAME: (<NAME_FIRST>)(<L>)*>
+| <META: (<META_FIRST>)(<L>)*>
 }
 
 AstModule module(): {
@@ -50,18 +55,35 @@ AstModule module(): {
   { return module; }
 }
 
-AstName qualifiedName(): {
-  AstName name = new AstName();
+String prefix(): {
+  String prefix = "";
   Token tok;
 }
 {
-  tok = <NAME> { name.name = tok.image; }
-  (
-    "." tok = <NAME> { name.name += "." + tok.image; }
-  )*
-  { return name; }
+  (tok = <NAME> "." { prefix += tok.image + "."; })*
+  { return prefix; }
+}
+
+String prefixName(): {
+  String p, name;
+  Token tok;
+}
+{
+  p = prefix() tok = <NAME> { name = tok.image; }
+  { return p + name; }
 | "_"
-  { return AstName.WILDCARD; }
+  { return "_"; }
+}
+
+String prefixType(): {
+  String p, name;
+  Token tok;
+}
+{
+  p = prefix() tok = <META> { name = tok.image; }
+  { return p + name; }
+| "_"
+  { return "_"; }
 }
 
 AstFunction function(): {
@@ -69,33 +91,35 @@ AstFunction function(): {
 }
 {
   <FN> function.name = <NAME>.image
-  ("(" (function.arguments = argumentList())? ")")?
-  (":" function.outputType = type())?
+  (
+    "(" (function.arguments = variableList())? ")"
+  )?
+  (":" function.returns = variableList())?
   function.block = block()
   { return function; }
 }
 
-AstArgumentList argumentList(): {
-  AstArgumentList argList = new AstArgumentList();
-  AstArgument a;
+List<AstVariable> variableList(): {
+  List<AstVariable> argList = new ArrayList<AstVariable>();
+  AstVariable a;
 }
 {
-  a = argument() { argList.add(a); }
+  a = variable() { argList.add(a); }
   (
-    "," a = argument() { argList.add(a); }
+    "," a = variable() { argList.add(a); }
   )*
   { return argList; }
 }
 
-AstArgument argument(): {
-  AstArgument argument = new AstArgument();
+AstVariable variable(): {
+  AstVariable variable = new AstVariable();
   Token tok;
 }
 {
-  tok = <NAME> { argument.name = tok.image; } (":" argument.type = type())?
-  { return argument; }
-| argument.type = type()
-  { return argument; }
+  tok = <NAME> { variable.name = tok.image; } (":" variable.type = type())?
+  { return variable; }
+| variable.type = type()
+  { return variable; }
 }
 
 AstBlock block(): {
@@ -105,11 +129,36 @@ AstBlock block(): {
   { return new AstBlock(); }
 }
 
-AstType type(): {
-  AstType type = new AstType();
-  Token tok;
+Type baseType(): {
+  Type type = new Type();
 }
 {
-  tok = <TYPE_NAME> { type.name = tok.image; }
+  type.name = prefixType()
+// Generic instance:
+| type.name = prefixType() "(" ")"
+| type.name = prefixType() "[" "]" {
+    Type arrayType = new Type();
+    arrayType.name = "owl.Array";
+    arrayType.params.add(type);
+    type = arrayType;
+  }
   { return type; }
+}
+
+Type type(): {
+  Type type, t, functionType = null;
+}
+{
+  type = baseType()
+  (
+    "=>" t = baseType() {
+      if (functionType == null) {
+        functionType = new Type();
+        type.name = "owl.Function";
+        type.params.add(type);
+      }
+      functionType.params.add(t);
+    }
+  )*
+  { return functionType != null? functionType: type; }
 }

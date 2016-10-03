@@ -1,24 +1,8 @@
 package owl.lang;
 
-public interface AstVisitor {
-  void visit(AstName node);
-  void visit(AstModule node);
-  void visit(AstFunction node);
-  void visit(AstArgument node);
-  void visit(AstArgumentList node);
-  void visit(AstBlock node);
-  void visit(AstType node);
-}
-
-
 class DebugPrintVisitor
-    implements AstVisitor {
+    implements AstNode.Visitor {
   private int tab = 0;
-
-  @Override
-  public void visit(AstName n) {
-    leaf(n, n.name);
-  }
 
   @Override
   public void visit(AstModule n) {
@@ -33,29 +17,28 @@ class DebugPrintVisitor
   public void visit(AstFunction n) {
     node(n);
     prop("name", n.name);
-    prop("outputType", n.outputType.getReadableName());
-    n.arguments.accept(this);
+    node("arguments");
+    for (AstVariable a : n.arguments) {
+      a.accept(this);
+    }
+    nodeDone();
+    node("returns");
+    for (AstVariable a : n.returns) {
+      a.accept(this);
+    }
+    nodeDone();
     n.block.accept(this);
     nodeDone();
   }
 
   @Override
-  public void visit(AstArgument n) {
+  public void visit(AstVariable n) {
     node(n);
     if (n.name != null) {
       prop("name", n.name);
     }
     if (n.type != null) {
-      prop("type", n.type.getReadableName());
-    }
-    nodeDone();
-  }
-
-  @Override
-  public void visit(AstArgumentList n) {
-    node(n);
-    for (AstArgument a : n.arguments) {
-      a.accept(this);
+      prop("type", n.type.typeStr());
     }
     nodeDone();
   }
@@ -63,11 +46,6 @@ class DebugPrintVisitor
   @Override
   public void visit(AstBlock n) {
     leaf(n, null);
-  }
-
-  @Override
-  public void visit(AstType n) {
-    leaf(n, n.name);
   }
 
   private void prop(String name, String s) {
@@ -80,6 +58,11 @@ class DebugPrintVisitor
       text += " " + s;
     }
     print(text + ";");
+  }
+
+  private void node(String text) {
+    print(text + " {");
+    tab++;
   }
 
   private void node(AstNode node) {

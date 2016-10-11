@@ -1,11 +1,11 @@
 options
 {
-  //BUILD_TOKEN_MANAGER = false;
-  JDK_VERSION = "1.8";
-  STATIC = false;
-  SUPPORT_CLASS_VISIBILITY_PUBLIC = false;
-  //USER_CHAR_STREAM = true;
-  LOOKAHEAD = 2;
+    //BUILD_TOKEN_MANAGER = false;
+    JDK_VERSION = "1.8";
+    STATIC = false;
+    SUPPORT_CLASS_VISIBILITY_PUBLIC = false;
+    //USER_CHAR_STREAM = true;
+    LOOKAHEAD = 2;
 }
 
 PARSER_BEGIN(Parser)
@@ -45,120 +45,120 @@ TOKEN:
 }
 
 AstModule module(): {
-  AstModule module = new AstModule();
-  AstFunction f;
+    AstModule module = new AstModule();
+    AstFunction f;
 }
 {
-  (
-    f = function() { module.addFunction(f); }
-  )*
-  { return module; }
+    (
+      f = function() { module.addFunction(f); }
+    )*
+    { return module; }
 }
 
 String prefix(): {
-  String prefix = "";
-  Token tok;
+    String prefix = "";
+    Token tok;
 }
 {
-  (tok = <NAME> "." { prefix += tok.image + "."; })*
-  { return prefix; }
+    (tok = <NAME> "." { prefix += tok.image + "."; })*
+    { return prefix; }
 }
 
 String prefixName(): {
-  String p, name;
-  Token tok;
+    String p, name;
+    Token tok;
 }
 {
-  p = prefix() tok = <NAME> { name = tok.image; }
-  { return p + name; }
-| "_"
-  { return "_"; }
+    p = prefix() tok = <NAME> { name = tok.image; }
+    { return p + name; }
+  | "_"
+    { return "_"; }
 }
 
 String prefixType(): {
-  String p, name;
-  Token tok;
+    String p, name;
+    Token tok;
 }
 {
-  p = prefix() tok = <META> { name = tok.image; }
-  { return p + name; }
-| "_"
-  { return "_"; }
+    p = prefix() tok = <META> { name = tok.image; }
+    { return p + name; }
+  | "_"
+    { return "_"; }
 }
 
 AstFunction function(): {
-  AstFunction function = new AstFunction();
+    AstFunction function = new AstFunction();
 }
 {
-  <FN> function.name = <NAME>.image
-  (
-    "(" (function.arguments = variableList())? ")"
-  )?
-  (":" function.returns = variableList())?
-  function.block = block()
-  { return function; }
+    <FN> function.name = <NAME>.image
+    (
+        "(" (function.arguments = variableList())? ")"
+    )?
+    (":" function.returns = variableList())?
+    function.block = block()
+    { return function; }
 }
 
 List<AstVariable> variableList(): {
-  List<AstVariable> argList = new ArrayList<AstVariable>();
-  AstVariable a;
+    List<AstVariable> argList = new ArrayList<AstVariable>();
+    AstVariable a;
 }
 {
-  a = variable() { argList.add(a); }
-  (
-    "," a = variable() { argList.add(a); }
-  )*
-  { return argList; }
+    a = variable() { argList.add(a); }
+    (
+        "," a = variable() { argList.add(a); }
+    )*
+    { return argList; }
 }
 
 AstVariable variable(): {
-  AstVariable variable = new AstVariable();
-  Token tok;
+    AstVariable variable = new AstVariable();
+    Token tok;
 }
 {
-  tok = <NAME> { variable.name = tok.image; } (":" variable.type = type())?
-  { return variable; }
-| variable.type = type()
-  { return variable; }
+    tok = <NAME> { variable.name = tok.image; } (":" variable.type = type())?
+    { return variable; }
+  | variable.type = type()
+    { return variable; }
 }
 
 AstBlock block(): {
 }
 {
-  "{" "}"
-  { return new AstBlock(); }
+    "{" "}"
+    { return new AstBlock(); }
 }
 
 Type baseType(): {
-  Type type = new Type();
+    Type type = new Type();
 }
 {
-  type.name = prefixType()
-// Generic instance:
-| type.name = prefixType() "(" ")"
-| type.name = prefixType() "[" "]" {
-    Type arrayType = new Type();
-    arrayType.name = "owl.Array";
-    arrayType.params.add(type);
-    type = arrayType;
-  }
-  { return type; }
+    type.name = prefixType()
+    // Generic instance:
+  | type.name = prefixType() "(" ")"
+  | type.name = prefixType() "[" "]" {
+        Type arrayType = new Type();
+        arrayType.name = "owl.Array";
+        arrayType.params.add(type);
+        type = arrayType;
+    }
+    { return type; }
 }
 
 Type type(): {
-  Type type, t, functionType = null;
+    Type type, t, functionType = null;
 }
 {
-  type = baseType()
-  (
-    "=>" t = baseType() {
-      if (functionType == null) {
-        functionType = new Type();
-        type.name = "owl.Function";
-        type.params.add(type);
-      }
-      functionType.params.add(t);
-    }
-  )*
-  { return functionType != null? functionType: type; }
+    type = baseType()
+    (
+        "=>" t = baseType() {
+        if (functionType == null) {
+            functionType = new Type();
+            type.name = "owl.Function";
+            type.params.add(type);
+        }
+        functionType.params.add(t);
+        }
+    )*
+    { return functionType != null? functionType: type; }
 }

@@ -8,7 +8,7 @@ import java.util.List;
 public class Parser implements ParserConstants {
 
   final public AstModule module() throws ParseException {AstModule module = new AstModule();
-  AstFunction f;
+    AstFunction f;
     label_1:
     while (true) {
       if (jj_2_1(2)) {
@@ -24,7 +24,7 @@ module.addFunction(f);
   }
 
   final public String prefix() throws ParseException {String prefix = "";
-  Token tok;
+    Token tok;
     label_2:
     while (true) {
       if (jj_2_2(2)) {
@@ -41,7 +41,7 @@ prefix += tok.image + ".";
   }
 
   final public String prefixName() throws ParseException {String p, name;
-  Token tok;
+    Token tok;
     if (jj_2_3(2)) {
       p = prefix();
       tok = jj_consume_token(NAME);
@@ -58,7 +58,7 @@ name = tok.image;
   }
 
   final public String prefixType() throws ParseException {String p, name;
-  Token tok;
+    Token tok;
     if (jj_2_5(2)) {
       p = prefix();
       tok = jj_consume_token(META);
@@ -100,7 +100,7 @@ name = tok.image;
   }
 
   final public List<AstVariable> variableList() throws ParseException {List<AstVariable> argList = new ArrayList<AstVariable>();
-  AstVariable a;
+    AstVariable a;
     a = variable();
 argList.add(a);
     label_3:
@@ -119,7 +119,7 @@ argList.add(a);
   }
 
   final public AstVariable variable() throws ParseException {AstVariable variable = new AstVariable();
-  Token tok;
+    Token tok;
     if (jj_2_12(2)) {
       tok = jj_consume_token(NAME);
 variable.name = tok.image;
@@ -159,9 +159,9 @@ variable.name = tok.image;
       jj_consume_token(16);
       jj_consume_token(17);
 Type arrayType = new Type();
-    arrayType.name = "owl.Array";
-    arrayType.params.add(type);
-    type = arrayType;
+        arrayType.name = "owl.Array";
+        arrayType.params.add(type);
+        type = arrayType;
 {if ("" != null) return type;}
     } else {
       jj_consume_token(-1);
@@ -182,11 +182,11 @@ Type arrayType = new Type();
       jj_consume_token(18);
       t = baseType();
 if (functionType == null) {
-        functionType = new Type();
-        type.name = "owl.Function";
-        type.params.add(type);
-      }
-      functionType.params.add(t);
+                functionType = new Type();
+                type.name = "owl.Function";
+                type.params.add(type);
+            }
+            functionType.params.add(t);
     }
 {if ("" != null) return functionType != null? functionType: type;}
     throw new Error("Missing return statement in function");
@@ -328,26 +328,6 @@ if (functionType == null) {
     finally { jj_save(16, xla); }
   }
 
-  private boolean jj_3R_11()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_14()) {
-    jj_scanpos = xsp;
-    if (jj_3_15()) {
-    jj_scanpos = xsp;
-    if (jj_3_16()) return true;
-    }
-    }
-    return false;
-  }
-
-  private boolean jj_3_14()
- {
-    if (jj_3R_10()) return true;
-    return false;
-  }
-
   private boolean jj_3_6()
  {
     if (jj_scan_token(9)) return true;
@@ -418,6 +398,13 @@ if (functionType == null) {
     return false;
   }
 
+  private boolean jj_3_10()
+ {
+    if (jj_scan_token(8)) return true;
+    if (jj_3R_8()) return true;
+    return false;
+  }
+
   private boolean jj_3_2()
  {
     if (jj_scan_token(NAME)) return true;
@@ -425,10 +412,10 @@ if (functionType == null) {
     return false;
   }
 
-  private boolean jj_3_10()
+  private boolean jj_3_17()
  {
-    if (jj_scan_token(8)) return true;
-    if (jj_3R_8()) return true;
+    if (jj_scan_token(18)) return true;
+    if (jj_3R_11()) return true;
     return false;
   }
 
@@ -439,13 +426,6 @@ if (functionType == null) {
       xsp = jj_scanpos;
       if (jj_3_2()) { jj_scanpos = xsp; break; }
     }
-    return false;
-  }
-
-  private boolean jj_3_17()
- {
-    if (jj_scan_token(18)) return true;
-    if (jj_3R_11()) return true;
     return false;
   }
 
@@ -483,13 +463,6 @@ if (functionType == null) {
     return false;
   }
 
-  private boolean jj_3_9()
- {
-    if (jj_scan_token(10)) return true;
-    if (jj_3R_7()) return true;
-    return false;
-  }
-
   private boolean jj_3_8()
  {
     if (jj_scan_token(12)) return true;
@@ -497,6 +470,13 @@ if (functionType == null) {
     xsp = jj_scanpos;
     if (jj_3_7()) jj_scanpos = xsp;
     if (jj_scan_token(13)) return true;
+    return false;
+  }
+
+  private boolean jj_3_9()
+ {
+    if (jj_scan_token(10)) return true;
+    if (jj_3R_7()) return true;
     return false;
   }
 
@@ -518,6 +498,26 @@ if (functionType == null) {
  {
     if (jj_3R_10()) return true;
     if (jj_scan_token(12)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_11()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_14()) {
+    jj_scanpos = xsp;
+    if (jj_3_15()) {
+    jj_scanpos = xsp;
+    if (jj_3_16()) return true;
+    }
+    }
+    return false;
+  }
+
+  private boolean jj_3_14()
+ {
+    if (jj_3R_10()) return true;
     return false;
   }
 

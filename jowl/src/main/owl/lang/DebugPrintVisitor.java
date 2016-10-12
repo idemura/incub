@@ -81,7 +81,7 @@ class DebugPrintVisitor implements AstNode.Visitor {
 
     private void print(String s) {
         for (int i = 0; i < tab; i++) {
-            System.out.print("  ");
+            System.out.print("    ");
         }
         System.out.println(s);
     }

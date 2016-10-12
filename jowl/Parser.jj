@@ -50,7 +50,7 @@ AstModule module(): {
 }
 {
     (
-      f = function() { module.addFunction(f); }
+        f = function() { module.addFunction(f); }
     )*
     { return module; }
 }
@@ -152,12 +152,12 @@ Type type(): {
     type = baseType()
     (
         "=>" t = baseType() {
-        if (functionType == null) {
-            functionType = new Type();
-            type.name = "owl.Function";
-            type.params.add(type);
-        }
-        functionType.params.add(t);
+            if (functionType == null) {
+                functionType = new Type();
+                type.name = "owl.Function";
+                type.params.add(type);
+            }
+            functionType.params.add(t);
         }
     )*
     { return functionType != null? functionType: type; }

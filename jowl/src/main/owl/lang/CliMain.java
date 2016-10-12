@@ -14,7 +14,9 @@ public class CliMain {
     }
 
     private static boolean compileFile(String file_name) {
-        try (InputStream in = new FileInputStream(new File(file_name))) {
+        InputStream in = null;
+        try {
+            in = new FileInputStream(new File(file_name));
             return compile(in);
         } catch (IOException e) {
             System.err.println("IO error: " + e.getMessage());

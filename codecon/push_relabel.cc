@@ -196,7 +196,7 @@ vector<vector<int>> push_relabel(
             cout<<"back flow "<<w<<" to "<<v<<": "<<f[w][v]<<endl;
             auto d = min(e[v], f[w][v]);
             cout<<"d="<<d<<" e[v]="<<e[v]<<" c+f="<<(c[v][w] + f[w][v])<<endl;
-            if (e[w] == 0) {
+            if (e[w] == 0 && w != s && w != t) {
                 q.add_downhill(w);
             }
             //auto no_excess_w = e[w] == 0;
@@ -458,7 +458,7 @@ void test4() {
 }
 
 int main() {
-    FLAG_step_mode = true;
+    FLAG_step_mode = false;
     test1();
     test2();
     test3();

@@ -78,6 +78,8 @@ class PushRelabelQ {
     // Do this before @pop.
     void add_downhill(int v) {
         q[top - 1].push_back(v);
+        // `top - 1` may be empty, meaning that `not_empty[top]` points for something way lower.
+        not_empty[top] = top - 1;
     }
 
     void pop() {
@@ -94,7 +96,12 @@ class PushRelabelQ {
     void print(ostream &os) const {
         os<<"PushRelabelQ ("<<q.size()<<" level(s)):\n";
         for (int i = 0; i < q.size(); i++) {
-            cout<<"  h="<<i<<" not_empty="<<not_empty[i]<<": ";
+            if (i == top) {
+                cout<<"> ";
+            } else {
+                cout<<"  ";
+            }
+            cout<<"h="<<i<<" not_empty="<<not_empty[i]<<": ";
             if (q[i].empty()) {
                 cout<<"<empty>";
             } else {
@@ -149,7 +156,7 @@ vector<vector<int>> push_relabel(
             //c[i][s] += f[s][i];    // There can be an arc back already.
             //b[i][s] += f[s][i];
             c[s][i] = 0;
-            q.init(i);
+            if (i != t) q.init(i);
         }
     }
     //print_matrix(b, "initial b");
@@ -163,7 +170,7 @@ vector<vector<int>> push_relabel(
         auto v = q.get_top();
         cout<<q;
         print_vector(h, "h");
-        cout<<"pick vertex v="<<v<< endl;
+        cout<<"pick vertex v="<<v<<" <---------------"<<endl;
         print_vector(downhill[v], "downhill");
         if (downhill[v].empty()) {
             // Relabel
@@ -213,7 +220,7 @@ vector<vector<int>> push_relabel(
                 f[v][w] += d;
             }
             if (e[v] == 0) {
-                cout<<"downhill cleared"<<endl;
+                cout<<"no more excess, downhill cleared"<<endl;
                 downhill[v].clear();
                 q.pop();
             } else {
@@ -226,6 +233,7 @@ vector<vector<int>> push_relabel(
             // print_vector(e, "e");
         }
         cout<<"new q:\n"<<q;
+        cout<<"empty="<<q.empty()<<endl;
     }
     return f;
 }
@@ -382,14 +390,12 @@ map<pair<int, int>, int> flow_map(const vector<vector<int>> &f) {
     return m;
 }
 
-vector<vector<int>> push_relabel_proxy(
-        const vector<vector<int>> &c,
-        int s,
-        int t) {
-    return push_relabel(c, s, t);
-}
+using push_relabel_fn = function<vector<vector<int>>(
+    const vector<vector<int>> &c,
+    int s,
+    int t)>;
 
-void test1() {
+void test1(push_relabel_fn push_relabel) {
     auto m = make_matrix(4);
     m[0][1] = 1;
     m[0][2] = 4;
@@ -397,7 +403,7 @@ void test1() {
     m[2][1] = 2;
     m[1][3] = 4;
     m[2][3] = 1;
-    auto f = push_relabel_proxy(m, 0, m.size() - 1);
+    auto f = push_relabel(m, 0, m.size() - 1);
     CHECK(4 == get_flow(f[0]));
     auto f_map = flow_map(f);
     CHECK(5 == f_map.size());
@@ -408,17 +414,17 @@ void test1() {
     CHECK(3 == f_map[make_pair(1, 3)]);
 }
 
-void test2() {
+void test2(push_relabel_fn push_relabel) {
     auto m = make_matrix(2);
     m[0][1] = 3;
-    auto f = push_relabel_proxy(m, 0, m.size() - 1);
+    auto f = push_relabel(m, 0, m.size() - 1);
     CHECK(3 == get_flow(f[0]));
     auto f_map = flow_map(f);
     CHECK(1 == f_map.size());
     CHECK(3 == f_map[make_pair(0, 1)]);
 }
 
-void test3() {
+void test3(push_relabel_fn push_relabel) {
     auto m = make_matrix(5);
     m[0][1] = 1;
     m[0][2] = 4;
@@ -428,25 +434,33 @@ void test3() {
     m[2][3] = 1;
     m[3][4] = 3;
     m[4][3] = 1;
-    auto f = push_relabel_proxy(m, 0, m.size() - 1);
+    auto f = push_relabel(m, 0, m.size() - 1);
+    cout<<"FLOW: "<<get_flow(f[0])<<"\n";
     CHECK(3 == get_flow(f[0]));
     auto f_map = flow_map(f);
     CHECK(5 == f_map.size());
-    CHECK(3 == f_map[make_pair(0, 2)]);
-    CHECK(2 == f_map[make_pair(2, 1)]);
-    CHECK(1 == f_map[make_pair(2, 3)]);
+    if (f_map.end() != f_map.find(make_pair(0, 1))) {
+        CHECK(1 == f_map[make_pair(0, 1)]);
+        CHECK(2 == f_map[make_pair(0, 2)]);
+        CHECK(2 == f_map[make_pair(2, 1)]);
+        CHECK(3 == f_map[make_pair(1, 3)]);
+    } else {
+        CHECK(3 == f_map[make_pair(0, 2)]);
+        CHECK(2 == f_map[make_pair(2, 1)]);
+        CHECK(1 == f_map[make_pair(2, 3)]);
+        CHECK(2 == f_map[make_pair(1, 3)]);
+    }
     CHECK(3 == f_map[make_pair(3, 4)]);
-    CHECK(2 == f_map[make_pair(1, 3)]);
 }
 
-void test4() {
+void test4(push_relabel_fn push_relabel) {
     auto m = make_matrix(5);
     m[0][1] = 4;
     m[1][2] = 1;
     m[1][3] = 2;
     m[3][4] = 2;
     m[2][4] = 2;
-    auto f = push_relabel_proxy(m, 0, m.size() - 1);
+    auto f = push_relabel(m, 0, m.size() - 1);
     CHECK(3 == get_flow(f[0]));
     auto f_map = flow_map(f);
     CHECK(5 == f_map.size());
@@ -459,10 +473,11 @@ void test4() {
 
 int main() {
     FLAG_step_mode = false;
-    test1();
-    test2();
-    test3();
-    test4();
+    const auto pr = push_relabel_fn(&push_relabel);
+    test1(pr);
+    test2(pr);
+    test3(pr);
+    test4(pr);
     cout << "TESTS PASSED." << endl;
     return 0;
 }

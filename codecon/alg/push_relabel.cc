@@ -2,13 +2,6 @@
 
 using namespace std;
 
-bool FLAG_step_mode = false;
-
-/*
-Seems like relabel happens until vertex has no excess or all edges saturated,
-because it only goes up.
-*/
-
 void print_matrix(const vector<vector<int>> &m, const string &tag) {
     cout<<tag<<":\n";
     for (const auto &r : m) {
@@ -29,14 +22,6 @@ void print_vector(const vector<int> &r, const string &tag) {
         cout<<x<<" ";
     }
     cout<<"\n";
-}
-
-void wait_enter() {
-    if (FLAG_step_mode) {
-        cout<<"Press Enter... ";
-        string s;
-        getline(cin, s);
-    }
 }
 
 vector<vector<int>> make_matrix(int n) {
@@ -124,7 +109,6 @@ ostream &operator<<(ostream &os, const PushRelabelQ &q) {
     return os;
 }
 
-// @c_in is matrix of capacities.
 vector<vector<int>> push_relabel(
         const vector<vector<int>> &c_in,
         int s,
@@ -132,7 +116,6 @@ vector<vector<int>> push_relabel(
     auto c = c_in;
     const auto n = c.size();
     auto f = make_matrix(n);
-    // Height of each vertex.
     vector<int> h(n);
     h[s] = n;
     PushRelabelQ q(2 * n);
@@ -279,6 +262,12 @@ map<pair<int, int>, int> flow_map(const vector<vector<int>> &f) {
     return m;
 }
 
+void print_flow_map(const map<pair<int, int>, int> &m) {
+    for (auto e : m) {
+        cout<<e.first.first<<","<<e.first.second<<" - "<<e.second<<"\n";
+    }
+}
+
 using push_relabel_fn = function<vector<vector<int>>(
     const vector<vector<int>> &c,
     int s,
@@ -359,15 +348,41 @@ void test4(push_relabel_fn push_relabel) {
     CHECK(2 == f_map[make_pair(3, 4)]);
 }
 
+void test5(push_relabel_fn push_relabel) {
+    auto m = make_matrix(6);
+    m[0][1] = 16;
+    m[0][2] = 13;
+    m[1][2] = 10;
+    m[1][3] = 12;
+    m[2][1] = 4;
+    m[2][4] = 14;
+    m[3][2] = 9;
+    m[3][5] = 20;
+    m[4][3] = 7;
+    m[4][5] = 4;
+    auto f = push_relabel(m, 0, m.size() - 1);
+    CHECK(23 == get_flow(f[0]));
+    auto f_map = flow_map(f);
+    CHECK(8 == f_map.size());
+    CHECK(13 == f_map[make_pair(0, 1)]);
+    CHECK(10 == f_map[make_pair(0, 2)]);
+    CHECK(1 == f_map[make_pair(1, 2)]);
+    CHECK(12 == f_map[make_pair(1, 3)]);
+    CHECK(11 == f_map[make_pair(2, 4)]);
+    CHECK(19 == f_map[make_pair(3, 5)]);
+    CHECK(7 == f_map[make_pair(4, 3)]);
+    CHECK(4 == f_map[make_pair(4, 5)]);
+}
+
 void tests(push_relabel_fn pr) {
     test1(pr);
     test2(pr);
     test3(pr);
     test4(pr);
+    test5(pr);
 }
 
 int main() {
-    FLAG_step_mode = false;
     tests(&push_relabel_correct);
     tests(&push_relabel);
     cout << "TESTS PASSED." << endl;

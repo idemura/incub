@@ -18,7 +18,13 @@ public class Parser {
 
 PARSER_END(Parser)
 
-SKIP: { " " | "\r" | "\n" | "\t" }
+SKIP: {
+    " "
+  | "\r"
+  | "\n"
+  | "\t"
+  | < "#" (~["\n"])* >
+}
 
 TOKEN:
 {

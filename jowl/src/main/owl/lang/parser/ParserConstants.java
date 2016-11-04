@@ -11,17 +11,17 @@ interface ParserConstants {
   /** End of File. */
   int EOF = 0;
   /** RegularExpression Id. */
-  int AS = 5;
+  int AS = 6;
   /** RegularExpression Id. */
-  int FN = 6;
+  int FN = 7;
   /** RegularExpression Id. */
-  int OCT = 19;
+  int OCT = 20;
   /** RegularExpression Id. */
-  int DEC = 20;
+  int DEC = 21;
   /** RegularExpression Id. */
-  int HEX = 21;
+  int HEX = 22;
   /** RegularExpression Id. */
-  int NAME = 22;
+  int NAME = 23;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -33,6 +33,7 @@ interface ParserConstants {
     "\"\\r\"",
     "\"\\n\"",
     "\"\\t\"",
+    "<token of kind 5>",
     "\"as\"",
     "\"fn\"",
     "\".\"",

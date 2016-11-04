@@ -34,7 +34,7 @@ name.add(tok.image);
     label_2:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-      case 7:{
+      case 8:{
         ;
         break;
         }
@@ -42,7 +42,7 @@ name.add(tok.image);
         jj_la1[1] = jj_gen;
         break label_2;
       }
-      jj_consume_token(7);
+      jj_consume_token(8);
       tok = jj_consume_token(NAME);
 name.add(tok.image);
     }
@@ -54,8 +54,8 @@ name.add(tok.image);
     jj_consume_token(FN);
     function.name = jj_consume_token(NAME).image;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case 12:{
-      jj_consume_token(12);
+    case 13:{
+      jj_consume_token(13);
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case NAME:{
         function.arguments = variableList();
@@ -65,7 +65,7 @@ name.add(tok.image);
         jj_la1[2] = jj_gen;
         ;
       }
-      jj_consume_token(13);
+      jj_consume_token(14);
       break;
       }
     default:
@@ -73,8 +73,8 @@ name.add(tok.image);
       ;
     }
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case 10:{
-      jj_consume_token(10);
+    case 11:{
+      jj_consume_token(11);
       function.returnType = type();
       break;
       }
@@ -94,7 +94,7 @@ argList.add(a);
     label_3:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-      case 8:{
+      case 9:{
         ;
         break;
         }
@@ -102,7 +102,7 @@ argList.add(a);
         jj_la1[5] = jj_gen;
         break label_3;
       }
-      jj_consume_token(8);
+      jj_consume_token(9);
       a = variable();
 argList.add(a);
     }
@@ -115,8 +115,8 @@ argList.add(a);
     tok = jj_consume_token(NAME);
 variable.name = tok.image;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case 10:{
-      jj_consume_token(10);
+    case 11:{
+      jj_consume_token(11);
       variable.type = type();
       break;
       }
@@ -129,8 +129,8 @@ variable.name = tok.image;
   }
 
   final public AstBlock block() throws ParseException {
-    jj_consume_token(14);
     jj_consume_token(15);
+    jj_consume_token(16);
 {if ("" != null) return new AstBlock();}
     throw new Error("Missing return statement in function");
   }
@@ -138,14 +138,14 @@ variable.name = tok.image;
   final public AstType baseType() throws ParseException {AstType type = new AstType();
     type.name = qualifiedName();
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case 12:{
-      jj_consume_token(12);
+    case 13:{
       jj_consume_token(13);
+      jj_consume_token(14);
       break;
       }
-    case 16:{
-      jj_consume_token(16);
+    case 17:{
       jj_consume_token(17);
+      jj_consume_token(18);
 AstType arrayType = AstType.fromName("Array");
             arrayType.params.add(type);
             type = arrayType;
@@ -164,7 +164,7 @@ AstType arrayType = AstType.fromName("Array");
     label_4:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-      case 18:{
+      case 19:{
         ;
         break;
         }
@@ -172,7 +172,7 @@ AstType arrayType = AstType.fromName("Array");
         jj_la1[8] = jj_gen;
         break label_4;
       }
-      jj_consume_token(18);
+      jj_consume_token(19);
       t = baseType();
 if (functionType == null) {
                 functionType = AstType.fromName("Function");
@@ -199,7 +199,7 @@ if (functionType == null) {
       jj_la1_init_0();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x40,0x80,0x400000,0x1000,0x400,0x100,0x400,0x11000,0x40000,};
+      jj_la1_0 = new int[] {0x80,0x100,0x800000,0x2000,0x800,0x200,0x800,0x22000,0x80000,};
    }
 
   /** Constructor with InputStream. */
@@ -316,7 +316,7 @@ if (functionType == null) {
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[23];
+    boolean[] la1tokens = new boolean[24];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -330,7 +330,7 @@ if (functionType == null) {
         }
       }
     }
-    for (int i = 0; i < 23; i++) {
+    for (int i = 0; i < 24; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

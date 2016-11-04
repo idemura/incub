@@ -1,11 +1,10 @@
 options
 {
-    //BUILD_TOKEN_MANAGER = false;
+    // BUILD_TOKEN_MANAGER = false;
     JDK_VERSION = "1.8";
     STATIC = false;
     SUPPORT_CLASS_VISIBILITY_PUBLIC = false;
-    //USER_CHAR_STREAM = true;
-    LOOKAHEAD = 2;
+    // USER_CHAR_STREAM = true;
 }
 
 PARSER_BEGIN(Parser)
@@ -23,25 +22,18 @@ SKIP: { " " | "\r" | "\n" | "\t" }
 
 TOKEN:
 {
-  <AS: "as">
-| <FN: "fn">
-| "." | "," | "_"
-| ":" | ";"
-| "(" | ")"
-| "{" | "}"
-| "[" | "]"
-| "=>"
-| <O: ["0"-"7"]>
-| <D: ["0"-"9"]>
-| <H: ["0"-"9", "a"-"f", "A"-"F"]>
-| <NAME_FIRST: ["a"-"z"]>
-| <META_FIRST: ["A"-"Z"]>
-| <L: ["a"-"z", "A"-"Z", "0"-"9", "_"]>
-| <NUM_DEC: (<D>)+>
-| <NUM_HEX: "0x" (<H>)+>
-| <NUM_OCT: "0o" (<D>)+>
-| <NAME: (<NAME_FIRST>)(<L>)*>
-| <META: (<META_FIRST>)(<L>)*>
+    <AS: "as">
+  | <FN: "fn">
+  | "." | "," | "_"
+  | ":" | ";"
+  | "(" | ")"
+  | "{" | "}"
+  | "[" | "]"
+  | "=>"
+  | <OCT: "0o" (["0"-"7"])+>
+  | <DEC: (["0"-"9"])+>
+  | <HEX: "0x" (["0"-"9", "a"-"f", "A"-"F"])+>
+  | <NAME: ["a"-"z", "A"-"Z", "_"] (["a"-"z", "A"-"Z", "0"-"9", "_"])*>
 }
 
 AstModule module(): {
@@ -55,35 +47,14 @@ AstModule module(): {
     { return module; }
 }
 
-String prefix(): {
-    String prefix = "";
+AstName qualifiedName(): {
+    AstName name = new AstName();
     Token tok;
 }
 {
-    (tok = <NAME> "." { prefix += tok.image + "."; })*
-    { return prefix; }
-}
-
-String prefixName(): {
-    String p, name;
-    Token tok;
-}
-{
-    p = prefix() tok = <NAME> { name = tok.image; }
-    { return p + name; }
-  | "_"
-    { return "_"; }
-}
-
-String prefixType(): {
-    String p, name;
-    Token tok;
-}
-{
-    p = prefix() tok = <META> { name = tok.image; }
-    { return p + name; }
-  | "_"
-    { return "_"; }
+    tok = <NAME> { name.add(tok.image); }
+    ("." tok = <NAME> { name.add(tok.image); })*
+    { return name; }
 }
 
 AstFunction function(): {
@@ -94,7 +65,7 @@ AstFunction function(): {
     (
         "(" (function.arguments = variableList())? ")"
     )?
-    (":" function.returns = variableList())?
+    (":" function.returnType = type())?
     function.block = block()
     { return function; }
 }
@@ -117,8 +88,7 @@ AstVariable variable(): {
 }
 {
     tok = <NAME> { variable.name = tok.image; } (":" variable.type = type())?
-    { return variable; }
-  | variable.type = type()
+    // Init expression!
     { return variable; }
 }
 
@@ -129,32 +99,32 @@ AstBlock block(): {
     { return new AstBlock(); }
 }
 
-Type baseType(): {
-    Type type = new Type();
+AstType baseType(): {
+    AstType type = new AstType();
 }
 {
-    type.name = prefixType()
-    // Generic instance:
-  | type.name = prefixType() "(" ")"
-  | type.name = prefixType() "[" "]" {
-        Type arrayType = new Type();
-        arrayType.name = "owl.Array";
-        arrayType.params.add(type);
-        type = arrayType;
-    }
+    type.name = qualifiedName()
+    (
+        "(" ")"
+      | "[" "]" {
+            AstType arrayType = AstType.fromName("Array");
+            arrayType.params.add(type);
+            type = arrayType;
+        }
+      | {}
+    )
     { return type; }
 }
 
-Type type(): {
-    Type type, t, functionType = null;
+AstType type(): {
+    AstType type, t, functionType = null;
 }
 {
     type = baseType()
     (
         "=>" t = baseType() {
             if (functionType == null) {
-                functionType = new Type();
-                type.name = "owl.Function";
+                functionType = AstType.fromName("Function");
                 type.params.add(type);
             }
             functionType.params.add(t);

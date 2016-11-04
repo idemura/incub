@@ -2,26 +2,20 @@ package owl.lang;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import static owl.lang.TypeNameVisitor.typeStr;
 
 public class TypeTest {
-    private static Type simpleType(String name) {
-        Type t = new Type();
-        t.name = name;
-        return t;
-    }
-
     @Test
     public void testGenericTypeStr() {
-        Type t = new Type();
-        t.name = "Foo";
-        t.params.add(simpleType("I32"));
-        t.params.add(simpleType("F32"));
-        assertEquals("Foo(I32, F32)", t.typeStr());
+        AstType t = AstType.fromName("Foo");
+        t.params.add(AstType.I32);
+        t.params.add(AstType.F32);
+        assertEquals("Foo(I32, F32)", typeStr(t));
     }
 
     @Test
     public void testTypeStr() {
-        Type t = simpleType("Foo");
-        assertEquals("Foo", t.typeStr());
+        AstType t = AstType.fromName("Foo");
+        assertEquals("Foo", typeStr(t));
     }
 }

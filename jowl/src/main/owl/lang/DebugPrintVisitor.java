@@ -1,7 +1,26 @@
 package owl.lang;
 
 class DebugPrintVisitor implements AstNode.Visitor {
-    private int tab = 0;
+    private TabPrinter printer = new TabPrinter();
+
+    @Override
+    public void visit(AstName n) {
+        node(n);
+        if (n.name != null) {
+            prop("name", String.join("/", n.name));
+        }
+        endNode();
+    }
+
+    @Override
+    public void visit(AstType n) {
+        node(n);
+        n.name.accept(this);
+        for (AstType t : n.params) {
+            n.accept(this);
+        }
+        endNode();
+    }
 
     @Override
     public void visit(AstModule n) {
@@ -9,25 +28,19 @@ class DebugPrintVisitor implements AstNode.Visitor {
         for (AstFunction f : n.functions) {
             f.accept(this);
         }
-        nodeDone();
+        endNode();
     }
 
     @Override
     public void visit(AstFunction n) {
         node(n);
         prop("name", n.name);
-        node("arguments");
+        prop("returnType", n.returnType);
         for (AstVariable a : n.arguments) {
             a.accept(this);
         }
-        nodeDone();
-        node("returns");
-        for (AstVariable a : n.returns) {
-            a.accept(this);
-        }
-        nodeDone();
         n.block.accept(this);
-        nodeDone();
+        endNode();
     }
 
     @Override
@@ -36,10 +49,8 @@ class DebugPrintVisitor implements AstNode.Visitor {
         if (n.name != null) {
             prop("name", n.name);
         }
-        if (n.type != null) {
-            prop("type", n.type.typeStr());
-        }
-        nodeDone();
+        n.type.accept(this);
+        endNode();
     }
 
     @Override
@@ -48,7 +59,12 @@ class DebugPrintVisitor implements AstNode.Visitor {
     }
 
     private void prop(String name, String s) {
-        print(name + ": " + s);
+        printer.print(name + ": " + s + "\n");
+    }
+
+    private void prop(String name, AstNode node) {
+        printer.print(name + ": ");
+        node.accept(this);
     }
 
     private void leaf(AstNode node, String s) {
@@ -56,33 +72,19 @@ class DebugPrintVisitor implements AstNode.Visitor {
         if (s != null) {
             text += " " + s;
         }
-        print(text + ";");
-    }
-
-    private void node(String text) {
-        print(text + " {");
-        tab++;
+        printer.print(text + "\n");
     }
 
     private void node(AstNode node) {
-        print(getClassName(node) + " {");
-        tab++;
+        printer.print(getClassName(node) + "{\n");
     }
 
-    private void nodeDone() {
-        tab--;
-        print("}");
+    private void endNode() {
+        printer.print("}\n");
     }
 
     private static String getClassName(AstNode node) {
         String fullName = node.getClass().getName();
         return fullName.substring(fullName.lastIndexOf('.') + 1);
-    }
-
-    private void print(String s) {
-        for (int i = 0; i < tab; i++) {
-            System.out.print("    ");
-        }
-        System.out.println(s);
     }
 }

@@ -15,27 +15,13 @@ interface ParserConstants {
   /** RegularExpression Id. */
   int FN = 6;
   /** RegularExpression Id. */
-  int O = 19;
+  int OCT = 19;
   /** RegularExpression Id. */
-  int D = 20;
+  int DEC = 20;
   /** RegularExpression Id. */
-  int H = 21;
+  int HEX = 21;
   /** RegularExpression Id. */
-  int NAME_FIRST = 22;
-  /** RegularExpression Id. */
-  int META_FIRST = 23;
-  /** RegularExpression Id. */
-  int L = 24;
-  /** RegularExpression Id. */
-  int NUM_DEC = 25;
-  /** RegularExpression Id. */
-  int NUM_HEX = 26;
-  /** RegularExpression Id. */
-  int NUM_OCT = 27;
-  /** RegularExpression Id. */
-  int NAME = 28;
-  /** RegularExpression Id. */
-  int META = 29;
+  int NAME = 22;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -61,17 +47,10 @@ interface ParserConstants {
     "\"[\"",
     "\"]\"",
     "\"=>\"",
-    "<O>",
-    "<D>",
-    "<H>",
-    "<NAME_FIRST>",
-    "<META_FIRST>",
-    "<L>",
-    "<NUM_DEC>",
-    "<NUM_HEX>",
-    "<NUM_OCT>",
+    "<OCT>",
+    "<DEC>",
+    "<HEX>",
     "<NAME>",
-    "<META>",
   };
 
 }

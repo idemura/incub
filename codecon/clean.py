@@ -1,24 +1,31 @@
 #! /usr/bin/python
 
 from __future__ import print_function
+
 import glob
 import os
+import shutil
 import stat
 import sys
 
+
 def glob_remove(pat):
-  for f in glob.glob(pat):
-    os.remove(f)
+    for f in glob.glob(pat):
+        if os.path.isdir(f):
+            shutil.rmtree(f)
+        else:
+            os.remove(f)
+
+
+def remove_executables(directory, white_list=None):
+    white_list = white_list or []
+    for f in os.listdir(directory):
+        if not os.path.isdir(f) and f not in white_list:
+            if os.stat(f).st_mode & stat.S_IEXEC:
+                print('Remove', f)
+                os.remove(f)
+
 
 glob_remove('*.o')
 glob_remove('*.dSYM')
-
-white_list = ['add_sln', 'bkp', 'build', 'clean']
-for dir, subdir_list, file_list in os.walk('.'):
-  for f in file_list:
-    fpath = os.path.join(dir, f)
-    if os.stat(fpath).st_mode & stat.S_IEXEC:
-      if f not in white_list:
-        print('Removing', fpath)
-        os.remove(fpath)
-
+remove_executables('.', white_list=['add_sln', 'bkp', 'build', 'clean'])

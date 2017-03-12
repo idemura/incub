@@ -1,6 +1,6 @@
 #include "base.h"
 
-truct ExtGCD {
+struct ExtGCD {
   int gcd, a, b;
   ExtGCD(int gcd, int a, int b): gcd(gcd), a(a), b(b) {}
 };
@@ -13,15 +13,15 @@ ExtGCD ext_gcd(int a, int b) {
   return {r.gcd, r.b, r.a - (a / b) * r.b};
 }
 
-inline int madd(int a, int b, int p) {
+int madd(int a, int b, int p) {
   return (a + b) % p;
 }
 
-inline int msub(int a, int b, int p) {
+int msub(int a, int b, int p) {
   return (a - b + p) % p;
 }
 
-inline int mmul(i64 a, int b, int p) {
+int mmul(i64 a, int b, int p) {
   return (int)(a * b % p);
 }
 
@@ -38,13 +38,13 @@ int mpow(i64 a, int k, int p) {
   return (int)x;
 }
 
-inline int minv(int a, int p) {
+int minv(int a, int p) {
   return mpow(a, p - 2, p);
 }
 
 // Compared to pow version, this may invert if `p` if not prime; but it has to
 // be coprime with `a`.
-inline int minv_bezout(int a, int p) {
+int minv_bezout(int a, int p) {
   auto g = ext_gcd(a, p);
   if (g.gcd != 1)
     return 0;  // Inverse doesn't exist.
@@ -52,13 +52,13 @@ inline int minv_bezout(int a, int p) {
     return x < 0? x + p: x;
 }
 
-inline int mdiv(i64 a, int b, int p) {
+int mdiv(i64 a, int b, int p) {
   a *= minv(b, p);
   a %= p;
   return (int)a;
 }
 
-inline bool eurler_criterion(int a, int p) {
+bool eurler_criterion(int a, int p) {
   return mpow(a, (p - 1) / 2, p) == 1;
 }
 

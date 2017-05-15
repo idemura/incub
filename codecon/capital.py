@@ -5,7 +5,7 @@ import math
 cap_gain = 0.15
 tax = 0.33
 
-income = 300e3
+income = 250e3
 # Sevings we can use, 50-60k we leave as "safety net"
 savings = 200e3
 
@@ -19,7 +19,7 @@ prop_tax = 0.01
 interest = 0.04
 
 investment = savings
-investment_return = 0.10
+investment_return = 0.05
 
 
 # Returns list of payments if for of (interest, principal).

@@ -86,7 +86,7 @@ def model_buy_house():
 
     print('In {} months I have house+cash of {}'.format(
             months,
-            house * math.pow(1 + house_appr, months / 12) + cash,
+            int(house * math.pow(1 + house_appr, months / 12) + cash),
     ))
     return months
 
@@ -103,7 +103,7 @@ def model_invest(term):
     invested = investment + term * invest_monthly
     print("Investment over {} months is {}".format(
         term,
-        invested + (total - invested) * (1 - cap_gain),
+        int(invested + (total - invested) * (1 - cap_gain)),
     ))
 
 

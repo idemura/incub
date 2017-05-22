@@ -28,4 +28,5 @@ def remove_executables(directory, white_list=None):
 
 glob_remove('*.o')
 glob_remove('*.dSYM')
-remove_executables('.', white_list=['add_sln', 'bkp', 'build', 'clean'])
+remove_executables('.', white_list=['bkp.py', 'build.sh', 'clean.py'])
+

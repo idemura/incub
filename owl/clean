@@ -1,8 +1,0 @@
-#! /bin/sh
-find . -name '*_test' -executable -type f -exec rm -rf {} \;
-rm -f *.d *.o *.a *.yy.cxx *.tab.cxx *.tab.hxx grammar.output \
-    build.ninja .ninja_* \
-    *.pyc \
-    report_stdout \
-    report_stderr \
-    owlc

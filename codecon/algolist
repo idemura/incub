@@ -23,4 +23,5 @@ LSM Tree
 Boyer–Moore
 Leftist heap
 Given set of points. Preprocess them. Query: given a rect, enum points.
-
+A*
+Robin Hood hashing

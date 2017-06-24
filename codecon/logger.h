@@ -1,0 +1,5 @@
+#define LOGURU_REPLACE_GLOG 1
+#define LOGURU_THREADNAME_WIDTH 5
+#define LOGURU_PREAMBLE_UPTIME 0
+#define LOGURU_FILENAME_WIDTH 12
+#include "loguru.hpp"

@@ -9,12 +9,25 @@ import stat
 import sys
 
 
-def glob_remove(pat):
-    for f in glob.glob(pat):
+do_rm = False
+for a in sys.argv[1:]:
+    if a == '--rm':
+        do_rm = True
+
+
+def remove(f):
+    if do_rm:
         if os.path.isdir(f):
             shutil.rmtree(f)
         else:
             os.remove(f)
+    else:
+        print(f)
+
+
+def glob_remove(pat):
+    for f in glob.glob(pat):
+        remove(f)
 
 
 def remove_executables(directory, white_list=None):
@@ -22,8 +35,7 @@ def remove_executables(directory, white_list=None):
     for f in os.listdir(directory):
         if not os.path.isdir(f) and f not in white_list:
             if os.stat(f).st_mode & stat.S_IEXEC:
-                print('Remove', f)
-                os.remove(f)
+                remove(f)
 
 
 glob_remove('*.o')

@@ -2085,17 +2085,7 @@ namespace loguru
 		return result;
 	}
 
-	template <class T>
-	std::string type_name() {
-		auto demangled = demangle(typeid(T).name());
-		return demangled.c_str();
-	}
-
 	static const StringPairList REPLACE_LIST = {
-		{ type_name<std::string>(),    "std::string"    },
-		{ type_name<std::wstring>(),   "std::wstring"   },
-		{ type_name<std::u16string>(), "std::u16string" },
-		{ type_name<std::u32string>(), "std::u32string" },
 		{ "std::__1::",                "std::"          },
 		{ "__thiscall ",               ""               },
 		{ "__cdecl ",                  ""               },
@@ -2223,32 +2213,34 @@ namespace loguru
 #endif // LOGURU_PREAMBLE_UPTIME
 
 		char thread_name[LOGURU_THREADNAME_WIDTH + 1] = {0};
-		get_thread_name(thread_name, LOGURU_THREADNAME_WIDTH + 1, true);
+		get_thread_name(thread_name, LOGURU_THREADNAME_WIDTH + 1, false /*align_right*/);
 
 		if (s_strip_file_path) {
 			file = filename(file);
 		}
 
-		char level_buff[6];
+		char level_buff[8];
 		if (verbosity <= Verbosity_FATAL) {
-			snprintf(level_buff, sizeof(level_buff) - 1, " F");
+			snprintf(level_buff, sizeof(level_buff) - 1, "F");
 		} else if (verbosity == Verbosity_ERROR) {
-			snprintf(level_buff, sizeof(level_buff) - 1, " E");
+			snprintf(level_buff, sizeof(level_buff) - 1, "E");
 		} else if (verbosity == Verbosity_WARNING) {
-			snprintf(level_buff, sizeof(level_buff) - 1, " W");
+			snprintf(level_buff, sizeof(level_buff) - 1, "W");
+		} else if (verbosity == Verbosity_INFO) {
+			snprintf(level_buff, sizeof(level_buff) - 1, "I");
 		} else {
-			snprintf(level_buff, sizeof(level_buff) - 1, "% 2d", verbosity);
+			snprintf(level_buff, sizeof(level_buff) - 1, "%d", verbosity);
 		}
 
-		snprintf(out_buff, out_buff_size, "%04d-%02d-%02d %02d:%02d:%02d.%03lld" LOGURU_PREAMBLE_UPTIME_OPT(" (%8.3fs)") " %-*s%*s:%-6u %s| ",
+		snprintf(out_buff, out_buff_size, "%04d-%02d-%02d %02d:%02d:%02d.%03lld" LOGURU_PREAMBLE_UPTIME_OPT(" (%8.3fs)") " %s %s:%u %s| ",
 			1900 + time_info.tm_year, 1 + time_info.tm_mon, time_info.tm_mday,
 			time_info.tm_hour, time_info.tm_min, time_info.tm_sec, ms_since_epoch % 1000,
 #if LOGURU_PREAMBLE_UPTIME
 			uptime_sec,
 #endif // LOGURU_PREAMBLE_UPTIME
-			LOGURU_THREADNAME_WIDTH, thread_name,
-			LOGURU_FILENAME_WIDTH,
-			file, line, level_buff);
+			thread_name,
+			file, line,
+            level_buff);
 #undef LOGURU_PREAMBLE_UPTIME_OPT
 	}
 

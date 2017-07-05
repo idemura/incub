@@ -6,7 +6,7 @@ cap_gain = 0.15
 tax = 0.33
 
 income = 250e3
-# Sevings we can use, 50-60k we leave as "safety net"
+# Savings we can use, 50-60k we leave as "safety net"
 savings = 200e3
 
 rent = 3000 * 12

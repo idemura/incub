@@ -33,12 +33,13 @@ def glob_remove(pat):
 def remove_executables(directory, white_list=None):
     white_list = white_list or []
     for f in os.listdir(directory):
-        if not os.path.isdir(f) and f not in white_list:
+        _, ext = os.path.splitext(f)
+        if not os.path.isdir(f) and f not in white_list and len(ext) == 0:
             if os.stat(f).st_mode & stat.S_IEXEC:
                 remove(f)
 
 
 glob_remove('*.o')
 glob_remove('*.dSYM')
-remove_executables('.', white_list=['bkp.py', 'build.sh', 'clean.py'])
+remove_executables('.', white_list=[])
 

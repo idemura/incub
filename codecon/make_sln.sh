@@ -3,6 +3,8 @@
 [ "$#" -eq 1 ] || exit 1
 
 cat > "$1".cc <<EOF
+#include <cmath>
+#include <cstdio>
 #include <array>
 #include <algorithm>
 #include <map>

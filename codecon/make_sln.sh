@@ -19,10 +19,10 @@ cat > "$1".cc <<EOF
 using namespace std;
 
 using i64 = long long int;
+using i32 = int;
 using pii = std::pair<int, int>;
 
 int main() {
-
     return 0;
 }
 EOF

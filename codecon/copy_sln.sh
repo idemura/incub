@@ -4,5 +4,7 @@
 if cp "$1".cc "sln/"; then
   rm -r "$1"*
   git add sln/"$1".cc
-  echo "$1 copied and added"
+  git commit -m "$1"
+  echo "$1 copied and committed"
 fi
+

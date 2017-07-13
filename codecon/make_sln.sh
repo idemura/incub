@@ -14,7 +14,7 @@ cat > "$1".cc <<EOF
 #include <utility>
 #include <iostream>
 
-#include "logger.h"
+#include "log.h"
 
 using namespace std;
 

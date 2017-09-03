@@ -3,23 +3,24 @@
 [ "$#" -eq 1 ] || exit 1
 
 cat > "$1".cc <<EOF
+#include <cassert>
 #include <cmath>
+#include <cstdint>
 #include <cstdio>
-#include <array>
+#include <cstring>
 #include <algorithm>
 #include <map>
 #include <vector>
 #include <string>
 #include <unordered_map>
 #include <utility>
-#include <iostream>
 
-#include "log.h"
+#include "log.hpp"
 
 using namespace std;
 
-using i64 = long long int;
-using i32 = int;
+using i32 = int32_t;
+using i64 = int64_t;
 using pii = std::pair<int, int>;
 
 int main() {

@@ -9,10 +9,10 @@ std::ostream &operator<<(std::ostream &os, char_buf const &cb) {
 }
 
 namespace tests {
-TEST(char_buf, basic) {
+TEST(CharBuf, Basic) {
 }
 
-TEST(string_table, basic) {
+TEST(StringTable, Basic) {
     details::string_table st;
     auto id1 = st.insert(char_buf::strz("hello"));
     auto id2 = st.insert(char_buf::strz("world"));
@@ -20,7 +20,7 @@ TEST(string_table, basic) {
     EXPECT_EQ(char_buf::strz("world"), st.string(id2));
 }
 
-TEST(tpp, compile) {
+TEST(TPP, Compile) {
     auto program = compile_template(char_buf::strz(
             "let x 10\n"
             "let y \"hello\"\n"

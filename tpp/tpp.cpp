@@ -51,6 +51,8 @@ uint64_t string_table::insert(char_buf s) {
 
 char_buf string_table::string(uint64_t id) {
     id_t decoded{id};
+    assert(decoded.offset <= text_.size());
+    assert(decoded.offset + decoded.size <= text_.size());
     return char_buf::wrap(decoded.size, text_.data() + decoded.offset);
 }
 

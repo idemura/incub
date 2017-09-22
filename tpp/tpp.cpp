@@ -1,8 +1,3 @@
-// #include <iostream>
-// using std::cout;
-// using std::cerr;
-// using std::endl;
-
 #include "tpp.hpp"
 
 #include <unistd.h>
@@ -11,34 +6,10 @@
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
-#include <algorithm>
-#include <string>
 
 namespace idemura {
 namespace details {
 static int fd_error{2};
-
-void print_error(char const *msg_fmt, ...) {
-    if (fd_error <= 0) {
-        return;
-    }
-    char buf[120];
-    std::va_list va;
-    va_start(va, msg_fmt);
-    std::vsnprintf(buf, sizeof buf, msg_fmt, va);
-    va_end(va);
-    ::write(fd_error, buf, std::strlen(buf));
-}
-
-[[noreturn]] void print_fatal(char const *msg) {
-    print_error(msg);
-    print_error("\nabort\n");
-    std::abort();
-}
-
-std::string to_string(char_buf const &buf) {
-    return std::string{buf.data(), buf.size()};
-}
 
 std::string to_string(token t) {
     switch (t) {
@@ -61,17 +32,26 @@ std::string to_string(token t) {
         case token::end:
             return "end";
     }
-    print_fatal("to_string: unknown token");
+    fatal("to_string: unknown token");
 }
 
-char_buf program_impl::run() {
-    uint32_t i = 0;
-    while (i < bc_.size()) {
-        // switch () {
-        // }
-        i++;
+uint64_t string_table::insert(char_buf s) {
+    auto where = index_.find(s);
+    if (where != index_.end()) {
+        return where->second.encode();
     }
-    return char_buf::strz("dummy\n");
+
+    auto id = id_t(text_.size(), s.size());
+    text_.resize(id.offset + id.size);
+    s.copy_to(text_.data() + id.offset);
+
+    index_.emplace(std::move(s), id);
+    return id.encode();
+}
+
+char_buf string_table::string(uint64_t id) {
+    id_t decoded{id};
+    return char_buf::wrap(decoded.size, text_.data() + decoded.offset);
 }
 
 uint32_t token_cursor::count_alnum() {
@@ -154,7 +134,8 @@ bool token_cursor::next() {
             return take_string();
         case '`':
             // return take_print();
-            print_fatal("not implemented");
+            fatal("not implemented");
+            break;
         default: {
             // Do not move, just mark invalid.
             invalidate();
@@ -189,12 +170,12 @@ std::unique_ptr<program> compiler::compile() {
                 break;
             }
             default: {
-                print_fatal("FATAL: unknown token type");
+                fatal("FATAL: unknown token type");
             }
         }
     }
     if (!cursor_.valid()) {
-        print_error("invalid token on line %u\n", cursor_.line());
+        error("invalid token on line %u\n", cursor_.line());
         return nullptr;
     }
     return std::make_unique<details::program_impl>();
@@ -205,7 +186,7 @@ bool compiler::compile_let() {
         return false;
     }
     if (cursor_.get() != token::symbol) {
-        print_error("line %u: let: symbol expected", cursor_.line());
+        error("line %u: let: symbol expected", cursor_.line());
         return false;
     }
     auto name = cursor_.text();
@@ -223,7 +204,7 @@ bool compiler::compile_let() {
             break;
         }
         default: {
-            print_error("line %u: let: literal expected\n", cursor_.line());
+            error("line %u: let: literal expected\n", cursor_.line());
             return false;
         }
     }
@@ -231,11 +212,44 @@ bool compiler::compile_let() {
         return false;
     }
     if (cursor_.get() != token::line_end) {
-        print_error("line %u: let: end of line expected\n", cursor_.line());
+        error("line %u: let: end of line expected\n", cursor_.line());
         return false;
     }
     return true;
 }
+
+char_buf program_impl::run() {
+    uint32_t i = 0;
+    while (i < bc_.size()) {
+        // switch () {
+        // }
+        i++;
+    }
+    return char_buf::strz("dummy\n");
+}
+}
+
+std::string to_string(char_buf const &buf) {
+    return std::string{buf.data(), buf.size()};
+}
+
+void error(char const *msg_fmt, ...) {
+    if (details::fd_error <= 0) {
+        return;
+    }
+    char buf[120];
+    std::va_list va;
+    va_start(va, msg_fmt);
+    std::vsnprintf(buf, sizeof buf, msg_fmt, va);
+    va_end(va);
+    ::write(details::fd_error, buf, std::strlen(buf));
+}
+
+[[noreturn]]
+void fatal(char const *msg) {
+    error(msg);
+    error("\nabort\n");
+    std::abort();
 }
 
 std::unique_ptr<program> compile_template(char_buf code) {
@@ -246,44 +260,4 @@ std::unique_ptr<program> compile_template(char_buf code) {
 void set_error_file(int fd) {
     details::fd_error = fd;
 }
-
-char_buf read_stdin() {
-    std::vector<char_buf> pieces;
-    uint32_t size = 0;
-    for (;;) {
-        char_buf buf{4096};
-        auto num_bytes = ::read(0, buf.data(), buf.size());
-        if (num_bytes < 0) {
-            details::print_fatal("FATAL: fail to read stdin\n");
-        }
-        if (num_bytes == 0) {
-            break;
-        }
-        size += num_bytes;
-        auto sub_buf = buf.substr(0, num_bytes);
-        if (num_bytes < 4096) {
-            sub_buf = sub_buf.copy();
-        }
-        pieces.emplace_back(std::move(sub_buf));
-    }
-    char_buf big_buf{size};
-    uint32_t ofs = 0;
-    for (auto &b : pieces) {
-        std::memcpy(big_buf.data() + ofs, b.data(), b.size());
-        ofs += b.size();
-    }
-    return big_buf;
-}
-}
-
-int main(int argc, char **argv) {
-    using namespace idemura;
-
-    auto program = compile_template(read_stdin());
-    if (!program) {
-        return 1;
-    }
-    auto text = program->run();
-    ::write(1, text.data(), text.size());
-    return 0;
 }

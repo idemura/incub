@@ -1,2 +1,18 @@
 let x 10
 let y "hello"
+
+out "$(args.my)"
+if (x < 5) (
+    out """
+      hello igor!
+      this is my preprocessor
+    """
+) else (
+    out "hello 2"
+)
+
+for x in [1, 2, 3] (
+    out """
+      counting $x, next $(x + 1)
+    """
+)

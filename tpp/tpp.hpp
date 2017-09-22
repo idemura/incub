@@ -2,11 +2,33 @@
 
 #include <cstdint>
 #include <cstring>
+#include <algorithm>
+#include <map>
 #include <memory>
 #include <utility>
 #include <vector>
+#include <string>
+
+#define TPP_CTOR_ASSIGN(Class, Keyword, ArgSpec) \
+    Class(Class ArgSpec) = Keyword; \
+    Class &operator=(Class ArgSpec) = Keyword;
+
+#define TPP_COPY(Class, Spec) TPP_CTOR_ASSIGN(Class, Spec, const&)
+#define TPP_MOVE(Class, Spec) TPP_CTOR_ASSIGN(Class, Spec, &&)
+
+#define TPP_MOVE_ONLY(Class) \
+    TPP_COPY(Class, delete) \
+    TPP_MOVE(Class, default)
 
 namespace idemura {
+// @char_buf and utilities
+//
+enum class compare_t {
+    lt,
+    eq,
+    gt,
+};
+
 class char_buf {
 public:
     static char_buf wrap(uint32_t size, char *data) {
@@ -75,6 +97,10 @@ public:
         return char_buf{size_, data_};
     }
 
+    void copy_to(char *dest) const {
+        std::memcpy(dest, data_, size_);
+    }
+
     uint32_t size() const {
         return size_;
     }
@@ -91,6 +117,24 @@ public:
         return char_buf{count, data_ + first, no_ownership()};
     }
 
+    compare_t compare(char_buf const &other) const {
+        auto len = std::min(size_, other.size_);
+        auto c = std::memcmp(data_, other.data_, len);
+        if (c < 0) {
+            return compare_t::lt;
+        }
+        if (c > 0) {
+            return compare_t::gt;
+        }
+        if (size_ < other.size_) {
+            return compare_t::lt;
+        }
+        if (size_ > other.size_) {
+            return compare_t::gt;
+        }
+        return compare_t::eq;
+    }
+
 private:
     struct no_ownership {};
 
@@ -99,13 +143,48 @@ private:
         owns_{false},
         data_{data} {}
 
-    char_buf(char_buf const&) = delete;
-    char_buf &operator=(char_buf const&) = delete;
+    TPP_COPY(char_buf, delete);
 
     uint32_t size_{};
     bool owns_{true};
     char *data_{};
 };
+
+inline bool operator<(char_buf const &l, char_buf const &r) {
+    return l.compare(r) == compare_t::lt;
+}
+
+inline bool operator<=(char_buf const &l, char_buf const &r) {
+    return l.compare(r) != compare_t::gt;
+}
+
+inline bool operator>(char_buf const &l, char_buf const &r) {
+    return l.compare(r) == compare_t::gt;
+}
+
+inline bool operator>=(char_buf const &l, char_buf const &r) {
+    return l.compare(r) != compare_t::lt;
+}
+
+inline bool operator==(char_buf const &l, char_buf const &r) {
+    return l.compare(r) == compare_t::eq;
+}
+
+inline bool operator!=(char_buf const &l, char_buf const &r) {
+    return l.compare(r) != compare_t::eq;
+}
+
+std::string to_string(char_buf const &buf);
+
+//
+// End @char_buf related code
+
+void set_error_file(int fd);
+
+void error(char const *msg_fmt, ...);
+
+[[noreturn]]
+void fatal(char const *msg);
 
 class program {
 public:
@@ -114,7 +193,6 @@ public:
 };
 
 std::unique_ptr<program> compile_template(char_buf code);
-void set_error_file(int fd);
 
 namespace details {
 enum class opcode: uint32_t {
@@ -138,8 +216,7 @@ enum class token: uint32_t {
 class bytecode_gen {
 public:
     bytecode_gen() = default;
-    bytecode_gen(bytecode_gen const&) = delete;
-    bytecode_gen &operator=(bytecode_gen const&) = delete;
+    TPP_MOVE_ONLY(bytecode_gen);
 
     void add(opcode op) {
         bc_.push_back(static_cast<uint32_t>(op));
@@ -153,11 +230,38 @@ private:
     std::vector<uint32_t> bc_;
 };
 
+// Collects strings and assigns them IDs.
+class string_table {
+public:
+    string_table() = default;
+    TPP_MOVE_ONLY(string_table);
+
+    uint64_t insert(char_buf s);
+    char_buf string(uint64_t id);
+
+private:
+    struct id_t {
+        uint32_t const offset{};
+        uint32_t const size{};
+
+        id_t(uint32_t o, uint32_t s): offset{o}, size{s} {}
+        explicit id_t(uint64_t coded):
+            offset(coded >> 32),
+            size((coded << 32) >> 32) {}
+
+        uint64_t encode() const {
+            return (uint64_t{offset} << 32) | size;
+        }
+    };
+
+    std::map<char_buf, id_t> index_;
+    std::vector<char> text_;
+};
+
 class token_cursor {
 public:
     explicit token_cursor(char_buf code): code_{std::move(code)} {}
-    token_cursor(token_cursor const &) = default;
-    token_cursor &operator=(token_cursor const &) = default;
+    TPP_COPY(token_cursor, default);
 
     token get() {
         return token_;
@@ -195,6 +299,8 @@ private:
 class compiler {
 public:
     explicit compiler(char_buf code): cursor_{code.wrap()} {}
+    TPP_MOVE_ONLY(compiler);
+
     std::unique_ptr<program> compile();
 
 private:
@@ -207,9 +313,7 @@ private:
 class program_impl: public program {
 public:
     program_impl() {}
-    program_impl(program_impl const&) = delete;
-    program_impl &operator=(program_impl const&) = delete;
-    ~program_impl() override = default;
+    TPP_MOVE_ONLY(program_impl);
 
     char_buf run() override;
 

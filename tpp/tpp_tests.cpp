@@ -1,66 +1,31 @@
 #include "tpp.hpp"
 
-#include <cassert>
-#include <cstdlib>
-#include <iostream>
-
-#define CHECK_WITH(Expr, Abort) \
-    do { \
-        ::idemura::testing::check( \
-                !(Expr), \
-                #Expr, \
-                __FILE__, \
-                __LINE__, \
-                Abort); \
-    } while (false)
-
-#define EXPECT(Expr) CHECK_WITH(Expr, false)
-#define ASSERT(Expr) CHECK_WITH(Expr, true)
+#include <ostream>
+#include <gtest/gtest.h>
 
 namespace idemura {
-namespace testing {
-static uint32_t failed = 0;
-
-void check(
-        bool check_failed,
-        char const *expr,
-        char const *file,
-        uint32_t line,
-        bool abort) {
-    if (check_failed) {
-        failed++;
-        std::cerr<<"Check failed: "<<expr<<" in "<<file<<":"<<line<<std::endl;
-        if (abort) {
-            std::abort();
-        }
-    }
+std::ostream &operator<<(std::ostream &os, char_buf const &cb) {
+    return os << to_string(cb);
 }
 
-[[noreturn]]
-void exit() {
-    if (failed > 0) {
-        std::exit(1);
-    } else {
-        std::cerr<<"ALL TESTS PASSED\n";
-        std::exit(0);
-    }
-}
-}
+namespace tests {
+TEST(char_buf, basic) {
 }
 
-namespace idemura {
-void test_1() {
+TEST(string_table, basic) {
+    details::string_table st;
+    auto id1 = st.insert(char_buf::strz("hello"));
+    auto id2 = st.insert(char_buf::strz("world"));
+    EXPECT_EQ(char_buf::strz("hello"), st.string(id1));
+    EXPECT_EQ(char_buf::strz("world"), st.string(id2));
+}
+
+TEST(tpp, compile) {
     auto program = compile_template(char_buf::strz(
             "let x 10\n"
             "let y \"hello\"\n"
     ));
-    ASSERT(program);
+    ASSERT_TRUE(program);
 }
 }
-
-int main(int argc, char **argv) {
-    using namespace idemura;
-
-    test_1();
-    testing::exit();
 }

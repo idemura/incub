@@ -1,3 +1,8 @@
+ninja_required_version = 1.3
+
+root = .
+builddir = build
+
 cxx = clang++ -fcolor-diagnostics
 cxx_codegen = -O0 -g
 # cxx_codegen = -O3 -ffast-math -flto -DNDEBUG
@@ -5,18 +10,26 @@ cxx_flags = -std=c++14 -fno-exceptions -fno-rtti -I. -Wall -march=native
 cxx_disable_warnings = -Wno-unused-function -Wno-char-subscripts
 cxx_command = $cxx $cxx_flags $cxx_codegen $cxx_disable_warnings
 
+rule cxx_object
+    deps = gcc
+    depfile = $out.d
+    command = $cxx_command $in -o $out -c
+
 rule cxx_binary
     deps = gcc
     depfile = $out.d
     command = $cxx_command $in -o $out
 
-rule cxx_library
+rule cxx_test
     deps = gcc
     depfile = $out.d
-    command = $cxx_command $in -o $out -c
+    command = $cxx_command $in -o $out -lgtest -lgtest_main
 
-build tpp.o: cxx_library tpp.cpp
-build tpp: cxx_binary tpp.o tpp_cli.cpp
-build tpp_tests: cxx_binary tpp.o tpp_tests.cpp
+rule copy
+    command = cp $in $out
 
-default tpp tpp_tests
+build $builddir/tpp.o: cxx_object tpp.cpp
+build $builddir/tpp: cxx_binary $builddir/tpp.o tpp_cli.cpp
+build $builddir/tpp_tests: cxx_test $builddir/tpp.o tpp_tests.cpp
+
+default $builddir/tpp $builddir/tpp_tests

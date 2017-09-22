@@ -1,0 +1,16 @@
+cxx = clang++ -fcolor-diagnostics
+
+cxx_gen = -O0 -g
+# cxx_gen = -O3 -ffast-math -flto -DNDEBUG
+
+cxx_flags = -std=c++14 -fno-exceptions -fno-rtti -I. -Wall -march=native
+cxx_disable_warnings = -Wno-unused-function -Wno-char-subscripts
+
+rule cxx_binary
+    deps = gcc
+    depfile = $out.d
+    command = $cxx $cxx_flags $cxx_gen $cxx_disable_warnings $in -o $out
+
+build tpp: cxx_binary tpp.cpp
+
+default tpp

@@ -9,27 +9,32 @@
 namespace idemura {
 class char_buf {
 public:
-    static char_buf wrap(uint32_t size, char const *data) {
-        return char_buf{size, data, false};
+    static char_buf wrap(uint32_t size, char *data) {
+        return char_buf{size, data, no_ownership()};
     }
 
-    static char_buf wrap_strz(char const *data) {
-        return char_buf{uint32_t(std::strlen(data)), data, false};
+    static char_buf strz(char const *data) {
+        return char_buf{uint32_t(std::strlen(data)), data};
     }
+
+    char_buf(): char_buf{0, nullptr, no_ownership()} {}
 
     explicit char_buf(uint32_t size, char const *data = nullptr):
-        char_buf(size, data, true) {}
-
-    ~char_buf() {
-        reset();
+        size_{size},
+        owns_{true},
+        data_{new char[size]()} {
+        if (data) {
+            std::memcpy(data_, data, size);
+        }
     }
-
-    char_buf(): char_buf{0, nullptr, false} {}
 
     char_buf(char_buf &&other) noexcept:
         size_{other.size_},
         owns_{other.owns_},
-        data_{other.data_} {}
+        data_{other.data_} {
+        other.size_ = 0;
+        other.data_ = nullptr;
+    }
 
     char_buf &operator=(char_buf &&other) {
         reset();
@@ -41,6 +46,10 @@ public:
         return *this;
     }
 
+    ~char_buf() {
+        reset();
+    }
+
     void reset() {
       if (owns_) {
           delete[] data_;
@@ -50,7 +59,7 @@ public:
     }
 
     char_buf wrap() const {
-        return char_buf{size_, data_, false};
+        return char_buf{size_, data_, no_ownership()};
     }
 
     void move(int delta) {
@@ -79,18 +88,16 @@ public:
         if (first + count > size_) {
             count = size_ - first;
         }
-        return char_buf{count, data_ + first, false};
+        return char_buf{count, data_ + first, no_ownership()};
     }
 
 private:
-    char_buf(uint32_t size, char const *data, bool owns):
+    struct no_ownership {};
+
+    char_buf(uint32_t size, char *data, no_ownership):
         size_{size},
-        owns_{owns},
-        data_{new char[size]()} {
-        if (data) {
-            std::memcpy(data_, data, size);
-        }
-    }
+        owns_{false},
+        data_{data} {}
 
     char_buf(char_buf const&) = delete;
     char_buf &operator=(char_buf const&) = delete;

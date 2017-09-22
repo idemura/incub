@@ -11,4 +11,6 @@ buck-out
 .buckd
 .idea
 *.iml
+.ninja_deps
+.ninja_log
 

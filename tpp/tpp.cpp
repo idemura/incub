@@ -1,3 +1,8 @@
+// #include <iostream>
+// using std::cout;
+// using std::cerr;
+// using std::endl;
+
 #include "tpp.hpp"
 
 #include <unistd.h>
@@ -8,11 +13,6 @@
 #include <cstdlib>
 #include <algorithm>
 #include <string>
-
-#include <iostream>
-using std::cout;
-using std::cerr;
-using std::endl;
 
 namespace idemura {
 namespace details {
@@ -71,7 +71,7 @@ char_buf program_impl::run() {
         // }
         i++;
     }
-    return char_buf::wrap_strz("dummy\n");
+    return char_buf::strz("dummy\n");
 }
 
 uint32_t token_cursor::count_alnum() {
@@ -260,12 +260,17 @@ char_buf read_stdin() {
             break;
         }
         size += num_bytes;
-        pieces.emplace_back(buf.substr(0, num_bytes).copy());
+        auto sub_buf = buf.substr(0, num_bytes);
+        if (num_bytes < 4096) {
+            sub_buf = sub_buf.copy();
+        }
+        pieces.emplace_back(std::move(sub_buf));
     }
     char_buf big_buf{size};
     uint32_t ofs = 0;
     for (auto &b : pieces) {
         std::memcpy(big_buf.data() + ofs, b.data(), b.size());
+        ofs += b.size();
     }
     return big_buf;
 }

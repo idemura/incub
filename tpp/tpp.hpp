@@ -117,6 +117,10 @@ public:
         return char_buf{count, data_ + first, no_ownership()};
     }
 
+    bool equals(char const *strz) const {
+        return std::strlen(strz) == size_ && std::memcmp(data_, strz, size_) == 0;
+    }
+
     compare_t compare(char_buf const &other) const {
         auto len = std::min(size_, other.size_);
         auto c = std::memcmp(data_, other.data_, len);
@@ -196,9 +200,7 @@ std::unique_ptr<program> compile_template(char_buf code);
 
 namespace details {
 enum class opcode: uint32_t {
-    leti,
-    lets,
-    print,
+    call,
 };
 
 enum class token: uint32_t {
@@ -213,17 +215,31 @@ enum class token: uint32_t {
     end,
 };
 
+struct string_id {
+    uint32_t const offset{};
+    uint32_t const size{};
+
+    string_id(uint32_t o, uint32_t s): offset{o}, size{s} {}
+};
+
 class bytecode_gen {
 public:
     bytecode_gen() = default;
     TPP_MOVE_ONLY(bytecode_gen);
 
-    void add(opcode op) {
+    void add_op(opcode op) {
         bc_.push_back(static_cast<uint32_t>(op));
     }
 
-    void add_arg(uint32_t arg) {
-        bc_.push_back(arg);
+    void add_int(int64_t n) {
+        bc_.push_back(n >> 32);
+        // Coersion below will take 32 lowest bits
+        bc_.push_back(n);
+    }
+
+    void add_str(string_id id) {
+        bc_.push_back(id.offset);
+        bc_.push_back(id.size);
     }
 
 private:
@@ -236,25 +252,11 @@ public:
     string_table() = default;
     TPP_MOVE_ONLY(string_table);
 
-    uint64_t insert(char_buf s);
-    char_buf string(uint64_t id);
+    string_id insert(char_buf s);
+    char_buf string(string_id id);
 
 private:
-    struct id_t {
-        uint32_t const offset{};
-        uint32_t const size{};
-
-        id_t(uint32_t o, uint32_t s): offset{o}, size{s} {}
-        explicit id_t(uint64_t coded):
-            offset(coded >> 32),
-            size((coded << 32) >> 32) {}
-
-        uint64_t encode() const {
-            return (uint64_t{offset} << 32) | size;
-        }
-    };
-
-    std::map<char_buf, id_t> index_;
+    std::map<char_buf, string_id> index_;
     std::vector<char> text_;
 };
 
@@ -305,19 +307,27 @@ public:
 
 private:
     bool compile_let();
+    bool compile_expression();
+    void compile_error(char const *msg_fmt, ...);
 
     token_cursor cursor_;
+    uint32_t error_count_{};
     bytecode_gen bc_;
+    string_table st_;
 };
 
 class program_impl: public program {
 public:
-    program_impl() {}
+    program_impl(bytecode_gen bc, string_table st):
+        bc_{std::move(bc)},
+        st_{std::move(st)} {}
     TPP_MOVE_ONLY(program_impl);
 
     char_buf run() override;
 
 private:
+    bytecode_gen bc_;
+    string_table st_;
     std::vector<uint32_t> bc_;
 };
 }

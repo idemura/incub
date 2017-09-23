@@ -35,25 +35,24 @@ std::string to_string(token t) {
     fatal("to_string: unknown token");
 }
 
-uint64_t string_table::insert(char_buf s) {
+string_id string_table::insert(char_buf s) {
     auto where = index_.find(s);
     if (where != index_.end()) {
-        return where->second.encode();
+        return where->second;
     }
 
-    auto id = id_t(text_.size(), s.size());
+    auto id = string_id(text_.size(), s.size());
     text_.resize(id.offset + id.size);
     s.copy_to(text_.data() + id.offset);
 
     index_.emplace(std::move(s), id);
-    return id.encode();
+    return id;
 }
 
-char_buf string_table::string(uint64_t id) {
-    id_t decoded{id};
-    assert(decoded.offset <= text_.size());
-    assert(decoded.offset + decoded.size <= text_.size());
-    return char_buf::wrap(decoded.size, text_.data() + decoded.offset);
+char_buf string_table::string(string_id id) {
+    assert(id.offset <= text_.size());
+    assert(id.offset + id.size <= text_.size());
+    return char_buf::wrap(id.size, text_.data() + id.offset);
 }
 
 uint32_t token_cursor::count_alnum() {
@@ -149,6 +148,16 @@ bool token_cursor::next() {
     return true;
 }
 
+void compiler::compile_error(char const *msg_fmt, ...) {
+    char buf[120];
+    std::va_list va;
+    va_start(va, msg_fmt);
+    std::vsnprintf(buf, sizeof buf, msg_fmt, va);
+    va_end(va);
+    error("line %u: %s\n", cursor_.line(), buf);
+    error_count_++;
+}
+
 std::unique_ptr<program> compiler::compile() {
     for (auto stop = false; !stop;) {
         if (!cursor_.next()) {
@@ -160,27 +169,32 @@ std::unique_ptr<program> compiler::compile() {
                 break;
             }
             case token::kw_let: {
-                if (!compile_let()) {
-                    stop = true;
-                }
+                stop = compile_let();
                 break;
             }
             case token::symbol: {
-                break;
-            }
-            case token::literal_int: {
+                stop = compile_expression();
                 break;
             }
             default: {
-                fatal("FATAL: unknown token type");
+                compile_error(
+                        "unexpected token type %s",
+                        to_string(cursor_.get()).c_str());
+                stop = true;
             }
         }
     }
     if (!cursor_.valid()) {
-        error("invalid token on line %u\n", cursor_.line());
+        compile_error("invalid token");
+    }
+    if (error_count_ > 0) {
+        bc_ = bytecode_gen{};
+        st_ = string_table{};
         return nullptr;
     }
-    return std::make_unique<details::program_impl>();
+    return std::make_unique<details::program_impl>(
+            std::move(bc_),
+            std::move(st_));
 }
 
 bool compiler::compile_let() {
@@ -188,7 +202,7 @@ bool compiler::compile_let() {
         return false;
     }
     if (cursor_.get() != token::symbol) {
-        error("line %u: let: symbol expected", cursor_.line());
+        compile_error("'let' name: symbol expected");
         return false;
     }
     auto name = cursor_.text();
@@ -206,7 +220,7 @@ bool compiler::compile_let() {
             break;
         }
         default: {
-            error("line %u: let: literal expected\n", cursor_.line());
+            compile_error("'let': expression expected");
             return false;
         }
     }
@@ -214,20 +228,70 @@ bool compiler::compile_let() {
         return false;
     }
     if (cursor_.get() != token::line_end) {
-        error("line %u: let: end of line expected\n", cursor_.line());
+        compile_error("'let': line end expected");
         return false;
     }
     return true;
 }
 
+bool compiler::compile_expression() {
+    auto fn_name = cursor_.text();
+    if (!cursor_.next()) {
+        return false;
+    }
+    if (!fn_name.equals("out")) {
+        fatal("not supported");
+    }
+    bc_.add_op(opcode::call);
+    bc_.add_str(st_.insert(fn_name));
+    while (cursor_.valid() && cursor_.get() != token::line_end) {
+        switch (cursor_.get()) {
+            case token::symbol: {
+                fatal("not supported");
+            }
+            case token::literal_int: {
+                char buf[24];
+                auto text = cursor_.text();
+                if (text.size() >= sizeof buf) {
+                    compile_error("int literal too large");
+                    return false;
+                }
+                text.copy_to(buf);
+                int64_t n = 0;
+                int consumed = 0;
+                if (std::sscanf(buf, "%ld%n", &n, &consumed) != 1 || consumed != text.size()) {
+                    compile_error("int literal too large");
+                    return false;
+                }
+                bc_.add_int(n);
+                break;
+            }
+            case token::literal_str: {
+                fatal("not supported");
+                break;
+            }
+            default: {
+                compile_error("expression: arguments must be literals");
+                return false;
+            }
+        }
+    }
+    return cursor_.valid();
+}
+
 char_buf program_impl::run() {
-    uint32_t i = 0;
-    while (i < bc_.size()) {
-        // switch () {
-        // }
+    // std::vector<
+    for (uint32_t i = 0; i < bc_.size();) {
+        switch (static_cast<opcode>(bc_[i])) {
+            case token::call: {
+                break;
+            }
+            default: {
+                fatal("unsupported op code");
+            }
+        }
         i++;
     }
-    return char_buf::strz("dummy\n");
 }
 }
 

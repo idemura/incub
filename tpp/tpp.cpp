@@ -193,7 +193,7 @@ std::unique_ptr<program> compiler::compile() {
         return nullptr;
     }
     return std::make_unique<details::program_impl>(
-            std::move(bc_),
+            bc_.release(),
             std::move(st_));
 }
 
@@ -279,24 +279,29 @@ bool compiler::compile_expression() {
     return cursor_.valid();
 }
 
-char_buf program_impl::run() {
-    // std::vector<
+void program_impl::run(output_stream *os) {
     for (uint32_t i = 0; i < bc_.size();) {
         switch (static_cast<opcode>(bc_[i])) {
             case token::call: {
+                function(
+                auto n_args = bc_[i + 1];
+                string_id fn_name{bc[i + 2], bc[i + 3]};
                 break;
             }
             default: {
                 fatal("unsupported op code");
             }
         }
-        i++;
     }
 }
 }
 
 std::string to_string(char_buf const &buf) {
     return std::string{buf.data(), buf.size()};
+}
+
+void set_error_file(int fd) {
+    details::fd_error = fd;
 }
 
 void error(char const *msg_fmt, ...) {
@@ -323,7 +328,7 @@ std::unique_ptr<program> compile_template(char_buf code) {
     return c.compile();
 }
 
-void set_error_file(int fd) {
-    details::fd_error = fd;
+void string_stream::write(char_buf buf) {
+    str_.append(buf.data(), buf.size());
 }
 }

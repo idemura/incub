@@ -13,12 +13,12 @@
     Class(Class ArgSpec) = Keyword; \
     Class &operator=(Class ArgSpec) = Keyword;
 
-#define TPP_COPY(Class, Spec) TPP_CTOR_ASSIGN(Class, Spec, const&)
-#define TPP_MOVE(Class, Spec) TPP_CTOR_ASSIGN(Class, Spec, &&)
+#define TPP_COPY(Class) TPP_CTOR_ASSIGN(Class, default, const&)
+#define TPP_NO_COPY(Class) TPP_CTOR_ASSIGN(Class, delete, const&)
+#define TPP_MOVE(Class) TPP_CTOR_ASSIGN(Class, default, &&)
+#define TPP_NO_MOVE(Class) TPP_CTOR_ASSIGN(Class, delete, &&)
 
-#define TPP_MOVE_ONLY(Class) \
-    TPP_COPY(Class, delete) \
-    TPP_MOVE(Class, default)
+#define TPP_MOVE_NO_COPY(Class) TPP_MOVE(Class) TPP_NO_COPY(Class)
 
 namespace idemura {
 // @char_buf and utilities
@@ -140,14 +140,14 @@ public:
     }
 
 private:
+    TPP_NO_COPY(char_buf);
+
     struct no_ownership {};
 
     char_buf(uint32_t size, char *data, no_ownership):
         size_{size},
         owns_{false},
         data_{data} {}
-
-    TPP_COPY(char_buf, delete);
 
     uint32_t size_{};
     bool owns_{true};
@@ -190,13 +190,37 @@ void error(char const *msg_fmt, ...);
 [[noreturn]]
 void fatal(char const *msg);
 
+class output_stream {
+public:
+    virtual output_stream() = default;
+    virtual void write(char_buf buf) = 0;
+};
+
 class program {
 public:
     virtual ~program() = default;
-    virtual char_buf run() = 0;
+    virtual void run(output_stream *os) = 0;
 };
 
 std::unique_ptr<program> compile_template(char_buf code);
+
+class string_stream {
+public:
+    TPP_MOVE_NO_COPY(string_stream);
+
+    string_stream() = default;
+    void write(char_buf buf) override;
+
+    // Gets underlying string and replaces it with empty
+    std::string release() {
+        std::string res;
+        std::swap(str_, res);
+        return res;
+    }
+
+private:
+    std::string str_;
+};
 
 namespace details {
 enum class opcode: uint32_t {
@@ -224,8 +248,9 @@ struct string_id {
 
 class bytecode_gen {
 public:
+    TPP_MOVE_NO_COPY(bytecode_gen);
+
     bytecode_gen() = default;
-    TPP_MOVE_ONLY(bytecode_gen);
 
     void add_op(opcode op) {
         bc_.push_back(static_cast<uint32_t>(op));
@@ -242,6 +267,10 @@ public:
         bc_.push_back(id.size);
     }
 
+    std::vector<uint32_t> release() {
+        return std::move(bc_);
+    }
+
 private:
     std::vector<uint32_t> bc_;
 };
@@ -249,8 +278,9 @@ private:
 // Collects strings and assigns them IDs.
 class string_table {
 public:
+    TPP_MOVE_NO_COPY(string_table);
+
     string_table() = default;
-    TPP_MOVE_ONLY(string_table);
 
     string_id insert(char_buf s);
     char_buf string(string_id id);
@@ -262,8 +292,13 @@ private:
 
 class token_cursor {
 public:
+    TPP_COPY(token_cursor);
+
     explicit token_cursor(char_buf code): code_{std::move(code)} {}
-    TPP_COPY(token_cursor, default);
+
+    bool valid() const {
+        return token_ != token::invalid;
+    }
 
     token get() {
         return token_;
@@ -278,10 +313,6 @@ public:
     }
 
     bool next();
-
-    bool valid() const {
-        return token_ != token::invalid;
-    }
 
 private:
     void skip_space();
@@ -300,9 +331,9 @@ private:
 
 class compiler {
 public:
-    explicit compiler(char_buf code): cursor_{code.wrap()} {}
-    TPP_MOVE_ONLY(compiler);
+    TPP_MOVE_NO_COPY(compiler);
 
+    explicit compiler(char_buf code): cursor_{code.wrap()} {}
     std::unique_ptr<program> compile();
 
 private:
@@ -318,17 +349,17 @@ private:
 
 class program_impl: public program {
 public:
-    program_impl(bytecode_gen bc, string_table st):
+    TPP_MOVE_NO_COPY(program_impl);
+
+    program_impl(std::vector<uint32_t> bc, string_table st):
         bc_{std::move(bc)},
         st_{std::move(st)} {}
-    TPP_MOVE_ONLY(program_impl);
 
-    char_buf run() override;
+    void run(output_stream *os) override;
 
 private:
-    bytecode_gen bc_;
-    string_table st_;
     std::vector<uint32_t> bc_;
+    string_table st_;
 };
 }
 }

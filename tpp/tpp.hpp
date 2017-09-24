@@ -192,7 +192,7 @@ void fatal(char const *msg);
 
 class output_stream {
 public:
-    virtual output_stream() = default;
+    virtual ~output_stream() = default;
     virtual void write(char_buf buf) = 0;
 };
 
@@ -204,7 +204,7 @@ public:
 
 std::unique_ptr<program> compile_template(char_buf code);
 
-class string_stream {
+class string_stream: public output_stream {
 public:
     TPP_MOVE_NO_COPY(string_stream);
 
@@ -244,35 +244,6 @@ struct string_id {
     uint32_t const size{};
 
     string_id(uint32_t o, uint32_t s): offset{o}, size{s} {}
-};
-
-class bytecode_gen {
-public:
-    TPP_MOVE_NO_COPY(bytecode_gen);
-
-    bytecode_gen() = default;
-
-    void add_op(opcode op) {
-        bc_.push_back(static_cast<uint32_t>(op));
-    }
-
-    void add_int(int64_t n) {
-        bc_.push_back(n >> 32);
-        // Coersion below will take 32 lowest bits
-        bc_.push_back(n);
-    }
-
-    void add_str(string_id id) {
-        bc_.push_back(id.offset);
-        bc_.push_back(id.size);
-    }
-
-    std::vector<uint32_t> release() {
-        return std::move(bc_);
-    }
-
-private:
-    std::vector<uint32_t> bc_;
 };
 
 // Collects strings and assigns them IDs.
@@ -341,9 +312,24 @@ private:
     bool compile_expression();
     void compile_error(char const *msg_fmt, ...);
 
+    void add_op(opcode op) {
+        bc_.push_back(static_cast<uint32_t>(op));
+    }
+
+    void add_int(int64_t n) {
+        bc_.push_back(n >> 32);
+        // Coersion below will take 32 lowest bits
+        bc_.push_back(n);
+    }
+
+    void add_str(string_id id) {
+        bc_.push_back(id.offset);
+        bc_.push_back(id.size);
+    }
+
     token_cursor cursor_;
     uint32_t error_count_{};
-    bytecode_gen bc_;
+    std::vector<uint32_t> bc_;
     string_table st_;
 };
 

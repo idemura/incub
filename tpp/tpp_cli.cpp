@@ -30,6 +30,18 @@ char_buf read_stdin() {
     }
     return big_buf;
 }
+
+class file_stream: public output_stream {
+public:
+    explicit file_stream(int fd): fd_{fd} {}
+
+    void write(char_buf buf) override {
+        ::write(fd_, buf.data(), buf.size());
+    }
+
+private:
+    int const fd_{};
+};
 }
 
 int main(int argc, char **argv) {
@@ -39,7 +51,7 @@ int main(int argc, char **argv) {
     if (!program) {
         return 1;
     }
-    auto text = program->run();
-    ::write(1, text.data(), text.size());
+    auto stream = std::make_unique<file_stream>(1);
+    program->run(stream.get());
     return 0;
 }

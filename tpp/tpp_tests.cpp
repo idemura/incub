@@ -124,6 +124,10 @@ TEST(TPP, Compile) {
             "let y \"hello\"\n"
     ));
     ASSERT_TRUE(program);
+    string_stream ss;
+    program->run(&ss);
+    auto s = ss.release();
+    std::cout<<s<<std::endl;
 }
 }
 }

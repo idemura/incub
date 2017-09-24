@@ -188,13 +188,11 @@ std::unique_ptr<program> compiler::compile() {
         compile_error("invalid token");
     }
     if (error_count_ > 0) {
-        bc_ = bytecode_gen{};
+        bc_ = std::vector<uint32_t>();
         st_ = string_table{};
         return nullptr;
     }
-    return std::make_unique<details::program_impl>(
-            bc_.release(),
-            std::move(st_));
+    return std::make_unique<details::program_impl>(std::move(bc_), std::move(st_));
 }
 
 bool compiler::compile_let() {
@@ -242,8 +240,10 @@ bool compiler::compile_expression() {
     if (!fn_name.equals("out")) {
         fatal("not supported");
     }
-    bc_.add_op(opcode::call);
-    bc_.add_str(st_.insert(fn_name));
+    add_op(opcode::call);
+    uint32_t i_args = bc_.size();
+    bc_.push_back(0);
+    add_str(st_.insert(fn_name.wrap()));
     while (cursor_.valid() && cursor_.get() != token::line_end) {
         switch (cursor_.get()) {
             case token::symbol: {
@@ -259,11 +259,11 @@ bool compiler::compile_expression() {
                 text.copy_to(buf);
                 int64_t n = 0;
                 int consumed = 0;
-                if (std::sscanf(buf, "%ld%n", &n, &consumed) != 1 || consumed != text.size()) {
+                if (std::sscanf(buf, "%lld%n", &n, &consumed) != 1 || consumed != text.size()) {
                     compile_error("int literal too large");
                     return false;
                 }
-                bc_.add_int(n);
+                add_int(n);
                 break;
             }
             case token::literal_str: {
@@ -282,10 +282,9 @@ bool compiler::compile_expression() {
 void program_impl::run(output_stream *os) {
     for (uint32_t i = 0; i < bc_.size();) {
         switch (static_cast<opcode>(bc_[i])) {
-            case token::call: {
-                function(
+            case opcode::call: {
                 auto n_args = bc_[i + 1];
-                string_id fn_name{bc[i + 2], bc[i + 3]};
+                string_id fn_name{bc_[i + 2], bc_[i + 3]};
                 break;
             }
             default: {

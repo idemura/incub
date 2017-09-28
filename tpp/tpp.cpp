@@ -6,6 +6,7 @@
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
+#include <mutex>
 
 namespace idemura {
 namespace details {
@@ -35,7 +36,7 @@ std::string to_string(token t) {
     fatal("to_string: unknown token");
 }
 
-string_id string_table::insert(char_buf s) {
+string_id string_table::insert(str_view s) {
     auto where = index_.find(s);
     if (where != index_.end()) {
         return where->second;
@@ -49,10 +50,10 @@ string_id string_table::insert(char_buf s) {
     return id;
 }
 
-char_buf string_table::string(string_id id) {
+str_view string_table::string(string_id id) {
     assert(id.offset <= text_.size());
     assert(id.offset + id.size <= text_.size());
-    return char_buf::wrap(id.size, text_.data() + id.offset);
+    return str_view{text_.data() + id.offset, id.size};
 }
 
 uint32_t token_cursor::count_alnum() {
@@ -153,33 +154,71 @@ bool token_cursor::next() {
 
 // VM sys functions
 //
-class sys_function_out: public function {
+class function_error: public function {
 public:
+    str_view name() const override {
+        return str_view{"error"};
+    }
+
     void invoke(std::vector<uint32_t> &stack) override {
-        //
+        // TODO: Implement
     }
 };
 
-class sys_functions {
+class function_print: public function {
 public:
-    uint32_t find(char_buf name) {
-        return 0;
+    str_view name() const override {
+        return str_view{"print"};
+    }
+
+    void invoke(std::vector<uint32_t> &stack) override {
+        // TODO: Implement
+    }
+};
+
+class function_registry {
+public:
+    static function_error fn_error;
+    static function_print fn_print;
+
+    static function_registry object;
+
+    void init();
+
+    function *find(str_view name) {
+        return nullptr;
     }
 
 private:
-    static function *reg_[];
-    static std::map<char_buf, uint32_t> map_;
+    TPP_NO_COPY(function_registry);
+    TPP_NO_MOVE(function_registry);
+
+    function_registry() = default;
+
+    static function *list_[];
+    static std::map<str_view, uint32_t> map_;
 };
 
-static sys_function_out sys_fn_out;
+function_registry function_registry::object;
 
-std::map<char_buf, uint32_t> sys_functions::map_{
-    {char_buf::strz(""), 0},
+function_error function_registry::fn_error;
+function_print function_registry::fn_print;
+
+function *function_registry::list_[] {
+    &function_registry::fn_error,
+    &function_registry::fn_print,
 };
 
-function *sys_functions::reg_[] = {
-    &sys_fn_out,
-};
+std::map<str_view, uint32_t> function_registry::map_;
+
+void function_registry::init() {
+  static std::once_flag done;
+  std::call_once(done, [this] {
+      for (uint32_t i = 0; i < size(list_); i++) {
+          map_.emplace(list_[i]->name(), i);
+      }
+  });
+}
 //
 // VM sys functions END
 
@@ -194,6 +233,7 @@ void compiler::compile_error(char const *msg_fmt, ...) {
 }
 
 std::unique_ptr<program> compiler::compile() {
+    function_registry::object.init();
     for (auto stop = false; !stop;) {
         if (!cursor_.next()) {
             break;
@@ -242,7 +282,7 @@ bool compiler::compile_let() {
     if (!cursor_.next()) {
         return false;
     }
-    char_buf value;
+    str_view value;
     switch (cursor_.get()) {
         case token::literal_int: {
             value = cursor_.text();
@@ -272,13 +312,14 @@ bool compiler::compile_expression() {
     if (!cursor_.next()) {
         return false;
     }
+    function_registry::object.find(fn_name);
     if (!fn_name.equals("out")) {
         fatal("not supported");
     }
     add_op(opcode::sys_call);
     uint32_t i_args = bc_.size();
     bc_.push_back(0);
-    add_str(st_.insert(fn_name.wrap()));
+    add_str(st_.insert(fn_name));
     while (cursor_.valid() && cursor_.get() != token::line_end) {
         switch (cursor_.get()) {
             case token::symbol: {
@@ -330,10 +371,6 @@ void program_impl::run(output_stream *os) {
 }
 }
 
-std::string to_string(char_buf const &buf) {
-    return std::string{buf.data(), buf.size()};
-}
-
 void set_error_file(int fd) {
     details::fd_error = fd;
 }
@@ -357,12 +394,12 @@ void fatal(char const *msg) {
     std::abort();
 }
 
-std::unique_ptr<program> compile_template(char_buf code) {
-    details::compiler c{code.wrap()};
+std::unique_ptr<program> compile_template(str_view code) {
+    details::compiler c{code};
     return c.compile();
 }
 
-void string_stream::write(char_buf buf) {
+void string_stream::write(str_view buf) {
     str_.append(buf.data(), buf.size());
 }
 }

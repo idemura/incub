@@ -7,13 +7,16 @@ cxx = clang++ -fcolor-diagnostics
 cxx_codegen = -O0 -g
 # cxx_codegen = -O3 -ffast-math -flto -DNDEBUG
 cxx_flags = -std=c++14 -fno-exceptions -fno-rtti -I. -Wall -march=native
-cxx_disable_warnings = -Wno-unused-function -Wno-char-subscripts
+cxx_disable_warnings = -Wno-unused-function -Wno-char-subscripts -Wuninitialized
 cxx_command = $cxx $cxx_flags $cxx_codegen $cxx_disable_warnings
 
 rule cxx_object
     deps = gcc
     depfile = $out.d
     command = $cxx_command $in -o $out -c
+
+rule static_lib
+    command = ar rcs $out $in
 
 rule cxx_binary
     deps = gcc
@@ -28,8 +31,10 @@ rule cxx_test
 rule copy
     command = cp $in $out
 
+build $builddir/tpp_lib.o: cxx_object tpp_lib.cpp
 build $builddir/tpp.o: cxx_object tpp.cpp
-build $builddir/tpp: cxx_binary $builddir/tpp.o tpp_cli.cpp
-build $builddir/tpp_tests: cxx_test $builddir/tpp.o tpp_tests.cpp
+build $builddir/tpp.a: static_lib $builddir/tpp_lib.o $builddir/tpp.o
+build $builddir/tpp: cxx_binary $builddir/tpp.a tpp_cli.cpp
+build $builddir/tpp_tests: cxx_test $builddir/tpp.a tpp_tests.cpp
 
 default $builddir/tpp $builddir/tpp_tests

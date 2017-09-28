@@ -16,11 +16,10 @@ char_buf read_stdin() {
             break;
         }
         size += num_bytes;
-        auto sub_buf = buf.substr(0, num_bytes);
-        if (num_bytes < 4096) {
-            sub_buf = sub_buf.copy();
+        if (buf.size() < 4096) {
+            buf = char_buf{buf.size(), buf.data()};
         }
-        pieces.emplace_back(std::move(sub_buf));
+        pieces.emplace_back(std::move(buf));
     }
     char_buf big_buf{size};
     uint32_t ofs = 0;
@@ -35,7 +34,7 @@ class file_stream: public output_stream {
 public:
     explicit file_stream(int fd): fd_{fd} {}
 
-    void write(char_buf buf) override {
+    void write(str_view buf) override {
         ::write(fd_, buf.data(), buf.size());
     }
 
@@ -47,7 +46,8 @@ private:
 int main(int argc, char **argv) {
     using namespace idemura;
 
-    auto program = compile_template(read_stdin());
+    auto code = read_stdin();
+    auto program = compile_template(code.view());
     if (!program) {
         return 1;
     }

@@ -179,9 +179,8 @@ inline bool operator!=(char_buf const &l, char_buf const &r) {
 }
 
 std::string to_string(char_buf const &buf);
-
 //
-// End @char_buf related code
+// @char_buf and utilities END
 
 void set_error_file(int fd);
 
@@ -224,7 +223,7 @@ private:
 
 namespace details {
 enum class opcode: uint32_t {
-    call,
+    sys_call,
 };
 
 enum class token: uint32_t {
@@ -298,6 +297,12 @@ private:
     uint32_t line_{};
     char_buf code_;
     char_buf text_;  // Text associated with the token
+};
+
+class function {
+public:
+    virtual ~function() = default;
+    virtual void invoke(std::vector<uint32_t> &stack) = 0;
 };
 
 class compiler {

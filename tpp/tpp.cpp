@@ -111,6 +111,13 @@ bool token_cursor::next() {
         text_ = code_.substr(0, n_alnum);
         auto p = code_.data();
         if (std::isdigit(*p)) {
+            // Check if this is a number
+            for (uint32_t i = 0; i < text_.size(); i++) {
+                if (!std::isdigit(p[i])) {
+                    invalidate();
+                    return false;
+                }
+            }
             token_ = token::literal_int;
         } else {
             if (std::strncmp(code_.data(), "let", n_alnum) == 0) {
@@ -133,10 +140,6 @@ bool token_cursor::next() {
         }
         case '"':
             return take_string();
-        case '`':
-            // return take_print();
-            fatal("not implemented");
-            break;
         default: {
             // Do not move, just mark invalid.
             invalidate();
@@ -147,6 +150,38 @@ bool token_cursor::next() {
     code_.move(tok_len);
     return true;
 }
+
+// VM sys functions
+//
+class sys_function_out: public function {
+public:
+    void invoke(std::vector<uint32_t> &stack) override {
+        //
+    }
+};
+
+class sys_functions {
+public:
+    uint32_t find(char_buf name) {
+        return 0;
+    }
+
+private:
+    static function *reg_[];
+    static std::map<char_buf, uint32_t> map_;
+};
+
+static sys_function_out sys_fn_out;
+
+std::map<char_buf, uint32_t> sys_functions::map_{
+    {char_buf::strz(""), 0},
+};
+
+function *sys_functions::reg_[] = {
+    &sys_fn_out,
+};
+//
+// VM sys functions END
 
 void compiler::compile_error(char const *msg_fmt, ...) {
     char buf[120];
@@ -240,7 +275,7 @@ bool compiler::compile_expression() {
     if (!fn_name.equals("out")) {
         fatal("not supported");
     }
-    add_op(opcode::call);
+    add_op(opcode::sys_call);
     uint32_t i_args = bc_.size();
     bc_.push_back(0);
     add_str(st_.insert(fn_name.wrap()));
@@ -253,14 +288,14 @@ bool compiler::compile_expression() {
                 char buf[24];
                 auto text = cursor_.text();
                 if (text.size() >= sizeof buf) {
-                    compile_error("int literal too large");
+                    compile_error("invalid int literal");
                     return false;
                 }
                 text.copy_to(buf);
                 int64_t n = 0;
                 int consumed = 0;
                 if (std::sscanf(buf, "%lld%n", &n, &consumed) != 1 || consumed != text.size()) {
-                    compile_error("int literal too large");
+                    compile_error("invalid int literal");
                     return false;
                 }
                 add_int(n);
@@ -282,7 +317,7 @@ bool compiler::compile_expression() {
 void program_impl::run(output_stream *os) {
     for (uint32_t i = 0; i < bc_.size();) {
         switch (static_cast<opcode>(bc_[i])) {
-            case opcode::call: {
+            case opcode::sys_call: {
                 auto n_args = bc_[i + 1];
                 string_id fn_name{bc_[i + 2], bc_[i + 3]};
                 break;

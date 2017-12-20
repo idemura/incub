@@ -16,7 +16,7 @@ using i32 = int32_t;
 using i64 = int64_t;
 using pii = std::pair<int, int>;
 
-constexpr i32 kMod = 1'000'000'000 + 9;
+constexpr i64 kMod{1'000'000'000 + 7};
 
 // Number different sequences ordered sequences a[i] such that sum(a[i]) = n
 i64 num_sums(i64 n) {
@@ -71,6 +71,10 @@ int main() {
     scanf("%d%d", &x, &y);
     if (y % x != 0) {
         printf("0\n");
+        return 0;
+    }
+    if (x == y) {
+        printf("1\n");
         return 0;
     }
     printf("%d\n", (int)solve(y / x));

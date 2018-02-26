@@ -14,4 +14,4 @@ $CXX -std=c++14 -I. -march=native $1 log.cpp -o ${1%.*} \
     -fdiagnostics-color=auto \
     -fno-exceptions \
     -fno-rtti \
-    -Wall -Wno-unused-function -Wno-sign-compare -Wno-char-subscripts
+    -Wall -Wshadow -Wno-unused-function -Wno-sign-compare -Wno-char-subscripts

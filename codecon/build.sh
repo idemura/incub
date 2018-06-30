@@ -9,9 +9,12 @@ fi
 CXX_CODEGEN='-O0 -g -fsanitize=address'
 # CXX_CODEGEN='-O3 -ffast-math -flto -DNDEBUG'
 
-$CXX -std=c++14 -I. -march=native $1 log.cpp -o ${1%.*} \
+$CXX -std=c++17 -I. -march=native $1 -o ${1%.*} \
     ${CXX_CODEGEN} \
     -fdiagnostics-color=auto \
     -fno-exceptions \
     -fno-rtti \
-    -Wall -Wshadow -Wno-unused-function -Wno-sign-compare -Wno-char-subscripts
+    -Wall -Wshadow -Wno-unused-function -Wno-sign-compare -Wno-char-subscripts \
+    -lgtest \
+    -lgmock \
+    -lglog

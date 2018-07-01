@@ -14,7 +14,8 @@ $CXX -std=c++17 -I. -march=native $1 -o ${1%.*} \
     -fdiagnostics-color=auto \
     -fno-exceptions \
     -fno-rtti \
-    -Wall -Wshadow -Wno-unused-function -Wno-sign-compare -Wno-char-subscripts \
+    -Wall -Wshadow -Wno-unused-function -Wconversion -Wliteral-range -Wsign-compare -Wno-char-subscripts \
     -lgtest \
     -lgmock \
-    -lglog
+    -lglog \
+    -lgflags

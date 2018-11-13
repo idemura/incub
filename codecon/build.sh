@@ -6,11 +6,12 @@ if [[ "$OS_NAME" == "Darwin" ]]; then
 else
   CXX=g++
 fi
-CXX_CODEGEN='-O0 -g -fsanitize=address'
+CXX_CODEGEN='-O0 -g -fsanitize=address -fno-omit-frame-pointer'
 # CXX_CODEGEN='-O3 -ffast-math -flto -DNDEBUG'
 
 $CXX -std=c++17 -I. -march=native $1 -o ${1%.*} \
     ${CXX_CODEGEN} \
+    ${CXX_COMPILER_SPECIFIC} \
     -fdiagnostics-color=auto \
     -fno-exceptions \
     -fno-rtti \

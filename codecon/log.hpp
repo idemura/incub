@@ -1,7 +1,6 @@
-#define LOGURU_REPLACE_GLOG 1
-#define LOGURU_PREAMBLE_UPTIME 0
-
-#include "loguru.hpp"
+#include <glog/logging.h>
 
 // For contests only
 #define dlog LOG(INFO)
+
+#include <gtest/gtest.h>

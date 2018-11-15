@@ -10,10 +10,8 @@
 #include <utility>
 #include <vector>
 
-#include <glog/logging.h>
+#include "log.hpp"
 #include <gtest/gtest.h>
-
-#define dlog LOG(ERROR)
 
 namespace suffix_tree {
 namespace {
@@ -40,106 +38,127 @@ Edge Node::getEdge(char c) const {
     return e[toIndex(c)];
 }
 
+int Node::countEdges() const {
+    int n = 0;
+    for (int i = 0; i <= AlphabetSize; i++) {
+        if (e[i].valid()) {
+            n++;
+        }
+    }
+    return n;
+}
+
 // Ukkonen algorithm to build a suffix tree
 Node *build(char const *s, int sLen) {
     auto root = new Node{};
     if (sLen == 0) {
         return root;
     }
+    // root->suffixLink = root;
     DCHECK_EQ(EoLn, s[sLen - 1]);
-    dlog << "root " << root;
-    int remaining = 0;
+    VLOG(1) << "root " << root;
+    int remainingFirst = 0;
     auto activeNode = root;
     int activeEdge = -1;
     int activeLength = 0;
     for (int i = 0; i < sLen; i++) {
-        dlog << "";
-        print(root, s, i, [](std::string const &s) { dlog << s; });
-        dlog << "";
-        dlog << "i " << i << " char is " << s[i];
-        int c = toIndex(s[i]);
-        remaining++;
+        VLOG(1) << "---------- NEW CHAR";
+        print(root, s, i, [](std::string const &s) { VLOG(1) << s; });
+        VLOG(1) << "----------";
+        int e = toIndex(s[i]);
+        VLOG(1) << "i " << i << " char " << s[i] << " index " << e;
+        // remaining++;
         Node *prevSplit = nullptr;
-        while (remaining > 0) {
-            dlog << "--- while loop, remaining " << remaining;
+        while (i >= remainingFirst) {
             // If there is no Edge to move in the Node, create a leaf Edge.
-            dlog << "activeNode " << activeNode;
-            dlog << "activeEdge " << activeEdge;
-            dlog << "activeLength " << activeLength;
+            VLOG(1) << "remainingFirst " << remainingFirst << " activeNode "
+                    << activeNode << " activeEdge " << activeEdge
+                    << " activeLength " << activeLength;
             // Check if we need to move next node
             auto al = activeLength;
             if (activeLength == 0) {
                 // Try to start a path in this node
-                dlog << "try start a path from Node";
-                if (activeNode->e[c].valid() &&
-                    s[activeNode->e[c].first] == s[i]) {
-                    activeEdge = c;
+                VLOG(1) << "try start a path in node";
+                if (activeNode->e[e].valid() &&
+                        s[activeNode->e[e].first] == s[i]) {
+                    activeEdge = e;
                     activeLength++;
                     DCHECK_EQ(1, activeLength);
-                    dlog << "path started";
+                    VLOG(1) << "path started";
                 }
             } else {
                 // Try increase current path
-                dlog << "try increase path along the edge";
+                VLOG(1) << "try increase path along the edge";
                 int activeChar = activeNode->e[activeEdge].first + activeLength;
                 if (s[activeChar] == s[i]) {
                     activeLength++;
                 }
             }
             if (activeLength > al) {
-                dlog << "path advanced, break while";
+                VLOG(1) << "path advanced, break while";
                 if (activeLength == activeNode->e[activeEdge].lengthTo(i)) {
-                    dlog << "advance to next node";
+                    VLOG(1) << "advance to next node";
                     activeLength = 0;
                     activeNode = activeNode->e[activeEdge].link;
-                    DCHECK(activeNode != nullptr);
+                    DCHECK_NOTNULL(activeNode);
                 }
                 break;
             }
-            dlog << "create an edge or split";
-            if (activeLength == 0) {
-                // Make a leaf edge
-                dlog << "make a leaf edge";
-                DCHECK_LT(activeNode->e[c].first, 0)
-                        << "should be not initialized";
-                activeNode->e[c].first = i;
-                activeNode->e[c].last = sLen;
-            } else {
+
+            VLOG(1) << "create an edge or split";
+            if (activeLength > 0) {
                 // Split edge in the middle
-                dlog << "split edge in the middle";
+                VLOG(1) << "split edge in the middle activeEdge " << activeEdge;
                 // DCHECK_GE(activeChar, 0);
                 auto newNode = new Node{};
-                dlog << "new node " << newNode;
+                VLOG(1) << "new node " << newNode;
+                VLOG(1) << "new edge " << s[i];
                 newNode->suffixLink = root;
-                newNode->e[c].first = i;
-                newNode->e[c].last = sLen;
+                newNode->e[e].first = i;
+                newNode->e[e].last = sLen;
                 int activeChar = activeNode->e[activeEdge].first + activeLength;
-                dlog << "active char " << activeChar << " or " << s[activeChar];
+                VLOG(1) << "active char " << activeChar << " or "
+                        << s[activeChar];
                 int k = toIndex(s[activeChar]);
                 newNode->e[k].first = activeChar;
                 newNode->e[k].last = activeNode->e[activeEdge].last;
                 newNode->e[k].link = activeNode->e[activeEdge].link;
                 activeNode->e[activeEdge].link = newNode;
                 activeNode->e[activeEdge].last = activeChar;
+                VLOG(1) << "new node with edge "
+                        << activeNode->e[activeEdge].name(s);
                 if (prevSplit) {
                     prevSplit->suffixLink = newNode;
                 }
                 prevSplit = newNode;
-                activeLength--;
-                dlog << "activeEdge before: " << activeEdge;
-                activeEdge = toIndex(s[activeChar - 1]);
-                dlog << "activeEdge now: " << activeEdge;
+            } else {
+                // Make a leaf edge
+                VLOG(1) << "make a leaf edge " << s[i];
+                DCHECK(!activeNode->e[e].valid())
+                        << "should be not initialized";
+                activeNode->e[e].first = i;
+                activeNode->e[e].last = sLen;
             }
-            activeNode = activeNode->suffixLink;
-            if (activeNode == nullptr) {
-                dlog << "loop into root";
-                activeNode = root;
+            remainingFirst++;
+            if (activeNode == root) {
+                if (remainingFirst < sLen) {
+                    activeEdge = toIndex(s[remainingFirst]);
+                    VLOG(1) << "activate new edge in root: " << activeEdge;
+                }
+                if (activeLength > 0) activeLength--;
+            } else {
+                activeNode = activeNode->suffixLink;
             }
-            remaining--;
+            VLOG(1) << "--- tree after split";
+            print(root, s, i + 1, [](std::string const &s) { VLOG(1) << s; });
         }
-        dlog << "while loop done, remaining " << remaining;
+        VLOG(1) << "while loop done, remainingFirst " << remainingFirst;
     }
-    dlog << "build done";
+    DCHECK_EQ(remainingFirst, sLen);
+    VLOG(1) << "build done";
+    // root->suffixLink = nullptr;
+    VLOG(1) << "RESULT";
+    print(root, s, sLen, [](std::string const &s) { VLOG(1) << s; });
     return root;
 }
 
@@ -153,8 +172,7 @@ void destroy(Node *root) {
 }
 
 namespace {
-void printRec(
-        Node const *node,
+void printRec(Node const *node,
         char const *s,
         int sLen,
         std::string indent,
@@ -174,10 +192,9 @@ void printRec(
         }
         auto c = i == 0 ? EoLn : char(Base + i - 1);
         auto trueLast = std::min(e.last, sLen);
-        std::snprintf(
-                buf,
+        std::snprintf(buf,
                 sizeof(buf),
-                "Node '%c' [%i, %i] %s link %p",
+                "Edge '%c' [%i, %i] %s link %p",
                 c,
                 e.first,
                 trueLast,
@@ -203,31 +220,31 @@ using suffix_tree::Node;
 namespace {
 class IdMap {
 public:
-    explicit IdMap(Node const *root): id_{1} {
+    explicit IdMap(Node const *root): id{1} {
         buildRec(root);
     }
 
     int getId(Node const *node) const {
-        auto iter = idMap_.find(node);
-        return iter == idMap_.end() ? 0 : iter->second;
+        auto iter = idMap.find(node);
+        return iter == idMap.end() ? 0 : iter->second;
     }
 
     size_t size() const {
-        return idMap_.size();
+        return idMap.size();
     }
 
 private:
     void buildRec(Node const *node) {
         if (node != nullptr) {
-            idMap_[node] = id_++;
+            idMap[node] = id++;
             for (int i = 0; i <= AlphabetSize; i++) {
                 buildRec(node->e[i].link);
             }
         }
     }
 
-    int id_;
-    std::unordered_map<Node const *, int> idMap_;
+    int id;
+    std::unordered_map<Node const *, int> idMap;
 };
 
 int validEdgeCount(Node const *node) {
@@ -241,7 +258,7 @@ int validEdgeCount(Node const *node) {
 }
 
 suffix_tree::Node *build(char const *s) {
-    dlog << s;
+    VLOG(1) << s;
     std::cout << "Input " << s << std::endl;
     auto sLen = (int)std::strlen(s);
     auto root = suffix_tree::build(s, sLen);
@@ -275,6 +292,7 @@ void test1() {
     EXPECT_EQ(2, map.size());
     {
         auto node = root;
+        EXPECT_EQ(3, node->countEdges());
         EXPECT_EQ(1, map.getId(node));
         EXPECT_EQ(0, map.getId(node->suffixLink));
 
@@ -284,6 +302,7 @@ void test1() {
     }
     {
         auto node = root->getEdge('x').link;
+        EXPECT_EQ(2, node->countEdges());
         EXPECT_EQ(2, map.getId(node));
         EXPECT_EQ(1, map.getId(node->suffixLink));
 
@@ -292,13 +311,62 @@ void test1() {
     }
     suffix_tree::destroy(root);
 }
+
+void test2() {
+    char const str[] = "xaxbxc$";
+    auto root = build(str);
+    IdMap map{root};
+    EXPECT_EQ(2, map.size());
+    {
+        auto node = root;
+        EXPECT_EQ(5, node->countEdges());
+        EXPECT_EQ(1, map.getId(node));
+        EXPECT_EQ(0, map.getId(node->suffixLink));
+
+        CHECK_LEAF_EDGE(node, str, "$");
+        CHECK_LEAF_EDGE(node, str, "axbxc$");
+        CHECK_LEAF_EDGE(node, str, "bxc$");
+        CHECK_LEAF_EDGE(node, str, "c$");
+        CHECK_INTERNAL_EDGE(node, str, "x");
+    }
+    {
+        auto node = root->getEdge('x').link;
+        EXPECT_EQ(3, node->countEdges());
+        EXPECT_EQ(2, map.getId(node));
+        EXPECT_EQ(1, map.getId(node->suffixLink));
+
+        CHECK_LEAF_EDGE(node, str, "axbxc$");
+        CHECK_LEAF_EDGE(node, str, "bxc$");
+        CHECK_LEAF_EDGE(node, str, "c$");
+    }
+    suffix_tree::destroy(root);
+}
+
+void test3() {
+    char const str[] = "xyzxyaxyz$";
+    auto root = build(str);
+    IdMap map{root};
+    EXPECT_EQ(6, map.size());
+    {
+        auto node = root;
+        EXPECT_EQ(5, node->countEdges());
+        EXPECT_EQ(1, map.getId(node));
+        EXPECT_EQ(0, map.getId(node->suffixLink));
+
+        CHECK_LEAF_EDGE(node, str, "$");
+        CHECK_LEAF_EDGE(node, str, "axyz$");
+        CHECK_INTERNAL_EDGE(node, str, "xy");
+        CHECK_INTERNAL_EDGE(node, str, "y");
+        CHECK_INTERNAL_EDGE(node, str, "z");
+    }
+    suffix_tree::destroy(root);
+}
 } // namespace
 
 int main(int argc, char **argv) {
-    google::InitGoogleLogging(argv[0]);
+    initLog(argc, argv);
     test1();
-    // testString("xaxbxc$");
-    // testString("xyzxya$");
-    // testString("xyzxyaxyz$");
+    test2();
+    test3();
     return 0;
 }

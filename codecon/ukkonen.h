@@ -7,6 +7,9 @@
 #include <unordered_map>
 
 namespace suffix_tree {
+using i32 = int;
+using u32 = unsigned int;
+
 constexpr int AlphabetSize = 26;
 constexpr char Base = 'a';
 constexpr char EoLn = '$';
@@ -38,6 +41,7 @@ struct Node {
     Edge e[AlphabetSize + 1]{};
 
     Edge getEdge(char c) const;
+    int countEdges() const;
 };
 
 using PrintFn = std::function<void(std::string const &)>;

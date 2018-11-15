@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "log.hpp"
+#include "log.h"
 #include <gtest/gtest.h>
 
 namespace suffix_tree {

@@ -3,7 +3,6 @@
 #include <cstdio>
 #include <iostream>
 #include <unordered_map>
-#include <utility>
 
 #include <gtest/gtest.h>
 
@@ -17,9 +16,9 @@ static uint32_t toIndex(char c) {
     if (c == EoLn) {
         return 0;
     }
-    auto i = c - Base + 1; // Int
-    DCHECK(1 <= i && i <= AlphabetSize) << "i " << i;
-    return (uint32_t)i;
+    int i{c - Base};
+    DCHECK(0 <= i && i < AlphabetSize) << "i " << i;
+    return (uint32_t)i + 1 /*0 reserved for EoLn*/;
 }
 
 std::string Edge::name(char const *s) const {
@@ -129,12 +128,39 @@ Node *build(char const *s, uint32_t sLen) {
     return root;
 }
 
-void destroy(Node *root) {
-    if (root == nullptr) {
-        return;
+FindSubstrResult
+findSubstr(Node const *root, char const *s, char const *p, uint32_t pLen) {
+    ActivePoint ap{const_cast<Node *>(root)};
+    for (uint32_t i = 0; i < pLen;) {
+        auto e = toIndex(p[i]);
+        if (ap.length == 0) {
+            if (!ap.node || !ap.node->e[e].valid()) {
+                return {false, 0};
+            }
+            ap.edge = e;
+            ap.length++;
+            i++;
+            continue;
+        }
+        if (ap.length == ap.node->e[ap.edge].length()) {
+            ap.node = ap.node->e[ap.edge].link;
+            ap.length = 0;
+            continue;
+        }
+        if (p[i] != s[ap.getActiveChar()]) {
+            return {false, 0};
+        }
+        ap.length++;
+        i++;
     }
-    for (uint32_t i = 0; i < AlphabetSize; i++) {
-        destroy(root->e[i].link);
+    return {true, ap.getActiveChar() - pLen};
+}
+
+void destroy(Node *root) {
+    if (root != nullptr) {
+        for (uint32_t i = 0; i < AlphabetSize; i++) {
+            destroy(root->e[i].link);
+        }
     }
 }
 
@@ -251,6 +277,8 @@ suffix_tree::Node *build(char const *s) {
         EXPECT_FALSE(e.isLeafEdge());                                          \
     } while (false)
 
+using suffix_tree::FindSubstrResult;
+
 TEST(Ukkonen, Case1) {
     char const str[] = "xyx$";
     auto root = build(str);
@@ -275,6 +303,11 @@ TEST(Ukkonen, Case1) {
         CHECK_LEAF_EDGE(node, str, "$");
         CHECK_LEAF_EDGE(node, str, "yx$");
     }
+    EXPECT_EQ(FindSubstrResult(true, 0), findSubstr(root, str, "xyx", 3));
+    EXPECT_EQ(FindSubstrResult(true, 1), findSubstr(root, str, "yx", 2));
+    EXPECT_EQ(FindSubstrResult(true, 0), findSubstr(root, str, "x", 1));
+    EXPECT_EQ(FindSubstrResult(false, 0), findSubstr(root, str, "xx", 2));
+    EXPECT_EQ(FindSubstrResult(false, 0), findSubstr(root, str, "yz", 2));
     suffix_tree::destroy(root);
 }
 
@@ -305,6 +338,11 @@ TEST(Ukkonen, Case2) {
         CHECK_LEAF_EDGE(node, str, "bxc$");
         CHECK_LEAF_EDGE(node, str, "c$");
     }
+    EXPECT_EQ(FindSubstrResult(true, 0), findSubstr(root, str, "xaxbxc", 6));
+    EXPECT_EQ(FindSubstrResult(true, 2), findSubstr(root, str, "xbx", 3));
+    EXPECT_EQ(FindSubstrResult(true, 4), findSubstr(root, str, "xc", 2));
+    EXPECT_EQ(FindSubstrResult(false, 0), findSubstr(root, str, "xbc", 3));
+    EXPECT_EQ(FindSubstrResult(false, 0), findSubstr(root, str, "xaxbxcx", 7));
     suffix_tree::destroy(root);
 }
 
@@ -370,6 +408,10 @@ TEST(Ukkonen, Case3) {
         CHECK_LEAF_EDGE(node, str, "$");
         CHECK_LEAF_EDGE(node, str, "xyaxyz$");
     }
+    EXPECT_EQ(FindSubstrResult(true, 0), findSubstr(root, str, "xyz", 3));
+    EXPECT_EQ(FindSubstrResult(true, 3), findSubstr(root, str, "xyaxyz", 6));
+    EXPECT_EQ(FindSubstrResult(false, 0), findSubstr(root, str, "xyzz", 4));
+    EXPECT_EQ(FindSubstrResult(false, 0), findSubstr(root, str, "axzz", 4));
     suffix_tree::destroy(root);
 }
 
@@ -415,6 +457,12 @@ TEST(Ukkonen, Case4) {
         CHECK_LEAF_EDGE(node, str, "$");
         CHECK_LEAF_EDGE(node, str, "x$");
     }
+    EXPECT_EQ(FindSubstrResult(true, 0), findSubstr(root, str, "xxxx", 4));
+    EXPECT_EQ(FindSubstrResult(true, 0), findSubstr(root, str, "xxx", 3));
+    EXPECT_EQ(FindSubstrResult(true, 0), findSubstr(root, str, "xx", 2));
+    EXPECT_EQ(FindSubstrResult(true, 0), findSubstr(root, str, "x", 1));
+    EXPECT_EQ(FindSubstrResult(false, 0), findSubstr(root, str, "xxxxx", 5));
+    suffix_tree::destroy(root);
 }
 
 TEST(Ukkonen, Case5) {
@@ -455,6 +503,11 @@ TEST(Ukkonen, Case5) {
         CHECK_LEAF_EDGE(node, str, "yabz$");
         CHECK_LEAF_EDGE(node, str, "z$");
     }
+    EXPECT_EQ(FindSubstrResult(true, 0), findSubstr(root, str, "ab", 2));
+    EXPECT_EQ(FindSubstrResult(true, 2), findSubstr(root, str, "xaby", 4));
+    EXPECT_EQ(FindSubstrResult(true, 4), findSubstr(root, str, "bya", 3));
+    EXPECT_EQ(FindSubstrResult(true, 8), findSubstr(root, str, "z", 1));
+    suffix_tree::destroy(root);
 }
 
 int main(int argc, char **argv) {

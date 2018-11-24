@@ -18,7 +18,8 @@ int knapsackNaiveRec(
     if (i == n) {
         return total;
     }
-    int p1 = knapsackNaiveRec(n,
+    int p1 = knapsackNaiveRec(
+            n,
             weight,
             profit,
             i + 1,

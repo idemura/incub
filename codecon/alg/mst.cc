@@ -81,10 +81,10 @@ i64 mst_prim(
     HeapKeyVal<int, Edge> h;
     for (int v = start; v >= 0;) {
         in_mst[v] = 1;
-        for (auto i = lower_bound(
-                     es.begin(), es.end(), Edge(v, 0, 0), edge_cmp);
-                i != es.end() && i->v == v;
-                ++i) {
+        for (auto i =
+                     lower_bound(es.begin(), es.end(), Edge(v, 0, 0), edge_cmp);
+             i != es.end() && i->v == v;
+             ++i) {
             if (!in_mst[i->w])
                 h.push(i->weight, *i);
         }

@@ -20,7 +20,8 @@ int get_projection_size(const vector<vector_int> &a) {
     return n + 1;
 }
 
-bool dfs_bipart(const vector<vector_int> &a,
+bool dfs_bipart(
+        const vector<vector_int> &a,
         int v, // Vertex in a.
         vector_int &m, // Marks on vertices of a.
         vector_int &b_to_a) {

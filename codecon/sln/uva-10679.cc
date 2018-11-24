@@ -86,7 +86,7 @@ Node *build(char const *s, uint32_t sLen) {
             }
             if (ap.length > al) {
                 if (ap.length == ap.node->e[ap.edge].lengthTo(i) &&
-                        ap.node->e[ap.edge].link) {
+                    ap.node->e[ap.edge].link) {
                     ap.length = 0;
                     ap.node = ap.node->e[ap.edge].link;
                 }
@@ -125,8 +125,8 @@ Node *build(char const *s, uint32_t sLen) {
     return root;
 }
 
-std::pair<bool, uint32_t> findSubstr(
-        Node const *root, char const *s, char const *p, uint32_t pLen) {
+std::pair<bool, uint32_t>
+findSubstr(Node const *root, char const *s, char const *p, uint32_t pLen) {
     ActivePoint ap{const_cast<Node *>(root)};
     for (uint32_t i = 0; i < pLen;) {
         auto e = toIndex(p[i]);

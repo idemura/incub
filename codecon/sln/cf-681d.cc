@@ -23,7 +23,8 @@ using AdjL = vector<vector<int>>;
 
 // Every node n in a subtree of a @node with node == node->to should have
 // n->to == node.
-bool dfs(const AdjL &al,
+bool dfs(
+        const AdjL &al,
         const vector<int> &ancestor,
         int v,
         int root,

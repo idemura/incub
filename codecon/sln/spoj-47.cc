@@ -70,8 +70,8 @@ struct Problem {
 
         bool reachable = canMove();
         printf("%s.\n",
-                reachable ? "It is possible to move the furniture" :
-                            "The furniture cannot be moved");
+               reachable ? "It is possible to move the furniture" :
+                           "The furniture cannot be moved");
     }
 
     bool canMove() {

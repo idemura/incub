@@ -81,8 +81,8 @@ vector<VertexVec> scc_to_groups(const vector<int> &scc, int k) {
         sort(g.begin(), g.end());
     }
     sort(groups.begin(),
-            groups.end(),
-            [](const VertexVec &a, const VertexVec &b) { return a[0] < b[0]; });
+         groups.end(),
+         [](const VertexVec &a, const VertexVec &b) { return a[0] < b[0]; });
     return move(groups);
 }
 

@@ -19,8 +19,8 @@ class Trekking {
 public:
     Trekking() {}
 
-    int findCamps(
-            const std::string &trail, const std::vector<std::string> &plans) {
+    int
+    findCamps(const std::string &trail, const std::vector<std::string> &plans) {
         int min_nights = INF;
         for (int i = 0; i < plans.size(); i++) {
             int n = 0;
@@ -31,8 +31,8 @@ public:
         return min_nights == INF ? -1 : min_nights;
     }
 
-    bool getCampStay(
-            const std::string &trail, const std::string &plan, int *len) {
+    bool
+    getCampStay(const std::string &trail, const std::string &plan, int *len) {
         *len = 0;
         for (int i = 0; i < plan.size(); i++) {
             if (plan[i] == 'C') {

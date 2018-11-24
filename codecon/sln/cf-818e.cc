@@ -56,7 +56,8 @@ void factorize(int k, powers &p) {
 pii get_div_range(int start) {
     auto maxj = 0, minj = 0x7fffffff;
     for (int i = 0; i < fact.size(); i++) {
-        int j = lower_bound(a.begin() + start,
+        int j = lower_bound(
+                        a.begin() + start,
                         a.end(),
                         a[start - 1][i] + kpow[i],
                         [i](powers const &a, int b) { return a[i] < b; }) -
@@ -67,7 +68,8 @@ pii get_div_range(int start) {
         maxj = max(maxj, j);
     }
     for (int i = 0; i < fact.size(); i++) {
-        int j = upper_bound(a.begin(),
+        int j = upper_bound(
+                        a.begin(),
                         a.begin() + maxj + 1,
                         a[maxj][i] - kpow[i],
                         [i](int b, powers const &a) { return b < a[i]; }) -

@@ -72,7 +72,8 @@ void rec_merge(int v) {
 
 i64 get_node_score(int v, i64 h) {
     auto v_begin = subtree[v].first;
-    int j = lower_bound(ordered_len.begin() + v_begin,
+    int j = lower_bound(
+                    ordered_len.begin() + v_begin,
                     ordered_len.begin() + subtree[v].second,
                     h) -
             (ordered_len.begin() + v_begin);

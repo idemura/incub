@@ -41,7 +41,8 @@ private:
         }
     };
 
-    void build_cascade(const vector<ValueT> &w,
+    void build_cascade(
+            const vector<ValueT> &w,
             const vector<Node> &b,
             vector<Node> &res) const;
     int binary(const vector<Node> &nl, ValueT x) const;

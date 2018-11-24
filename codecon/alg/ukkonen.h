@@ -53,8 +53,8 @@ using PrintFn = std::function<void(std::string const &)>;
 using FindSubstrResult = std::pair<bool, uint32_t>;
 
 Node *build(char const *s, uint32_t sLen);
-FindSubstrResult findSubstr(
-        Node const *root, char const *s, char const *p, uint32_t pLen);
+FindSubstrResult
+findSubstr(Node const *root, char const *s, char const *p, uint32_t pLen);
 void destroy(Node *root);
 void print(Node const *root, char const *s, uint32_t sLen, PrintFn const &fn);
 } // namespace suffix_tree

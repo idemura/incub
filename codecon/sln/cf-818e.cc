@@ -1,13 +1,13 @@
+#include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdio>
-#include <array>
-#include <algorithm>
+#include <iostream>
 #include <map>
-#include <vector>
 #include <string>
 #include <unordered_map>
 #include <utility>
-#include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -57,11 +57,11 @@ pii get_div_range(int start) {
     auto maxj = 0, minj = 0x7fffffff;
     for (int i = 0; i < fact.size(); i++) {
         int j = lower_bound(
-                a.begin() + start,
-                a.end(),
-                a[start - 1][i] + kpow[i],
-                [i](powers const &a, int b) { return a[i] < b; })
-                - a.begin();
+                        a.begin() + start,
+                        a.end(),
+                        a[start - 1][i] + kpow[i],
+                        [i](powers const &a, int b) { return a[i] < b; }) -
+                a.begin();
         if (j == a.size()) {
             return {-1, -1};
         }
@@ -69,28 +69,28 @@ pii get_div_range(int start) {
     }
     for (int i = 0; i < fact.size(); i++) {
         int j = upper_bound(
-                a.begin(),
-                a.begin() + maxj + 1,
-                a[maxj][i] - kpow[i],
-                [i](int b, powers const &a) { return b < a[i]; })
-                - a.begin();
+                        a.begin(),
+                        a.begin() + maxj + 1,
+                        a[maxj][i] - kpow[i],
+                        [i](int b, powers const &a) { return b < a[i]; }) -
+                a.begin();
         minj = min(minj, j);
     }
     return {minj, maxj};
 }
-}
+} // namespace
 
 int main() {
-    cin>>n>>k;
+    cin >> n >> k;
     if (k == 1) {
-        cout<<(n * (n + 1) / 2)<<endl;
+        cout << (n * (n + 1) / 2) << endl;
         return 0;
     }
     factorize_init(k);
     a.resize(n + 1);
     for (int i = 1; i <= n; i++) {
         int e;
-        cin>>e;
+        cin >> e;
         a[i] = a[i - 1];
         factorize(e, a[i]);
     }
@@ -101,8 +101,8 @@ int main() {
             break;
         }
         count += i64(r.first - i + 1) * i64(n - r.second + 1);
-        i = r.first;  // and +1 in for
+        i = r.first; // and +1 in for
     }
-    cout<<count<<endl;
+    cout << count << endl;
     return 0;
 }

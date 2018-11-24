@@ -1,16 +1,15 @@
 #include <algorithm>
 #include <map>
+#include <stdio.h>
 #include <string>
 #include <vector>
-#include <stdio.h>
 
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
 #define INF 0x7fffffff
 
 using namespace std;
 
-int findPowerOf2(int n)
-{
+int findPowerOf2(int n) {
     int p = 0;
     for (; n % 2 == 0; n /= 2) {
         p++;
@@ -18,8 +17,7 @@ int findPowerOf2(int n)
     return p;
 }
 
-int power(int x, int n)
-{
+int power(int x, int n) {
     if (n == 0) {
         return 1;
     }
@@ -40,8 +38,7 @@ int power(int x, int n)
     return p;
 }
 
-int findLog(int x, int p)
-{
+int findLog(int x, int p) {
     if (p == 0) {
         return 1;
     }
@@ -58,8 +55,7 @@ int findLog(int x, int p)
     return a;
 }
 
-bool solve()
-{
+bool solve() {
     int i, j, a, b, t, n;
 
     scanf("%d%d", &a, &b);
@@ -72,7 +68,7 @@ bool solve()
         a = b;
         b = t;
     }
-    int p2 = findPowerOf2(a % 2? b : a);
+    int p2 = findPowerOf2(a % 2 ? b : a);
 
     // p2 is in [1,31] so just for is OK.
     for (i = 0; i <= p2; i++) {
@@ -99,8 +95,7 @@ bool solve()
     return true;
 }
 
-int main()
-{
+int main() {
 #ifndef ONLINE_JUDGE
     freopen("in", "r", stdin);
 #endif

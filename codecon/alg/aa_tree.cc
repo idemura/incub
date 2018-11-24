@@ -9,13 +9,13 @@
 #include <utility>
 #include <vector>
 
-#include <gtest/gtest.h>
 #include <glog/logging.h>
+#include <gtest/gtest.h>
 
 using i32 = int32_t;
 using i64 = int64_t;
 
-template<typename K, typename V>
+template <typename K, typename V>
 class aa_tree {
 public:
     aa_tree() = default;
@@ -31,7 +31,7 @@ public:
     aa_tree &operator=(aa_tree const &) = delete;
     aa_tree &operator=(aa_tree &&other) noexcept {
         this->~aa_tree();
-        return *new(this) aa_tree(std::move(other));
+        return *new (this) aa_tree(std::move(other));
     }
 
     void insert(K k, V v) {
@@ -67,7 +67,7 @@ private:
         uint32_t height{0};
     };
 
-    struct node : link {
+    struct node: link {
         K key{};
         V val{};
 
@@ -75,8 +75,8 @@ private:
     };
 
     static link s_sentinel;
-    static node* nil;
-    node* root_{nil};
+    static node *nil;
+    node *root_{nil};
     size_t size_{};
 
     void reset() {
@@ -131,7 +131,8 @@ private:
             unsigned ci = k > n->key;
             n->child[ci] = remove_rec(k, n->child[ci]);
         }
-        if (n->height - 1 > n->child[0]->height || n->height - 1 > n->child[1]->height) {
+        if (n->height - 1 > n->child[0]->height ||
+            n->height - 1 > n->child[1]->height) {
             n->height--;
             n = split(skew(n));
         }
@@ -150,7 +151,8 @@ private:
     }
 
     static node *split(node *n) {
-        if (n->height == n->child[1]->height && n->height == n->child[1]->child[1]->height) {
+        if (n->height == n->child[1]->height &&
+            n->height == n->child[1]->child[1]->height) {
             auto t = n->child[1];
             n->child[1] = t->child[0];
             t->child[0] = n;
@@ -167,23 +169,22 @@ private:
             os << "h=" << n->height << "\n";
         } else {
             os << "h=" << n->height << " key=" << n->key << " val=" << n->val
-                    << " c[0]=" << conv(n->child[0])
-                    << " c[1]=" << conv(n->child[1])
-                    << "\n";
+               << " c[0]=" << conv(n->child[0]) << " c[1]=" << conv(n->child[1])
+               << "\n";
             print_rec(os, n->child[0], tab + 1);
             print_rec(os, n->child[1], tab + 1);
         }
     }
 
     static node *conv(node *n) {
-        return n == nil? nullptr: n;
+        return n == nil ? nullptr : n;
     }
 };
 
-template<typename K, typename V>
+template <typename K, typename V>
 typename aa_tree<K, V>::link aa_tree<K, V>::s_sentinel;
 
-template<typename K, typename V>
+template <typename K, typename V>
 typename aa_tree<K, V>::node *aa_tree<K, V>::nil = (node *)&s_sentinel;
 
 aa_tree<i32, i32> make_simple_tree() {
@@ -249,7 +250,7 @@ void test() {
     test_remove_two_children2();
 }
 
-template<typename K, typename V>
+template <typename K, typename V>
 class std_map {
 public:
     void insert(K k, V v) {
@@ -265,7 +266,7 @@ public:
         if (itr == map.end()) {
             return nullptr;
         } else {
-            return const_cast<V*>(&itr->second);
+            return const_cast<V *>(&itr->second);
         }
     }
 
@@ -292,7 +293,7 @@ void test_rand(size_t num_inserts, size_t num_removes) {
     }
 }
 
-template<typename Map>
+template <typename Map>
 void perf_map(size_t num_ops, std::function<i32()> gen) {
     Map m;
     std::vector<i32> keys(num_ops);
@@ -312,13 +313,9 @@ void perf_map(size_t num_ops, std::function<i32()> gen) {
 
 std::function<i32()> getGen(bool random) {
     if (random) {
-        return [rg = std::minstd_rand0{1}]() mutable {
-            return rg();
-        };
+        return [rg = std::minstd_rand0{1}]() mutable { return rg(); };
     } else {
-        return [n = 0]() mutable {
-            return n++;
-        };
+        return [n = 0]() mutable { return n++; };
     }
 }
 

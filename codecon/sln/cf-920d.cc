@@ -1,15 +1,15 @@
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
-#include <algorithm>
+#include <deque>
 #include <map>
-#include <vector>
 #include <string>
 #include <unordered_map>
 #include <utility>
-#include <deque>
+#include <vector>
 
 using namespace std;
 
@@ -17,7 +17,6 @@ using i32 = int32_t;
 using i64 = int64_t;
 using pii = std::pair<i32, i32>;
 using pll = std::pair<i64, i64>;
-
 
 int dp[5000];
 int iv[5000];
@@ -43,7 +42,8 @@ int main() {
     deque<int> q;
     for (int i = 0; i < n; i++) {
         scanf("%d", &iv[i]);
-        if (iv[i] == 0) continue;
+        if (iv[i] == 0)
+            continue;
         auto v_mod = iv[i] % k;
         if (dp[v_mod] < 0 || i < dp[v_mod]) {
             dp[v_mod] = i;
@@ -81,7 +81,8 @@ int main() {
         q.pop_front();
         assert(dp[v_mod] >= 0);
         for (int i = dp[v_mod] + 1; i < n; i++) {
-            if (iv[i] == 0) continue;
+            if (iv[i] == 0)
+                continue;
             auto v2 = (v_mod + iv[i]) % k;
             if (dp[v2] < 0 || i < dp[v2]) {
                 dp[v2] = i;
@@ -92,7 +93,6 @@ int main() {
     if (dp[v % k] < 0) {
         printf("NO\n");
         return 0;
-
     }
     printf("YES\n");
     int v0 = 0;
@@ -116,7 +116,8 @@ int main() {
     int j1 = -1;
     int v1 = 0;
     for (int i = 0; i < n; i++) {
-        if (used[i]) continue;
+        if (used[i])
+            continue;
         v1 += iv[i];
         if (j1 < 0) {
             j1 = i;

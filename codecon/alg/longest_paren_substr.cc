@@ -1,7 +1,7 @@
-#include <iostream>
-#include <vector>
-#include <string>
 #include <algorithm>
+#include <iostream>
+#include <string>
+#include <vector>
 
 using namespace std;
 
@@ -9,17 +9,17 @@ bool is_balanced(const string &s) {
     int bal = 0;
     for (auto c : s) {
         switch (c) {
-            case '(': {
-                bal++;
-                break;
+        case '(': {
+            bal++;
+            break;
+        }
+        case ')': {
+            if (bal == 0) {
+                return false;
             }
-            case ')': {
-                if (bal == 0) {
-                    return false;
-                }
-                bal--;
-                break;
-            }
+            bal--;
+            break;
+        }
         }
     }
     return bal == 0;
@@ -43,18 +43,18 @@ string smart_longest(const string &s) {
     vector<int> imbalance, open;
     for (int i = 0; i < s.size(); i++) {
         switch (s[i]) {
-            case '(': {
-                open.push_back(i);
-                break;
+        case '(': {
+            open.push_back(i);
+            break;
+        }
+        case ')': {
+            if (open.empty()) {
+                imbalance.push_back(i);
+            } else {
+                open.pop_back();
             }
-            case ')': {
-                if (open.empty()) {
-                    imbalance.push_back(i);
-                } else {
-                    open.pop_back();
-                }
-                break;
-            }
+            break;
+        }
         }
     }
     // Position of every imbalanced ')' is less than '('.
@@ -81,7 +81,8 @@ void test(const string &s) {
     auto dummy = dummy_longest(s);
     auto smart = smart_longest(s);
     if (dummy != smart) {
-        cerr<<"FAILED: s="<<s<<" dummy="<<dummy<<" smart="<<smart<<endl;
+        cerr << "FAILED: s=" << s << " dummy=" << dummy << " smart=" << smart
+             << endl;
         return;
     }
 }

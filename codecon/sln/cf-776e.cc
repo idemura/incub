@@ -1,7 +1,7 @@
-#include <iostream>
-#include <vector>
 #include <algorithm>
 #include <cmath>
+#include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -57,7 +57,7 @@ int eval(i64 n, i64 k, const vector<int> &sieve, const vector<int> &primes) {
 
 int main() {
     i64 n, k;
-    cin>>n>>k;
+    cin >> n >> k;
     int sqrt_n = (int)sqrt(n);
     vector<int> sieve(sqrt_n + 1), primes;
     for (int i = 2; i < sieve.size(); i++) {
@@ -71,6 +71,6 @@ int main() {
             }
         }
     }
-    cout<<eval(n, k, sieve, primes)<<endl;
+    cout << eval(n, k, sieve, primes) << endl;
     return 0;
 }

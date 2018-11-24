@@ -1,14 +1,14 @@
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
-#include <algorithm>
 #include <map>
-#include <vector>
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 using namespace std;
 
@@ -73,9 +73,10 @@ void rec_merge(int v) {
 i64 get_node_score(int v, i64 h) {
     auto v_begin = subtree[v].first;
     int j = lower_bound(
-            ordered_len.begin() + v_begin,
-            ordered_len.begin() + subtree[v].second,
-            h) - (ordered_len.begin() + v_begin);
+                    ordered_len.begin() + v_begin,
+                    ordered_len.begin() + subtree[v].second,
+                    h) -
+            (ordered_len.begin() + v_begin);
     i64 s = h * j - ordered_sum[j + v_begin - 1];
     return s;
 }

@@ -1,13 +1,13 @@
+#include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdio>
-#include <array>
-#include <algorithm>
+#include <iostream>
 #include <map>
-#include <vector>
 #include <string>
 #include <unordered_map>
 #include <utility>
-#include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -24,9 +24,9 @@ struct point {
 
     void set_q() {
         if (y == 0) {
-            q = x >= 0? 0: 4;
+            q = x >= 0 ? 0 : 4;
         } else if (x == 0) {
-            q = y >= 0? 2: 6;
+            q = y >= 0 ? 2 : 6;
         } else if (x > 0 && y > 0) {
             q = 1;
         } else if (x < 0 && y > 0) {
@@ -62,15 +62,15 @@ bool delta_less(int i, int j) {
         return dpi > dpj;
     }
     auto q = cpi * dpj - cpj * dpi;
-    return dpi > 0? q < 0: q < 0;
+    return dpi > 0 ? q < 0 : q < 0;
 }
 
 int main() {
     int n = 0;
-    cin>>n;
+    cin >> n;
     pt.resize(n);
     for (int i = 0; i < n; i++) {
-        cin>>pt[i].x>>pt[i].y;
+        cin >> pt[i].x >> pt[i].y;
         pt[i].set_q();
         pt[i].i = i + 1;
     }
@@ -78,7 +78,8 @@ int main() {
         if (a.q != b.q) {
             return a.q < b.q;
         } else {
-            // (ay / ax) ~ (by / bx), multiply by ax * bx > 0 (cos has same sign in quarters).
+            // (ay / ax) ~ (by / bx), multiply by ax * bx > 0 (cos has same sign
+            // in quarters).
             auto s = abs(a.y * b.x) - abs(b.y * a.x);
             if (a.q == 1 || a.q == 5) {
                 return s < 0;
@@ -98,6 +99,6 @@ int main() {
             imin = i;
         }
     }
-    cout<<pt[imin].i<<" "<<pt[(imin + 1) % n].i<<"\n";
+    cout << pt[imin].i << " " << pt[(imin + 1) % n].i << "\n";
     return 0;
 }

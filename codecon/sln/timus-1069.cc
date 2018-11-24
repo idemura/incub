@@ -1,11 +1,11 @@
 // Prufer code.
 #include <algorithm>
-#include <vector>
+#include <math.h>
 #include <set>
-#include <utility>
 #include <stdio.h>
 #include <string.h>
-#include <math.h>
+#include <utility>
+#include <vector>
 
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
 #define INF 0x7fffffff
@@ -19,12 +19,11 @@ int vs[DIM], vs_n = 0;
 int cs[DIM], cs_n = 0;
 vector<int> al[DIM];
 
-int main()
-{
+int main() {
 #ifndef ONLINE_JUDGE
     freopen("in", "r", stdin);
 #endif
-    set<int> heap;  // Seems set is good enough to be a heap.
+    set<int> heap; // Seems set is good enough to be a heap.
     int v, i, j;
 
     while (scanf("%d", &v) == 1) {

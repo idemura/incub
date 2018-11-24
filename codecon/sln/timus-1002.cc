@@ -1,9 +1,9 @@
 #include <algorithm>
-#include <vector>
-#include <utility>
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
-#include <math.h>
+#include <utility>
+#include <vector>
 
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
 #define INF 0x7fffffff
@@ -13,28 +13,43 @@ using namespace std;
 
 #define MAX 108
 
-char encode(char c)
-{
+char encode(char c) {
     switch (c) {
-    case 'i': case 'j':
+    case 'i':
+    case 'j':
         return '1';
-    case 'a': case 'b': case 'c':
+    case 'a':
+    case 'b':
+    case 'c':
         return '2';
-    case 'd': case 'e': case 'f':
+    case 'd':
+    case 'e':
+    case 'f':
         return '3';
-    case 'g': case 'h':
+    case 'g':
+    case 'h':
         return '4';
-    case 'k': case 'l':
+    case 'k':
+    case 'l':
         return '5';
-    case 'm': case 'n':
+    case 'm':
+    case 'n':
         return '6';
-    case 'p': case 'r': case 's':
+    case 'p':
+    case 'r':
+    case 's':
         return '7';
-    case 't': case 'u': case 'v':
+    case 't':
+    case 'u':
+    case 'v':
         return '8';
-    case 'w': case 'x': case 'y':
+    case 'w':
+    case 'x':
+    case 'y':
         return '9';
-    case 'o': case 'q': case 'z':
+    case 'o':
+    case 'q':
+    case 'z':
         return '0';
     default:
         return 0;
@@ -46,17 +61,16 @@ struct dp_t {
 };
 
 vector<int> ix[MAX];
-int  wlen[50000];
+int wlen[50000];
 dp_t dp[MAX];
 char sample[MAX];
-int  sample_l;
+int sample_l;
 char dict[50000][60];
-int  dict_n;
+int dict_n;
 
-void dpf()
-{
+void dpf() {
     int i, j, k, c;
-    for (i = sample_l; i--; ) {
+    for (i = sample_l; i--;) {
         int c_min = INF, j_min = -1;
         for (j = 0; j < ix[i].size(); j++) {
             k = i + wlen[ix[i][j]];
@@ -70,13 +84,12 @@ void dpf()
                 j_min = j;
             }
         }
-        dp[i].c = c_min == INF? INF: c_min + 1;
-        dp[i].w = j_min < 0? -1: ix[i][j_min];
+        dp[i].c = c_min == INF ? INF : c_min + 1;
+        dp[i].w = j_min < 0 ? -1 : ix[i][j_min];
     }
 }
 
-int main()
-{
+int main() {
 #ifndef ONLINE_JUDGE
     freopen("in", "r", stdin);
 #endif
@@ -107,7 +120,7 @@ int main()
                 if (k + wlen[i] <= sample_l) {
                     ix[k].push_back(i);
                 }
-                p = strstr(p+1, e);
+                p = strstr(p + 1, e);
             }
         }
         dpf();

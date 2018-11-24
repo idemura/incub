@@ -1,7 +1,7 @@
 #include <algorithm>
-#include <vector>
-#include <utility>
 #include <stdio.h>
+#include <utility>
+#include <vector>
 
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
 #define INF 0x7fffffff
@@ -15,10 +15,9 @@ int C[100][500];
 int T[101][500];
 int m1[500];
 int m2[500];
-int path[500*500];
+int path[500 * 500];
 
-int main()
-{
+int main() {
 #ifndef ONLINE_JUDGE
     freopen("in", "r", stdin);
 #endif
@@ -29,20 +28,20 @@ int main()
         for (j = 0; j < N; j++) {
             scanf("%d", &C[i][j]);
             // C[i][j]++;
-            T[i+1][j] = INF;
+            T[i + 1][j] = INF;
         }
     }
 
     for (i = 1; i <= M; i++) {
         j = 0;
-        m1[j] = T[i-1][j] + C[i-1][j];
+        m1[j] = T[i - 1][j] + C[i - 1][j];
         for (j++; j < N; j++) {
-            m1[j] = min(m1[j-1], T[i-1][j]) + C[i-1][j];
+            m1[j] = min(m1[j - 1], T[i - 1][j]) + C[i - 1][j];
         }
-        j = N-1;
-        m2[j] = T[i-1][j] + C[i-1][j];
+        j = N - 1;
+        m2[j] = T[i - 1][j] + C[i - 1][j];
         for (j--; j >= 0; j--) {
-            m2[j] = min(m2[j+1], T[i-1][j]) + C[i-1][j];
+            m2[j] = min(m2[j + 1], T[i - 1][j]) + C[i - 1][j];
         }
         for (j = 0; j < N; j++) {
             T[i][j] = min(m1[j], m2[j]);
@@ -59,25 +58,25 @@ int main()
     j = jmin;
     k = 0;
     do {
-        path[k++] = j+1;
-        int m = T[i-1][j];
+        path[k++] = j + 1;
+        int m = T[i - 1][j];
         jmin = j;
-        if (j-1 >= 0 && T[i][j-1] < m) {
-            jmin = j-1;
+        if (j - 1 >= 0 && T[i][j - 1] < m) {
+            jmin = j - 1;
             m = T[i][jmin];
         }
-        if (j+1 <  N && T[i][j+1] < m) {
-            jmin = j+1;
+        if (j + 1 < N && T[i][j + 1] < m) {
+            jmin = j + 1;
             m = T[i][jmin];
         }
-        if (m == T[i-1][j])
+        if (m == T[i - 1][j])
             i--;
         else
             j = jmin;
     } while (i);
 
     for (i = 0; i < k; i++) {
-        printf("%d ", path[k-1-i]);
+        printf("%d ", path[k - 1 - i]);
     }
     printf("\n");
 

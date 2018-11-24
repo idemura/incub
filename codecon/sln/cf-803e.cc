@@ -1,12 +1,12 @@
-#include <cmath>
-#include <array>
 #include <algorithm>
+#include <array>
+#include <cmath>
+#include <iostream>
 #include <map>
-#include <vector>
 #include <string>
 #include <unordered_map>
 #include <utility>
-#include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -29,14 +29,16 @@ struct IntMap {
         }
     }
 
-    template<class F>
+    template <class F>
     void for_each(F f) const {
         for (size_t i = 1; i < n.size(); i++) {
             auto j = n.size() - i;
-            if (n[j]) f(-(int)j, n[j]);
+            if (n[j])
+                f(-(int)j, n[j]);
         }
         for (size_t i = 0; i < p.size(); i++) {
-            if (p[i]) f( (int)i, p[i]);
+            if (p[i])
+                f((int)i, p[i]);
         }
     }
 
@@ -66,28 +68,27 @@ IntMap im[1002];
 int main() {
     int n = 0, k = 0;
     string s;
-    cin>>n>>k>>s;
+    cin >> n >> k >> s;
     im[0].set(0, 'D');
     for (int i = 0; i < s.size(); i++) {
-        auto bound = (i + 1 == s.size()? k: k - 1);
+        auto bound = (i + 1 == s.size() ? k : k - 1);
         if (s[i] == 'D') {
-            im[i].for_each([&m = im[i + 1], bound] (int j, int v) {
-                m.set(j, 'D');
-            });
+            im[i].for_each(
+                    [& m = im[i + 1], bound](int j, int v) { m.set(j, 'D'); });
         } else if (s[i] == 'L') {
-            im[i].for_each([&m = im[i + 1], bound] (int j, int v) {
+            im[i].for_each([& m = im[i + 1], bound](int j, int v) {
                 if (abs(j - 1) <= bound) {
                     m.set(j - 1, 'L');
                 }
             });
         } else if (s[i] == 'W') {
-            im[i].for_each([&m = im[i + 1], bound] (int j, int v) {
+            im[i].for_each([& m = im[i + 1], bound](int j, int v) {
                 if (abs(j + 1) <= bound) {
                     m.set(j + 1, 'W');
                 }
             });
         } else {
-            im[i].for_each([&m = im[i + 1], bound] (int j, int v) {
+            im[i].for_each([& m = im[i + 1], bound](int j, int v) {
                 m.set(j, 'D');
                 if (abs(j - 1) <= bound) {
                     m.set(j - 1, 'L');
@@ -103,7 +104,7 @@ int main() {
     } else if (im[n].contains(-k)) {
         k *= -1;
     } else {
-        cout<<"NO\n";
+        cout << "NO\n";
         return 0;
     }
     char t[1002] = {};
@@ -119,6 +120,6 @@ int main() {
         }
         n--;
     }
-    cout<<t<<"\n";
+    cout << t << "\n";
     return 0;
 }

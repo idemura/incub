@@ -1,8 +1,8 @@
-#include <iostream>
 #include <algorithm>
+#include <cassert>
+#include <iostream>
 #include <unordered_map>
 #include <vector>
-#include <cassert>
 
 using namespace std;
 
@@ -44,17 +44,17 @@ void computeCosts(string const &s) {
 int main() {
     int n, m;
     string s;
-    cin>>n>>s>>m;
+    cin >> n >> s >> m;
     assert(n == s.size());
     computeCosts(s);
     for (int i = 0; i < m; i++) {
         int k;
         char chr;
-        cin>>k>>chr;
+        cin >> k >> chr;
         auto const &vec = cost_map[chr - 'a'];
         auto pos = int(upper_bound(vec.begin(), vec.end(), k) - vec.begin());
         auto res = pos - 1 + k - vec[pos - 1];
-        cout<<min(res, n)<<"\n";
+        cout << min(res, n) << "\n";
     }
     return 0;
 }

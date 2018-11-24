@@ -18,6 +18,10 @@ public:
 
     LSM() = default;
 
+    void reserve(size_t n) {
+        lsm.reserve(n);
+    }
+
     void push(Value v) {
         long n = lsm.size();
         lsm.push_back(v);
@@ -57,8 +61,8 @@ public:
         }
     }
 
-    int countLess(Value max) const {
-        int res = 0;
+    size_t countLess(Value max) const {
+        size_t res = 0;
         long runSize = 1;
         long n = lsm.size();
         long s = 0;
@@ -73,6 +77,10 @@ public:
             runSize *= 2;
         }
         return res;
+    }
+
+    size_t size() const {
+        return lsm.size();
     }
 
     std::string toString() const {

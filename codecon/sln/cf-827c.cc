@@ -1,16 +1,16 @@
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
-#include <algorithm>
+#include <iostream>
 #include <map>
 #include <memory>
-#include <vector>
 #include <string>
 #include <unordered_map>
 #include <utility>
-#include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -26,7 +26,7 @@ struct binary_index_tree {
     }
 
     void add(int i, int amount) {
-        i++;  // Make 1-based
+        i++; // Make 1-based
         while (i <= bit.size()) {
             bit[i - 1] += amount;
             i += step(i);
@@ -91,11 +91,11 @@ void query(int a, int b, string const &buf) {
         int c = char_to_code(buf[i]);
         r += pos[c][buf.length() - 1][(i + a) % buf.length()].count(a, b + 1);
     }
-    cout<<r<<"\n";
+    cout << r << "\n";
 }
 
 int main() {
-    cin>>dna;
+    cin >> dna;
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 10; j++) {
             for (int k = 0; k <= j; k++) {
@@ -110,16 +110,16 @@ int main() {
         }
     }
     int q = 0;
-    cin>>q;
+    cin >> q;
     while (q-- > 0) {
         int t = 0, a = 0, b = 0;
         string buf;
-        cin>>t;
+        cin >> t;
         if (t == 1) {
-            cin>>a>>buf;
+            cin >> a >> buf;
             replace(a - 1, char_to_code(buf[0]));
         } else {
-            cin>>a>>b>>buf;
+            cin >> a >> b >> buf;
             query(a - 1, b - 1, buf);
         }
     }

@@ -1,7 +1,7 @@
-#include <iostream>
 #include <algorithm>
-#include <vector>
+#include <iostream>
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -37,19 +37,19 @@ i64 numC(const vector<int> &fact, int n, int k) {
     if (k > n) {
         return 0;
     }
-    return mdiv(mdiv(fact[n] , fact[k]), fact[n - k]);
+    return mdiv(mdiv(fact[n], fact[k]), fact[n - k]);
 }
 
 int main() {
     int f, w, h;
-    cin>>f>>w>>h;
+    cin >> f >> w >> h;
     if (w == 0) {
         // Problem requires that to be 1, not 0.
-        cout<<"1\n";
+        cout << "1\n";
         return 0;
     }
 
-    vector<int> fact(2*max(f, w) + 1);
+    vector<int> fact(2 * max(f, w) + 1);
     fact[0] = 1;
     fact[1] = 1;
     for (int i = 2; i < fact.size(); i++) {
@@ -60,13 +60,14 @@ int main() {
     // k is number of stacks for wine.
     i64 accepted = 0;
     for (int k = 1; true; k++) {
-        // For each k wine stack stacks (2 in the picture below) we can get possible
-        // box locatons like follows:
+        // For each k wine stack stacks (2 in the picture below) we can get
+        // possible box locatons like follows:
         //   BWBW
         //   WBWB
         //   WBW
         //   BWBWB
-        // which is (combinations of w) * (2*C(f-1, k-1) + C(f-1, k-2) + C(f-1, k)) = C(f+1, k).
+        // which is (combinations of w) * (2*C(f-1, k-1) + C(f-1, k-2) + C(f-1,
+        // k)) = C(f+1, k).
         auto r = w - (h + 1) * k;
         if (r < 0) {
             break;
@@ -79,6 +80,6 @@ int main() {
         }
         accepted = (accepted + comb_w_into_k * comb_f % MOD) % MOD;
     }
-    cout<<mdiv(accepted, total)<<endl;
+    cout << mdiv(accepted, total) << endl;
     return 0;
 }

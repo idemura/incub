@@ -1,9 +1,9 @@
-#include <iostream>
 #include <algorithm>
-#include <unordered_map>
-#include <vector>
 #include <cassert>
 #include <cstdio>
+#include <iostream>
+#include <unordered_map>
+#include <vector>
 
 using namespace std;
 
@@ -15,8 +15,8 @@ int mark;
 
 vector<vector<int>> ice, adj;
 vector<int> color,
-    no_color,  // Ice with no color
-    vc; // Ice colors, temporary to find minimal unused color in a vertex.
+        no_color, // Ice with no color
+        vc; // Ice colors, temporary to find minimal unused color in a vertex.
 
 void dfs(int v, int prev) {
     mark++;
@@ -32,16 +32,18 @@ void dfs(int v, int prev) {
     }
     int c = 1;
     for (int i = 0; i < no_color.size(); i++) {
-        while (vc[c] == mark) c++;
+        while (vc[c] == mark)
+            c++;
         color[no_color[i]] = c;
         if (c > color_max) {
             color_max = c;
         }
-        c++;  // Search from next
+        c++; // Search from next
     }
 
     for (auto u : adj[v]) {
-        if (u == prev) continue;
+        if (u == prev)
+            continue;
         dfs(u, v);
     }
 }
@@ -80,7 +82,7 @@ int main() {
 
     printf("%d\n", color_max);
     for (int i = 1; i < color.size(); i++) {
-        printf("%d ", color[i] ? color[i]: 1);
+        printf("%d ", color[i] ? color[i] : 1);
     }
     printf("\n");
 

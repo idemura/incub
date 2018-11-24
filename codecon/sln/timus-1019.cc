@@ -1,11 +1,11 @@
 #include <algorithm>
-#include <vector>
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <map>
 #include <utility>
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-#include <cassert>
+#include <vector>
 
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
 #define INF 0x7fffffff
@@ -19,11 +19,10 @@ int x0[DIM];
 int x1[DIM];
 int cs[DIM];
 int n_seg;
-int xs[2*DIM];
-int res_cs[2*DIM];
+int xs[2 * DIM];
+int res_cs[2 * DIM];
 
-int main()
-{
+int main() {
 #ifndef ONLINE_JUDGE
     freopen("in", "r", stdin);
 #endif
@@ -41,14 +40,14 @@ int main()
         cs[i] = c == 'w';
     }
     for (i = 0; i < n_seg; i++) {
-        xs[2*i] = x0[i];
-        xs[2*i+1] = x1[i];
+        xs[2 * i] = x0[i];
+        xs[2 * i + 1] = x1[i];
     }
-    int n_pts = 2*n_seg;
-    sort(xs, xs + 2*n_seg);
+    int n_pts = 2 * n_seg;
+    sort(xs, xs + 2 * n_seg);
     j = 1;
     for (i = 1; i < n_pts; i++) {
-        if (xs[i-1] != xs[i]) {
+        if (xs[i - 1] != xs[i]) {
             xs[j++] = xs[i];
         }
     }
@@ -70,12 +69,12 @@ int main()
         }
     }
     int x = 0, len = 0, max_len = -1;
-    for (i = 0; i < n_pts-1; i++) {
+    for (i = 0; i < n_pts - 1; i++) {
         if (res_cs[i]) {
-            len += xs[i+1] - xs[i];
+            len += xs[i + 1] - xs[i];
             if (len > max_len) {
                 max_len = len;
-                x = xs[i+1];
+                x = xs[i + 1];
             }
         } else {
             len = 0;

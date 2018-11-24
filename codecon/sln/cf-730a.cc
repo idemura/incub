@@ -5,7 +5,8 @@ using namespace std;
 int get_max(const vector<int> &a, int except) {
     int m = -1;
     for (int i = 0; i < a.size(); i++) {
-        if (i == except) continue;
+        if (i == except)
+            continue;
         if (m < 0 || a[i] > a[m]) {
             m = i;
         }
@@ -35,22 +36,22 @@ void get_max_rating(const vector<int> &a, vector<int> &ix) {
 }
 
 void print_move_log(int n, vector<int> &move_log) {
-    for (int i = 0; i < move_log.size(); ) {
+    for (int i = 0; i < move_log.size();) {
         string s(n, '0');
         int step_n = move_log[i++];
         for (; step_n > 0; step_n--) {
             s[move_log[i++]] = '1';
         }
-        cout<<s<<"\n";
+        cout << s << "\n";
     }
 }
 
 int main() {
     int n;
-    cin>>n;
+    cin >> n;
     vector<int> r(n);
     for (int i = 0; i < n; i++) {
-        cin>>r[i];
+        cin >> r[i];
     }
     int moves = 0;
     vector<int> move_log;
@@ -91,7 +92,7 @@ int main() {
             }
         }
     }
-    cout<<r[0]<<"\n"<<moves<<"\n";
+    cout << r[0] << "\n" << moves << "\n";
     print_move_log(n, move_log);
     return 0;
 }

@@ -3,41 +3,39 @@
 using namespace std;
 
 void print_matrix(const vector<vector<int>> &m, const string &tag) {
-    cout<<tag<<":\n";
+    cout << tag << ":\n";
     for (const auto &r : m) {
         if (r.empty()) {
-            cout<<"<empty>";
+            cout << "<empty>";
         } else {
             for (auto x : r) {
-                cout<<x<<" ";
+                cout << x << " ";
             }
         }
-        cout<<"\n";
+        cout << "\n";
     }
 }
 
 void print_vector(const vector<int> &r, const string &tag) {
-    cout<<tag<<": ";
+    cout << tag << ": ";
     for (auto x : r) {
-        cout<<x<<" ";
+        cout << x << " ";
     }
-    cout<<"\n";
+    cout << "\n";
 }
 
 vector<vector<int>> make_matrix(int n) {
     vector<vector<int>> m(n);
-    for (auto &r : m) r.resize(m.size());
+    for (auto &r : m)
+        r.resize(m.size());
     return m;
 }
 
 // Allowed to push of height (h - 1) where h is the height of the current
 // top.
 class PushRelabelQ {
-  public:
-    explicit PushRelabelQ(int h_max)
-            : q(h_max),
-              not_empty(h_max) {
-    }
+public:
+    explicit PushRelabelQ(int h_max): q(h_max), not_empty(h_max) {}
 
     void init(int v) {
         q[0].push_back(v);
@@ -63,7 +61,8 @@ class PushRelabelQ {
     // Do this before @pop.
     void add_downhill(int v) {
         q[top - 1].push_back(v);
-        // `top - 1` may be empty, meaning that `not_empty[top]` points for something way lower.
+        // `top - 1` may be empty, meaning that `not_empty[top]` points for
+        // something way lower.
         not_empty[top] = top - 1;
     }
 
@@ -79,26 +78,26 @@ class PushRelabelQ {
     }
 
     void print(ostream &os) const {
-        os<<"PushRelabelQ ("<<q.size()<<" level(s)):\n";
+        os << "PushRelabelQ (" << q.size() << " level(s)):\n";
         for (int i = 0; i < q.size(); i++) {
             if (i == top) {
-                cout<<"> ";
+                cout << "> ";
             } else {
-                cout<<"  ";
+                cout << "  ";
             }
-            cout<<"h="<<i<<" not_empty="<<not_empty[i]<<": ";
+            cout << "h=" << i << " not_empty=" << not_empty[i] << ": ";
             if (q[i].empty()) {
-                cout<<"<empty>";
+                cout << "<empty>";
             } else {
                 for (auto x : q[i]) {
-                    cout<<x<<" ";
+                    cout << x << " ";
                 }
             }
-            cout<<"\n";
+            cout << "\n";
         }
     }
 
-  private:
+private:
     int top = 0;
     vector<vector<int>> q;
     vector<int> not_empty;
@@ -109,10 +108,8 @@ ostream &operator<<(ostream &os, const PushRelabelQ &q) {
     return os;
 }
 
-vector<vector<int>> push_relabel(
-        const vector<vector<int>> &c_in,
-        int s,
-        int t) {
+vector<vector<int>>
+push_relabel(const vector<vector<int>> &c_in, int s, int t) {
     auto c = c_in;
     const auto n = c.size();
     auto f = make_matrix(n);
@@ -125,7 +122,8 @@ vector<vector<int>> push_relabel(
         if (c[s][i] > 0) {
             e[i] = f[s][i] = c[s][i];
             c[s][i] = 0;
-            if (i != t) q.init(i);
+            if (i != t)
+                q.init(i);
         }
     }
 
@@ -195,10 +193,8 @@ int get_vertex_downhill(
     return -1;
 }
 
-vector<vector<int>> push_relabel_correct(
-        const vector<vector<int>> &c_in,
-        int s,
-        int t) {
+vector<vector<int>>
+push_relabel_correct(const vector<vector<int>> &c_in, int s, int t) {
     auto c = c_in;
     const auto n = c.size();
     auto f = make_matrix(n);
@@ -264,14 +260,13 @@ map<pair<int, int>, int> flow_map(const vector<vector<int>> &f) {
 
 void print_flow_map(const map<pair<int, int>, int> &m) {
     for (auto e : m) {
-        cout<<e.first.first<<","<<e.first.second<<" - "<<e.second<<"\n";
+        cout << e.first.first << "," << e.first.second << " - " << e.second
+             << "\n";
     }
 }
 
 using push_relabel_fn = function<vector<vector<int>>(
-    const vector<vector<int>> &c,
-    int s,
-    int t)>;
+        const vector<vector<int>> &c, int s, int t)>;
 
 void test1(push_relabel_fn push_relabel) {
     auto m = make_matrix(4);

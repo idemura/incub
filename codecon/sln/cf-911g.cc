@@ -1,14 +1,14 @@
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
-#include <algorithm>
 #include <map>
-#include <vector>
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 using namespace std;
 
@@ -17,7 +17,7 @@ using i64 = int64_t;
 using pii = std::pair<int, int>;
 
 struct event {
-    int c;  // Coordinate
+    int c; // Coordinate
     int x;
     int y;
     int left_point;

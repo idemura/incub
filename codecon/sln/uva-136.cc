@@ -1,8 +1,8 @@
 // See http://uva.onlinejudge.org/external/1/136.html
 #include <algorithm>
-#include <vector>
-#include <utility>
 #include <stdio.h>
+#include <utility>
+#include <vector>
 
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
 
@@ -10,8 +10,7 @@ using namespace std;
 
 typedef long long int lli;
 
-int main()
-{
+int main() {
 #ifndef ONLINE_JUDGE
     freopen("in", "r", stdin);
 #endif
@@ -21,9 +20,12 @@ int main()
     ns[0] = 1;
     int n = 1;
     while (n < N) {
-        for (; ns[i2] * 2 <= ns[n - 1]; i2++);
-        for (; ns[i3] * 3 <= ns[n - 1]; i3++);
-        for (; ns[i5] * 5 <= ns[n - 1]; i5++);
+        for (; ns[i2] * 2 <= ns[n - 1]; i2++)
+            ;
+        for (; ns[i3] * 3 <= ns[n - 1]; i3++)
+            ;
+        for (; ns[i5] * 5 <= ns[n - 1]; i5++)
+            ;
         int x2 = ns[i2] * 2;
         int x3 = ns[i3] * 3;
         int x5 = ns[i5] * 5;

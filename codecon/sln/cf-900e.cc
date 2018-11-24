@@ -1,14 +1,14 @@
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
-#include <algorithm>
 #include <map>
-#include <vector>
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 using namespace std;
 
@@ -57,11 +57,10 @@ int main() {
             auto start = i - m;
             dp_score[i] = dp_score[i - 1];
             dp_subst[i] = dp_subst[i - 1];
-            if (count_a[1 - start % 2] == 0 &&
-                    count_b[start % 2] == 0 &&
-                    dp_score[start] + 1 >= dp_score[i]) {
+            if (count_a[1 - start % 2] == 0 && count_b[start % 2] == 0 &&
+                dp_score[start] + 1 >= dp_score[i]) {
                 if (dp_score[start] + 1 > dp_score[i] ||
-                        dp_subst[start] + count_q < dp_subst[i]) {
+                    dp_subst[start] + count_q < dp_subst[i]) {
                     dp_score[i] = dp_score[start] + 1;
                     dp_subst[i] = dp_subst[start] + count_q;
                 }

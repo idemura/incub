@@ -1,7 +1,7 @@
+#include <algorithm>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
-#include <algorithm>
 #include <utility>
 #include <vector>
 
@@ -47,7 +47,9 @@ int main() {
     }
     *p = 0;
     res[res_len] = 0;
-    sort(words.begin(), words.end(), [](auto l, auto r) { return l.pos < r.pos; });
+    sort(words.begin(), words.end(), [](auto l, auto r) {
+        return l.pos < r.pos;
+    });
     int j = 0;
     for (auto w : words) {
         int last = w.pos + w.len;

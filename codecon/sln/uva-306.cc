@@ -1,7 +1,7 @@
+#include <algorithm>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <algorithm>
 
 using namespace std;
 
@@ -11,12 +11,13 @@ using namespace std;
 int main() {
     for (;;) {
         int n = 0;
-        cin>>n;
-        if (!n) break;
+        cin >> n;
+        if (!n)
+            break;
         vector<int> perm(n);
         for (int i = 0; i < n; i++) {
             int k = 0;
-            cin>>k;
+            cin >> k;
             perm[i] = k - 1;
         }
         vector<vector<int>> cycle(n);
@@ -29,21 +30,22 @@ int main() {
         }
         for (;;) {
             int shuffle = 0;
-            cin>>shuffle;
-            if (!shuffle) break;
+            cin >> shuffle;
+            if (!shuffle)
+                break;
             shuffle--;
-            cin.get();  // Skip space.
+            cin.get(); // Skip space.
             string l;
             getline(cin, l);
-            l.resize(n, ' ');  // Fill with spaces till size of n.
+            l.resize(n, ' '); // Fill with spaces till size of n.
             string r(l.size(), ' ');
             for (int i = 0; i < l.size(); i++) {
                 auto d = cycle[i][shuffle % cycle[i].size()];
                 r[d] = l[i];
             }
-            cout<<r<<endl;
+            cout << r << endl;
         }
-        cout<<endl;
+        cout << endl;
     }
     return 0;
 }

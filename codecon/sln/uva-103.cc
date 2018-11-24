@@ -1,9 +1,9 @@
 // See http://uva.onlinejudge.org/external/1/103.html
 #include <algorithm>
-#include <vector>
-#include <utility>
-#include <stdio.h>
 #include <memory.h>
+#include <stdio.h>
+#include <utility>
+#include <vector>
 
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof(a[0]))
 
@@ -15,15 +15,14 @@ struct pix { // Pointer IndeX
     int *p, i;
 };
 
-int  n, k;
-int  vs_data[30][10];
-pix  vs[30];
-int  ll[30];
-int  pl[30];
-int  rs[30];
+int n, k;
+int vs_data[30][10];
+pix vs[30];
+int ll[30];
+int pl[30];
+int rs[30];
 
-bool ins(const pix &v1, const pix &v2)
-{
+bool ins(const pix &v1, const pix &v2) {
     for (int i = 0; i < n; i++) {
         if (!(v1.p[i] < v2.p[i]))
             return false;
@@ -31,8 +30,7 @@ bool ins(const pix &v1, const pix &v2)
     return true;
 }
 
-bool lex(const pix &v1, const pix &v2)
-{
+bool lex(const pix &v1, const pix &v2) {
     for (int i = 0; i < n; i++) {
         if (v1.p[i] != v2.p[i])
             return v1.p[i] > v2.p[i];
@@ -40,8 +38,7 @@ bool lex(const pix &v1, const pix &v2)
     return false;
 }
 
-int main()
-{
+int main() {
 #ifndef ONLINE_JUDGE
     freopen("in", "r", stdin);
 #endif

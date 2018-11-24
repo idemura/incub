@@ -5,8 +5,7 @@
 // `mem` should be a table, of course.
 // http://en.wikipedia.org/wiki/Partition_%28number_theory%29
 i64 count_groups_mem(map<pair<int, int>, i64> &mem, int n, int c) {
-    if (c > n)
-        return 0;
+    if (c > n) return 0;
     auto it = mem.find(make_pair(n, c));
     if (it != mem.end()) {
         return it->second;

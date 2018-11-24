@@ -29,14 +29,12 @@ bool dfs(
         int v,
         int root,
         vector<int> *res) {
-    if (ancestor[v] == v)
-        root = v;
+    if (ancestor[v] == v) root = v;
     if (ancestor[v] != root) {
         return false;
     }
     for (auto u : al[v]) {
-        if (!dfs(al, ancestor, u, root, res))
-            return false;
+        if (!dfs(al, ancestor, u, root, res)) return false;
     }
     // Put them in list in post order.
     if (ancestor[v] == v) {
@@ -61,8 +59,7 @@ int main(int argc, char **argv) {
     }
     vector<int> res;
     for (int i = 0; i < n; i++) {
-        if (has_parent[i])
-            continue;
+        if (has_parent[i]) continue;
         if (!dfs(al, ancestor, i, -1, &res)) {
             res.clear(); // Clear list is never a valid.
             break;

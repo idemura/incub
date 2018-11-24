@@ -144,8 +144,7 @@ void solve(int a, int b, int c, int p, std::vector<int> &v) {
         int t = minv(2 * a, p);
         lli f = mmul(b, t, p);
         lli D = (f * f - 2ll * t * c) % p;
-        if (D < 0)
-            D += p;
+        if (D < 0) D += p;
         int Dsqrt1 = shanksTonelli((int)D, p);
         if (Dsqrt1 < 0) {
             return;
@@ -162,8 +161,7 @@ void solve(int a, int b, int c, int p, std::vector<int> &v) {
 
 template <class T>
 inline void swap_gt(T &a, T &b) {
-    if (a > b)
-        std::swap(a, b);
+    if (a > b) std::swap(a, b);
 }
 
 int main(int argc, char **argv) {

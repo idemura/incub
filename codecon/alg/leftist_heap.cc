@@ -94,8 +94,7 @@ private:
     }
 
     static void del_node(Node *n) {
-        if (nullptr == n)
-            return;
+        if (nullptr == n) return;
         del_node(n->l);
         del_node(n->r);
     }
@@ -111,10 +110,8 @@ private:
     }
 
     static Node *merge_node(Node *a, Node *b) {
-        if (a == nullptr)
-            return b;
-        if (b == nullptr)
-            return a;
+        if (a == nullptr) return b;
+        if (b == nullptr) return a;
         Node *r = nullptr;
         if (less(a->v, b->v)) {
             a->r = merge_node(a->r, b);
@@ -128,14 +125,12 @@ private:
             b->s = std::max(b->s, b->r->s + 1);
             r = b;
         }
-        if (get_s(r->r) > get_s(r->l))
-            std::swap(r->l, r->r);
+        if (get_s(r->r) > get_s(r->l)) std::swap(r->l, r->r);
         return r;
     }
 
     static void check_node(Node *n, Node *p) {
-        if (n == nullptr)
-            return;
+        if (n == nullptr) return;
         if (!less(p->v, n->v)) {
             cerr << "Heap property broken between "
                  << "parent=" << p->v << " and child: " << n->v << endl;
@@ -146,8 +141,7 @@ private:
     }
 
     static void print_node(Node *n, stringstream &ss) {
-        if (n == nullptr)
-            return;
+        if (n == nullptr) return;
         ss << n << ": v=" << n->v << " s=" << n->s << " l=" << n->l
            << " r=" << n->r << "\n";
         print_node(n->l, ss);
@@ -210,8 +204,7 @@ void test_merge() {
 void test_random(i64 mod, int size) {
     minstd_rand0 rg;
     vector<int> data(size);
-    if (mod == 0)
-        mod = minstd_rand0::max() + 1;
+    if (mod == 0) mod = minstd_rand0::max() + 1;
     for (auto &n : data) {
         n = rg() % mod;
     }

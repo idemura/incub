@@ -68,8 +68,7 @@ int nearest_half(const vector<int> &a) {
         int ofs = INF;
         new_ix.clear();
         for (int j = 0; j <= rmax; j++) {
-            if (not r[j])
-                continue;
+            if (not r[j]) continue;
             int k = j + e;
             if (abs(2 * k - s) < ofs) {
                 ofs = abs(2 * k - s);

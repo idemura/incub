@@ -64,12 +64,10 @@ public:
         int max_lex = 0;
         for (int i = 1; i < n; i++) {
             int k = diff_index(state_seq[i - 1].w, state_seq[i].w);
-            if (k == n)
-                return -1;
+            if (k == n) return -1;
             int end_state = (state_seq[i].i + k + 1) % n;
             int len = k + 1 + (n + target_state - end_state) % n;
-            if (len > max_lex)
-                max_lex = len;
+            if (len > max_lex) max_lex = len;
         }
         return max_lex;
     }

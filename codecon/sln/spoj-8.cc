@@ -20,8 +20,7 @@ int vs_n, c_n;
 // Returns true if sequence `vs[vs_i]` consists of all equal numbers.
 bool isConst(int n) {
     for (int i = 1; i < n; i++) {
-        if (vs[i - 1] != vs[i])
-            return false;
+        if (vs[i - 1] != vs[i]) return false;
     }
     return true;
 }

@@ -39,8 +39,7 @@ struct MSTColor {
     // @es assumed to be sorted from highest to lowest.
     int weighted_color(const vector<Edge> &es, int l, int r) {
         for (auto &e : es) {
-            if (!(l <= e.i && e.i <= r))
-                continue;
+            if (!(l <= e.i && e.i <= r)) continue;
             auto n1 = &node[e.v1i];
             auto n2 = &node[e.v2i];
             if (!n1->color && !n2->color) {

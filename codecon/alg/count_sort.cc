@@ -3,8 +3,7 @@
 using namespace std;
 
 void count_sort(std::vector<int> &a) {
-    if (a.empty())
-        return;
+    if (a.empty()) return;
 
     auto max_a = *std::max_element(a.begin(), a.end());
     std::vector<int> c(max_a + 1);
@@ -24,8 +23,7 @@ void count_sort(std::vector<int> &a) {
 
 bool is_sorted(const vector<int> &a) {
     for (int i = 1; i < a.size(); i++) {
-        if (a[i - 1] > a[i])
-            return false;
+        if (a[i - 1] > a[i]) return false;
     }
     return true;
 }

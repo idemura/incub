@@ -31,8 +31,7 @@ int main() {
 
     int imax = (int)sqrt(n);
     for (i = 2; i <= imax; i++) {
-        if (es[i])
-            continue;
+        if (es[i]) continue;
         for (j = i * i; j <= n; j += i) {
             es[j] = i;
         }

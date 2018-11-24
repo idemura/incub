@@ -4,8 +4,7 @@ template <class T>
 class SegmentFn {
 public:
     SegmentFn(function<T(T, T)> binary_fn, vector<int> a): fn(move(binary_fn)) {
-        if (a.empty())
-            return;
+        if (a.empty()) return;
         auto n = 1;
         for (int i = 2; i <= a.size(); i *= 2) {
             n++;

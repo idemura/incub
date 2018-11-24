@@ -59,8 +59,7 @@ i64 naive(i64 n, i64 m) {
 }
 
 i64 solve(i64 n, i64 m) {
-    if (m == 1)
-        return 0;
+    if (m == 1) return 0;
     i64 s = 0;
     if (m > n) {
         s = mod(mod(n) * mod(m - n));
@@ -69,13 +68,10 @@ i64 solve(i64 n, i64 m) {
     i64 u = n;
     for (i64 q = 1;; q++) {
         i64 l = n / (q + 1) + 1;
-        if (m < l)
-            continue;
-        if (m < u)
-            u = m;
+        if (m < l) continue;
+        if (m < u) u = m;
         i64 num_members = u - l + 1;
-        if (num_members <= 1)
-            break;
+        if (num_members <= 1) break;
         i64 r0 = n % u;
         i64 r1 = n % l;
         s = mod(mod(mod(r0 + r1) * mod(num_members)) * k2inv + s);

@@ -58,15 +58,12 @@ void readAndSolve() {
             i++;
         } while (i < pts.size() && pts[i].x == x);
 
-        if (i == pts.size())
-            break;
+        if (i == pts.size()) break;
         if (l <= x && x <= r) {
-            if (m > max_c)
-                max_c = m;
+            if (m > max_c) max_c = m;
         }
         if (l < pts[i].x && x < r) {
-            if (c < min_c)
-                min_c = c;
+            if (c < min_c) min_c = c;
         }
         x = pts[i].x;
     }

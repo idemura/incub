@@ -24,16 +24,14 @@ int rs[30];
 
 bool ins(const pix &v1, const pix &v2) {
     for (int i = 0; i < n; i++) {
-        if (!(v1.p[i] < v2.p[i]))
-            return false;
+        if (!(v1.p[i] < v2.p[i])) return false;
     }
     return true;
 }
 
 bool lex(const pix &v1, const pix &v2) {
     for (int i = 0; i < n; i++) {
-        if (v1.p[i] != v2.p[i])
-            return v1.p[i] > v2.p[i];
+        if (v1.p[i] != v2.p[i]) return v1.p[i] > v2.p[i];
     }
     return false;
 }

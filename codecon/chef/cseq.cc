@@ -75,8 +75,7 @@ int cseq(int n, int m) {
     // 5 elem: 1 6 21
     // cout<<"n="<<n<<" m="<<m<<endl;
     auto r = bincoef_mod(n + m + 1, m + 1) - 1;
-    if (r < 0)
-        r += MOD;
+    if (r < 0) r += MOD;
     return r;
 }
 

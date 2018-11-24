@@ -42,8 +42,7 @@ int main() {
     deque<int> q;
     for (int i = 0; i < n; i++) {
         scanf("%d", &iv[i]);
-        if (iv[i] == 0)
-            continue;
+        if (iv[i] == 0) continue;
         auto v_mod = iv[i] % k;
         if (dp[v_mod] < 0 || i < dp[v_mod]) {
             dp[v_mod] = i;
@@ -81,8 +80,7 @@ int main() {
         q.pop_front();
         assert(dp[v_mod] >= 0);
         for (int i = dp[v_mod] + 1; i < n; i++) {
-            if (iv[i] == 0)
-                continue;
+            if (iv[i] == 0) continue;
             auto v2 = (v_mod + iv[i]) % k;
             if (dp[v2] < 0 || i < dp[v2]) {
                 dp[v2] = i;
@@ -116,8 +114,7 @@ int main() {
     int j1 = -1;
     int v1 = 0;
     for (int i = 0; i < n; i++) {
-        if (used[i])
-            continue;
+        if (used[i]) continue;
         v1 += iv[i];
         if (j1 < 0) {
             j1 = i;

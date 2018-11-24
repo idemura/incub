@@ -77,8 +77,7 @@ Subsums rec_step(const vector<int> &a, i64 mod, int l, int r, i64 &max_mod) {
             // right part.
             auto max_possible = mod - 1 - r_sum;
             auto le = get_lessoreq(st_r.subsums, max_possible);
-            if (le < 0)
-                continue;
+            if (le < 0) continue;
             max_mod = max(max_mod, r_sum + le);
         }
         // Merge two parts.

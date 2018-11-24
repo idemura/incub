@@ -52,8 +52,7 @@ struct ReadBuf {
             }
             str->append(buf + buf_pos, i - buf_pos);
             buf_pos = i;
-            if (i < buf_len)
-                break;
+            if (i < buf_len) break;
         }
     }
 
@@ -70,8 +69,7 @@ struct ReadBuf {
                     i++;
                 } else {
                     sign = 1;
-                    if (buf[i] == '+')
-                        i++;
+                    if (buf[i] == '+') i++;
                 }
             }
             while (i < buf_len && '0' <= buf[i] && buf[i] <= '9') {
@@ -79,8 +77,7 @@ struct ReadBuf {
                 i++;
             }
             buf_pos = i;
-            if (i < buf_len)
-                break;
+            if (i < buf_len) break;
         }
         *n *= sign;
     }
@@ -134,8 +131,7 @@ void init(Bit &bit, int leaf_n) {
     int s = 0;
     while (true) {
         s += n;
-        if (n == 1)
-            break;
+        if (n == 1) break;
         n = (n + 1) / 2;
     }
     bit.resize(s);
@@ -150,8 +146,7 @@ void print(const Bit &bit, int leaf_n) {
             j++;
         }
         printf("\n");
-        if (n == 1)
-            break;
+        if (n == 1) break;
         n = (n + 1) / 2;
     }
 }
@@ -191,8 +186,7 @@ bool checkString(const string &str) {
             continue;
         }
         if (str[i] == ')') {
-            if (open_left == 0)
-                return false;
+            if (open_left == 0) return false;
             open_left--;
             continue;
         }

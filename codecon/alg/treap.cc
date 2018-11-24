@@ -31,10 +31,8 @@ Node<K, P> *merge(Node<K, P> *l, Node<K, P> *r) {
 
 template <class K, class P>
 Node<K, P> *merge_rec(Node<K, P> *l, Node<K, P> *r) {
-    if (!l)
-        return r;
-    if (!r)
-        return l;
+    if (!l) return r;
+    if (!r) return l;
     if (l->p > r->p) {
         l->r = merge_rec(l->r, r);
         return l;
@@ -105,8 +103,7 @@ void insert(Node<K, P> **t, int k, int p) {
 
 template <class K, class P>
 void remove(Node<K, P> **t, int k) {
-    if (!*t)
-        return;
+    if (!*t) return;
     Node<K, P> *l = nullptr, *r = nullptr, *q = nullptr;
     split(*t, k, &l, &r);
     split(l, k, &l, &q, true);
@@ -117,8 +114,7 @@ void remove(Node<K, P> **t, int k) {
 using NodeInt = Node<int, int>;
 
 bool check_tree(NodeInt *t, int *kmin, int *kmax) {
-    if (!t)
-        return true;
+    if (!t) return true;
 
     int bmin, bmax;
     if (t->l) {
@@ -147,8 +143,7 @@ bool check_tree(NodeInt *t, int *kmin, int *kmax) {
 }
 
 bool check_heap(NodeInt *t) {
-    if (!t)
-        return true;
+    if (!t) return true;
 
     if (t->l) {
         if (t->p <= t->l->p) {

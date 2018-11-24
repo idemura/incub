@@ -12,8 +12,7 @@ unordered_map<int, int> fact_decomp(int n) {
     unordered_map<int, int> fd;
     vector<char> a(n + 1);
     for (int i = 2; i < a.size(); i++) {
-        if (a[i])
-            continue;
+        if (a[i]) continue;
         for (auto s = i;;) {
             for (int j = s; j < a.size(); j += s) {
                 fd[i]++;
@@ -42,8 +41,7 @@ int main() {
     }
     auto div_count = 0;
     for (auto p : n_fd) {
-        if (p.second)
-            div_count++;
+        if (p.second) div_count++;
     }
     cout << div_count << endl;
     return 0;

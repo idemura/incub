@@ -28,16 +28,14 @@ vector<int> primes(int n) {
     vector<int> sieve(n + 1), result;
     auto i = 2, imax = sqrt_int(n);
     for (; i <= imax; i++) {
-        if (sieve[i] != 0)
-            continue;
+        if (sieve[i] != 0) continue;
         result.push_back(i);
         for (int j = i * i; j <= n; j += i) {
             sieve[j] = 1;
         }
     }
     for (; i <= n; i++) {
-        if (sieve[i] == 0)
-            result.push_back(i);
+        if (sieve[i] == 0) result.push_back(i);
     }
     return move(result);
 }
@@ -50,8 +48,7 @@ int main(int argc, char **argv) {
     for (auto a : ps) {
         for (auto b : ps) {
             int n = a + 2 * b;
-            if (n >= c.size())
-                break;
+            if (n >= c.size()) break;
             c[n]++;
         }
     }

@@ -42,8 +42,7 @@ void dfs(int v, int prev) {
     }
 
     for (auto u : adj[v]) {
-        if (u == prev)
-            continue;
+        if (u == prev) continue;
         dfs(u, v);
     }
 }

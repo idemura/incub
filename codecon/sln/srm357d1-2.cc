@@ -68,8 +68,7 @@ public:
         int s = 1;
         for (int i = 0; i < m_.size(); i++) {
             // If we not connected, or have a loop back, skip it.
-            if (m_[v][i] == 0 || m_closure_[i][v])
-                continue;
+            if (m_[v][i] == 0 || m_closure_[i][v]) continue;
             s += dfs(i);
         }
         return s;

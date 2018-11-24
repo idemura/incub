@@ -25,8 +25,7 @@ bool is_bipart(const vector<vector<int>> &al) {
     // Although @side is either 0 or 1, which we +1 when write into @vis.
     vector<int> vis(al.size());
     for (int i = 0; i < al.size(); i++) {
-        if (vis[i])
-            continue;
+        if (vis[i]) continue;
         if (!bipart_dfs(al, vis, i, 0)) {
             return false;
         }

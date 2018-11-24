@@ -51,8 +51,7 @@ int tree_nimsum(int root, const vector<Edge> &es, int n) {
     }
     vector<int> v(n);
     for (int i = 0; i < q.size(); i++) {
-        if (q[i] == root)
-            continue;
+        if (q[i] == root) continue;
         auto u = adj_xor[q[i]];
         v[u] ^= v[q[i]] + 1; // Add this edge to the stalk we have for q[i].
         adj_xor[u] ^= q[i];

@@ -6,8 +6,7 @@ vector<i64> totient(int n) {
         tot[i] = i;
     }
     for (i64 i = 2; i <= n; i++) {
-        if (tot[i] != i)
-            continue;
+        if (tot[i] != i) continue;
         // Compared to sieve, can't start with i * i.
         for (i64 j = i; j <= n; j += i) {
             tot[j] = (tot[j] / i) * (i - 1);

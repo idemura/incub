@@ -27,8 +27,7 @@ public:
         for (int i = 0; i < m; i++) {
             int n_pref = 0;
             for (int j = 0; j < m; j++) {
-                if (i == j)
-                    continue;
+                if (i == j) continue;
                 int x = 0, y = 0;
                 for (int k = 0; k < n; k++) {
                     x += votes[k][i] < votes[k][j];

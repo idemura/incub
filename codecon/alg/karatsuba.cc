@@ -44,8 +44,7 @@ string bigint_string(string s) {
         r.push_back(s[i] % 10 + '0');
         r.push_back(s[i] / 10 + '0');
     }
-    if (r.back() == '0' && r.size() > 1)
-        r.pop_back();
+    if (r.back() == '0' && r.size() > 1) r.pop_back();
     reverse(r.begin(), r.end());
     return move(r);
     // For 10 based:
@@ -59,8 +58,7 @@ string bigint_string(Substr s) {
 
 string bigint_from_string(string s) {
     reverse(s.begin(), s.end());
-    if (s.size() % 2 != 0)
-        s.push_back('0');
+    if (s.size() % 2 != 0) s.push_back('0');
     string r(s.size() / 2, 0);
     for (int i = 0; i < r.size(); i++) {
         r[i] = (s[2 * i] - '0') + 10 * (s[2 * i + 1] - '0');
@@ -83,8 +81,7 @@ bool bigint_zero(Substr s) {
 }
 
 string bigint_mult_scalar(Substr s, int n) {
-    if (n == 0)
-        return kBigIntZero;
+    if (n == 0) return kBigIntZero;
     string r(s.data(), s.size());
     int c = 0;
     for (auto &d : r) {
@@ -92,19 +89,16 @@ string bigint_mult_scalar(Substr s, int n) {
         d = m % kBigIntBase;
         c = m / kBigIntBase;
     }
-    if (c != 0)
-        r.push_back(c);
+    if (c != 0) r.push_back(c);
     return r;
 }
 
 string bigint_sum(Substr a, Substr b, size_t a_shift = 0) {
-    if (bigint_zero(a))
-        return b.str();
+    if (bigint_zero(a)) return b.str();
     if (bigint_zero(b)) {
         return a_shift == 0 ? a.str() : string(a_shift, 0) + a.str();
     }
-    if (a.size() + a_shift < b.size())
-        a.swap(b);
+    if (a.size() + a_shift < b.size()) a.swap(b);
     int min_s = min(a.size() + a_shift, b.size());
     int max_s = max(a.size() + a_shift, b.size());
     string r(max_s, 0);
@@ -136,16 +130,14 @@ string bigint_sum(Substr a, Substr b, size_t a_shift = 0) {
                 c = 0;
             }
         }
-        if (c != 0)
-            r.push_back(c);
+        if (c != 0) r.push_back(c);
     }
     return r;
 }
 
 // Assumes `a >= b`.
 string bigint_sub(Substr a, Substr b) {
-    if (bigint_zero(b))
-        return a.str();
+    if (bigint_zero(b)) return a.str();
     int min_s = min(a.size(), b.size());
     string r(a.data(), a.size());
     int c = 0;
@@ -174,17 +166,14 @@ string bigint_sub(Substr a, Substr b) {
         }
         r[i]--;
     }
-    if (r.back() == 0 && r.size() > 1)
-        r.pop_back();
+    if (r.back() == 0 && r.size() > 1) r.pop_back();
     return r;
 }
 
 // Karatsuba algorithm.
 string bigint_mult(Substr a, Substr b) {
-    if (bigint_zero(a) || bigint_zero(b))
-        return kBigIntZero;
-    if (a.size() < b.size())
-        a.swap(b);
+    if (bigint_zero(a) || bigint_zero(b)) return kBigIntZero;
+    if (a.size() < b.size()) a.swap(b);
     if (b.size() == 1) {
         return bigint_mult_scalar(a, b[0]);
     }
@@ -208,8 +197,7 @@ string bigint_div2(Substr s) {
         }
         r[i] = s[i] >> 1;
     }
-    if (r.back() == 0 && r.size() > 1)
-        r.pop_back();
+    if (r.back() == 0 && r.size() > 1) r.pop_back();
     return r;
 }
 

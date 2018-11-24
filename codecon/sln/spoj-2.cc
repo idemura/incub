@@ -39,8 +39,7 @@ int printPrimesIn(const std::vector<int> &primes, int m, int n) {
     for (int i = 0; primes[i] <= sqrtn; i++) {
         int p = primes[i];
         int mk = (m / p) * p;
-        if (mk < m)
-            mk += p;
+        if (mk < m) mk += p;
         for (; mk <= n; mk += p) {
             seq[mk - m] = mk != p;
         }

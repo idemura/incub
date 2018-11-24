@@ -148,14 +148,11 @@ vector<int> FCascade<T, Less>::search(T x) const {
     }
     int index = 1, i = -1;
     for (auto &nl : cascades_) {
-        if (index == 1)
-            i = binary(nl, x);
-        if (i < 0)
-            i = nl.size();
+        if (index == 1) i = binary(nl, x);
+        if (i < 0) i = nl.size();
         // Minimum is always first and cascaded up. So if x less than first we
         // can break (@loc initialized with 0).
-        if (i == 0 && lt(x, nl[i].v))
-            break;
+        if (i == 0 && lt(x, nl[i].v)) break;
         if (i != 0 && le(x, nl[i - 1].v)) {
             i--;
         }

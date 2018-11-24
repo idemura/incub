@@ -6,8 +6,7 @@ vector<int> sieve(int n) {
     factor[1] = 1;
     auto i = 2, imax = (int)sqrt(n);
     for (; i <= imax; i++) {
-        if (factor[i] != 0)
-            continue;
+        if (factor[i] != 0) continue;
         factor[i] = i;
         for (int j = i * i; j <= n; j += i) {
             if (factor[j] == 0) {
@@ -16,8 +15,7 @@ vector<int> sieve(int n) {
         }
     }
     for (; i <= n; i++) {
-        if (factor[i] == 0)
-            factor[i] = i;
+        if (factor[i] == 0) factor[i] = i;
     }
     return factor;
 }
@@ -25,8 +23,7 @@ vector<int> sieve(int n) {
 // Pairs (factor, degree).
 vector<pair<int, int>> factorize(const vector<int> &factor, int n) {
     vector<pair<int, int>> result;
-    if (n <= 1)
-        return result;
+    if (n <= 1) return result;
     auto p = make_pair(factor[n], 1);
     n /= factor[n];
     while (n != 1) {
@@ -46,16 +43,14 @@ vector<int> primes(int n) {
     vector<int> sieve(n + 1), result;
     auto i = 2, imax = (int)sqrt(n);
     for (; i <= imax; i++) {
-        if (sieve[i] != 0)
-            continue;
+        if (sieve[i] != 0) continue;
         result.push_back(i);
         for (int j = i * i; j <= n; j += i) {
             sieve[j] = 1;
         }
     }
     for (; i <= n; i++) {
-        if (sieve[i] == 0)
-            result.push_back(i);
+        if (sieve[i] == 0) result.push_back(i);
     }
     return result;
 }

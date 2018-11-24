@@ -55,8 +55,7 @@ public:
             max_bought = total_customers[i];
             for (int j = 0; j < n; j++) {
                 auto k = i + cost[j];
-                if (k >= DIM)
-                    continue;
+                if (k >= DIM) continue;
                 if (total_customers[i] + customers[j] > total_customers[k]) {
                     total_customers[k] = total_customers[i] + customers[j];
                 }

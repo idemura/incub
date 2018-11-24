@@ -22,8 +22,7 @@ public:
         int a = 0, b = n, k = 0;
         for (;;) {
             tree[k] = std::min(tree[k], x);
-            if (b - a == 1)
-                break;
+            if (b - a == 1) break;
             auto l = left_num(b - a);
             if (i < a + l) {
                 b = a + l;

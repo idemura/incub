@@ -13,8 +13,7 @@ vector<int> sieve(int n) {
     factor[1] = 1;
     auto i = 2, imax = (int)sqrt(n);
     for (; i <= imax; i++) {
-        if (factor[i] != 0)
-            continue;
+        if (factor[i] != 0) continue;
         factor[i] = i;
         for (int j = i * i; j <= n; j += i) {
             if (factor[j] == 0) {
@@ -23,8 +22,7 @@ vector<int> sieve(int n) {
         }
     }
     for (; i <= n; i++) {
-        if (factor[i] == 0)
-            factor[i] = i;
+        if (factor[i] == 0) factor[i] = i;
     }
     return factor;
 }
@@ -36,11 +34,9 @@ bool can_find_remainder() {
     auto c_max = k;
     for (auto &m : c) {
         scanf("%d", &m);
-        if (m > c_max)
-            c_max = m;
+        if (m > c_max) c_max = m;
     }
-    if (k == 1)
-        return true;
+    if (k == 1) return true;
     const auto sv = sieve(c_max);
     // LCM of @c in form of a map factor=>degree.
     vector<int> lcm(c_max + 1);
@@ -53,8 +49,7 @@ bool can_find_remainder() {
                 n /= f;
                 d++;
             } while (n % f == 0);
-            if (lcm[f] < d)
-                lcm[f] = d;
+            if (lcm[f] < d) lcm[f] = d;
             factors.push_back(f);
         }
     }
@@ -65,17 +60,14 @@ bool can_find_remainder() {
         for (int i = 0; i < lcm[f] && p < k; i++) {
             p *= f;
         }
-        if (!(p < k))
-            break;
+        if (!(p < k)) break;
     }
-    if (p < k)
-        return false;
+    if (p < k) return false;
 
     // Check if divisable by k.
     for (int t = k; t != 1;) {
         auto f = sv[t];
-        if (lcm[f] == 0)
-            return false;
+        if (lcm[f] == 0) return false;
         lcm[f]--;
         t /= f;
     }

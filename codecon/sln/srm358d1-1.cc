@@ -38,8 +38,7 @@ constexpr int MOD = 1000000007;
 class BrokenButtons {
 public:
     int minPresses(int page, vector<int> broken) {
-        if (broken.size() == 10)
-            return abs(page - 100);
+        if (broken.size() == 10) return abs(page - 100);
         bool is_b[10] = {};
         for (auto b : broken)
             is_b[b] = true;
@@ -57,8 +56,7 @@ public:
                     break;
                 }
             }
-            if (found_broken)
-                continue;
+            if (found_broken) continue;
             min_press = min(abs(i - page) + n, min_press);
         }
         return min_press;

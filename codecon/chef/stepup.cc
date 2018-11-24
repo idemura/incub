@@ -25,14 +25,12 @@ constexpr int INF = 0x7fffffff;
 constexpr int MOD = 1000000009;
 
 int dfs(const vector<vector<int>> &a, vector<int> &mark, int v, int len) {
-    if (mark[v])
-        return -1;
+    if (mark[v]) return -1;
     mark[v] = 1;
     int max_len = len;
     for (auto w : a[v]) {
         int w_len = dfs(a, mark, w, len + 1);
-        if (w_len < 0)
-            return -1;
+        if (w_len < 0) return -1;
         max_len = max(max_len, w_len);
     }
     return max_len;
@@ -57,8 +55,7 @@ int main(int argc, char **argv) {
         }
         int max_len = -1;
         for (int i = 0; i < n; i++) {
-            if (in_degree[i])
-                continue;
+            if (in_degree[i]) continue;
             vector<int> mark(n);
             int len = dfs(a, mark, i, 1);
             if (len < 0) {

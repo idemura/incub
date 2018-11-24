@@ -22,15 +22,13 @@ void print(const vector<int> &a, int i, int j) {
 // Requires elements of `a` to be less comparable.
 template <class T, class Cmp = std::less<T>>
 int random_partition(std::vector<T> &a, int i, int j, Cmp cmp = Cmp()) {
-    if (i == j)
-        return -1;
+    if (i == j) return -1;
     auto i_in = i;
     auto j_in = j;
     auto pivot_i = i + rand() % (j - i + 1);
     // Put pivot in the end to avoid bounds check in the first while and to have
     // at least one in the right part.
-    if (pivot_i != j)
-        std::swap(a[pivot_i], a[j]);
+    if (pivot_i != j) std::swap(a[pivot_i], a[j]);
     auto p = a[j];
     for (;;) {
         // Don't need bounds check because the last is element of the range is
@@ -40,8 +38,7 @@ int random_partition(std::vector<T> &a, int i, int j, Cmp cmp = Cmp()) {
         // Use <= because we want to leave last element on its place.
         while (i < j && !cmp(a[j], p))
             j--;
-        if (i >= j)
-            break;
+        if (i >= j) break;
         std::swap(a[i], a[j]);
         i++;
         j--;

@@ -25,8 +25,7 @@ int main() {
     }
     vector<int> q;
     for (int i = 0; i < n; i++) {
-        if (ec[i] == 1)
-            q.push_back(i);
+        if (ec[i] == 1) q.push_back(i);
     }
     vector<int> max_tree(n);
     int j = 0;
@@ -36,8 +35,7 @@ int main() {
         ec[w]--;
         xor_adj_v[w] ^= q[j];
         max_tree[w] = max(max_tree[w], max_tree[q[j]] + 1);
-        if (ec[w] == 1)
-            q.push_back(w);
+        if (ec[w] == 1) q.push_back(w);
         j++;
     }
     printf("%d\n", max_tree[q[j]] + max_tree[q[j + 1]] + 1);

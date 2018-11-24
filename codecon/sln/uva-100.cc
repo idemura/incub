@@ -26,8 +26,7 @@ int main() {
                     j >>= 1;
                 c++;
             }
-            if (c > max_cycle)
-                max_cycle = c;
+            if (c > max_cycle) max_cycle = c;
         }
         printf("%d %d %d\n", l, r, max_cycle);
     }

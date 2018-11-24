@@ -8,8 +8,7 @@ int lis(const vector<T> &v) {
         auto u = upper_bound(incr.begin(), incr.end(), v[i]);
         incr.erase(u, incr.end()); // Same as resize.
         incr.push_back(v[i]);
-        if (incr.size() > len)
-            len = incr.size();
+        if (incr.size() > len) len = incr.size();
     }
     return len;
 }

@@ -48,8 +48,7 @@ int dinic(AMat &m, int s, int t) {
             }
         }
         // If `t` is not reachable, then stop.
-        if (level[t] < 0)
-            break;
+        if (level[t] < 0) break;
 
         // Finding blocking flow. DFS only between level while it reaches t.
         // Note counters in `index` aren't reset.
@@ -71,8 +70,7 @@ int dinic(AMat &m, int s, int t) {
                     }
                 }
             }
-            if (path.empty())
-                break;
+            if (path.empty()) break;
             flow += update_path(m, path);
         }
     }

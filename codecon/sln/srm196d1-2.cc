@@ -50,8 +50,7 @@ public:
                     auto x = (connect[i] + k) * (connect[i + l] + l - k) *
                             connect[i + k];
                     auto c = cost[i][i + k - 1] + cost[i + k][i + l - 1] + x;
-                    if (c < min_cost)
-                        min_cost = c;
+                    if (c < min_cost) min_cost = c;
                 }
                 cost[i][i + l - 1] = min_cost;
             }

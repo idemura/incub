@@ -47,8 +47,7 @@ bool restore_seq(vector<int> s, vector<int> &a) {
 vector<int> restore(vector<int> s) {
     sort(s.begin(), s.end());
     if (s.size() <= 2) {
-        if (s.size() <= 1)
-            return s;
+        if (s.size() <= 1) return s;
         return {};
     }
     // First two are a[0]+a[1] and a[0]+a[2]. s[2] is either a[0]+a[3] or

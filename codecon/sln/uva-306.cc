@@ -12,8 +12,7 @@ int main() {
     for (;;) {
         int n = 0;
         cin >> n;
-        if (!n)
-            break;
+        if (!n) break;
         vector<int> perm(n);
         for (int i = 0; i < n; i++) {
             int k = 0;
@@ -31,8 +30,7 @@ int main() {
         for (;;) {
             int shuffle = 0;
             cin >> shuffle;
-            if (!shuffle)
-                break;
+            if (!shuffle) break;
             shuffle--;
             cin.get(); // Skip space.
             string l;

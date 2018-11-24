@@ -61,8 +61,7 @@ public:
                     if (it == next.end()) {
                         next[new_cooling] = i;
                     } else {
-                        if (i < it->second)
-                            it->second = i;
+                        if (i < it->second) it->second = i;
                     }
                 }
             }

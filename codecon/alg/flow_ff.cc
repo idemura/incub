@@ -34,8 +34,7 @@ int ford_fulkerson(AMat &m, int s, int t) {
             }
         }
         // If `t` is not reachable, then stop.
-        if (prev[t] < 0)
-            break;
+        if (prev[t] < 0) break;
 
         // Update flow along the augmenting path.
         auto cap = numeric_limits<int>::max();

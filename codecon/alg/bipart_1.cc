@@ -13,8 +13,7 @@ int get_projection_size(const vector<vector_int> &a) {
     int n = -1;
     for (int i = 0; i < a.size(); i++) {
         for (int j = 0; j < a[i].size(); j++) {
-            if (a[i][j] > n)
-                n = a[i][j];
+            if (a[i][j] > n) n = a[i][j];
         }
     }
     return n + 1;
@@ -25,8 +24,7 @@ bool dfs_bipart(
         int v, // Vertex in a.
         vector_int &m, // Marks on vertices of a.
         vector_int &b_to_a) {
-    if (m[v])
-        return false;
+    if (m[v]) return false;
     m[v] = 1;
 
     for (int i = 0; i < a[v].size(); i++) {

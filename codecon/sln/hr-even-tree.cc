@@ -51,13 +51,11 @@ int main(int argc, char **argv) {
                     res++;
                 } else {
                     for (int j = 1; j <= n; j++) {
-                        if (!removed[j] && a[i][j])
-                            c[j] += c[i];
+                        if (!removed[j] && a[i][j]) c[j] += c[i];
                     }
                 }
                 for (int j = 1; j <= n; j++) {
-                    if (!removed[j] && a[i][j])
-                        d[j]--;
+                    if (!removed[j] && a[i][j]) d[j]--;
                 }
                 removed[i] = 1;
                 n_rem++;

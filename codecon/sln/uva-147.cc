@@ -65,8 +65,7 @@ int main(int argc, char** argv) {
     double x = 0;
     while (scanf("%lf", &x) == 1) {
         int n = (x + 0.005) * 100 / 5; // Adding 0.005 is crucial to get AC.
-        if (n == 0)
-            break;
+        if (n == 0) break;
         printf("%6.2lf%17ld\n", x, count(n));
     }
     return 0;

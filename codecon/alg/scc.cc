@@ -53,8 +53,7 @@ void dfs_tarjan(SccTarjanCtx &c, int v) {
 void scc_tarjan(const vector<VertexVec> &a, vector<int> &scc, int &scc_num) {
     SccTarjanCtx c(a);
     for (int i = 0; i < c.a.size(); i++) {
-        if (c.i[i] < 0)
-            dfs_tarjan(c, i);
+        if (c.i[i] < 0) dfs_tarjan(c, i);
     }
     scc = move(c.scc);
     scc_num = c.scc_num;
@@ -65,8 +64,7 @@ vector<Edge> scc_reduce(const vector<VertexVec> &a, const vector<int> &scc) {
     for (int v = 0; v < a.size(); v++) {
         for (auto w : a[v]) {
             auto e = Edge(scc[v], scc[w]);
-            if (e.first != e.second)
-                edge_set.insert(e);
+            if (e.first != e.second) edge_set.insert(e);
         }
     }
     return vector<Edge>(edge_set.begin(), edge_set.end());

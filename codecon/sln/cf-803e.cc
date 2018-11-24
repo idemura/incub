@@ -33,12 +33,10 @@ struct IntMap {
     void for_each(F f) const {
         for (size_t i = 1; i < n.size(); i++) {
             auto j = n.size() - i;
-            if (n[j])
-                f(-(int)j, n[j]);
+            if (n[j]) f(-(int)j, n[j]);
         }
         for (size_t i = 0; i < p.size(); i++) {
-            if (p[i])
-                f((int)i, p[i]);
+            if (p[i]) f((int)i, p[i]);
         }
     }
 

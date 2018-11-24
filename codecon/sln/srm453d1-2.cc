@@ -106,17 +106,14 @@ public:
         vector<WinDraw> wd(points.size());
         for (int i = 0; i < points.size(); i++) {
             auto p = points[i];
-            if (decomp[p].w < 0)
-                return -1;
+            if (decomp[p].w < 0) return -1;
             wd[i] = decomp[p];
             nw += wd[i].w;
             nd += wd[i].d;
         }
-        if (nd % 2 == 0)
-            return nw + nd / 2;
+        if (nd % 2 == 0) return nw + nd / 2;
         auto l = lcm(w, d);
-        if ((l / d) % 2 == 0)
-            return -1;
+        if ((l / d) % 2 == 0) return -1;
         auto undraw = l / d;
         auto i_max = -1;
         for (int i = 0; i < wd.size(); i++) {
@@ -124,8 +121,7 @@ public:
                 i_max = i;
             }
         }
-        if (i_max < 0)
-            return -1;
+        if (i_max < 0) return -1;
         wd[i_max].w += l / w;
         wd[i_max].d -= undraw;
         nw += l / w;
@@ -145,8 +141,7 @@ public:
             h.push(t);
             h.push(second);
         }
-        if (!valid)
-            return -1;
+        if (!valid) return -1;
         return nw + nd / 2;
     }
 
@@ -154,8 +149,7 @@ public:
         decomp.resize(MAX + 1);
         decomp[0] = WinDraw(0, 0);
         for (int i = 0; i <= MAX; i++) {
-            if (decomp[i].w < 0)
-                continue;
+            if (decomp[i].w < 0) continue;
             set_decomp(i + w, decomp[i].inc(1, 0));
             set_decomp(i + d, decomp[i].inc(0, 1));
         }

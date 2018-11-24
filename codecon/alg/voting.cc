@@ -20,8 +20,7 @@ int find_dominant(const vector<int> &a) {
     if (false) {
         int c = 0;
         for (auto e : a) {
-            if (e == x)
-                c++;
+            if (e == x) c++;
         }
         if (c < (a.size() + 1) / 2) {
             x = 0;

@@ -5,8 +5,7 @@ using namespace std;
 int get_max(const vector<int> &a, int except) {
     int m = -1;
     for (int i = 0; i < a.size(); i++) {
-        if (i == except)
-            continue;
+        if (i == except) continue;
         if (m < 0 || a[i] > a[m]) {
             m = i;
         }

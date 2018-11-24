@@ -25,8 +25,7 @@ struct FibMat {
 // fib(3) = 2,
 // and so on.
 int fib(int k) {
-    if (k <= 0)
-        return 0;
+    if (k <= 0) return 0;
     // if (k == 1) return 1;
     FibMat m(0, 1, 1, 1), a;
     for (; k != 0; k >>= 1) {

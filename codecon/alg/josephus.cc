@@ -6,8 +6,7 @@
 // first step, we add modulo n it.
 // Base case n = 1 result is 0.
 int josephus_rec(int n, int k) {
-    if (n == 1)
-        return 0;
+    if (n == 1) return 0;
     return (josephus_rec(n - 1, k) + k) % n;
 }
 
@@ -31,8 +30,7 @@ int josephus_simple(int n, int k) {
         for (int c = 0; c < k; j = (j + 1) % n) {
             if (a[j] >= 0) {
                 c++;
-                if (c == k)
-                    a[j] = -1;
+                if (c == k) a[j] = -1;
             }
         }
     }

@@ -154,8 +154,7 @@ private:
         }
 
         void setIndex(size_t i) {
-            if (index)
-                *index = i;
+            if (index) *index = i;
         }
     };
 

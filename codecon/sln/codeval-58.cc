@@ -51,11 +51,9 @@ int pair[80][800];
 
 inline int hash2c(const char *p) {
     int p0 = p[0];
-    if (p0)
-        p0 -= 'a' - 1;
+    if (p0) p0 -= 'a' - 1;
     int p1 = p[1];
-    if (p1)
-        p1 -= 'a' - 1;
+    if (p1) p1 -= 'a' - 1;
     return (p0 << 5) + p1;
 }
 
@@ -69,8 +67,7 @@ SStr addString(const char *s) {
     for (int i = 0;; i++) {
         int h = hash2c(str.p + i);
         pair[i][h] = 1;
-        if (!str.p[i])
-            break;
+        if (!str.p[i]) break;
     }
     return str;
 }
@@ -117,8 +114,7 @@ int getNetworkSize(SStr in, int vi, const SStrMap &dict, int m) {
                 sum += getNetworkSize(it->first, it->second, dict, m);
             }
         }
-        if (i == 0)
-            break;
+        if (i == 0) break;
         t = buf_i;
     }
 
@@ -135,8 +131,7 @@ int getNetworkSize(SStr in, int vi, const SStrMap &dict, int m) {
                 }
             }
         }
-        if (i == 0)
-            break;
+        if (i == 0) break;
         buf[i] = buf[i - 1];
     }
 

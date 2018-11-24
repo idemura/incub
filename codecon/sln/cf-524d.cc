@@ -55,8 +55,7 @@ int main(int argc, char **argv) {
     auto reached = false;
     for (int i = 0; i < timestamps.size();) {
         if (online > 0 && timestamps[online_first] + T <= timestamps[i]) {
-            if (last_occurence[online_first])
-                online--;
+            if (last_occurence[online_first]) online--;
             online_first++;
         } else {
             if (online == M) {
@@ -65,8 +64,7 @@ int main(int argc, char **argv) {
             } else {
                 ids.push_back(id++);
                 online++;
-                if (online == M)
-                    reached = true;
+                if (online == M) reached = true;
             }
             i++;
         }

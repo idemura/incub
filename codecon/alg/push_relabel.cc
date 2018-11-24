@@ -122,8 +122,7 @@ push_relabel(const vector<vector<int>> &c_in, int s, int t) {
         if (c[s][i] > 0) {
             e[i] = f[s][i] = c[s][i];
             c[s][i] = 0;
-            if (i != t)
-                q.init(i);
+            if (i != t) q.init(i);
         }
     }
 

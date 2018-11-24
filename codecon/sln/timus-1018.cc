@@ -108,11 +108,9 @@ int cut_min(Node *node, int cuts) {
         } else if (node->subtree.n > cuts) {
             for (int c = 0; c <= cuts; c++) {
                 auto l = cut_min(node->l, c);
-                if (l == INF)
-                    continue;
+                if (l == INF) continue;
                 auto r = cut_min(node->r, cuts - c);
-                if (r == INF)
-                    continue;
+                if (r == INF) continue;
                 min_weight = min(min_weight, l + r);
             }
         }

@@ -74,8 +74,7 @@ public:
             auto u = upper_bound(incr.begin(), incr.end(), p[i].second);
             incr.erase(u, incr.end()); // Same as resize.
             incr.push_back(p[i].second);
-            if (incr.size() > len)
-                len = incr.size();
+            if (incr.size() > len) len = incr.size();
         }
         return len;
     }

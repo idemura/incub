@@ -54,8 +54,7 @@ int getMaxSq(const YRectMap &rects, int x, int y) {
                 temp.push_back(segms[j]);
             } else {
                 int sq = (y - r->y1) * (segms[j].x1 - segms[j].x0);
-                if (sq > sq_max)
-                    sq_max = sq;
+                if (sq > sq_max) sq_max = sq;
 
                 if (segms[j].x0 < r->x0) {
                     s.x0 = segms[j].x0;
@@ -73,8 +72,7 @@ int getMaxSq(const YRectMap &rects, int x, int y) {
     }
     for (int j = 0; j < segms.size(); j++) {
         int sq = y * (segms[j].x1 - segms[j].x0);
-        if (sq > sq_max)
-            sq_max = sq;
+        if (sq > sq_max) sq_max = sq;
     }
     return sq_max;
 }
@@ -100,8 +98,7 @@ void readAndSolve() {
         int sq = getMaxSq(top_sorted, n, r->y0);
         // Instead of using `greater` invert to negative.
         top_sorted.insert(make_pair(-r->y1, r));
-        if (sq > sq_max)
-            sq_max = sq;
+        if (sq > sq_max) sq_max = sq;
     }
     printf("%d\n", sq_max);
 }

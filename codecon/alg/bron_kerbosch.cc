@@ -68,8 +68,7 @@ void bron_kerbosch_rec(int d, const vector<Set> &am, Set r, Set c, Set x) {
     }
     // Actually, go through `c`s elements. No pivoting.
     for (int i = 0; i < am.size(); i++) {
-        if (!c.in(i))
-            continue;
+        if (!c.in(i)) continue;
         // cout<<Tab(d)<<"vertex "<<i + 1<<"\n";
         bron_kerbosch_rec(d + 1, am, r.add(i), c.isect(am[i]), x.isect(am[i]));
         x = x.add(i);

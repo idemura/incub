@@ -6,8 +6,7 @@ static bool output_suffix_array = false;
 int str_lcp(const string &a, const string &b) {
     auto min_n = min(a.size(), b.size());
     for (int i = 0; i < min_n; i++) {
-        if (a[i] != b[i])
-            return i;
+        if (a[i] != b[i]) return i;
     }
     return min_n;
 }
@@ -118,8 +117,7 @@ int suffix_array_lcp(const vector<vector<int>> &ord, int i, int j) {
     // zeros, we may mistakingly get LCP of 'b_' and 'ba' is 2 instead of 1. To
     // avoid this, clamp to the max string size.
     int max_lcp = ord[0].size() - max(i, j);
-    if (i == j)
-        return max_lcp;
+    if (i == j) return max_lcp;
     int lcp = 0;
     int k = ord.size() - 1;
     for (; k >= 0; k--) {

@@ -45,8 +45,7 @@ Node* get_root(Node* a) {
 Node* set_union(Node* a, Node* b) {
     a = get_root(a);
     b = get_root(b);
-    if (a == b)
-        return a;
+    if (a == b) return a;
     if (a->rank == b->rank) {
         b->parent = a;
         a->rank++;

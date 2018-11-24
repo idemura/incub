@@ -45,16 +45,11 @@ inline int dec(int x, int &nz) {
     int y = 0;
     if (nz > 0) {
         y = 9;
-        if (nz > 4)
-            y |= 9 << 4;
-        if (nz > 8)
-            y |= 9 << 8;
-        if (nz > 12)
-            y |= 9 << 12;
-        if (nz > 16)
-            y |= 9 << 16;
-        if (nz > 20)
-            y |= 9 << 20;
+        if (nz > 4) y |= 9 << 4;
+        if (nz > 8) y |= 9 << 8;
+        if (nz > 12) y |= 9 << 12;
+        if (nz > 16) y |= 9 << 16;
+        if (nz > 20) y |= 9 << 20;
         // nz max is 6.
         if ((x >> nz) != 1) {
             y |= ((x >> nz) - 1) << nz;
@@ -79,8 +74,7 @@ public:
         int nz = -1;
         for (int k = 0, m = n; m > 0; k++, m /= 10) {
             x |= ((m % 10) << (k * 4));
-            if (m % 10 != 0 && nz < 0)
-                nz = k;
+            if (m % 10 != 0 && nz < 0) nz = k;
         }
         nz *= 4;
         int y = x;

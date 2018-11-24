@@ -14,8 +14,7 @@ ListOfList get_partitions(int n, const vector<int> &sizes) {
     for (int i = 0; i <= n; i++) {
         for (auto x : sizes) {
             int j = i + x;
-            if (j > n)
-                break;
+            if (j > n) break;
             for (auto v : t[i]) {
                 if (v.empty() || v.back() <= x) {
                     t[j].push_back(append(move(v), x));

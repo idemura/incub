@@ -105,8 +105,7 @@ int main() {
     auto l = nearest_gt(a);
     reverse(l.begin(), l.end());
     for (auto &x : l) {
-        if (x)
-            x = n + 1 - x;
+        if (x) x = n + 1 - x;
     }
     i64 m = 0;
     for (int i = 0; i < n; i++) {

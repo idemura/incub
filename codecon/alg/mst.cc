@@ -85,8 +85,7 @@ i64 mst_prim(
                      lower_bound(es.begin(), es.end(), Edge(v, 0, 0), edge_cmp);
              i != es.end() && i->v == v;
              ++i) {
-            if (!in_mst[i->w])
-                h.push(i->weight, *i);
+            if (!in_mst[i->w]) h.push(i->weight, *i);
         }
 
         v = -1;

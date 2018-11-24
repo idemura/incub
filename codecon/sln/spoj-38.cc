@@ -18,12 +18,9 @@ int mr, mc;
 
 int max4(int *d) {
     int *r = d;
-    if (d[1] > *r)
-        r = d + 1;
-    if (d[2] > *r)
-        r = d + 2;
-    if (d[3] > *r)
-        r = d + 3;
+    if (d[1] > *r) r = d + 1;
+    if (d[2] > *r) r = d + 2;
+    if (d[3] > *r) r = d + 3;
     return r - d;
 }
 

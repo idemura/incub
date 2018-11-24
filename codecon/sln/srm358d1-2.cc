@@ -49,8 +49,7 @@ public:
     int takeWeights(vector<int> weight) {
         auto g = weight[0];
         for (int i = 1; i < weight.size(); i++) {
-            if (g == 1)
-                break;
+            if (g == 1) break;
             g = gcd(weight[i], g);
         }
         if (g > 1) {
@@ -67,8 +66,7 @@ public:
         for (int k = 1; true; k++) {
             unordered_map<int, bool> t;
             for (auto g : subset_gcds) {
-                if (g.first == 1)
-                    return k;
+                if (g.first == 1) return k;
                 for (auto m : weight) {
                     t[gcd(m, g.first)] = true;
                 }

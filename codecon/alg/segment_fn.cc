@@ -61,8 +61,7 @@ function<int(int, int)> max_fn() {
     return [](int a, int b) { return std::max(a, b); };
 }
 
-int naive(
-        const function<int(int, int)> &fn,
+int naive(const function<int(int, int)> &fn,
         const vector<int> &a,
         int il,
         int ir) {

@@ -79,9 +79,9 @@ public:
 
 int main() {
     cout << make_unique<SumOfSelectedCells>()->hypothesis({"11 12 13 14",
-                                                           "21 22 23 24",
-                                                           "31 32 33 34",
-                                                           "41 42 43 44"})
+                    "21 22 23 24",
+                    "31 32 33 34",
+                    "41 42 43 44"})
          << endl;
     cout << make_unique<SumOfSelectedCells>()->hypothesis({"3 7", "3 7", "3 7"})
          << endl;

@@ -17,7 +17,7 @@ void test1() {
     CHECK(walk(n80) == vector<int>({80, 60, 0, 0, 90, 0, 0}));
     auto linked = splay_join(sub.first, sub.second);
     CHECK(walk(linked) ==
-          vector<int>({50, 30, 10, 0, 0, 40, 0, 0, 80, 60, 0, 0, 90, 0, 0}));
+            vector<int>({50, 30, 10, 0, 0, 40, 0, 0, 80, 60, 0, 0, 90, 0, 0}));
     delete_tree(linked);
 }
 
@@ -38,7 +38,7 @@ void test2() {
     CHECK(walk(n50) == vector<int>({50, 0, 80, 60, 0, 0, 90, 0, 0}));
     auto linked = splay_join(sub.first, sub.second);
     CHECK(walk(linked) ==
-          vector<int>({40, 30, 10, 0, 0, 0, 50, 0, 80, 60, 0, 0, 90, 0, 0}));
+            vector<int>({40, 30, 10, 0, 0, 0, 50, 0, 80, 60, 0, 0, 90, 0, 0}));
     delete_tree(linked);
 }
 
@@ -56,15 +56,15 @@ void test3() {
     CHECK(n80->root());
     CHECK(n90->root());
     CHECK(walk(n80) ==
-          vector<int>({80, 50, 30, 10, 0, 0, 40, 0, 0, 60, 0, 0, 0}));
+            vector<int>({80, 50, 30, 10, 0, 0, 40, 0, 0, 60, 0, 0, 0}));
     CHECK(walk(n90) == vector<int>({90, 0, 0}));
     // Move 60 to root.
     splay(n60);
     CHECK(walk(n60) ==
-          vector<int>({60, 50, 30, 10, 0, 0, 40, 0, 0, 0, 80, 0, 0}));
+            vector<int>({60, 50, 30, 10, 0, 0, 40, 0, 0, 0, 80, 0, 0}));
     auto linked = splay_join(sub.first, sub.second);
     CHECK(walk(linked) ==
-          vector<int>({80, 60, 50, 30, 10, 0, 0, 40, 0, 0, 0, 0, 90, 0, 0}));
+            vector<int>({80, 60, 50, 30, 10, 0, 0, 40, 0, 0, 0, 0, 90, 0, 0}));
     delete_tree(linked);
 }
 

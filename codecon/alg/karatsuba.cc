@@ -299,10 +299,9 @@ void test_mult() {
     CHECK(check_op("1937", "118"));
     CHECK(check_op("100", "100"));
 
-    CHECK(bigint_mult(
-                  bigint_from_string("1649667305411057"),
+    CHECK(bigint_mult(bigint_from_string("1649667305411057"),
                   bigint_from_string("9424714886499194837611")) ==
-          bigint_from_string("15547644011078602659531350540718864827"));
+            bigint_from_string("15547644011078602659531350540718864827"));
 }
 
 void test_div2() {

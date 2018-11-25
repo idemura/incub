@@ -108,8 +108,8 @@ ostream &operator<<(ostream &os, const PushRelabelQ &q) {
     return os;
 }
 
-vector<vector<int>>
-push_relabel(const vector<vector<int>> &c_in, int s, int t) {
+vector<vector<int>> push_relabel(
+        const vector<vector<int>> &c_in, int s, int t) {
     auto c = c_in;
     const auto n = c.size();
     auto f = make_matrix(n);
@@ -179,8 +179,7 @@ int get_vertex(const vector<int> &h, const vector<int> &e, int s, int t) {
     return j;
 }
 
-int get_vertex_downhill(
-        int v,
+int get_vertex_downhill(int v,
         const vector<int> &h,
         const vector<vector<int>> &c,
         const vector<vector<int>> &f) {
@@ -192,8 +191,8 @@ int get_vertex_downhill(
     return -1;
 }
 
-vector<vector<int>>
-push_relabel_correct(const vector<vector<int>> &c_in, int s, int t) {
+vector<vector<int>> push_relabel_correct(
+        const vector<vector<int>> &c_in, int s, int t) {
     auto c = c_in;
     const auto n = c.size();
     auto f = make_matrix(n);

@@ -37,8 +37,7 @@ constexpr int MOD = 1000000007;
 
 class Hotel {
 public:
-    int marketCost(
-            int min_customers,
+    int marketCost(int min_customers,
             const vector<int> &customers,
             const vector<int> &cost) {
         constexpr int DIM = 1001;
@@ -73,8 +72,7 @@ int main(int argc, char **argv) {
     }
     {
         Hotel sol;
-        cout << sol.marketCost(
-                        10,
+        cout << sol.marketCost(10,
                         {1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
                         {1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
              << endl;

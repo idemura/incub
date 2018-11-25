@@ -35,8 +35,7 @@ std::string logTag(int last, int vSet) {
     return tag;
 }
 
-void travelingSalesmanRec(
-        std::vector<std::vector<int>> const &m,
+void travelingSalesmanRec(std::vector<std::vector<int>> const &m,
         std::vector<std::vector<Cache>> &dp,
         int last,
         int vSet) {

@@ -43,8 +43,7 @@ Node<K, P> *merge_rec(Node<K, P> *l, Node<K, P> *r) {
 }
 
 template <class K, class P>
-void split(
-        Node<K, P> *t,
+void split(Node<K, P> *t,
         int k0,
         Node<K, P> **l,
         Node<K, P> **r,

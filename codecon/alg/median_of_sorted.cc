@@ -12,8 +12,8 @@ double median(vector<int> const &a) {
     return a[a.size() / 2];
 }
 
-double
-median_sorted_arrays(vector<int> const &nums1, vector<int> const &nums2) {
+double median_sorted_arrays(
+        vector<int> const &nums1, vector<int> const &nums2) {
     if (nums1.size() == 0) {
         return median(nums2);
     }

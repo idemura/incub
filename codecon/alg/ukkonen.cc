@@ -1,6 +1,5 @@
 #include "ukkonen.h"
 
-#include <cstdio>
 #include <iostream>
 #include <unordered_map>
 
@@ -12,80 +11,67 @@ static std::string substr(char const *s, uint32_t first, uint32_t last) {
     return std::string(s + first, last - first);
 }
 
-static uint32_t toIndex(char c) {
-    if (c == EoLn) {
-        return 0;
-    }
-    int i{c - Base};
-    DCHECK(0 <= i && i < AlphabetSize) << "i " << i;
-    return (uint32_t)i + 1 /*0 reserved for EoLn*/;
-}
-
 std::string Edge::name(char const *s) const {
-    DCHECK(valid());
+    DCHECK(!empty());
     return substr(s, first, last);
 }
 
-Edge Node::getEdge(char c) const {
-    return e[toIndex(c)];
+Edge const *Node::getEdge(char c) const {
+    auto itr = e.find(c);
+    if (itr == e.end()) {
+        return nullptr;
+    } else {
+        return &itr->second;
+    }
 }
 
-uint32_t Node::countEdges() const {
-    uint32_t n = 0;
-    for (uint32_t i = 0; i <= AlphabetSize; i++) {
-        if (e[i].valid()) {
-            n++;
-        }
-    }
-    return n;
+Edge *Node::getEdgeInsert(char c) {
+    return &e.emplace(c, Edge{}).first->second;
+}
+
+uint32_t Node::numEdges() const {
+    return (uint32_t)e.size();
 }
 
 struct ActivePoint {
     explicit ActivePoint(Node *node): node{node} {}
 
-    uint32_t getActiveChar() const {
+    uint32_t getStrPos() const {
         DCHECK_GT(length, 0);
-        return node->e[edge].first + length;
+        return edge->first + length;
     }
 
     Node *node{};
     uint32_t length{};
-    uint32_t edge{}; // Undefined if @length == 0
+    Edge *edge{};
 };
 
 // Ukkonen algorithm to build a suffix tree
 Node *build(char const *s, uint32_t sLen) {
-    // PrintFn vlogStr{[](std::string const &s) { VLOG(1) << s; }};
     auto root = new Node{};
     if (sLen == 0) {
         return root;
     }
-    DCHECK_EQ(EoLn, s[sLen - 1]);
     uint32_t remainingFirst = 0;
     ActivePoint ap{root};
     for (uint32_t i = 0; i < sLen; i++) {
-        // print(root, s, i, vlogStr);
-        auto e = toIndex(s[i]);
         Node *prevSplit = nullptr;
         while (i >= remainingFirst) {
             // Try to move along the edge (or start a path if length == 0).
             auto al = ap.length;
-            if (ap.length == 0) {
-                if (ap.node->e[e].valid()) {
-                    DCHECK_EQ(s[ap.node->e[e].first], s[i]);
-                    ap.edge = e;
+            if (ap.length == 0 || ap.edge == nullptr) {
+                ap.edge = ap.node->getEdgeInsert(s[i]);
+                if (!ap.edge->empty()) {
                     ap.length++;
-                    DCHECK_EQ(1, ap.length);
+                    DCHECK_EQ(s[ap.edge->first], s[i]);
                 }
-            } else if (s[ap.getActiveChar()] == s[i]) {
+            } else if (s[ap.getStrPos()] == s[i]) {
                 ap.length++;
             }
             if (ap.length > al) {
-                if (ap.length == ap.node->e[ap.edge].lengthTo(i) &&
-                        ap.node->e[ap.edge].link) {
+                if (ap.length == ap.edge->lengthTo(i) && ap.edge->link) {
                     ap.length = 0;
-                    ap.node = ap.node->e[ap.edge].link;
-                    DCHECK_NOTNULL(ap.node);
+                    ap.node = ap.edge->link;
                 }
                 break;
             }
@@ -93,78 +79,83 @@ Node *build(char const *s, uint32_t sLen) {
                 // Split edge in the middle
                 auto newNode = new Node{};
                 newNode->suffixLink = root;
-                newNode->e[e].first = i;
-                newNode->e[e].last = sLen;
-                auto ac = ap.getActiveChar();
-                auto k = toIndex(s[ac]);
-                newNode->e[k] = ap.node->e[ap.edge];
-                newNode->e[k].first = ac;
-                ap.node->e[ap.edge].link = newNode;
-                ap.node->e[ap.edge].last = ac;
+                auto e1 = newNode->getEdgeInsert(s[i]);
+                e1->first = i;
+                e1->last = sLen;
+                auto ac = ap.getStrPos();
+                auto e2 = newNode->getEdgeInsert(s[ac]);
+                *e2 = *ap.edge;
+                e2->first = ac;
+                ap.edge->link = newNode;
+                ap.edge->last = ac;
                 if (prevSplit) {
                     prevSplit->suffixLink = newNode;
                 }
                 prevSplit = newNode;
             } else {
                 // Make a leaf edge
-                DCHECK(!ap.node->e[e].valid());
-                ap.node->e[e].first = i;
-                ap.node->e[e].last = sLen;
+                DCHECK(ap.edge->empty());
+                ap.edge->first = i;
+                ap.edge->last = sLen;
             }
+            // print(root, s, i + 1, [](auto const &s) { VLOG(1) << s; });
             remainingFirst++;
             if (ap.node != root) {
                 ap.node = ap.node->suffixLink;
+                ap.edge =
+                        const_cast<Edge *>(ap.node->getEdge(s[ap.edge->first]));
             } else if (ap.length > 0) {
                 DCHECK_LT(remainingFirst, sLen);
                 DCHECK_LT(i, sLen);
                 ap.length--;
-                ap.edge = toIndex(s[remainingFirst]);
+                ap.edge = ap.node->getEdgeInsert(s[remainingFirst]);
             }
-            // print(root, s, i + 1, vlogStr);
         }
     }
     DCHECK_EQ(remainingFirst, sLen);
-    // print(root, s, sLen, vlogStr);
     return root;
 }
 
-FindSubstrResult findSubstr(
-        Node const *root, char const *s, char const *p, uint32_t pLen) {
+FindResult
+findSubstr(Node const *root, char const *s, char const *p, uint32_t pLen) {
     ActivePoint ap{const_cast<Node *>(root)};
     for (uint32_t i = 0; i < pLen;) {
-        auto e = toIndex(p[i]);
         if (ap.length == 0) {
-            if (!ap.node || !ap.node->e[e].valid()) {
-                return {false, 0};
+            if (!ap.node) {
+                return NotFound;
             }
-            ap.edge = e;
+            ap.edge = const_cast<Edge *>(ap.node->getEdge(p[i]));
+            if (!ap.edge) {
+                return NotFound;
+            }
             ap.length++;
             i++;
             continue;
         }
-        if (ap.length == ap.node->e[ap.edge].length()) {
-            ap.node = ap.node->e[ap.edge].link;
+        if (ap.length == ap.edge->length()) {
+            ap.node = ap.edge->link;
             ap.length = 0;
             continue;
         }
-        if (p[i] != s[ap.getActiveChar()]) {
-            return {false, 0};
+        if (p[i] != s[ap.getStrPos()]) {
+            return NotFound;
         }
         ap.length++;
         i++;
     }
-    return {true, ap.getActiveChar() - pLen};
+    return {true, ap.getStrPos() - pLen};
 }
 
-void destroy(Node *root) {
-    if (root != nullptr) {
-        for (uint32_t i = 0; i < AlphabetSize; i++) {
-            destroy(root->e[i].link);
+void destroy(Node *node) {
+    if (node != nullptr) {
+        for (auto kv : node->e) {
+            destroy(kv.second.link);
         }
     }
 }
 
-static void printRec(Node const *node,
+static void printRec(
+        Node const *node,
         char const *s,
         uint32_t sLen,
         std::string indent,
@@ -177,17 +168,14 @@ static void printRec(Node const *node,
     std::snprintf(
             buf, sizeof(buf), "Node %p suffixLink %p", node, node->suffixLink);
     fn(indent + buf);
-    for (uint32_t i = 0; i <= AlphabetSize; i++) {
-        auto e = node->e[i];
-        if (!e.valid()) {
-            continue;
-        }
-        auto c = i == 0 ? EoLn : char(Base + i - 1);
+    for (auto kv : node->e) {
+        auto e = kv.second;
         auto trueLast = std::min(e.last, sLen);
-        std::snprintf(buf,
+        std::snprintf(
+                buf,
                 sizeof(buf),
                 "Edge '%c' [%i, %i] %s link %p",
-                c,
+                kv.first,
                 e.first,
                 trueLast,
                 substr(s, e.first, trueLast).c_str(),
@@ -204,9 +192,14 @@ void print(Node const *root, char const *s, uint32_t len, PrintFn const &fn) {
 }
 } // namespace suffix_tree
 
-using suffix_tree::AlphabetSize;
 using suffix_tree::Edge;
+using suffix_tree::FindResult;
 using suffix_tree::Node;
+using suffix_tree::NotFound;
+
+FindResult foundAt(uint32_t i) {
+    return FindResult{true, i};
+}
 
 class IdMap {
 public:
@@ -228,8 +221,8 @@ private:
     void buildRec(Node const *node) {
         if (node != nullptr) {
             idMap[node] = id++;
-            for (uint32_t i = 0; i <= AlphabetSize; i++) {
-                buildRec(node->e[i].link);
+            for (auto kv : node->e) {
+                buildRec(kv.second.link);
             }
         }
     }
@@ -237,16 +230,6 @@ private:
     uint32_t id;
     std::unordered_map<Node const *, uint32_t> idMap;
 };
-
-uint32_t validEdgeCount(Node const *node) {
-    uint32_t res = 0;
-    for (uint32_t i = 0; i <= AlphabetSize; i++) {
-        if (node->e[i].valid()) {
-            res++;
-        }
-    }
-    return res;
-}
 
 suffix_tree::Node *build(char const *s) {
     std::cout << "Input " << s << std::endl;
@@ -260,22 +243,20 @@ suffix_tree::Node *build(char const *s) {
 
 #define GET_EDGE(NODE, STR, NAME)                                              \
     auto e = NODE->getEdge(NAME[0]);                                           \
-    EXPECT_EQ(NAME, e.name(STR));
+    EXPECT_EQ(NAME, e->name(STR));
 
 #define CHECK_LEAF_EDGE(NODE, STR, NAME)                                       \
     do {                                                                       \
         GET_EDGE(NODE, STR, NAME);                                             \
-        EXPECT_TRUE(e.isLeafEdge());                                           \
-        EXPECT_TRUE(e.link == nullptr);                                        \
+        EXPECT_TRUE(e->link == nullptr);                                       \
+        EXPECT_TRUE(e->link == nullptr);                                       \
     } while (false)
 
 #define CHECK_INTERNAL_EDGE(NODE, STR, NAME)                                   \
     do {                                                                       \
         GET_EDGE(NODE, STR, NAME);                                             \
-        EXPECT_FALSE(e.isLeafEdge());                                          \
+        EXPECT_TRUE(e->link != nullptr);                                       \
     } while (false)
-
-using suffix_tree::FindSubstrResult;
 
 TEST(Ukkonen, Case1) {
     char const str[] = "xyx$";
@@ -284,7 +265,7 @@ TEST(Ukkonen, Case1) {
     EXPECT_EQ(2, map.size());
     {
         auto node = root;
-        EXPECT_EQ(3, node->countEdges());
+        EXPECT_EQ(3, node->numEdges());
         EXPECT_EQ(1, map.getId(node));
         EXPECT_EQ(0, map.getId(node->suffixLink));
 
@@ -293,19 +274,19 @@ TEST(Ukkonen, Case1) {
         CHECK_LEAF_EDGE(node, str, "yx$");
     }
     {
-        auto node = root->getEdge('x').link;
-        EXPECT_EQ(2, node->countEdges());
+        auto node = root->getEdge('x')->link;
+        EXPECT_EQ(2, node->numEdges());
         EXPECT_EQ(2, map.getId(node));
         EXPECT_EQ(1, map.getId(node->suffixLink));
 
         CHECK_LEAF_EDGE(node, str, "$");
         CHECK_LEAF_EDGE(node, str, "yx$");
     }
-    EXPECT_EQ(FindSubstrResult(true, 0), findSubstr(root, str, "xyx", 3));
-    EXPECT_EQ(FindSubstrResult(true, 1), findSubstr(root, str, "yx", 2));
-    EXPECT_EQ(FindSubstrResult(true, 0), findSubstr(root, str, "x", 1));
-    EXPECT_EQ(FindSubstrResult(false, 0), findSubstr(root, str, "xx", 2));
-    EXPECT_EQ(FindSubstrResult(false, 0), findSubstr(root, str, "yz", 2));
+    EXPECT_EQ(foundAt(0), findSubstr(root, str, "xyx", 3));
+    EXPECT_EQ(foundAt(1), findSubstr(root, str, "yx", 2));
+    EXPECT_EQ(foundAt(0), findSubstr(root, str, "x", 1));
+    EXPECT_EQ(NotFound, findSubstr(root, str, "xx", 2));
+    EXPECT_EQ(NotFound, findSubstr(root, str, "yz", 2));
     suffix_tree::destroy(root);
 }
 
@@ -316,7 +297,7 @@ TEST(Ukkonen, Case2) {
     EXPECT_EQ(2, map.size());
     {
         auto node = root;
-        EXPECT_EQ(5, node->countEdges());
+        EXPECT_EQ(5, node->numEdges());
         EXPECT_EQ(1, map.getId(node));
         EXPECT_EQ(0, map.getId(node->suffixLink));
 
@@ -327,8 +308,8 @@ TEST(Ukkonen, Case2) {
         CHECK_INTERNAL_EDGE(node, str, "x");
     }
     {
-        auto node = root->getEdge('x').link;
-        EXPECT_EQ(3, node->countEdges());
+        auto node = root->getEdge('x')->link;
+        EXPECT_EQ(3, node->numEdges());
         EXPECT_EQ(2, map.getId(node));
         EXPECT_EQ(1, map.getId(node->suffixLink));
 
@@ -336,22 +317,64 @@ TEST(Ukkonen, Case2) {
         CHECK_LEAF_EDGE(node, str, "bxc$");
         CHECK_LEAF_EDGE(node, str, "c$");
     }
-    EXPECT_EQ(FindSubstrResult(true, 0), findSubstr(root, str, "xaxbxc", 6));
-    EXPECT_EQ(FindSubstrResult(true, 2), findSubstr(root, str, "xbx", 3));
-    EXPECT_EQ(FindSubstrResult(true, 4), findSubstr(root, str, "xc", 2));
-    EXPECT_EQ(FindSubstrResult(false, 0), findSubstr(root, str, "xbc", 3));
-    EXPECT_EQ(FindSubstrResult(false, 0), findSubstr(root, str, "xaxbxcx", 7));
+    EXPECT_EQ(foundAt(0), findSubstr(root, str, "xaxbxc", 6));
+    EXPECT_EQ(foundAt(2), findSubstr(root, str, "xbx", 3));
+    EXPECT_EQ(foundAt(4), findSubstr(root, str, "xc", 2));
+    EXPECT_EQ(NotFound, findSubstr(root, str, "xbc", 3));
+    EXPECT_EQ(NotFound, findSubstr(root, str, "xaxbxcx", 7));
     suffix_tree::destroy(root);
 }
 
-TEST(Ukkonen, Case3) {
+TEST(Ukkonen, Case3a) {
+    char const str[] = "xyzxya$";
+    auto root = build(str);
+    IdMap map{root};
+    EXPECT_EQ(3, map.size());
+    {
+        auto node = root;
+        EXPECT_EQ(5, node->numEdges());
+        EXPECT_EQ(1, map.getId(node));
+        EXPECT_EQ(0, map.getId(node->suffixLink));
+
+        CHECK_LEAF_EDGE(node, str, "$");
+        CHECK_LEAF_EDGE(node, str, "a$");
+        CHECK_INTERNAL_EDGE(node, str, "xy");
+        CHECK_INTERNAL_EDGE(node, str, "y");
+        CHECK_LEAF_EDGE(node, str, "zxya$");
+    }
+    {
+        auto node = root->getEdge('x')->link;
+        EXPECT_EQ(2, node->numEdges());
+        EXPECT_EQ(2, map.getId(node));
+        EXPECT_EQ(3, map.getId(node->suffixLink));
+
+        CHECK_LEAF_EDGE(node, str, "a$");
+        CHECK_LEAF_EDGE(node, str, "zxya$");
+    }
+    {
+        auto node = root->getEdge('y')->link;
+        EXPECT_EQ(2, node->numEdges());
+        EXPECT_EQ(3, map.getId(node));
+        EXPECT_EQ(1, map.getId(node->suffixLink));
+
+        CHECK_LEAF_EDGE(node, str, "a$");
+        CHECK_LEAF_EDGE(node, str, "zxya$");
+    }
+    EXPECT_EQ(foundAt(0), findSubstr(root, str, "xyz", 3));
+    EXPECT_EQ(foundAt(3), findSubstr(root, str, "xya", 3));
+    EXPECT_EQ(NotFound, findSubstr(root, str, "zxa", 3));
+    EXPECT_EQ(NotFound, findSubstr(root, str, "yxa", 3));
+    suffix_tree::destroy(root);
+}
+
+TEST(Ukkonen, Case3b) {
     char const str[] = "xyzxyaxyz$";
     auto root = build(str);
     IdMap map{root};
     EXPECT_EQ(6, map.size());
     {
         auto node = root;
-        EXPECT_EQ(5, node->countEdges());
+        EXPECT_EQ(5, node->numEdges());
         EXPECT_EQ(1, map.getId(node));
         EXPECT_EQ(0, map.getId(node->suffixLink));
 
@@ -362,8 +385,8 @@ TEST(Ukkonen, Case3) {
         CHECK_INTERNAL_EDGE(node, str, "z");
     }
     {
-        auto node = root->getEdge('x').link;
-        EXPECT_EQ(2, node->countEdges());
+        auto node = root->getEdge('x')->link;
+        EXPECT_EQ(2, node->numEdges());
         EXPECT_EQ(2, map.getId(node));
         EXPECT_EQ(4, map.getId(node->suffixLink));
 
@@ -371,8 +394,8 @@ TEST(Ukkonen, Case3) {
         CHECK_INTERNAL_EDGE(node, str, "z");
     }
     {
-        auto node = root->getEdge('x').link->getEdge('z').link;
-        EXPECT_EQ(2, node->countEdges());
+        auto node = root->getEdge('x')->link->getEdge('z')->link;
+        EXPECT_EQ(2, node->numEdges());
         EXPECT_EQ(3, map.getId(node));
         EXPECT_EQ(5, map.getId(node->suffixLink));
 
@@ -380,8 +403,8 @@ TEST(Ukkonen, Case3) {
         CHECK_LEAF_EDGE(node, str, "xyaxyz$");
     }
     {
-        auto node = root->getEdge('y').link;
-        EXPECT_EQ(2, node->countEdges());
+        auto node = root->getEdge('y')->link;
+        EXPECT_EQ(2, node->numEdges());
         EXPECT_EQ(4, map.getId(node));
         EXPECT_EQ(1, map.getId(node->suffixLink));
 
@@ -389,8 +412,8 @@ TEST(Ukkonen, Case3) {
         CHECK_INTERNAL_EDGE(node, str, "z");
     }
     {
-        auto node = root->getEdge('y').link->getEdge('z').link;
-        EXPECT_EQ(2, node->countEdges());
+        auto node = root->getEdge('y')->link->getEdge('z')->link;
+        EXPECT_EQ(2, node->numEdges());
         EXPECT_EQ(5, map.getId(node));
         EXPECT_EQ(6, map.getId(node->suffixLink));
 
@@ -398,18 +421,18 @@ TEST(Ukkonen, Case3) {
         CHECK_LEAF_EDGE(node, str, "xyaxyz$");
     }
     {
-        auto node = root->getEdge('z').link;
-        EXPECT_EQ(2, node->countEdges());
+        auto node = root->getEdge('z')->link;
+        EXPECT_EQ(2, node->numEdges());
         EXPECT_EQ(6, map.getId(node));
         EXPECT_EQ(1, map.getId(node->suffixLink));
 
         CHECK_LEAF_EDGE(node, str, "$");
         CHECK_LEAF_EDGE(node, str, "xyaxyz$");
     }
-    EXPECT_EQ(FindSubstrResult(true, 0), findSubstr(root, str, "xyz", 3));
-    EXPECT_EQ(FindSubstrResult(true, 3), findSubstr(root, str, "xyaxyz", 6));
-    EXPECT_EQ(FindSubstrResult(false, 0), findSubstr(root, str, "xyzz", 4));
-    EXPECT_EQ(FindSubstrResult(false, 0), findSubstr(root, str, "axzz", 4));
+    EXPECT_EQ(foundAt(0), findSubstr(root, str, "xyz", 3));
+    EXPECT_EQ(foundAt(3), findSubstr(root, str, "xyaxyz", 6));
+    EXPECT_EQ(NotFound, findSubstr(root, str, "xyzz", 4));
+    EXPECT_EQ(NotFound, findSubstr(root, str, "axzz", 4));
     suffix_tree::destroy(root);
 }
 
@@ -420,7 +443,7 @@ TEST(Ukkonen, Case4) {
     EXPECT_EQ(4, map.size());
     {
         auto node = root;
-        EXPECT_EQ(2, node->countEdges());
+        EXPECT_EQ(2, node->numEdges());
         EXPECT_EQ(1, map.getId(node));
         EXPECT_EQ(0, map.getId(node->suffixLink));
 
@@ -428,8 +451,8 @@ TEST(Ukkonen, Case4) {
         CHECK_INTERNAL_EDGE(node, str, "x");
     }
     {
-        auto node = root->getEdge('x').link;
-        EXPECT_EQ(2, node->countEdges());
+        auto node = root->getEdge('x')->link;
+        EXPECT_EQ(2, node->numEdges());
         EXPECT_EQ(2, map.getId(node));
         EXPECT_EQ(1, map.getId(node->suffixLink));
 
@@ -437,8 +460,8 @@ TEST(Ukkonen, Case4) {
         CHECK_INTERNAL_EDGE(node, str, "x");
     }
     {
-        auto node = root->getEdge('x').link->getEdge('x').link;
-        EXPECT_EQ(2, node->countEdges());
+        auto node = root->getEdge('x')->link->getEdge('x')->link;
+        EXPECT_EQ(2, node->numEdges());
         EXPECT_EQ(3, map.getId(node));
         EXPECT_EQ(2, map.getId(node->suffixLink));
 
@@ -446,20 +469,22 @@ TEST(Ukkonen, Case4) {
         CHECK_INTERNAL_EDGE(node, str, "x");
     }
     {
-        auto node =
-                root->getEdge('x').link->getEdge('x').link->getEdge('x').link;
-        EXPECT_EQ(2, node->countEdges());
+        auto node = root->getEdge('x')
+                            ->link->getEdge('x')
+                            ->link->getEdge('x')
+                            ->link;
+        EXPECT_EQ(2, node->numEdges());
         EXPECT_EQ(4, map.getId(node));
         EXPECT_EQ(3, map.getId(node->suffixLink));
 
         CHECK_LEAF_EDGE(node, str, "$");
         CHECK_LEAF_EDGE(node, str, "x$");
     }
-    EXPECT_EQ(FindSubstrResult(true, 0), findSubstr(root, str, "xxxx", 4));
-    EXPECT_EQ(FindSubstrResult(true, 0), findSubstr(root, str, "xxx", 3));
-    EXPECT_EQ(FindSubstrResult(true, 0), findSubstr(root, str, "xx", 2));
-    EXPECT_EQ(FindSubstrResult(true, 0), findSubstr(root, str, "x", 1));
-    EXPECT_EQ(FindSubstrResult(false, 0), findSubstr(root, str, "xxxxx", 5));
+    EXPECT_EQ(foundAt(0), findSubstr(root, str, "xxxx", 4));
+    EXPECT_EQ(foundAt(0), findSubstr(root, str, "xxx", 3));
+    EXPECT_EQ(foundAt(0), findSubstr(root, str, "xx", 2));
+    EXPECT_EQ(foundAt(0), findSubstr(root, str, "x", 1));
+    EXPECT_EQ(NotFound, findSubstr(root, str, "xxxxx", 5));
     suffix_tree::destroy(root);
 }
 
@@ -470,7 +495,7 @@ TEST(Ukkonen, Case5) {
     EXPECT_EQ(3, map.size());
     {
         auto node = root;
-        EXPECT_EQ(6, node->countEdges());
+        EXPECT_EQ(6, node->numEdges());
         EXPECT_EQ(1, map.getId(node));
         EXPECT_EQ(0, map.getId(node->suffixLink));
 
@@ -482,8 +507,8 @@ TEST(Ukkonen, Case5) {
         CHECK_LEAF_EDGE(node, str, "z$");
     }
     {
-        auto node = root->getEdge('a').link;
-        EXPECT_EQ(3, node->countEdges());
+        auto node = root->getEdge('a')->link;
+        EXPECT_EQ(3, node->numEdges());
         EXPECT_EQ(2, map.getId(node));
         EXPECT_EQ(3, map.getId(node->suffixLink));
 
@@ -492,8 +517,8 @@ TEST(Ukkonen, Case5) {
         CHECK_LEAF_EDGE(node, str, "z$");
     }
     {
-        auto node = root->getEdge('b').link;
-        EXPECT_EQ(3, node->countEdges());
+        auto node = root->getEdge('b')->link;
+        EXPECT_EQ(3, node->numEdges());
         EXPECT_EQ(3, map.getId(node));
         EXPECT_EQ(1, map.getId(node->suffixLink));
 
@@ -501,10 +526,10 @@ TEST(Ukkonen, Case5) {
         CHECK_LEAF_EDGE(node, str, "yabz$");
         CHECK_LEAF_EDGE(node, str, "z$");
     }
-    EXPECT_EQ(FindSubstrResult(true, 0), findSubstr(root, str, "ab", 2));
-    EXPECT_EQ(FindSubstrResult(true, 2), findSubstr(root, str, "xaby", 4));
-    EXPECT_EQ(FindSubstrResult(true, 4), findSubstr(root, str, "bya", 3));
-    EXPECT_EQ(FindSubstrResult(true, 8), findSubstr(root, str, "z", 1));
+    EXPECT_EQ(foundAt(0), findSubstr(root, str, "ab", 2));
+    EXPECT_EQ(foundAt(2), findSubstr(root, str, "xaby", 4));
+    EXPECT_EQ(foundAt(4), findSubstr(root, str, "bya", 3));
+    EXPECT_EQ(foundAt(8), findSubstr(root, str, "z", 1));
     suffix_tree::destroy(root);
 }
 

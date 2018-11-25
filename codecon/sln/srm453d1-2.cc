@@ -157,7 +157,7 @@ public:
 
     void set_decomp(int i, WinDraw val) {
         if (i < decomp.size() &&
-                (decomp[i].w < 0 || val.score() < decomp[i].score())) {
+            (decomp[i].w < 0 || val.score() < decomp[i].score())) {
             decomp[i] = val;
         }
     }

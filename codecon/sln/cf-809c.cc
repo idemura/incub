@@ -23,7 +23,8 @@ i64 imax(i64 a, i64 b) {
 // All x1, x2, y1, y2 are 0 based, right coordinates (x2 and y2) are exclusive.
 // Quad of size qs at qx and qy. threshold (in) is the upper bound on number.
 // Recursive quad tree walk.
-i64 ranges_rect(int x1,
+i64 ranges_rect(
+        int x1,
         int y1,
         int x2,
         int y2,
@@ -52,7 +53,8 @@ i64 ranges_rect(int x1,
             res = ap_sum * imin(x2 - x1, y2 - y1);
         }
     } else {
-        res += ranges_rect(imin(x1, qx + hs),
+        res += ranges_rect(
+                imin(x1, qx + hs),
                 imin(y1, qy + hs),
                 imin(x2, qx + hs),
                 imin(y2, qy + hs),
@@ -62,7 +64,8 @@ i64 ranges_rect(int x1,
                 a,
                 threshold,
                 tabs + 1);
-        res += ranges_rect(imax(x1, qx + hs),
+        res += ranges_rect(
+                imax(x1, qx + hs),
                 imin(y1, qy + hs),
                 imax(x2, qx + hs),
                 imin(y2, qy + hs),
@@ -72,7 +75,8 @@ i64 ranges_rect(int x1,
                 a + hs,
                 threshold,
                 tabs + 1);
-        res += ranges_rect(imin(x1, qx + hs),
+        res += ranges_rect(
+                imin(x1, qx + hs),
                 imax(y1, qy + hs),
                 imin(x2, qx + hs),
                 imax(y2, qy + hs),
@@ -82,7 +86,8 @@ i64 ranges_rect(int x1,
                 a + hs,
                 threshold,
                 tabs + 1);
-        res += ranges_rect(imax(x1, qx + hs),
+        res += ranges_rect(
+                imax(x1, qx + hs),
                 imax(y1, qy + hs),
                 imax(x2, qx + hs),
                 imax(y2, qy + hs),
@@ -102,7 +107,8 @@ int main() {
     for (int i = 0; i < n; i++) {
         int x1, y1, x2, y2, k;
         cin >> x1 >> y1 >> x2 >> y2 >> k;
-        cout << ranges_rect(x1 - 1,
+        cout << ranges_rect(
+                        x1 - 1,
                         y1 - 1,
                         x2,
                         y2,

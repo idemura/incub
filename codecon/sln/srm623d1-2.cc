@@ -39,7 +39,8 @@ using Point = pair<int, int>;
 
 class CatchTheBeat {
 public:
-    int maxCatched(int n,
+    int maxCatched(
+            int n,
             int x0,
             int y0,
             int a,
@@ -83,7 +84,8 @@ int main(int argc, char** argv) {
     ios_base::sync_with_stdio(false);
     {
         auto sol = make_unique<CatchTheBeat>();
-        cout << sol->maxCatched(10,
+        cout << sol->maxCatched(
+                        10,
                         999999957,
                         79,
                         993948167,

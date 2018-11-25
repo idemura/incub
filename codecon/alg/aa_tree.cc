@@ -132,7 +132,7 @@ private:
             n->child[ci] = remove_rec(k, n->child[ci]);
         }
         if (n->height - 1 > n->child[0]->height ||
-                n->height - 1 > n->child[1]->height) {
+            n->height - 1 > n->child[1]->height) {
             n->height--;
             n = split(skew(n));
         }
@@ -152,7 +152,7 @@ private:
 
     static node *split(node *n) {
         if (n->height == n->child[1]->height &&
-                n->height == n->child[1]->child[1]->height) {
+            n->height == n->child[1]->child[1]->height) {
             auto t = n->child[1];
             n->child[1] = t->child[0];
             t->child[0] = n;

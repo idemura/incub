@@ -121,12 +121,12 @@ public:
             visit(cells[i][j - 1].link);
         }
         if (i + 1 < cr && !cells[i + 1][j].m &&
-                cells[i][j].h <= cells[i + 1][j].h) {
+            cells[i][j].h <= cells[i + 1][j].h) {
             level->push_back(cells[i + 1][j].link);
             visit(cells[i + 1][j].link);
         }
         if (j + 1 < cc && !cells[i][j + 1].m &&
-                cells[i][j].h <= cells[i][j + 1].h) {
+            cells[i][j].h <= cells[i][j + 1].h) {
             level->push_back(cells[i][j + 1].link);
             visit(cells[i][j + 1].link);
         }

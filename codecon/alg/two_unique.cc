@@ -23,8 +23,8 @@ pair<int, int> two_unique(const vector<int> &a) {
 
 template <class T>
 pair<T, T> ord_pair(const pair<T, T> &p) {
-    return p.first < p.second ? make_pair(p.first, p.second) :
-                                make_pair(p.second, p.first);
+    return p.first < p.second ? make_pair(p.first, p.second)
+                              : make_pair(p.second, p.first);
 }
 
 void test1() {

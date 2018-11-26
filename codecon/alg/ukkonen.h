@@ -29,14 +29,14 @@ struct Edge {
     }
 
     bool empty() const {
-        return last == first;
+        return first == last;
     }
 
     std::string name(char const *s) const;
 };
 
 struct Node {
-    Node *suffixLink = nullptr;
+    Node *suffixLink{nullptr};
     std::map<char, Edge> e; // Order is important for tests
 
     Edge const *getEdge(char c) const;

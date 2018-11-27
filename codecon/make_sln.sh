@@ -3,19 +3,19 @@
 [ "$#" -eq 1 ] || exit 1
 
 cat > "$1".cc <<EOF
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
-#include <algorithm>
 #include <map>
-#include <vector>
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
-#include "log.hpp"
+#include "log.h"
 
 using namespace std;
 
@@ -23,7 +23,8 @@ using i32 = int32_t;
 using i64 = int64_t;
 using pii = std::pair<int, int>;
 
-int main() {
+int main(int argc, char **argv) {
+    initLog(argc, argv);
     return 0;
 }
 EOF

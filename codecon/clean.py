@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+import argparse
 import glob
 import os
 import shutil
@@ -9,14 +10,12 @@ import stat
 import sys
 
 
-do_rm = False
-for a in sys.argv[1:]:
-    if a == '--rm':
-        do_rm = True
-
+parser = argparse.ArgumentParser(description='Remove compiler outputs')
+parser.add_argument('--rm', action='store_true', help='actually remove files')
+args = parser.parse_args()
 
 def remove(f):
-    if do_rm:
+    if args.rm:
         if os.path.isdir(f):
             shutil.rmtree(f)
         else:
@@ -42,3 +41,4 @@ def remove_executables(directory, white_list=None):
 for p in ['*.a', '.o', '*.dSYM', '*.log']:
     glob_remove(p)
 remove_executables('.', white_list=[])
+

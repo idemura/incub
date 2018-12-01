@@ -13,3 +13,6 @@ inline void initLog(int argc, char **argv) {
         }
     }
 }
+
+// To init gtest: testing::InitGoogleTest(&argc, argv);
+// To init gmock: testing::InitGoogleMock(&argc, argv);

@@ -9,7 +9,8 @@ fi
 CXX_CODEGEN='-O0 -g -fsanitize=address -fno-omit-frame-pointer'
 # CXX_CODEGEN='-O3 -ffast-math -flto -DNDEBUG'
 
-$CXX -std=c++17 -I. -march=native $1 -o ${1%.*} \
+BINARY=${1%.*}
+$CXX -std=c++17 -I. -march=native $1 -o ${BINARY} \
     ${CXX_CODEGEN} \
     ${CXX_COMPILER_SPECIFIC} \
     -fdiagnostics-color=auto \
@@ -20,4 +21,11 @@ $CXX -std=c++17 -I. -march=native $1 -o ${1%.*} \
     -lgtest \
     -lgmock \
     -lglog \
-    -lgflags
+    -lgflags \
+    || exit
+
+shift
+[[ $1 =~ ^-r|--run$ ]] || exit
+shift
+[[ $1 == "" ]] && IN="/dev/null" || IN="$1"
+./${BINARY} < $IN

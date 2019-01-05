@@ -17,6 +17,7 @@ public:
     bool empty() const {
         return h.empty();
     }
+    
     T top() const {
         return h[0];
     }

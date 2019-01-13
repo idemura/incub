@@ -3,6 +3,12 @@
 #include <cstring>
 #include <glog/logging.h>
 
+#define LOGF LOG(FATAL)
+#define LOGE LOG(ERROR)
+#define LOGW LOG(WARNING)
+#define LOGI LOG(INFO)
+#define LOGD LOG(DEBUG)
+
 inline void initLog(int argc, char **argv) {
     google::InitGoogleLogging(argv[0]);
     google::LogToStderr();

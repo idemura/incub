@@ -11,8 +11,8 @@ set autoindent
 set ic
 " Highlight search
 " set hlsearch
-set tabstop=2
-set shiftwidth=2
+set tabstop=4
+set shiftwidth=4
 set expandtab
 set cc=81
 set incsearch
@@ -22,8 +22,6 @@ set nowrap
 set gdefault
 set noswapfile
 set wildignore+=*.o,*.a,*.o.d,*_test
-" Set the runtime path to include Vundle and initialize
-set runtimepath+=~/.vim/bundle/Vundle.vim
 
 " Clear filetype flags before changing runtimepath to force Vim to reload
 " them.
@@ -34,7 +32,6 @@ filetype plugin indent on
 
 " Do not expand tab to spaces in make files.
 autocmd FileType make setlocal noexpandtab
-autocmd BufWritePre * TrailerTrim
 
 let g:ycm_confirm_extra_conf=0
 let g:ycm_enable_diagnostic_signs=0
@@ -47,7 +44,6 @@ nnoremap <C-H> <C-W><C-H>
 
 let mapleader=" "
 
-nnoremap <leader>o :CtrlP<CR>
 nnoremap <leader>w :w<CR>
 nnoremap <leader>q :q<CR>
 nnoremap <leader>s :sh<CR>
@@ -56,21 +52,3 @@ nnoremap <leader><Down>   :bp<CR>
 
 nnoremap <leader>K diw
 nnoremap <leader>Q di"
-
-call vundle#begin()
-" Alternatively, pass a path where Vundle should install plugins
-"call vundle#begin('~/some/path/here')
-
-" Let Vundle manage Vundle, required
-Plugin 'VundleVim/Vundle.vim'
-
-Bundle 'kien/ctrlp.vim'
-Bundle 'Valloric/YouCompleteMe'
-Bundle 'scrooloose/nerdcommenter'
-Bundle 'csexton/trailertrash.vim'
-" Bundle 'jiangmiao/auto-pairs'
-" Bundle 'fatih/vim-go'
-
-" All of your Plugins must be added before the following line
-call vundle#end()
-

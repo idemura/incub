@@ -1,5 +1,1 @@
 set editing-mode vi
-# Mappings below that line apply to command mode.
-# set keymap vi-command
-set show-mode-in-prompt on
-

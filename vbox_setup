@@ -5,7 +5,7 @@ Install sudo
     * reboot
 
 Install basic packages
-    * sudo apt-get install -y git vim linux-tools
+    * sudo apt-get install -y git vim linux-tools atop
     * vim ~/.bashrc, in PS1 replace \w to \W
     * mkdir github
     * cd github

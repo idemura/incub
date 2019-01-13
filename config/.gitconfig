@@ -20,4 +20,7 @@
 [push]
   default = simple
 [credential]
-	helper = cache --timeout=3600
+  helper = cache --timeout=3600
+[credential "https://github.com"]
+  username = idemura
+

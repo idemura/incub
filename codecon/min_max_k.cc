@@ -2,11 +2,11 @@
 // max(S) - min(S) = k.
 
 #include <algorithm>
+#include <deque>
+#include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
-#include <deque>
-#include <unordered_map>
-#include <string>
 
 #include "log.h"
 #include <gtest/gtest.h>

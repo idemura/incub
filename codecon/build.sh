@@ -8,7 +8,7 @@ else
   CXX=g++
   CXX_SPECIFIC=
 fi
-if [[ ${OPT} ]]; then
+if [[ $OPT && $OPT != 0 ]]; then
     CXX_CODEGEN='-O3 -ffast-math -flto -DNDEBUG'
 else
     CXX_CODEGEN='-O0 -g -fsanitize=address -fno-omit-frame-pointer'
@@ -34,5 +34,5 @@ $CXX -std=c++17 -I. -march=native $1 -o ${BINARY} \
 shift
 [[ $1 =~ ^-r|--run$ ]] || exit
 shift
-[[ $1 == "" ]] && IN="/dev/null" || IN="$1"
-./${BINARY} < $IN
+[[ ! $IN ]] && IN="/dev/null"
+./$BINARY < $IN

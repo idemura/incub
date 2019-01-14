@@ -38,7 +38,6 @@ def remove_executables(directory, white_list=None):
                 remove(f)
 
 
-for p in ['*.a', '.o', '*.dSYM', '*.log']:
+for p in ['*.a', '.o', '.mk', '*.dSYM', '*.log']:
     glob_remove(p)
 remove_executables('.', white_list=[])
-

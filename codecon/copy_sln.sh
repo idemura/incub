@@ -6,4 +6,3 @@ if cp "$1".cc "sln/"; then
   git add sln/"$1".cc
   git commit -m "$1"
 fi
-

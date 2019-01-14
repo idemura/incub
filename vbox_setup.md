@@ -72,6 +72,7 @@ cd .. && rm -rf cmake_build
 sudo mkdir /opt/LLVM
 sudo chown igor:igor /opt/LLVM -R
 cd /opt/LLVM
+sudo apt-get install -y libncurses5-dev libxml2-dev libpcre3 libpcre3-dev libedit-dev
 
 LLVM_VER=7.0.1
 SWIG_VER=3.0.12
@@ -94,10 +95,14 @@ tar -xf lldb-${LLVM_VER}.src.tar
 rm lldb-${LLVM_VER}.src.tar
 mv lldb-${LLVM_VER}.src lldb
 
+wget -q http://releases.llvm.org/${LLVM_VER}/compiler-rt-${LLVM_VER}.src.tar.xz
+xz --decompress compiler-rt-${LLVM_VER}.src.tar.xz
+tar -xf compiler-rt-${LLVM_VER}.src.tar
+rm compiler-rt-${LLVM_VER}.src.tar
+mv compiler-rt-${LLVM_VER}.src compiler-rt
+
 cd /opt/LLVM
-mkdir build
-cd build
-sudo apt-get install -y libncurses5-dev libxml2-dev libpcre3 libpcre3-dev libedit-dev
+mkdir cmake_build && cd cmake_build
 
 # Custom SWIG:
 wget -q http://prdownloads.sourceforge.net/swig/swig-${SWIG_VER}.tar.gz
@@ -112,5 +117,5 @@ cd ..
 cmake -G "Unix Makefiles" ../llvm-${LLVM_VER}.src -DCMAKE_BUILD_TYPE=Release
 make -j4 && sudo make install
 cd ..
-rm -rf build
+rm -rf cmake_build
 ```

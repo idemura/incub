@@ -8,7 +8,9 @@ reboot
 
 ## Basic Packages
 ```
-vi ~/.bashrc # In PS1 replace \w to \W
+cd
+vi .bashrc    # In $PS1 replace \w to \W
+vi .profile   # export EDITOR=vi
 sudo apt-get install -y build-essential git vim gdb linux-tools tmux atop python-dev libtool m4 autoconf pkg-config cmake
 ```
 

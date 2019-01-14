@@ -5,7 +5,7 @@ Install sudo
     * reboot
 
 Install basic packages
-    * sudo apt-get install -y git vim gdb linux-tools tmux atop
+    * sudo apt-get install -y git vim gdb linux-tools tmux atop python-dev
     * vim ~/.bashrc, in PS1 replace \w to \W
     * mkdir github
     * cd github

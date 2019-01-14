@@ -1,7 +1,0 @@
-#! /bin/bash
-
-set -e
-pip install --upgrade httplib2
-pip install --upgrade google-api-python-client
-# sudo pip install --upgrade pyinotify
-

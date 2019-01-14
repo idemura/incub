@@ -8,8 +8,11 @@ else
   CXX=g++
   CXX_SPECIFIC=
 fi
-CXX_CODEGEN='-O0 -g -fsanitize=address -fno-omit-frame-pointer'
-# CXX_CODEGEN='-O3 -ffast-math -flto -DNDEBUG'
+if [[ ${OPT} ]]; then
+    CXX_CODEGEN='-O3 -ffast-math -flto -DNDEBUG'
+else
+    CXX_CODEGEN='-O0 -g -fsanitize=address -fno-omit-frame-pointer'
+fi
 
 BINARY=${1%.*}
 $CXX -std=c++17 -I. -march=native $1 -o ${BINARY} \

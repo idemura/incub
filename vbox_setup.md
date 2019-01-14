@@ -1,14 +1,14 @@
-## Install sudo
+## Install `sudo`
 ```
 su
 apt-get install -y sudo
-usermod -aG sudo {USER}
+usermod -aG sudo igor
 reboot
 ```
 
 ## Install basic packages
 ```
-sudo apt-get install -y git vim gdb linux-tools tmux atop python-dev
+sudo apt-get install -y git vim gdb linux-tools tmux atop python-dev libtool m4 autoconf pkg-config cmake
 vim ~/.bashrc, in PS1 replace \w to \W
 mkdir github
 cd github
@@ -29,7 +29,7 @@ cd ~/github
 git clone https://github.com/facebook/watchman.git
 cd watchdog
 git checkout v4.9.0
-sudo apt-get install -y libtool m4 autoconf pkg-config libssl-dev
+sudo apt-get install -y libssl-dev
 ./autogen.sh && ./configure
 make -j4 && sudo make install
 make clean
@@ -61,7 +61,6 @@ make -j4 && sudo make install
 make clean
 
 cd ~/github
-sudo apt-get install -y cmake
 git clone https://github.com/google/googletest.git
 cd googletest
 cmake .

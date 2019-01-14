@@ -1,23 +1,30 @@
-# Install sudo
+## Install sudo
+```
 su
 apt-get install -y sudo
 usermod -aG sudo {USER}
 reboot
+```
 
-# Install basic packages
+## Install basic packages
+```
 sudo apt-get install -y git vim gdb linux-tools tmux atop python-dev
 vim ~/.bashrc, in PS1 replace \w to \W
 mkdir github
 cd github
 git clone https://github.com/idemura/incub.git
+```
 
-# Customize configs
+## Customize configs
+```
 cd ~/github
 cd incub/config
 cp .* ~
 reboot
+```
 
-# Watchdog
+## Watchdog
+```
 cd ~/github
 git clone https://github.com/facebook/watchman.git
 cd watchdog
@@ -26,15 +33,19 @@ sudo apt-get install -y libtool m4 autoconf pkg-config libssl-dev
 ./autogen.sh && ./configure
 make -j4 && sudo make install
 make clean
+```
 
-# Nuclide Server
-# First, install WatchDog
+## Nuclide Server
+First, install WatchDog
+```
 sudo apt-get install -y curl
 curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
 sudo apt-get install -y nodejs
 sudo npm install -g nuclide
+```
 
-# Install Google
+## Install Google
+```
 cd ~/github
 https://github.com/gflags/gflags.git
 cd gflags
@@ -58,3 +69,11 @@ make -j4 && sudo make install
 make clean
 
 sudo ldconfig
+```
+
+## Install LLVM/Clang/LLDB
+```
+sudo mkdir /opt/LLVM
+sudo chown igor:igor /opt/LLVM -R
+cd /opt/LLVM
+```

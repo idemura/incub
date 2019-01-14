@@ -14,26 +14,27 @@ sudo apt-get install -y build-essential git vim gdb linux-tools tmux atop python
 
 ## Customize
 ```
+mkdir github && cd github
 git clone https://github.com/idemura/incub.git
-cd ~/incub/configs
-cp .* ~
+cd ~/github/incub/configs
+cp -r incub/configs/. ~
 reboot
 ```
 
 ## Watchman
 ```
-cd
+cd ~/github
 git clone https://github.com/facebook/watchman.git
 cd watchman
 git checkout v4.9.0
 sudo apt-get install -y libssl-dev
-./autogen.sh && ./configure
+mkdir cmake_build && cd cmake_build && cmake .. -DCMAKE_BUILD_TYPE=Release
 make -j4 && sudo make install
-make clean
+cd .. && rm -rf cmake_build
 ```
 
 ## Nuclide Server
-First, install WatchDog
+First, install Watchman
 ```
 wget -q -O - https://deb.nodesource.com/setup_11.x | sudo -E bash -
 sudo apt-get install -y nodejs
@@ -42,28 +43,28 @@ sudo npm install -g nuclide
 
 ## Install Google
 ```
-cd
+cd ~/github
 git clone https://github.com/gflags/gflags.git
 cd gflags
-cmake . -DBUILD_SHARED_LIBS=ON
+mkdir cmake_build && cd cmake_build && cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
 make -j4 && sudo make install
 sudo ldconfig
-make clean
+cd .. && rm -rf cmake_build
 
-cd
+cd ~/github
 git clone https://github.com/google/glog.git
 cd glog
-./autogen.sh && ./configure
+mkdir cmake_build && cd cmake_build && cmake .. -DCMAKE_BUILD_TYPE=Release
 make -j4 && sudo make install
 sudo ldconfig
-make clean
+cd .. && rm -rf cmake_build
 
-cd
+cd ~/github
 git clone https://github.com/google/googletest.git
 cd googletest
-cmake .
+mkdir cmake_build && cd cmake_build && cmake .. -DCMAKE_BUILD_TYPE=Release
 make -j4 && sudo make install
-make clean
+cd .. && rm -rf cmake_build
 ```
 
 ## Install LLVM/Clang/LLDB

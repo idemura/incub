@@ -35,7 +35,7 @@ make clean
 ## Nuclide Server
 First, install WatchDog
 ```
-wget -q -O - https://deb.nodesource.com/setup_10.x | sudo -E bash -
+wget -q -O - https://deb.nodesource.com/setup_11.x | sudo -E bash -
 sudo apt-get install -y nodejs
 sudo npm install -g nuclide
 ```

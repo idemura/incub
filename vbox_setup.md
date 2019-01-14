@@ -8,8 +8,8 @@ reboot
 
 ## Install basic packages
 ```
+vi ~/.bashrc # In PS1 replace \w to \W
 sudo apt-get install -y git vim gdb linux-tools tmux atop python-dev libtool m4 autoconf pkg-config cmake
-vim ~/.bashrc, in PS1 replace \w to \W
 mkdir github
 cd github
 git clone https://github.com/idemura/incub.git

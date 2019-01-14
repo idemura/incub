@@ -6,7 +6,8 @@ import platform
 import string
 import sys
 
-MAKEFILE = """CXX=${cxx}
+MAKEFILE = """\
+CXX=${cxx}
 CXX_LANG=-std=c++17 -I. -march=native -fdiagnostics-color=auto -fno-exceptions -fno-rtti ${warnings}
 CXX_MODE=${mode}
 CXX_LIBS=-lgtest -lgmock -lglog -lgflags -pthread
@@ -21,7 +22,7 @@ run: ${name}
 \t./${name} ${redir_in}
 """
 
-PREAMBLE="""
+PREAMBLE="""\
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -42,7 +43,8 @@ using i64 = int64_t;
 using pii = std::pair<int, int>;
 """
 
-SOURCE = """%header
+SOURCE = """\
+%header
 #include "${name}.h"
 %:
 ${preamble}
@@ -54,7 +56,8 @@ int main(int argc, char **argv) {
 }
 """
 
-HEADER = """#pragma once
+HEADER = """\
+#pragma once
 
 ${preamble}
 """

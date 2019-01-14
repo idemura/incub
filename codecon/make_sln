@@ -2,7 +2,7 @@
 
 [ "$#" -eq 1 ] || exit 1
 
-cat > "$1".cc <<EOF
+cat > "$1.cc" <<EOF
 #include <algorithm>
 #include <cassert>
 #include <cmath>

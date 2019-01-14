@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <limits>
 
 #include "log.h"
 #include <gtest/gtest.h>
@@ -40,6 +41,24 @@ struct ClosestRightState {
         return *pos;
     }
 };
+
+pair<int, int> findMinMaxKSorted(vector<int> const &a, int k) {
+    int i = 0;
+    int j = a.size() - 1;
+    if (a.size() <= 1 || a[j] - a[i] < k) {
+        return pair<int, int>{0, 0};
+    }
+
+    while (i < j) {
+        int iNextStep;
+        if (a[j] - a[i + 1] >= k) {
+            iNextStep = a[i + 1] - a[i];
+        } else {
+            iNextStep = numeric_limits<int>::max();
+        }
+    }
+    return pair<int, int>{i, j};
+}
 
 pair<int, int> findMinMaxK(vector<int> const &a, int k) {
     return {0, a.size()};

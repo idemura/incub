@@ -15,6 +15,10 @@
 
 using namespace std;
 
+using i32 = int32_t;
+using i64 = int64_t;
+using pii = std::pair<int, int>;
+
 struct ClosestRightState {
     unordered_map<int, vector<int>> invIdx;
 
@@ -67,6 +71,7 @@ pair<int, int> findMinMaxKSorted(vector<int> const &a, int k) {
         if (iNext == Max) {
             break;
         }
+        i++;
     }
     return pair<int, int>{i, j};
 }
@@ -84,6 +89,11 @@ TEST(MinMaxK, Case1) {
     EXPECT_EQ(4, crs.findToRight(2, 3));
     EXPECT_EQ(4, crs.findToRight(2, 4));
     EXPECT_EQ(-1, crs.findToRight(2, 5));
+}
+
+TEST(MinMaxK, Ordered) {
+    vector<int> a{1, 2, 4, 6, 8};
+    EXPECT_EQ(pii(2, 4), findMinMaxKSorted(a, 4));
 }
 
 int main(int argc, char **argv) {

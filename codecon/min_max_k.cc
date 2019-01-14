@@ -2,12 +2,13 @@
 // max(S) - min(S) = k.
 
 #include <algorithm>
+#include <cassert>
 #include <deque>
+#include <limits>
 #include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include <limits>
 
 #include "log.h"
 #include <gtest/gtest.h>
@@ -43,18 +44,28 @@ struct ClosestRightState {
 };
 
 pair<int, int> findMinMaxKSorted(vector<int> const &a, int k) {
+    DCHECK(is_sorted(a.begin(), a.end()));
     int i = 0;
     int j = a.size() - 1;
     if (a.size() <= 1 || a[j] - a[i] < k) {
         return pair<int, int>{0, 0};
     }
 
+    constexpr auto Max = numeric_limits<int>::max();
     while (i < j) {
-        int iNextStep;
-        if (a[j] - a[i + 1] >= k) {
-            iNextStep = a[i + 1] - a[i];
-        } else {
-            iNextStep = numeric_limits<int>::max();
+        int iNext = (a[j] - a[i + 1] >= k ? a[i + 1] - a[i] : Max);
+        int jNext = (a[j - 1] - a[i] >= k ? a[j] - a[j - 1] : Max);
+        if (iNext < jNext) {
+            i++;
+            continue;
+        }
+        if (jNext < iNext) {
+            j--;
+            continue;
+        }
+        // Equal here. Are both @Max, meaning to move can be done?
+        if (iNext == Max) {
+            break;
         }
     }
     return pair<int, int>{i, j};

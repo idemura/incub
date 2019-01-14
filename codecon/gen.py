@@ -11,12 +11,12 @@ CXX=${cxx}
 CXX_LANG=-std=c++17 -I. -march=native -fdiagnostics-color=auto -fno-exceptions -fno-rtti ${warnings}
 CXX_MODE=${mode}
 CXX_LIBS=-lgtest -lgmock -lglog -lgflags -pthread
-CXX_TOOL=$$(CXX) $$(CXX_LANG) $$(CXX_MODE) $$(CXX_LIBS)
+CXX_TOOL=$$(CXX) $$(CXX_LANG) $$(CXX_MODE)
 
 .PHONY: run
 
 ${name}: ${name}.cc ${header}
-\t$$(CXX_TOOL) $$< -o $$@
+\t$$(CXX_TOOL) $$< -o $$@ $$(CXX_LIBS)
 
 run: ${name}
 \t./${name} ${redir_in}
@@ -92,7 +92,9 @@ def process_if(src, **kw):
     return res
 
 
-def write_template(t, vars, name):
+def write_template(t, vars, name, overwrite=False):
+    if os.path.exists(name) and not overwrite:
+        return
     with open(name, "wt") as f:
         s = string.Template(t).substitute(**vars)
         f.write(s)
@@ -130,7 +132,7 @@ def create_makefile(args):
         vars["redir_in"] = "< " + name + ".in"
     else:
         vars["redir_in"] = ""
-    write_template(MAKEFILE, vars, name + ".mk")
+    write_template(MAKEFILE, vars, name + ".mk", overwrite=True)
 
 
 def create_code(args):

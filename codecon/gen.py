@@ -118,7 +118,7 @@ def create_makefile(args):
             "no-unused-function",
             "no-sign-compare",
             "no-char-subscripts"]
-    if platform.system() == "Darwin":
+    if platform.system() == "Darwin" or args.clang:
         vars["cxx"] = "clang++"
         warnings.append("literal-range")
     else:
@@ -154,6 +154,7 @@ def create_input(args):
 ap = argparse.ArgumentParser(
         description="Generate make files for codecon problems")
 ap.add_argument("name", nargs=1, help="target name")
+ap.add_argument("--clang", action="store_true", help="override to use clang")
 ap.add_argument("-o", "--opt",
         action="store_true",
         help="optimize")

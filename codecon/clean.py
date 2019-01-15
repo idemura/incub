@@ -14,6 +14,7 @@ parser = argparse.ArgumentParser(description='Remove compiler outputs')
 parser.add_argument('--rm', action='store_true', help='actually remove files')
 args = parser.parse_args()
 
+
 def remove(f):
     if args.rm:
         if os.path.isdir(f):
@@ -38,6 +39,6 @@ def remove_executables(directory, white_list=None):
                 remove(f)
 
 
-for p in ['*.a', '.o', '.mk', '*.dSYM', '*.log']:
+for p in ['*.a', '*.o', '*.mk', '*.dSYM', '*.log']:
     glob_remove(p)
 remove_executables('.', white_list=[])

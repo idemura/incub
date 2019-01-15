@@ -76,7 +76,7 @@ pair<int, int> findSubarrayKSorted(vector<int> const &a, int k) {
     return pair<int, int>{i, j};
 }
 
-template<typename T>
+template <typename T>
 string vectorToString(vector<T> const &a) {
     string s;
     for (auto x : a) {
@@ -123,8 +123,12 @@ pair<int, int> findSubarrayKHelper(vector<int> const &a, int k) {
     // only right, trying to find shortest subarray.
     //
     // If a[i] >= top(stack), then we pop stack until invariant restored.
-    // Here a[i] > top(stack) (or stack is empty). Move j right until
-    // a[i] - a[stack[j]] >= k or till the stack end and update found minimum.
+    // After while loop a[i] > top(stack) or stack is empty.
+    //
+    // Adjust j to be in stack bounds. Don't move it anywhere: we've seen items
+    // more than a[i] (because a[i] <= a[i - 1]) and hence no lower item would
+    // make a smaller subarray.
+
     if (a.empty()) {
         return {0, 0};
     }
@@ -135,20 +139,17 @@ pair<int, int> findSubarrayKHelper(vector<int> const &a, int k) {
     vector<int> stack{0};
     DCHECK_EQ(1, stack.size());
     for (int i = 1; i < a.size(); i++) {
-        auto pop = false;
+        // Keep invariant
         while (!stack.empty() && a[i] <= a[stack.back()]) {
             stack.pop_back();
-            pop = true;
         }
+        // Adjust j to stack bounds
         if (stack.empty()) {
             j = 0;
-        } else if (pop) {
-            // Stack not empty here, can do -1 safely:
+        } else {
             j = min(j, (int)stack.size() - 1);
-            while (j > 0 && i - stack[j] < minLen && !(a[i] - a[stack[j]] >= k)) {
-                j--;
-            }
         }
+        // Try advance j and update result
         while (j < stack.size() && a[i] - a[stack[j]] >= k) {
             if (i - stack[j] < minLen) {
                 minLen = i - stack[j];
@@ -158,7 +159,8 @@ pair<int, int> findSubarrayKHelper(vector<int> const &a, int k) {
         }
         stack.push_back(i);
     }
-    return minLen == Max ? pair<int, int>{0, 0} : pair<int, int>{minPos, minPos + minLen};
+    return minLen == Max ? pair<int, int>{0, 0}
+                         : pair<int, int>{minPos, minPos + minLen};
 }
 
 pair<int, int> findSubarrayK(vector<int> a, int k) {
@@ -169,14 +171,12 @@ pair<int, int> findSubarrayK(vector<int> a, int k) {
     reverse(a.begin(), a.end());
     auto r = findSubarrayKHelper(a, k);
     if (r.second - r.first > d.second - d.first) {
-        auto last = (int)a.size() - 1;
-        r = pair<int, int>{last - r.first, last - r.second};
         d = r;
     }
     return d;
 }
 
-TEST(SubarrayK, Case1) {
+TEST(FindToRight, Case1) {
     vector<int> a{1, 2, 6, 3, 2, 5, 7};
     ClosestRightState crs{a};
     EXPECT_EQ(1, crs.findToRight(2, 0));
@@ -189,9 +189,44 @@ TEST(SubarrayK, Case1) {
 
 TEST(SubarrayK, HelperCase1) {
     vector<int> a{1, 2, 6, 3, 4, 5, 8};
+    EXPECT_EQ(pii(1, 2), findSubarrayKHelper(a, 4));
     EXPECT_EQ(pii(0, 2), findSubarrayKHelper(a, 5));
     EXPECT_EQ(pii(1, 2), findSubarrayKHelper(a, 2));
     EXPECT_EQ(pii(0, 6), findSubarrayKHelper(a, 7));
+}
+
+TEST(SubarrayK, HelperCase2) {
+    vector<int> a{1, 2, 6, 3, 8, 5, 9};
+    EXPECT_EQ(pii(0, 4), findSubarrayKHelper(a, 7));
+    EXPECT_EQ(pii(3, 4), findSubarrayKHelper(a, 5));
+}
+
+TEST(SubarrayK, HelperCase3) {
+    vector<int> a{1, 2, 4, 7, 11};
+    EXPECT_EQ(pii(0, 1), findSubarrayKHelper(a, 1));
+    EXPECT_EQ(pii(2, 4), findSubarrayKHelper(a, 6));
+    EXPECT_EQ(pii(1, 3), findSubarrayKHelper(a, 5));
+}
+
+TEST(SubarrayK, HelperCase4) {
+    vector<int> a{1, 2, 4, 7, 11};
+    EXPECT_EQ(pii(0, 1), findSubarrayKHelper(a, 1));
+    EXPECT_EQ(pii(2, 4), findSubarrayKHelper(a, 6));
+    EXPECT_EQ(pii(1, 3), findSubarrayKHelper(a, 5));
+}
+
+TEST(SubarrayK, HelperCase5) {
+    vector<int> a{11, 7, 4, 2, 1};
+    EXPECT_EQ(pii(0, 0), findSubarrayKHelper(a, 1));
+    EXPECT_EQ(pii(0, 0), findSubarrayKHelper(a, 6));
+    EXPECT_EQ(pii(0, 0), findSubarrayKHelper(a, 5));
+}
+
+TEST(SubarrayK, Case1) {
+    vector<int> a{11, 7, 4, 2, 1};
+    EXPECT_EQ(pii(0, 1), findSubarrayK(a, 1));
+    EXPECT_EQ(pii(2, 4), findSubarrayK(a, 6));
+    EXPECT_EQ(pii(1, 3), findSubarrayK(a, 5));
 }
 
 TEST(SubarrayK, Ordered) {

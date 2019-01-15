@@ -134,38 +134,27 @@ pair<int, int> findSubarrayKHelper(vector<int> const &a, int k) {
     int minPos = 0;
     vector<int> stack{0};
     DCHECK_EQ(1, stack.size());
-    LOGE<<"input "<<vectorToString(a);
-    LOGE<<"k "<<k;
     for (int i = 1; i < a.size(); i++) {
-        LOGE<<"--- looking i "<<i<<" "<<a[i];
-        LOGE<<"stack "<<vectorToString(stack);
-
         auto pop = false;
         while (!stack.empty() && a[i] <= a[stack.back()]) {
-            LOGE<<"pop stack "<<a[stack.back()];
             stack.pop_back();
             pop = true;
         }
-        LOGE<<"pops: "<<pop<<" stack size "<<stack.size()<<" j "<<j;
         if (stack.empty()) {
             j = 0;
         } else if (pop) {
             // Stack not empty here, can do -1 safely:
             j = min(j, (int)stack.size() - 1);
-            LOGE<<"move j left, j start "<<j<<" stack size "<<stack.size();
             while (j > 0 && i - stack[j] < minLen && !(a[i] - a[stack[j]] >= k)) {
                 j--;
-                LOGE<<"move left "<<j;
             }
         }
         while (j < stack.size() && a[i] - a[stack[j]] >= k) {
             if (i - stack[j] < minLen) {
-                LOGE<<"update min len "<<(i - stack[j]);
                 minLen = i - stack[j];
                 minPos = stack[j];
             }
             j++;
-            LOGE<<"move right "<<j;
         }
         stack.push_back(i);
     }
@@ -173,11 +162,15 @@ pair<int, int> findSubarrayKHelper(vector<int> const &a, int k) {
 }
 
 pair<int, int> findSubarrayK(vector<int> a, int k) {
+    if (a.size() <= 1) {
+        return {0, 0};
+    }
     auto d = findSubarrayKHelper(a, k);
     reverse(a.begin(), a.end());
     auto r = findSubarrayKHelper(a, k);
-    if (r.second > d.second) {
-        r.first = (int)a.size() - 1 - r.first;
+    if (r.second - r.first > d.second - d.first) {
+        auto last = (int)a.size() - 1;
+        r = pair<int, int>{last - r.first, last - r.second};
         d = r;
     }
     return d;

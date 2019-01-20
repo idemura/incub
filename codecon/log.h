@@ -9,6 +9,10 @@
 #define LOGI LOG(INFO)
 #define LOGD LOG(DEBUG)
 
+#define VLOG1 VLOG(1)
+#define VLOG2 VLOG(2)
+#define VLOG3 VLOG(3)
+
 inline void initLog(int argc, char **argv) {
     google::InitGoogleLogging(argv[0]);
     google::LogToStderr();

@@ -16,29 +16,32 @@ args = parser.parse_args()
 
 
 def remove(f):
-    if args.rm:
-        if os.path.isdir(f):
-            shutil.rmtree(f)
-        else:
-            os.remove(f)
+    if os.path.isdir(f):
+        shutil.rmtree(f)
     else:
-        print(f)
+        os.remove(f)
 
 
-def glob_remove(pat):
-    for f in glob.glob(pat):
-        remove(f)
+def find_glob(pattern_list):
+    res = []
+    for pat in pattern_list:
+        res += glob.glob(pat)
+    return res
 
 
-def remove_executables(directory, white_list=None):
-    white_list = white_list or []
+def find_binary(directory):
+    res = []
     for f in os.listdir(directory):
-        _, ext = os.path.splitext(f)
-        if not os.path.isdir(f) and f not in white_list and len(ext) == 0:
-            if os.stat(f).st_mode & stat.S_IEXEC:
-                remove(f)
+        if os.path.isfile(f) and len(os.path.splitext(f)[1]) == 0 and \
+                (os.stat(f).st_mode & stat.S_IEXEC) != 0:
+            res.append(f)
+    return res
 
 
-for p in ['*.a', '*.o', '*.mk', '*.dSYM', '*.log']:
-    glob_remove(p)
-remove_executables('.', white_list=[])
+files = find_glob(['*.a', '*.o', '*.mk', '*.dSYM', '*.log']) + find_binary('.')
+if args.rm:
+    for f in files:
+        remove(f)
+else:
+    for f in sorted(files):
+        print(f)

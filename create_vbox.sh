@@ -61,3 +61,9 @@ vboxmanage storageattach $NAME \
         --type dvddrive \
         --port 0 \
         --device 0
+
+vboxmanage sharedfolder add $NAME \
+        --name shared \
+        --hostpath /Users/$USER/shared \
+        --automount
+

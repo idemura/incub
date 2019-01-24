@@ -11,7 +11,7 @@ reboot
 cd
 vi .bashrc    # In $PS1 replace \w to \W
 vi .profile   # export EDITOR=vi
-sudo apt-get install -y build-essential git vim gdb linux-tools tmux atop python-dev libtool m4 autoconf pkg-config cmake
+sudo apt-get install -y build-essential git vim gdb linux-tools tmux atop python-dev libtool m4 autoconf pkg-config cmake dkms
 ```
 
 ## Customize
@@ -120,4 +120,21 @@ cmake -G "Unix Makefiles" ../llvm-${LLVM_VER}.src -DCMAKE_BUILD_TYPE=Release
 make -j4 && sudo make install
 cd ..
 rm -rf cmake_build
+```
+
+## Shared Folders
+Mount Guest Additions
+```
+sudo opt-get install -y dkms
+sudo mkdir /mnt/vbox_additions
+sudo mount /dev/cdrom /mnt/vbox_additions
+cd /mnt/vbox_additions
+sudo ./VBoxLinuxAdditions.run
+
+# If didn't help, do:
+cd /opt/VBoxGuestAdditions-*/init  
+sudo ./vboxadd setup
+
+sudo adduser $USER vboxsf
+sudo mount -t vboxsf shared /home/$USER/shared
 ```

@@ -11,6 +11,15 @@ ISO="$HOME/Downloads/debian-9.6.0-amd64-netinst.iso"
 
 vboxmanage createvm --name $NAME --ostype Debian_64 --register
 
+# vboxmanage hostonlyif create if vboxnet0 doesn't exist. Otherwise, check
+# configuration: vboxmanage list hostonlyifs, see IP address and mask.
+# To enable SSH, run on guest:
+#   ip address
+# Find enp0s8 without IP address and add into /etc/network/interfaces:
+#   auto enp0s8
+#   iface enp0s8 inet static
+#   address 192.168.56.<number != 1>
+#   netmask 255.255.255.0
 vboxmanage modifyvm $NAME \
         --memory $RAM \
         --cpus $CPU \
@@ -25,12 +34,10 @@ vboxmanage modifyvm $NAME \
         --audio none \
         --pae off \
         --rtcuseutc on \
-        --natpf1 "ssh,tcp,,2022,,22" \
-        --natpf1 "nuclide1,tcp,,9091,,9091" \
-        --natpf1 "nuclide2,tcp,,9092,,9092" \
-        --natpf1 "nuclide3,tcp,,9093,,9093" \
         --clipboard hosttoguest \
-        --mouse ps2
+        --mouse ps2 \
+        --nic2 hostonly \
+        --hostonlyadapter2 vboxnet0
 
 vboxmanage storagectl $NAME \
         --name SATA \

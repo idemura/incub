@@ -14,27 +14,17 @@ set ic
 set tabstop=4
 set shiftwidth=4
 set expandtab
-set cc=81
+set cc=80
 set incsearch
 set number
 set hidden
 set nowrap
 set gdefault
 set noswapfile
-set wildignore+=*.o,*.a,*.o.d,*_test
-
-" Clear filetype flags before changing runtimepath to force Vim to reload
-" them.
-filetype off
-filetype plugin indent off
-set runtimepath+=$GOROOT/misc/vim
-filetype plugin indent on
+set wildignore+=*.o,*.a,*.o.d,*_test,*.pyc
 
 " Do not expand tab to spaces in make files.
 autocmd FileType make setlocal noexpandtab
-
-let g:ycm_confirm_extra_conf=0
-let g:ycm_enable_diagnostic_signs=0
 
 nnoremap <CR> :
 nnoremap <C-J> <C-W><C-J>

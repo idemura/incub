@@ -14,7 +14,7 @@ set ic
 set tabstop=4
 set shiftwidth=4
 set expandtab
-set cc=80
+set cc=81
 set incsearch
 set number
 set hidden

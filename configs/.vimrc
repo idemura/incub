@@ -34,11 +34,12 @@ nnoremap <C-H> <C-W><C-H>
 
 let mapleader=" "
 
-nnoremap <leader>w :w<CR>
-nnoremap <leader>q :q<CR>
-nnoremap <leader>s :sh<CR>
-nnoremap <leader><Up>     :bn<CR>
-nnoremap <leader><Down>   :bp<CR>
+nnoremap <leader>w        :w<CR>
+nnoremap <leader>q        :q<CR>
+nnoremap <leader>s        :sh<CR>
+nnoremap <leader>l        :ls<CR>
+nnoremap <leader><Left>   :bn<CR>
+nnoremap <leader><Right>  :bp<CR>
 
 nnoremap <leader>K diw
 nnoremap <leader>Q di"
